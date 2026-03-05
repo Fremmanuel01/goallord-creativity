@@ -1,0 +1,50 @@
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const path = require('path');
+
+const app = express();
+
+// ─── MIDDLEWARE ───────────────────────────────────────────────
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ─── STATIC FILES (serve the website) ────────────────────────
+app.use(express.static(path.join(__dirname)));
+
+// ─── API ROUTES ───────────────────────────────────────────────
+app.use('/api/auth',       require('./routes/auth'));
+app.use('/api/applicants', require('./routes/applicants'));
+app.use('/api/clients',    require('./routes/clients'));
+app.use('/api/products',   require('./routes/products'));
+app.use('/api/orders',     require('./routes/orders'));
+app.use('/api/content',    require('./routes/content'));
+app.use('/api/upload',     require('./routes/upload'));
+
+// ─── FALLBACK: serve index.html for any unmatched GET ─────────
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// ─── DATABASE + SEED + START ──────────────────────────────────
+const PORT = process.env.PORT || 3000;
+
+mongoose.connect(process.env.MONGODB_URI)
+  .then(async () => {
+    console.log('MongoDB connected');
+    await seedAll();
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch(err => {
+    console.error('MongoDB connection error:', err.message);
+    process.exit(1);
+  });
+
+async function seedAll() {
+  const { seedAdmin }    = require('./routes/auth');
+  const { seedProducts } = require('./routes/products');
+  const { seedContent }  = require('./routes/content');
+  await Promise.all([seedAdmin(), seedProducts(), seedContent()]);
+}
