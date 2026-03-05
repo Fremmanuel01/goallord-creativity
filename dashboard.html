@@ -1,0 +1,2951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Goallord Admin Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0B0D10;
+    --surface: #0F1115;
+    --card: #171A21;
+    --border: #2A2F3A;
+    --orange: #D66A1F;
+    --blue: #1E4BFF;
+    --text: #F4F6FA;
+    --muted: #8892A4;
+    --success: #22C55E;
+    --danger: #EF4444;
+    --warning: #F59E0B;
+    --sidebar-w: 260px;
+    --topbar-h: 64px;
+    --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    --radius: 8px;
+    --transition: 0.2s ease;
+  }
+
+  html { font-size: 15px; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* ─── SIDEBAR ─────────────────────────────────────────── */
+  .sidebar {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    transition: width var(--transition), min-width var(--transition);
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 100;
+    overflow: hidden;
+  }
+
+  .sidebar-collapsed .sidebar {
+    width: 72px;
+    min-width: 72px;
+  }
+
+  .sidebar-logo {
+    padding: 0 20px;
+    height: var(--topbar-h);
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .sidebar-logo span {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text);
+  }
+
+  .sidebar-logo span em {
+    font-style: normal;
+    color: var(--orange);
+  }
+
+  .sidebar-logo .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--orange);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.8rem;
+    color: #fff;
+    flex-shrink: 0;
+    margin-right: 12px;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 16px 12px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .nav-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 8px;
+    margin: 16px 0 8px;
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity var(--transition);
+  }
+
+  .sidebar-collapsed .nav-label { opacity: 0; }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 10px;
+    height: 42px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+    position: relative;
+    white-space: nowrap;
+    color: var(--muted);
+    user-select: none;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: rgba(255,255,255,0.04);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    background: rgba(214, 106, 31, 0.12);
+    color: var(--orange);
+  }
+
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    background: var(--orange);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .nav-item svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  .nav-item span {
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: opacity var(--transition);
+  }
+
+  .sidebar-collapsed .nav-item span,
+  .sidebar-collapsed .nav-item .nav-badge {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .sidebar-collapsed .nav-item {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .sidebar-collapsed .nav-item::before {
+    display: none;
+  }
+
+  .sidebar-collapsed .nav-item.active {
+    background: rgba(214, 106, 31, 0.15);
+  }
+
+  .sidebar-footer {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--orange), #f0872a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .sidebar-footer-info {
+    transition: opacity var(--transition);
+  }
+
+  .sidebar-collapsed .sidebar-footer-info { opacity: 0; }
+
+  .sidebar-footer-info strong {
+    display: block;
+    font-size: 0.825rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .sidebar-footer-info small {
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  /* ─── MAIN WRAPPER ────────────────────────────────────── */
+  .main-wrapper {
+    flex: 1;
+    margin-left: var(--sidebar-w);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    transition: margin-left var(--transition);
+  }
+
+  .sidebar-collapsed .main-wrapper {
+    margin-left: 72px;
+  }
+
+  /* ─── TOP BAR ─────────────────────────────────────────── */
+  .topbar {
+    height: var(--topbar-h);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .hamburger {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: rgba(255,255,255,0.04);
+    border-radius: var(--radius);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    transition: background var(--transition), color var(--transition);
+    flex-shrink: 0;
+  }
+
+  .hamburger:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+
+  .page-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .search-wrap {
+    position: relative;
+  }
+
+  .search-wrap svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 15px;
+    height: 15px;
+    color: var(--muted);
+  }
+
+  .search-input {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 0.825rem;
+    font-family: var(--font);
+    padding: 7px 12px 7px 34px;
+    width: 200px;
+    outline: none;
+    transition: border-color var(--transition), width var(--transition);
+  }
+
+  .search-input:focus { border-color: var(--orange); width: 240px; }
+  .search-input::placeholder { color: var(--muted); }
+
+  .notif-btn {
+    width: 36px;
+    height: 36px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    position: relative;
+    transition: color var(--transition), border-color var(--transition);
+  }
+
+  .notif-btn:hover { color: var(--text); border-color: var(--muted); }
+
+  .notif-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 17px;
+    height: 17px;
+    background: var(--danger);
+    border-radius: 50%;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--surface);
+  }
+
+  .topbar-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--orange), #f0872a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: #fff;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* ─── CONTENT ─────────────────────────────────────────── */
+  .content-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 28px 40px;
+    background: var(--bg);
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ─── SECTION HEADER ──────────────────────────────────── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .section-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* ─── BUTTONS ─────────────────────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    font-size: 0.825rem;
+    font-weight: 600;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: all var(--transition);
+    border: none;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--orange);
+    color: #fff;
+  }
+
+  .btn-primary:hover { background: #c05a12; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover { background: rgba(255,255,255,0.04); color: var(--text); border-color: var(--muted); }
+
+  .btn-sm {
+    padding: 5px 10px;
+    font-size: 0.75rem;
+  }
+
+  .btn-icon {
+    padding: 6px;
+    background: rgba(255,255,255,0.04);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font);
+    font-size: 0.75rem;
+  }
+
+  .btn-icon:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+  .btn-icon.danger:hover { background: rgba(239,68,68,0.1); color: var(--danger); border-color: var(--danger); }
+
+  /* ─── STAT CARDS ──────────────────────────────────────── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    transition: border-color var(--transition), transform var(--transition);
+  }
+
+  .stat-card:hover { border-color: rgba(214,106,31,0.3); transform: translateY(-1px); }
+
+  .stat-info {}
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 500;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .stat-trend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .stat-trend.up { color: var(--success); }
+  .stat-trend.down { color: var(--danger); }
+  .stat-trend.neutral { color: var(--warning); }
+
+  .stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .stat-icon svg { width: 22px; height: 22px; }
+  .stat-icon.orange { background: rgba(214,106,31,0.15); color: var(--orange); }
+  .stat-icon.blue { background: rgba(30,75,255,0.15); color: var(--blue); }
+  .stat-icon.green { background: rgba(34,197,94,0.15); color: var(--success); }
+  .stat-icon.yellow { background: rgba(245,158,11,0.15); color: var(--warning); }
+
+  /* ─── CHARTS ──────────────────────────────────────────── */
+  .charts-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+
+  .chart-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .chart-card-header h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .chart-legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .chart-wrap { position: relative; }
+
+  /* ─── TABLES ──────────────────────────────────────────── */
+  .tables-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .table-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .table-card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .table-card-header h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.825rem;
+  }
+
+  .data-table thead th {
+    background: rgba(255,255,255,0.03);
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .data-table tbody tr {
+    border-bottom: 1px solid rgba(42,47,58,0.5);
+    transition: background var(--transition), border-left-color var(--transition);
+    cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+
+  .data-table tbody tr:last-child { border-bottom: none; }
+
+  .data-table tbody tr:nth-child(even) {
+    background: rgba(255,255,255,0.01);
+  }
+
+  .data-table tbody tr:hover {
+    background: rgba(214,106,31,0.05);
+    border-left-color: var(--orange);
+  }
+
+  .data-table tbody td {
+    padding: 11px 16px;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .data-table tbody td.muted { color: var(--muted); }
+
+  /* ─── BADGES ──────────────────────────────────────────── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .badge-pending { background: rgba(245,158,11,0.15); color: var(--warning); }
+  .badge-reviewed { background: rgba(30,75,255,0.15); color: #6B8FFF; }
+  .badge-accepted { background: rgba(34,197,94,0.15); color: var(--success); }
+  .badge-rejected { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .badge-paid { background: rgba(34,197,94,0.15); color: var(--success); }
+  .badge-refunded { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .badge-progress { background: rgba(30,75,255,0.15); color: #6B8FFF; }
+  .badge-completed { background: rgba(34,197,94,0.15); color: var(--success); }
+  .badge-draft { background: rgba(136,146,164,0.15); color: var(--muted); }
+  .badge-active-prod { background: rgba(34,197,94,0.15); color: var(--success); }
+  .badge-cat-app { background: rgba(245,158,11,0.12); color: var(--warning); }
+  .badge-cat-tpl { background: rgba(214,106,31,0.12); color: var(--orange); }
+  .badge-cat-course { background: rgba(30,75,255,0.12); color: #6B8FFF; }
+
+  /* ─── FILTER BAR ──────────────────────────────────────── */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .filter-input {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 0.825rem;
+    font-family: var(--font);
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color var(--transition);
+    min-width: 180px;
+  }
+
+  .filter-input:focus { border-color: var(--orange); }
+  .filter-input::placeholder { color: var(--muted); }
+
+  .filter-select {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 0.825rem;
+    font-family: var(--font);
+    padding: 8px 32px 8px 12px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238892A4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    transition: border-color var(--transition);
+  }
+
+  .filter-select:focus { border-color: var(--orange); }
+
+  /* ─── TABLE WRAPPER ───────────────────────────────────── */
+  .table-wrapper {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    overflow-x: auto;
+  }
+
+  /* ─── STATUS SELECT ───────────────────────────────────── */
+  .status-select {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-family: var(--font);
+    padding: 4px 22px 4px 8px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238892A4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    transition: border-color var(--transition);
+  }
+
+  .status-select:focus { border-color: var(--orange); }
+
+  /* ─── STORE ───────────────────────────────────────────── */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px;
+    width: fit-content;
+  }
+
+  .tab-btn {
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-size: 0.825rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    font-family: var(--font);
+    transition: all var(--transition);
+    white-space: nowrap;
+  }
+
+  .tab-btn.active {
+    background: var(--orange);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .tab-btn:not(.active):hover { color: var(--text); background: rgba(255,255,255,0.04); }
+
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .product-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    position: relative;
+    transition: border-color var(--transition), transform var(--transition);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .product-card:hover { border-color: rgba(214,106,31,0.35); transform: translateY(-2px); }
+
+  .product-card-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+  }
+
+  .product-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+    padding-right: 70px;
+    line-height: 1.3;
+  }
+
+  .product-desc {
+    font-size: 0.775rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .product-price {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--orange);
+  }
+
+  .product-meta {
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .product-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+  }
+
+  .product-actions { display: flex; gap: 6px; }
+
+  /* Toggle switch */
+  .toggle-wrap { display: flex; align-items: center; gap: 8px; }
+
+  .toggle {
+    width: 38px;
+    height: 22px;
+    background: var(--border);
+    border-radius: 99px;
+    position: relative;
+    cursor: pointer;
+    transition: background var(--transition);
+    flex-shrink: 0;
+  }
+
+  .toggle.on { background: var(--orange); }
+
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    top: 3px;
+    left: 3px;
+    transition: transform var(--transition);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  .toggle.on::after { transform: translateX(16px); }
+
+  /* ─── ORDERS ──────────────────────────────────────────── */
+  .summary-bar {
+    display: flex;
+    gap: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .summary-item {}
+
+  .summary-item .s-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .summary-item .s-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* ─── SETTINGS ────────────────────────────────────────── */
+  .settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .settings-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+
+  .settings-card h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(42,47,58,0.5);
+  }
+
+  .settings-row:last-child { border-bottom: none; }
+
+  .settings-row-info strong {
+    display: block;
+    font-size: 0.825rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .settings-row-info small {
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .settings-number {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.875rem;
+    padding: 6px 10px;
+    width: 80px;
+    outline: none;
+    text-align: center;
+    transition: border-color var(--transition);
+  }
+
+  .settings-number:focus { border-color: var(--orange); }
+
+  .profile-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+
+  .profile-card h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .profile-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    align-items: end;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-group label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+  }
+
+  .form-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.875rem;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color var(--transition);
+    width: 100%;
+  }
+
+  .form-input:focus { border-color: var(--orange); }
+  .form-input::placeholder { color: var(--muted); }
+
+  /* ─── MODAL ───────────────────────────────────────────── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 620px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideIn 0.2s ease;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+  }
+
+  .modal-lg { max-width: 700px; }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-16px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-header h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .modal-close {
+    width: 30px;
+    height: 30px;
+    background: rgba(255,255,255,0.05);
+    border: none;
+    border-radius: 6px;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: background var(--transition), color var(--transition);
+  }
+
+  .modal-close:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+  .modal-body { padding: 24px; }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .detail-item {}
+
+  .detail-item .d-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .detail-item .d-value {
+    font-size: 0.875rem;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .modal-form { display: flex; flex-direction: column; gap: 14px; }
+
+  .modal-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  /* ─── MOBILE OVERLAY ──────────────────────────────────── */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 99;
+    backdrop-filter: blur(2px);
+  }
+
+  /* ─── EMPTY STATE ─────────────────────────────────────── */
+  .empty-row td {
+    text-align: center;
+    padding: 32px !important;
+    color: var(--muted) !important;
+    font-size: 0.825rem;
+  }
+
+  /* ─── RESPONSIVE ──────────────────────────────────────── */
+  @media (max-width: 1200px) {
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .product-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 960px) {
+    .charts-row { grid-template-columns: 1fr; }
+    .tables-row { grid-template-columns: 1fr; }
+    .settings-grid { grid-template-columns: 1fr; }
+    .profile-form { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 768px) {
+    :root { --sidebar-w: 260px; }
+
+    body.mobile-open .sidebar { transform: translateX(0); }
+    body.mobile-open .sidebar-overlay { display: block; }
+
+    .sidebar {
+      transform: translateX(-100%);
+      transition: transform var(--transition);
+    }
+
+    .main-wrapper { margin-left: 0 !important; }
+    .sidebar-collapsed .sidebar { width: var(--sidebar-w) !important; min-width: var(--sidebar-w) !important; }
+
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .product-grid { grid-template-columns: 1fr; }
+    .detail-grid { grid-template-columns: 1fr; }
+    .modal-form-row { grid-template-columns: 1fr; }
+    .profile-form { grid-template-columns: 1fr; }
+    .search-input { width: 140px; }
+    .content-area { padding: 16px 16px 32px; }
+  }
+
+  @media (max-width: 480px) {
+    .stat-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sidebar overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ═══ SIDEBAR ═══════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">GL</div>
+    <span>GOAL<em>LORD</em></span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-label">Main</div>
+
+    <div class="nav-item active" data-page="overview" title="Overview">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+      <span>Overview</span>
+    </div>
+
+    <div class="nav-item" data-page="applicants" title="Applicants">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span>Applicants</span>
+    </div>
+
+    <div class="nav-item" data-page="clients" title="Clients">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="7" width="20" height="14" rx="2"/>
+        <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+      </svg>
+      <span>Clients</span>
+    </div>
+
+    <div class="nav-label">Commerce</div>
+
+    <div class="nav-item" data-page="store" title="Store">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <path d="M16 10a4 4 0 0 1-8 0"/>
+      </svg>
+      <span>Store</span>
+    </div>
+
+    <div class="nav-item" data-page="orders" title="Orders">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+        <rect x="9" y="3" width="6" height="4" rx="1"/>
+        <line x1="9" y1="12" x2="15" y2="12"/>
+        <line x1="9" y1="16" x2="13" y2="16"/>
+      </svg>
+      <span>Orders</span>
+    </div>
+
+    <div class="nav-label">Website</div>
+
+    <div class="nav-item" data-page="website" title="Website Content">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="2" y1="12" x2="22" y2="12"/>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+      </svg>
+      <span>Website</span>
+    </div>
+
+    <div class="nav-label">System</div>
+
+    <div class="nav-item" data-page="settings" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+      <span>Settings</span>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="avatar">GL</div>
+    <div class="sidebar-footer-info">
+      <strong>Goallord Admin</strong>
+      <small>Administrator</small>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN WRAPPER ═══════════════════════════════════════ -->
+<div class="main-wrapper" id="mainWrapper">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle sidebar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <span class="page-title" id="pageTitle">Overview</span>
+    </div>
+    <div class="topbar-right">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input class="search-input" type="text" placeholder="Search…" id="globalSearch">
+      </div>
+      <div class="notif-btn">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <div class="notif-badge">3</div>
+      </div>
+      <div class="topbar-avatar" id="topbarAvatar">GL</div>
+      <button onclick="glLogout()" title="Sign out" style="background:none;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:8px;transition:0.2s" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="content-area" id="contentArea">
+
+    <!-- ══════════════════════════════════════════════════
+         PAGE: OVERVIEW
+    ══════════════════════════════════════════════════ -->
+    <div class="page active" id="page-overview">
+      <!-- Stat cards -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-info">
+            <div class="stat-label">Total Applicants</div>
+            <div class="stat-value">47</div>
+            <div class="stat-trend up">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+              +12% vs last month
+            </div>
+          </div>
+          <div class="stat-icon orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-info">
+            <div class="stat-label">Active Clients</div>
+            <div class="stat-value">12</div>
+            <div class="stat-trend up">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+              +3 new this month
+            </div>
+          </div>
+          <div class="stat-icon blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-info">
+            <div class="stat-label">Revenue (Month)</div>
+            <div class="stat-value">€3,240</div>
+            <div class="stat-trend up">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+              +18% vs last month
+            </div>
+          </div>
+          <div class="stat-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-info">
+            <div class="stat-label">Pending Reviews</div>
+            <div class="stat-value">8</div>
+            <div class="stat-trend neutral">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              Needs action
+            </div>
+          </div>
+          <div class="stat-icon yellow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3>Revenue — Last 6 Months</h3>
+            <div class="chart-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#1E4BFF"></div> Templates &amp; Courses</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#D66A1F"></div> Academy Applications</div>
+            </div>
+          </div>
+          <div class="chart-wrap" style="height:220px">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3>Applications by Track</h3>
+          </div>
+          <div class="chart-wrap" style="height:220px; display:flex; align-items:center; justify-content:center;">
+            <canvas id="donutChart" style="max-height:220px"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent tables -->
+      <div class="tables-row">
+        <div class="table-card">
+          <div class="table-card-header">
+            <h3>Recent Applicants</h3>
+            <button class="btn btn-ghost btn-sm" onclick="navigate('applicants')">View All</button>
+          </div>
+          <table class="data-table" id="recentApplicantsTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Track</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="table-card">
+          <div class="table-card-header">
+            <h3>Recent Orders</h3>
+            <button class="btn btn-ghost btn-sm" onclick="navigate('orders')">View All</button>
+          </div>
+          <table class="data-table" id="recentOrdersTable">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Buyer</th>
+                <th>Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         PAGE: APPLICANTS
+    ══════════════════════════════════════════════════ -->
+    <div class="page" id="page-applicants">
+      <div class="section-header">
+        <h2>Academy Applicants</h2>
+        <button class="btn btn-ghost" onclick="exportApplicantsCSV()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export CSV
+        </button>
+      </div>
+
+      <div class="filter-bar">
+        <input class="filter-input" type="text" placeholder="Search applicants…" id="appSearch">
+        <select class="filter-select" id="appTrackFilter">
+          <option value="">All Tracks</option>
+          <option value="Web Design">Web Design</option>
+          <option value="WordPress">WordPress</option>
+          <option value="Digital Marketing">Digital Marketing</option>
+        </select>
+        <select class="filter-select" id="appStatusFilter">
+          <option value="">All Statuses</option>
+          <option value="Pending">Pending</option>
+          <option value="Reviewed">Reviewed</option>
+          <option value="Accepted">Accepted</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="data-table" id="applicantsTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Track</th>
+              <th>Experience</th>
+              <th>Schedule</th>
+              <th>Status</th>
+              <th>Applied</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="applicantsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         PAGE: CLIENTS
+    ══════════════════════════════════════════════════ -->
+    <div class="page" id="page-clients">
+      <div class="section-header">
+        <h2>Clients &amp; Projects</h2>
+        <button class="btn btn-primary" onclick="openModal('addClientModal')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Client
+        </button>
+      </div>
+
+      <div class="filter-bar">
+        <input class="filter-input" type="text" placeholder="Search clients…" id="clientSearch">
+      </div>
+
+      <div class="table-wrapper">
+        <table class="data-table" id="clientsTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Client</th>
+              <th>Email</th>
+              <th>Service</th>
+              <th>Budget</th>
+              <th>Status</th>
+              <th>Started</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="clientsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         PAGE: STORE
+    ══════════════════════════════════════════════════ -->
+    <div class="page" id="page-store">
+      <div class="section-header">
+        <h2>Store &amp; Products</h2>
+        <button class="btn btn-primary" onclick="openModal('addProductModal')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Product
+        </button>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="all">All</button>
+        <button class="tab-btn" data-tab="Application Fee">Application Fees</button>
+        <button class="tab-btn" data-tab="Template">Templates</button>
+        <button class="tab-btn" data-tab="Course">Courses</button>
+      </div>
+
+      <div class="product-grid" id="productGrid"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         PAGE: ORDERS
+    ══════════════════════════════════════════════════ -->
+    <div class="page" id="page-orders">
+      <div class="section-header">
+        <h2>Orders &amp; Transactions</h2>
+      </div>
+
+      <div class="summary-bar">
+        <div class="summary-item">
+          <div class="s-label">Total Revenue</div>
+          <div class="s-value">€3,240 + ₦490,000</div>
+        </div>
+        <div class="summary-item" style="border-left:1px solid var(--border); padding-left:24px">
+          <div class="s-label">Total Orders</div>
+          <div class="s-value">47</div>
+        </div>
+        <div class="summary-item" style="border-left:1px solid var(--border); padding-left:24px">
+          <div class="s-label">Avg. Order</div>
+          <div class="s-value">€69</div>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" data-ordertab="all">All</button>
+        <button class="tab-btn" data-ordertab="Paid">Paid</button>
+        <button class="tab-btn" data-ordertab="Pending">Pending</button>
+        <button class="tab-btn" data-ordertab="Refunded">Refunded</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="data-table" id="ordersTable">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Product</th>
+              <th>Buyer</th>
+              <th>Amount</th>
+              <th>Category</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         PAGE: SETTINGS
+    ══════════════════════════════════════════════════ -->
+    <div class="page" id="page-settings">
+      <div class="section-header">
+        <h2>Settings</h2>
+      </div>
+
+      <div class="settings-grid">
+        <!-- Academy Settings -->
+        <div class="settings-card">
+          <h3>Academy Settings</h3>
+
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <strong>Intake Status</strong>
+              <small>Allow new applications to be submitted</small>
+            </div>
+            <div class="toggle on" id="intakeToggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <strong>Seats Per Cohort</strong>
+              <small>Maximum students per intake</small>
+            </div>
+            <input class="settings-number" type="number" value="20" min="1" max="100">
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <strong>Application Fee</strong>
+              <small>Require payment before review</small>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <strong>Auto-send Confirmation</strong>
+              <small>Email applicants on submission</small>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+
+        <!-- Store Settings -->
+        <div class="settings-card">
+          <h3>Store Settings</h3>
+
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <strong>Display EUR Currency</strong>
+              <small>Show prices in Euro (€)</small>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <strong>Display NGN Currency</strong>
+              <small>Show prices in Naira (₦)</small>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <strong>Email Notifications</strong>
+              <small>Receive order &amp; application alerts</small>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <strong>Maintenance Mode</strong>
+              <small>Temporarily disable public store</small>
+            </div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile -->
+      <div class="profile-card">
+        <h3>Admin Profile</h3>
+        <div class="profile-form">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input class="form-input" type="text" value="Goallord Admin">
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input class="form-input" type="email" value="hello@goallordcreativity.com">
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <input class="form-input" type="text" value="Administrator" readonly style="opacity:0.6">
+          </div>
+          <div class="form-group">
+            <label>Current Password</label>
+            <input class="form-input" type="password" placeholder="Enter current password">
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input class="form-input" type="password" placeholder="Enter new password">
+          </div>
+          <div class="form-group" style="align-self:flex-end">
+            <button class="btn btn-primary" onclick="alert('Profile updated (cosmetic demo)')">Save Changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         PAGE: WEBSITE CMS
+    ══════════════════════════════════════════════════ -->
+    <div class="page" id="page-website">
+      <div class="section-header">
+        <h2>Website Content</h2>
+        <a href="index.html" target="_blank" class="btn btn-ghost" style="font-size:13px">View Site &rarr;</a>
+      </div>
+
+      <!-- CMS Tabs -->
+      <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap">
+        <button class="btn btn-primary" id="cmsTab-hero"          onclick="showCmsTab('hero')">Hero</button>
+        <button class="btn btn-ghost"   id="cmsTab-portfolio"     onclick="showCmsTab('portfolio')">Portfolio</button>
+        <button class="btn btn-ghost"   id="cmsTab-blog"          onclick="showCmsTab('blog')">Blog</button>
+        <button class="btn btn-ghost"   id="cmsTab-testimonials"  onclick="showCmsTab('testimonials')">Testimonials</button>
+      </div>
+
+      <!-- Hero Editor -->
+      <div id="cms-hero">
+        <div class="card" style="padding:28px;max-width:720px">
+          <h3 style="margin-bottom:20px;font-size:15px;color:var(--muted)">Hero Section</h3>
+          <div class="form-group" style="margin-bottom:16px">
+            <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Headline</label>
+            <input class="form-input" type="text" id="heroHeadline" placeholder="We Build Brands That Get Noticed.">
+          </div>
+          <div class="form-group" style="margin-bottom:16px">
+            <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Sub-line</label>
+            <input class="form-input" type="text" id="heroSubline" placeholder="Websites, visuals, and digital strategies…">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div>
+              <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">CTA 1 Text</label>
+              <input class="form-input" type="text" id="heroCta1Text">
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">CTA 1 URL</label>
+              <input class="form-input" type="text" id="heroCta1Url">
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">CTA 2 Text</label>
+              <input class="form-input" type="text" id="heroCta2Text">
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">CTA 2 URL</label>
+              <input class="form-input" type="text" id="heroCta2Url">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveHero()">Save Hero</button>
+          <span id="heroSaveMsg" style="margin-left:12px;font-size:13px;color:var(--success);display:none">Saved!</span>
+        </div>
+      </div>
+
+      <!-- Portfolio Editor -->
+      <div id="cms-portfolio" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h3 style="font-size:15px;color:var(--muted)">Portfolio Items</h3>
+          <button class="btn btn-primary" onclick="addPortfolioItem()">+ Add Item</button>
+        </div>
+        <div id="portfolioList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px"></div>
+      </div>
+
+      <!-- Blog Editor -->
+      <div id="cms-blog" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h3 style="font-size:15px;color:var(--muted)">Blog Posts</h3>
+          <button class="btn btn-primary" onclick="addBlogPost()">+ Add Post</button>
+        </div>
+        <div id="blogList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px"></div>
+      </div>
+
+      <!-- Testimonials Editor -->
+      <div id="cms-testimonials" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h3 style="font-size:15px;color:var(--muted)">Testimonials</h3>
+          <button class="btn btn-primary" onclick="addTestimonial()">+ Add</button>
+        </div>
+        <div id="testimonialsList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODALS
+═══════════════════════════════════════════════════════ -->
+
+<!-- View Applicant Modal -->
+<div class="modal-overlay" id="viewApplicantModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3>Applicant Details</h3>
+      <button class="modal-close" onclick="closeModal('viewApplicantModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid" id="applicantDetailGrid"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('viewApplicantModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Client Modal -->
+<div class="modal-overlay" id="viewClientModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Client Details</h3>
+      <button class="modal-close" onclick="closeModal('viewClientModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid" id="clientDetailGrid"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('viewClientModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal-overlay" id="addProductModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="addProductModalTitle">Add Product</h3>
+      <button class="modal-close" onclick="closeModal('addProductModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-form">
+        <div class="form-group">
+          <label>Product Name</label>
+          <input class="form-input" type="text" id="prodName" placeholder="e.g. Agency Pro Template">
+        </div>
+        <div class="modal-form-row">
+          <div class="form-group">
+            <label>Category</label>
+            <select class="form-input" id="prodCategory">
+              <option value="Application Fee">Application Fee</option>
+              <option value="Template">Template</option>
+              <option value="Course">Course</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Currency</label>
+            <select class="form-input" id="prodCurrency">
+              <option value="€">€ EUR</option>
+              <option value="₦">₦ NGN</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-form-row">
+          <div class="form-group">
+            <label>Price</label>
+            <input class="form-input" type="number" id="prodPrice" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>Stock / Seats</label>
+            <input class="form-input" type="text" id="prodStock" placeholder="Digital / Unlimited / 20">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input class="form-input" type="text" id="prodDesc" placeholder="Short product description">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select class="form-input" id="prodStatus">
+            <option value="active">Active</option>
+            <option value="inactive">Draft (Inactive)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addProductModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitProduct()">Add Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Client Modal (cosmetic) -->
+<div class="modal-overlay" id="addClientModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add Client</h3>
+      <button class="modal-close" onclick="closeModal('addClientModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-form">
+        <div class="modal-form-row">
+          <div class="form-group">
+            <label>Client Name</label>
+            <input class="form-input" type="text" placeholder="Company or individual name">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input class="form-input" type="email" placeholder="client@email.com">
+          </div>
+        </div>
+        <div class="modal-form-row">
+          <div class="form-group">
+            <label>Service</label>
+            <select class="form-input">
+              <option>Custom Website</option>
+              <option>E-commerce</option>
+              <option>WordPress</option>
+              <option>Web App</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Budget</label>
+            <input class="form-input" type="text" placeholder="e.g. €2,500 or ₦300,000">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select class="form-input">
+            <option>Pending</option>
+            <option>In Progress</option>
+            <option>Completed</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addClientModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('addClientModal'); alert('Client added (cosmetic demo)')">Add Client</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════ -->
+<script>
+// ─── DATA ───────────────────────────────────────────────
+const APPLICANTS = [
+  { id:1, name:'Chidinma Okafor',    email:'chidinma@email.com',    phone:'+234 803 001 0001', track:'Web Design',        experience:'Beginner',     schedule:'Weekdays Eve',  status:'Pending',  date:'Mar 1 2026'  },
+  { id:2, name:'Emeka Nwosu',        email:'emeka@email.com',        phone:'+234 803 002 0002', track:'WordPress',         experience:'Intermediate', schedule:'Weekends',       status:'Accepted', date:'Feb 28 2026' },
+  { id:3, name:'Adaeze Eze',         email:'adaeze@email.com',       phone:'+234 803 003 0003', track:'Digital Marketing', experience:'Beginner',     schedule:'Flexible',       status:'Pending',  date:'Mar 2 2026'  },
+  { id:4, name:'Olumide Adeyemi',    email:'olumide@email.com',      phone:'+234 803 004 0004', track:'Web Design',        experience:'Basics',       schedule:'Weekdays Morn', status:'Reviewed', date:'Feb 27 2026' },
+  { id:5, name:'Ifeoma Chukwu',      email:'ifeoma@email.com',       phone:'+234 803 005 0005', track:'WordPress',         experience:'Beginner',     schedule:'Weekends',       status:'Accepted', date:'Feb 25 2026' },
+  { id:6, name:'Nnamdi Onwuka',      email:'nnamdi@email.com',       phone:'+234 803 006 0006', track:'Digital Marketing', experience:'Intermediate', schedule:'Flexible',       status:'Rejected', date:'Feb 24 2026' },
+  { id:7, name:'Amaka Obiechina',    email:'amaka@email.com',        phone:'+234 803 007 0007', track:'Web Design',        experience:'Beginner',     schedule:'Weekdays Eve',  status:'Pending',  date:'Mar 3 2026'  },
+  { id:8, name:'Chukwuemeka Eze',    email:'chukwuemeka@email.com',  phone:'+234 803 008 0008', track:'WordPress',         experience:'Beginner',     schedule:'Weekends',       status:'Pending',  date:'Mar 4 2026'  },
+  { id:9, name:'Blessing Obi',       email:'blessing@email.com',     phone:'+234 803 009 0009', track:'Digital Marketing', experience:'Basics',       schedule:'Flexible',       status:'Reviewed', date:'Mar 1 2026'  },
+  { id:10,name:'Kelechi Nwofor',     email:'kelechi@email.com',      phone:'+234 803 010 0010', track:'Web Design',        experience:'Intermediate', schedule:'Weekdays Morn', status:'Accepted', date:'Feb 20 2026' },
+  { id:11,name:'Ngozi Okonkwo',      email:'ngozi@email.com',        phone:'+234 803 011 0011', track:'WordPress',         experience:'Beginner',     schedule:'Weekends',       status:'Pending',  date:'Mar 5 2026'  },
+  { id:12,name:'Tunde Adesanya',     email:'tunde@email.com',        phone:'+234 803 012 0012', track:'Web Design',        experience:'Beginner',     schedule:'Weekdays Eve',  status:'Pending',  date:'Mar 5 2026'  },
+];
+
+const CLIENTS = [
+  { id:1, name:'FoodCart Nigeria',  email:'foodcart@email.com',   service:'E-commerce',    budget:'₦450,000', status:'In Progress', started:'Jan 10 2026' },
+  { id:2, name:'Apex Consulting',   email:'apex@email.com',        service:'Custom Website', budget:'€2,500',  status:'Completed',   started:'Dec 5 2025'  },
+  { id:3, name:'MedHub Clinic',     email:'medhub@email.com',      service:'Web App',        budget:'€4,000',  status:'In Progress', started:'Feb 1 2026'  },
+  { id:4, name:'Greenleaf Farms',   email:'greenleaf@email.com',   service:'WordPress',      budget:'₦180,000',status:'Pending',     started:'Mar 1 2026'  },
+  { id:5, name:'StyleHouse Lagos',  email:'style@email.com',       service:'E-commerce',     budget:'€3,200',  status:'In Progress', started:'Jan 20 2026' },
+  { id:6, name:'TechBridge Ltd',    email:'techbridge@email.com',  service:'Custom Website', budget:'€5,000',  status:'Completed',   started:'Nov 15 2025' },
+  { id:7, name:'Lagos Realtor',     email:'realtor@email.com',     service:'WordPress',      budget:'₦220,000',status:'Pending',     started:'Mar 3 2026'  },
+  { id:8, name:'SwiftPay Finance',  email:'swiftpay@email.com',    service:'Web App',        budget:'€8,500',  status:'In Progress', started:'Feb 15 2026' },
+];
+
+const PRODUCTS_DEFAULT = [
+  // Application Fees
+  { id:'p1', name:'Web Design Application Fee',        desc:'Academy entry fee for Web Design track',       price:'₦15,000',  category:'Application Fee', stock:'Unlimited', active:true  },
+  { id:'p2', name:'WordPress Application Fee',         desc:'Academy entry fee for WordPress track',        price:'₦15,000',  category:'Application Fee', stock:'Unlimited', active:true  },
+  { id:'p3', name:'Digital Marketing Application Fee', desc:'Academy entry fee for Digital Marketing track',price:'₦10,000',  category:'Application Fee', stock:'Unlimited', active:true  },
+  // Templates
+  { id:'p4', name:'Agency Pro Template',    desc:'Premium multi-page agency website',        price:'€89',  category:'Template', stock:'Digital', active:true  },
+  { id:'p5', name:'Portfolio Elite',         desc:'Minimal portfolio for creatives',          price:'€49',  category:'Template', stock:'Digital', active:true  },
+  { id:'p6', name:'E-Commerce Starter',      desc:'Full WooCommerce-ready store',             price:'€79',  category:'Template', stock:'Digital', active:true  },
+  { id:'p7', name:'Restaurant Plus',         desc:'Restaurant/food business template',        price:'€39',  category:'Template', stock:'Digital', active:true  },
+  { id:'p8', name:'Business Classic',        desc:'Clean corporate business template',        price:'€35',  category:'Template', stock:'Digital', active:false },
+  // Courses
+  { id:'p9',  name:'Complete Web Design Masterclass',   desc:'40+ hours, Figma to code',           price:'€99', category:'Course', stock:'Digital', active:true  },
+  { id:'p10', name:'WordPress Business Course',          desc:'Build & sell WP sites',               price:'€79', category:'Course', stock:'Digital', active:true  },
+  { id:'p11', name:'Digital Marketing Fundamentals',     desc:'SEO, Ads & analytics',                price:'€59', category:'Course', stock:'Digital', active:true  },
+  { id:'p12', name:'Figma UI Design Course',             desc:'UI design from scratch',              price:'€49', category:'Course', stock:'Digital', active:false },
+];
+
+const ORDERS = [
+  { id:'#ORD-001', product:'Web Design Application',    buyer:'Tunde Adesanya',   amount:'₦15,000', category:'Application', date:'Mar 5 2026',  status:'Paid'    },
+  { id:'#ORD-002', product:'Agency Pro Template',        buyer:'David Miller',      amount:'€89',     category:'Template',    date:'Mar 4 2026',  status:'Paid'    },
+  { id:'#ORD-003', product:'WordPress Business Course',  buyer:'Sarah Chen',        amount:'€79',     category:'Course',      date:'Mar 3 2026',  status:'Paid'    },
+  { id:'#ORD-004', product:'Portfolio Elite',            buyer:'James Adeola',      amount:'€49',     category:'Template',    date:'Mar 3 2026',  status:'Paid'    },
+  { id:'#ORD-005', product:'Digital Mktg Application',  buyer:'Blessing Obi',      amount:'₦10,000', category:'Application', date:'Mar 1 2026',  status:'Paid'    },
+  { id:'#ORD-006', product:'Web Design Masterclass',     buyer:'Maria Santos',      amount:'€99',     category:'Course',      date:'Mar 1 2026',  status:'Paid'    },
+  { id:'#ORD-007', product:'E-Commerce Starter',         buyer:'Ahmed Hassan',      amount:'€79',     category:'Template',    date:'Feb 28 2026', status:'Paid'    },
+  { id:'#ORD-008', product:'WordPress Application',      buyer:'Chukwuemeka Eze',   amount:'₦15,000', category:'Application', date:'Mar 4 2026',  status:'Paid'    },
+  { id:'#ORD-009', product:'Figma UI Design Course',     buyer:'Emma Wilson',       amount:'€49',     category:'Course',      date:'Feb 27 2026', status:'Pending' },
+  { id:'#ORD-010', product:'Business Classic',           buyer:'Peter Okafor',      amount:'€35',     category:'Template',    date:'Feb 26 2026', status:'Paid'    },
+];
+
+// ─── STATE ──────────────────────────────────────────────
+let applicantStatuses = JSON.parse(localStorage.getItem('gl_app_statuses') || '{}');
+let productStates     = JSON.parse(localStorage.getItem('gl_prod_states')   || '{}');
+let products          = JSON.parse(localStorage.getItem('gl_products')       || 'null') || JSON.parse(JSON.stringify(PRODUCTS_DEFAULT));
+let currentPage       = 'overview';
+let isMobile          = () => window.innerWidth <= 768;
+let chartsInitialized = false;
+
+// ─── NAVIGATION ─────────────────────────────────────────
+const pageTitles = {
+  overview:   'Overview',
+  applicants: 'Academy Applicants',
+  clients:    'Clients & Projects',
+  store:      'Store & Products',
+  orders:     'Orders & Transactions',
+  settings:   'Settings',
+};
+
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelector(`.nav-item[data-page="${page}"]`).classList.add('active');
+  document.getElementById('pageTitle').textContent = pageTitles[page] || page;
+  currentPage = page;
+
+  if (page === 'overview' && !chartsInitialized) {
+    setTimeout(initCharts, 50);
+    chartsInitialized = true;
+  }
+
+  if (isMobile()) closeMobileSidebar();
+
+  // Scroll top
+  document.getElementById('contentArea').scrollTop = 0;
+}
+
+document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+  item.addEventListener('click', () => navigate(item.dataset.page));
+});
+
+// ─── SIDEBAR TOGGLE ─────────────────────────────────────
+const hamburgerBtn    = document.getElementById('hamburgerBtn');
+const sidebarOverlay  = document.getElementById('sidebarOverlay');
+
+hamburgerBtn.addEventListener('click', () => {
+  if (isMobile()) {
+    document.body.classList.toggle('mobile-open');
+  } else {
+    document.body.classList.toggle('sidebar-collapsed');
+  }
+});
+
+sidebarOverlay.addEventListener('click', closeMobileSidebar);
+
+function closeMobileSidebar() {
+  document.body.classList.remove('mobile-open');
+}
+
+// ─── BADGE HELPER ───────────────────────────────────────
+function badge(status) {
+  const map = {
+    'Pending':     'badge-pending',
+    'Reviewed':    'badge-reviewed',
+    'Accepted':    'badge-accepted',
+    'Rejected':    'badge-rejected',
+    'Paid':        'badge-paid',
+    'Pending':     'badge-pending',
+    'Refunded':    'badge-refunded',
+    'In Progress': 'badge-progress',
+    'Completed':   'badge-completed',
+    'Draft':       'badge-draft',
+    'Active':      'badge-active-prod',
+  };
+  return `<span class="badge ${map[status] || ''}">${status}</span>`;
+}
+
+function catBadge(cat) {
+  const map = {
+    'Application Fee': 'badge-cat-app',
+    'Template':        'badge-cat-tpl',
+    'Course':          'badge-cat-course',
+  };
+  return `<span class="badge ${map[cat] || ''}" style="font-size:0.65rem">${cat}</span>`;
+}
+
+// ─── APPLICANTS ──────────────────────────────────────────
+function getStatus(id) {
+  return applicantStatuses[id] || APPLICANTS.find(a => a.id === id).status;
+}
+
+function renderApplicants(list) {
+  const tbody = document.getElementById('applicantsBody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="10">No applicants found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(a => {
+    const st = getStatus(a.id);
+    return `<tr>
+      <td class="muted">${a.id}</td>
+      <td><strong style="font-weight:600">${a.name}</strong></td>
+      <td class="muted" style="font-size:0.775rem">${a.email}</td>
+      <td class="muted" style="font-size:0.775rem">${a.phone}</td>
+      <td>${a.track}</td>
+      <td class="muted">${a.experience}</td>
+      <td class="muted">${a.schedule}</td>
+      <td id="app-badge-${a.id}">${badge(st)}</td>
+      <td class="muted">${a.date}</td>
+      <td>
+        <div style="display:flex;gap:6px;align-items:center">
+          <select class="status-select" onchange="updateApplicantStatus(${a.id}, this.value)" title="Change status">
+            ${['Pending','Reviewed','Accepted','Rejected'].map(s => `<option ${s===st?'selected':''}>${s}</option>`).join('')}
+          </select>
+          <button class="btn-icon" onclick="viewApplicant(${a.id})" title="View details">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function updateApplicantStatus(id, status) {
+  applicantStatuses[id] = status;
+  localStorage.setItem('gl_app_statuses', JSON.stringify(applicantStatuses));
+  const cell = document.getElementById('app-badge-' + id);
+  if (cell) cell.innerHTML = badge(status);
+  renderOverviewApplicants();
+}
+
+function viewApplicant(id) {
+  const a = APPLICANTS.find(x => x.id === id);
+  const st = getStatus(id);
+  document.getElementById('applicantDetailGrid').innerHTML = `
+    <div class="detail-item"><div class="d-label">Full Name</div><div class="d-value">${a.name}</div></div>
+    <div class="detail-item"><div class="d-label">Email</div><div class="d-value">${a.email}</div></div>
+    <div class="detail-item"><div class="d-label">Phone</div><div class="d-value">${a.phone}</div></div>
+    <div class="detail-item"><div class="d-label">Track</div><div class="d-value">${a.track}</div></div>
+    <div class="detail-item"><div class="d-label">Experience Level</div><div class="d-value">${a.experience}</div></div>
+    <div class="detail-item"><div class="d-label">Preferred Schedule</div><div class="d-value">${a.schedule}</div></div>
+    <div class="detail-item"><div class="d-label">Application Status</div><div class="d-value">${badge(st)}</div></div>
+    <div class="detail-item"><div class="d-label">Date Applied</div><div class="d-value">${a.date}</div></div>
+  `;
+  openModal('viewApplicantModal');
+}
+
+function filterApplicants() {
+  const q  = document.getElementById('appSearch').value.toLowerCase();
+  const tr = document.getElementById('appTrackFilter').value;
+  const st = document.getElementById('appStatusFilter').value;
+  const filtered = APPLICANTS.filter(a => {
+    const curSt = getStatus(a.id);
+    const matchQ  = !q  || a.name.toLowerCase().includes(q) || a.email.toLowerCase().includes(q);
+    const matchTr = !tr || a.track === tr;
+    const matchSt = !st || curSt === st;
+    return matchQ && matchTr && matchSt;
+  });
+  renderApplicants(filtered);
+}
+
+document.getElementById('appSearch').addEventListener('input', filterApplicants);
+document.getElementById('appTrackFilter').addEventListener('change', filterApplicants);
+document.getElementById('appStatusFilter').addEventListener('change', filterApplicants);
+
+function exportApplicantsCSV() {
+  const headers = ['ID','Name','Email','Phone','Track','Experience','Schedule','Status','Applied'];
+  const rows = APPLICANTS.map(a => [
+    a.id, a.name, a.email, a.phone, a.track, a.experience, a.schedule, getStatus(a.id), a.date
+  ]);
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+  const link = document.createElement('a');
+  link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  link.download = 'goallord-applicants.csv';
+  link.click();
+}
+
+// ─── CLIENTS ─────────────────────────────────────────────
+let clientStatuses = JSON.parse(localStorage.getItem('gl_client_statuses') || '{}');
+
+function getClientStatus(id) {
+  return clientStatuses[id] || CLIENTS.find(c => c.id === id).status;
+}
+
+function renderClients(list) {
+  const tbody = document.getElementById('clientsBody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No clients found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(c => {
+    const st = getClientStatus(c.id);
+    return `<tr>
+      <td class="muted">${c.id}</td>
+      <td><strong style="font-weight:600">${c.name}</strong></td>
+      <td class="muted" style="font-size:0.775rem">${c.email}</td>
+      <td>${c.service}</td>
+      <td style="font-weight:600;color:var(--orange)">${c.budget}</td>
+      <td id="cl-badge-${c.id}">${badge(st)}</td>
+      <td class="muted">${c.started}</td>
+      <td>
+        <div style="display:flex;gap:6px;align-items:center">
+          <select class="status-select" onchange="updateClientStatus(${c.id}, this.value)">
+            ${['Pending','In Progress','Completed'].map(s => `<option ${s===st?'selected':''}>${s}</option>`).join('')}
+          </select>
+          <button class="btn-icon" onclick="viewClient(${c.id})" title="View">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function updateClientStatus(id, status) {
+  clientStatuses[id] = status;
+  localStorage.setItem('gl_client_statuses', JSON.stringify(clientStatuses));
+  const cell = document.getElementById('cl-badge-' + id);
+  if (cell) cell.innerHTML = badge(status);
+}
+
+function viewClient(id) {
+  const c = CLIENTS.find(x => x.id === id);
+  const st = getClientStatus(id);
+  document.getElementById('clientDetailGrid').innerHTML = `
+    <div class="detail-item"><div class="d-label">Client Name</div><div class="d-value">${c.name}</div></div>
+    <div class="detail-item"><div class="d-label">Email</div><div class="d-value">${c.email}</div></div>
+    <div class="detail-item"><div class="d-label">Service</div><div class="d-value">${c.service}</div></div>
+    <div class="detail-item"><div class="d-label">Budget</div><div class="d-value" style="color:var(--orange);font-weight:700">${c.budget}</div></div>
+    <div class="detail-item"><div class="d-label">Status</div><div class="d-value">${badge(st)}</div></div>
+    <div class="detail-item"><div class="d-label">Started</div><div class="d-value">${c.started}</div></div>
+  `;
+  openModal('viewClientModal');
+}
+
+function filterClients() {
+  const q = document.getElementById('clientSearch').value.toLowerCase();
+  renderClients(CLIENTS.filter(c => !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.service.toLowerCase().includes(q)));
+}
+
+document.getElementById('clientSearch').addEventListener('input', filterClients);
+
+// ─── STORE ───────────────────────────────────────────────
+let storeTab = 'all';
+
+function getProductActive(id) {
+  if (productStates.hasOwnProperty(id)) return productStates[id];
+  const p = products.find(x => x.id === id);
+  return p ? p.active : true;
+}
+
+function setProductActive(id, val) {
+  productStates[id] = val;
+  localStorage.setItem('gl_prod_states', JSON.stringify(productStates));
+}
+
+function renderProducts() {
+  const grid = document.getElementById('productGrid');
+  const filtered = storeTab === 'all' ? products : products.filter(p => p.category === storeTab);
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--muted)">No products in this category.</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(p => {
+    const isActive = getProductActive(p.id);
+    return `<div class="product-card" id="prodcard-${p.id}">
+      <div class="product-card-badge">${catBadge(p.category)}</div>
+      <div class="product-name">${p.name}</div>
+      <div class="product-desc">${p.desc}</div>
+      <div class="product-price">${p.price}</div>
+      <div class="product-meta">${p.stock}</div>
+      <div class="product-footer">
+        <div class="toggle-wrap">
+          <div class="toggle ${isActive ? 'on' : ''}" id="ptoggle-${p.id}" onclick="toggleProduct('${p.id}')"></div>
+          <span style="font-size:0.72rem;color:var(--muted)">${isActive ? 'Active' : 'Inactive'}</span>
+        </div>
+        <div class="product-actions">
+          <button class="btn-icon" onclick="openEditProduct('${p.id}')" title="Edit">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn-icon danger" onclick="deleteProduct('${p.id}')" title="Delete">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleProduct(id) {
+  const cur = getProductActive(id);
+  setProductActive(id, !cur);
+  const tog = document.getElementById('ptoggle-' + id);
+  if (tog) {
+    tog.classList.toggle('on', !cur);
+    tog.nextElementSibling.textContent = !cur ? 'Active' : 'Inactive';
+  }
+}
+
+function deleteProduct(id) {
+  if (!confirm('Delete this product?')) return;
+  products = products.filter(p => p.id !== id);
+  localStorage.setItem('gl_products', JSON.stringify(products));
+  renderProducts();
+}
+
+let editProductId = null;
+
+function openEditProduct(id) {
+  const p = products.find(x => x.id === id);
+  editProductId = id;
+  document.getElementById('addProductModalTitle').textContent = 'Edit Product';
+  document.getElementById('prodName').value     = p.name;
+  document.getElementById('prodCategory').value = p.category;
+  document.getElementById('prodDesc').value     = p.desc;
+  document.getElementById('prodStock').value    = p.stock;
+  document.getElementById('prodStatus').value   = getProductActive(id) ? 'active' : 'inactive';
+  // Parse price
+  const priceRaw = p.price.replace(/[₦€,]/g,'');
+  document.getElementById('prodPrice').value    = priceRaw;
+  document.getElementById('prodCurrency').value = p.price.startsWith('₦') ? '₦' : '€';
+  openModal('addProductModal');
+}
+
+function submitProduct() {
+  const name     = document.getElementById('prodName').value.trim();
+  const category = document.getElementById('prodCategory').value;
+  const currency = document.getElementById('prodCurrency').value;
+  const price    = document.getElementById('prodPrice').value;
+  const stock    = document.getElementById('prodStock').value.trim() || 'Digital';
+  const desc     = document.getElementById('prodDesc').value.trim();
+  const isActive = document.getElementById('prodStatus').value === 'active';
+
+  if (!name || !price) { alert('Please fill in name and price.'); return; }
+
+  const formattedPrice = currency + Number(price).toLocaleString();
+
+  if (editProductId) {
+    const idx = products.findIndex(p => p.id === editProductId);
+    if (idx > -1) {
+      products[idx] = { ...products[idx], name, category, price: formattedPrice, desc, stock };
+      setProductActive(editProductId, isActive);
+    }
+    editProductId = null;
+  } else {
+    const newId = 'p' + Date.now();
+    products.push({ id: newId, name, category, price: formattedPrice, desc, stock, active: isActive });
+    setProductActive(newId, isActive);
+  }
+
+  localStorage.setItem('gl_products', JSON.stringify(products));
+  closeModal('addProductModal');
+  renderProducts();
+  document.getElementById('addProductModalTitle').textContent = 'Add Product';
+}
+
+// Store tab switcher
+document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn[data-tab]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    storeTab = btn.dataset.tab;
+    renderProducts();
+  });
+});
+
+// ─── ORDERS ──────────────────────────────────────────────
+let orderTab = 'all';
+
+function renderOrders() {
+  const tbody = document.getElementById('ordersBody');
+  const list = orderTab === 'all' ? ORDERS : ORDERS.filter(o => o.status === orderTab);
+
+  if (!list.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No orders found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map(o => `<tr>
+    <td style="font-weight:600;color:var(--orange);font-size:0.8rem">${o.id}</td>
+    <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.product}</td>
+    <td>${o.buyer}</td>
+    <td style="font-weight:700">${o.amount}</td>
+    <td>${catBadge(o.category)}</td>
+    <td class="muted">${o.date}</td>
+    <td>${badge(o.status)}</td>
+    <td>
+      <button class="btn-icon" title="View receipt">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </td>
+  </tr>`).join('');
+}
+
+document.querySelectorAll('.tab-btn[data-ordertab]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn[data-ordertab]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    orderTab = btn.dataset.ordertab;
+    renderOrders();
+  });
+});
+
+// ─── OVERVIEW RECENT TABLES ──────────────────────────────
+function renderOverviewApplicants() {
+  const tbody = document.querySelector('#recentApplicantsTable tbody');
+  const recent = [...APPLICANTS].slice(-5).reverse();
+  tbody.innerHTML = recent.map(a => {
+    const st = getStatus(a.id);
+    return `<tr onclick="navigate('applicants')">
+      <td style="font-weight:600">${a.name}</td>
+      <td class="muted">${a.track}</td>
+      <td>${badge(st)}</td>
+      <td class="muted">${a.date}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderOverviewOrders() {
+  const tbody = document.querySelector('#recentOrdersTable tbody');
+  const recent = ORDERS.slice(0,5);
+  tbody.innerHTML = recent.map(o => `<tr onclick="navigate('orders')">
+    <td style="font-size:0.775rem">${o.product}</td>
+    <td class="muted">${o.buyer}</td>
+    <td style="font-weight:700;color:var(--orange)">${o.amount}</td>
+    <td>${badge(o.status)}</td>
+  </tr>`).join('');
+}
+
+// ─── CHARTS ──────────────────────────────────────────────
+function initCharts() {
+  const chartDefaults = {
+    color: 'rgba(255,255,255,0.6)',
+    borderColor: 'rgba(255,255,255,0.05)',
+  };
+
+  // Revenue line chart
+  const revCtx = document.getElementById('revenueChart').getContext('2d');
+  new Chart(revCtx, {
+    type: 'line',
+    data: {
+      labels: ['Oct','Nov','Dec','Jan','Feb','Mar'],
+      datasets: [
+        {
+          label: 'Templates & Courses',
+          data: [820,950,1100,1280,1540,1890],
+          borderColor: '#1E4BFF',
+          backgroundColor: 'rgba(30,75,255,0.08)',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#1E4BFF',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          fill: true,
+          tension: 0.4,
+        },
+        {
+          label: 'Academy Applications',
+          data: [400,520,680,720,900,1350],
+          borderColor: '#D66A1F',
+          backgroundColor: 'rgba(214,106,31,0.08)',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#D66A1F',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          fill: true,
+          tension: 0.4,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#171A21',
+          borderColor: '#2A2F3A',
+          borderWidth: 1,
+          titleColor: '#F4F6FA',
+          bodyColor: '#8892A4',
+          padding: 12,
+          callbacks: {
+            label: ctx => ' €' + ctx.parsed.y.toLocaleString()
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          ticks: { color: '#8892A4', font: { size: 11 } },
+          border: { color: 'rgba(255,255,255,0.06)' }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          ticks: {
+            color: '#8892A4',
+            font: { size: 11 },
+            callback: v => '€' + v
+          },
+          border: { color: 'rgba(255,255,255,0.06)' }
+        }
+      }
+    }
+  });
+
+  // Doughnut
+  const doCtx = document.getElementById('donutChart').getContext('2d');
+  new Chart(doCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Web Design', 'WordPress', 'Digital Marketing'],
+      datasets: [{
+        data: [22, 18, 7],
+        backgroundColor: [
+          'rgba(214,106,31,0.85)',
+          'rgba(30,75,255,0.85)',
+          'rgba(34,197,94,0.85)',
+        ],
+        borderColor: '#171A21',
+        borderWidth: 3,
+        hoverBorderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#8892A4',
+            padding: 14,
+            font: { size: 11 },
+            usePointStyle: true,
+            pointStyleWidth: 8,
+          }
+        },
+        tooltip: {
+          backgroundColor: '#171A21',
+          borderColor: '#2A2F3A',
+          borderWidth: 1,
+          titleColor: '#F4F6FA',
+          bodyColor: '#8892A4',
+          padding: 12,
+        }
+      }
+    }
+  });
+}
+
+// ─── MODAL HELPERS ───────────────────────────────────────
+function openModal(id) {
+  const overlay = document.getElementById(id);
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+  editProductId = null;
+  document.getElementById('addProductModalTitle').textContent = 'Add Product';
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeModal(overlay.id);
+  });
+});
+
+// Close on Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(o => closeModal(o.id));
+  }
+});
+
+// ─── INIT ────────────────────────────────────────────────
+(function init() {
+  renderApplicants(APPLICANTS);
+  renderClients(CLIENTS);
+  renderProducts();
+  renderOrders();
+  renderOverviewApplicants();
+  renderOverviewOrders();
+  initCharts();
+  chartsInitialized = true;
+})();
+</script>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  GOALLORD AUTH + API LAYER
+// ══════════════════════════════════════════════════════════════
+
+// ── Auth Guard ───────────────────────────────────────────────
+(function authGuard() {
+  const token = localStorage.getItem('gl_token');
+  if (!token) {
+    window.location.href = 'login.html';
+    return;
+  }
+  // Show admin name in topbar
+  try {
+    const user = JSON.parse(localStorage.getItem('gl_user') || '{}');
+    const initials = (user.name || 'GL').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    const el = document.getElementById('topbarAvatar');
+    if (el) el.textContent = initials;
+    // Also update sidebar footer
+    const strong = document.querySelector('.sidebar-footer strong');
+    const small  = document.querySelector('.sidebar-footer small');
+    if (strong) strong.textContent = user.name || 'Admin';
+    if (small)  small.textContent  = user.role  || 'Administrator';
+  } catch(e) {}
+})();
+
+function glLogout() {
+  localStorage.removeItem('gl_token');
+  localStorage.removeItem('gl_user');
+  window.location.href = 'login.html';
+}
+
+// ── API helpers ───────────────────────────────────────────────
+function apiHeaders() {
+  const token = localStorage.getItem('gl_token');
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + token
+  };
+}
+
+async function apiFetch(path, opts = {}) {
+  const res = await fetch(path, { headers: apiHeaders(), ...opts });
+  if (res.status === 401) { glLogout(); return null; }
+  return res.json();
+}
+
+// ── Live data loaders ─────────────────────────────────────────
+async function loadApplicantsFromAPI() {
+  const data = await apiFetch('/api/applicants?limit=200');
+  if (!data) return;
+  // Merge into APPLICANTS array (used by existing renderApplicants)
+  window.APPLICANTS = data.data.map(a => ({
+    id:         a._id,
+    name:       a.fullName,
+    email:      a.email,
+    phone:      a.phone,
+    track:      a.track,
+    experience: a.experience,
+    schedule:   a.schedule,
+    status:     a.status,
+    date:       new Date(a.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
+  }));
+  if (typeof renderApplicants === 'function') renderApplicants();
+}
+
+async function loadClientsFromAPI() {
+  const data = await apiFetch('/api/clients?limit=200');
+  if (!data) return;
+  window.CLIENTS = data.data.map(c => ({
+    id:      c._id,
+    name:    c.name,
+    email:   c.email,
+    service: c.service,
+    budget:  c.budget,
+    status:  c.status,
+    started: new Date(c.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
+  }));
+  if (typeof renderClients === 'function') renderClients();
+}
+
+async function loadOverviewStats() {
+  const [applicants, clients, orders] = await Promise.all([
+    apiFetch('/api/applicants?limit=1'),
+    apiFetch('/api/clients?limit=1'),
+    apiFetch('/api/orders?limit=1')
+  ]);
+  if (applicants) {
+    const el = document.querySelector('#page-overview .stat-grid .stat-card:first-child .stat-number');
+    if (el) el.textContent = applicants.total || '—';
+  }
+  if (clients) {
+    const el = document.querySelectorAll('#page-overview .stat-grid .stat-card')[1]?.querySelector('.stat-number');
+    if (el) el.textContent = clients.total || '—';
+  }
+}
+
+// ── CMS: Website Content ──────────────────────────────────────
+let cmsCache = {};
+
+async function loadCmsSection(section) {
+  if (cmsCache[section]) return cmsCache[section];
+  const data = await apiFetch('/api/content/' + section);
+  if (data) cmsCache[section] = data.data;
+  return cmsCache[section];
+}
+
+async function saveCmsSection(section, data) {
+  const res = await apiFetch('/api/content/' + section, {
+    method: 'PUT',
+    body: JSON.stringify({ data })
+  });
+  if (res) cmsCache[section] = data;
+  return res;
+}
+
+function showCmsTab(tab) {
+  ['hero','portfolio','blog','testimonials'].forEach(t => {
+    document.getElementById('cms-' + t).style.display       = t === tab ? '' : 'none';
+    document.getElementById('cmsTab-' + t).className        = t === tab ? 'btn btn-primary' : 'btn btn-ghost';
+  });
+  if (tab === 'hero')         loadHero();
+  if (tab === 'portfolio')    loadPortfolio();
+  if (tab === 'blog')         loadBlog();
+  if (tab === 'testimonials') loadTestimonials();
+}
+
+// Hero
+async function loadHero() {
+  const d = await loadCmsSection('hero');
+  if (!d) return;
+  document.getElementById('heroHeadline').value  = d.headline  || '';
+  document.getElementById('heroSubline').value   = d.subline   || '';
+  document.getElementById('heroCta1Text').value  = d.cta1?.text || '';
+  document.getElementById('heroCta1Url').value   = d.cta1?.url  || '';
+  document.getElementById('heroCta2Text').value  = d.cta2?.text || '';
+  document.getElementById('heroCta2Url').value   = d.cta2?.url  || '';
+}
+
+async function saveHero() {
+  const data = {
+    headline: document.getElementById('heroHeadline').value,
+    subline:  document.getElementById('heroSubline').value,
+    cta1: { text: document.getElementById('heroCta1Text').value, url: document.getElementById('heroCta1Url').value },
+    cta2: { text: document.getElementById('heroCta2Text').value, url: document.getElementById('heroCta2Url').value }
+  };
+  const ok = await saveCmsSection('hero', data);
+  if (ok) {
+    const msg = document.getElementById('heroSaveMsg');
+    msg.style.display = 'inline';
+    setTimeout(() => msg.style.display = 'none', 2500);
+  }
+}
+
+// Portfolio
+async function loadPortfolio() {
+  const d = await loadCmsSection('portfolio');
+  const items = d?.items || [];
+  const container = document.getElementById('portfolioList');
+  container.innerHTML = items.map((item, i) => `
+    <div class="card" style="padding:20px" id="pf-${i}">
+      <div class="form-group" style="margin-bottom:10px">
+        <label style="font-size:11px;color:var(--muted)">Title</label>
+        <input class="form-input" style="margin-top:4px" value="${item.title||''}" onchange="updatePortfolioField(${i},'title',this.value)">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div>
+          <label style="font-size:11px;color:var(--muted)">Category</label>
+          <input class="form-input" style="margin-top:4px" value="${item.category||''}" onchange="updatePortfolioField(${i},'category',this.value)">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted)">URL</label>
+          <input class="form-input" style="margin-top:4px" value="${item.url||''}" onchange="updatePortfolioField(${i},'url',this.value)">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px">
+        <label style="font-size:11px;color:var(--muted)">Description</label>
+        <input class="form-input" style="margin-top:4px" value="${item.description||''}" onchange="updatePortfolioField(${i},'description',this.value)">
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label style="font-size:11px;color:var(--muted)">Image URL</label>
+        <input class="form-input" style="margin-top:4px" value="${item.image||''}" onchange="updatePortfolioField(${i},'image',this.value)">
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1" onclick="savePortfolio()">Save</button>
+        <button class="btn btn-danger"  onclick="deletePortfolioItem(${i})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updatePortfolioField(index, field, value) {
+  if (!cmsCache.portfolio) return;
+  cmsCache.portfolio.items[index][field] = value;
+}
+
+async function savePortfolio() {
+  await saveCmsSection('portfolio', cmsCache.portfolio);
+  alert('Portfolio saved!');
+}
+
+function addPortfolioItem() {
+  if (!cmsCache.portfolio) cmsCache.portfolio = { items: [] };
+  const newId = (cmsCache.portfolio.items.length + 1);
+  cmsCache.portfolio.items.push({ id: newId, title: 'New Project', category: '', image: '', description: '', url: '#' });
+  loadPortfolio();
+}
+
+function deletePortfolioItem(index) {
+  if (!confirm('Delete this portfolio item?')) return;
+  cmsCache.portfolio.items.splice(index, 1);
+  savePortfolio().then(() => loadPortfolio());
+}
+
+// Blog
+async function loadBlog() {
+  const d = await loadCmsSection('blog');
+  const posts = d?.posts || [];
+  const container = document.getElementById('blogList');
+  container.innerHTML = posts.map((post, i) => `
+    <div class="card" style="padding:20px">
+      <div class="form-group" style="margin-bottom:10px">
+        <label style="font-size:11px;color:var(--muted)">Title</label>
+        <input class="form-input" style="margin-top:4px" value="${post.title||''}" onchange="updateBlogField(${i},'title',this.value)">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div>
+          <label style="font-size:11px;color:var(--muted)">Category</label>
+          <input class="form-input" style="margin-top:4px" value="${post.category||''}" onchange="updateBlogField(${i},'category',this.value)">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted)">Date</label>
+          <input class="form-input" style="margin-top:4px" value="${post.date||''}" onchange="updateBlogField(${i},'date',this.value)">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px">
+        <label style="font-size:11px;color:var(--muted)">Excerpt</label>
+        <input class="form-input" style="margin-top:4px" value="${post.excerpt||''}" onchange="updateBlogField(${i},'excerpt',this.value)">
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label style="font-size:11px;color:var(--muted)">Image URL</label>
+        <input class="form-input" style="margin-top:4px" value="${post.image||''}" onchange="updateBlogField(${i},'image',this.value)">
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1" onclick="saveBlog()">Save</button>
+        <button class="btn btn-danger" onclick="deleteBlogPost(${i})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateBlogField(index, field, value) {
+  if (!cmsCache.blog) return;
+  cmsCache.blog.posts[index][field] = value;
+}
+
+async function saveBlog() {
+  await saveCmsSection('blog', cmsCache.blog);
+  alert('Blog saved!');
+}
+
+function addBlogPost() {
+  if (!cmsCache.blog) cmsCache.blog = { posts: [] };
+  cmsCache.blog.posts.push({ id: Date.now(), title: 'New Post', category: '', date: '', excerpt: '', image: '', url: '#' });
+  loadBlog();
+}
+
+function deleteBlogPost(index) {
+  if (!confirm('Delete this post?')) return;
+  cmsCache.blog.posts.splice(index, 1);
+  saveBlog().then(() => loadBlog());
+}
+
+// Testimonials
+async function loadTestimonials() {
+  const d = await loadCmsSection('testimonials');
+  const items = d?.items || [];
+  const container = document.getElementById('testimonialsList');
+  container.innerHTML = items.map((t, i) => `
+    <div class="card" style="padding:20px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div>
+          <label style="font-size:11px;color:var(--muted)">Name</label>
+          <input class="form-input" style="margin-top:4px" value="${t.name||''}" onchange="updateTestField(${i},'name',this.value)">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted)">Role</label>
+          <input class="form-input" style="margin-top:4px" value="${t.role||''}" onchange="updateTestField(${i},'role',this.value)">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label style="font-size:11px;color:var(--muted)">Testimonial</label>
+        <textarea class="form-input" style="margin-top:4px;min-height:80px;resize:vertical" onchange="updateTestField(${i},'text',this.value)">${t.text||''}</textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1" onclick="saveTestimonials()">Save</button>
+        <button class="btn btn-danger" onclick="deleteTestimonial(${i})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateTestField(index, field, value) {
+  if (!cmsCache.testimonials) return;
+  cmsCache.testimonials.items[index][field] = value;
+}
+
+async function saveTestimonials() {
+  await saveCmsSection('testimonials', cmsCache.testimonials);
+  alert('Testimonials saved!');
+}
+
+function addTestimonial() {
+  if (!cmsCache.testimonials) cmsCache.testimonials = { items: [] };
+  cmsCache.testimonials.items.push({ id: Date.now(), name: '', role: '', text: '' });
+  loadTestimonials();
+}
+
+function deleteTestimonial(index) {
+  if (!confirm('Delete this testimonial?')) return;
+  cmsCache.testimonials.items.splice(index, 1);
+  saveTestimonials().then(() => loadTestimonials());
+}
+
+// ── Load API data on page init ────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadApplicantsFromAPI();
+  loadClientsFromAPI();
+  loadOverviewStats();
+});
+</script>
+</body>
+</html>

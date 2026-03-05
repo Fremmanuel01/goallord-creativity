@@ -1,0 +1,497 @@
+/* ============================================================
+   GOALLORD CREATIVITY LIMITED — Brand Override CSS
+   Applied ON TOP of styles.css to remap Davies template
+   to Goallord color palette, typography, and identity.
+   ============================================================ */
+
+/* ── 1. FONT OVERRIDE ──────────────────────────────────────── */
+*, *::before, *::after {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+        "San Francisco", "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+/* ── 2. BRAND COLOR TOKENS ─────────────────────────────────── */
+:root {
+    --gl-orange:       #D66A1F;   /* Burnt Orange — Primary */
+    --gl-orange-light: #FF8A2A;   /* Orange Highlight */
+    --gl-blue:         #1E4BFF;   /* Deep Blue — Secondary */
+    --gl-blue-light:   #5B7CFF;   /* Blue Glow */
+    --gl-black:        #050607;
+    --gl-bg:           #0F1115;   /* Premium Gray bg */
+    --gl-card:         #171A21;   /* Card surface */
+    --gl-border:       #2A2F3A;
+    --gl-text:         #F4F6FA;
+    --gl-muted:        #A0A6B3;
+}
+
+/* ── 3. PRIMARY ACCENT (was #07C42C green → now Burnt Orange) ─ */
+.text-primary,
+.text-primary * {
+    color: var(--gl-orange) !important;
+}
+.bg-primary {
+    background-color: var(--gl-orange) !important;
+}
+.border-primary {
+    border-color: var(--gl-orange) !important;
+}
+
+/* ── 4. GLOBAL BACKGROUND & TEXT ───────────────────────────── */
+body,
+#wrapper,
+main#wrapper {
+    background-color: var(--gl-bg) !important;
+    color: var(--gl-text) !important;
+}
+
+/* Prevent horizontal scroll caused by large hero text or absolute elements */
+body {
+    overflow-x: hidden !important;
+}
+
+/* Selected Work slider — contain image overflow before Slick init */
+.slick-for,
+.slick-nav {
+    overflow: hidden;
+}
+.slick-for .image img {
+    width: 100%;
+    min-height: 350px;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.slick-for .image {
+    overflow: hidden;
+}
+
+/* ── 5. BUTTON RECOLORING ───────────────────────────────────── */
+.tf-btn {
+    border-color: var(--gl-border) !important;
+    color: var(--gl-text) !important;
+}
+.tf-btn:hover,
+.tf-btn.animate-btn:hover {
+    background-color: var(--gl-orange) !important;
+    border-color: var(--gl-orange) !important;
+    color: #fff !important;
+}
+
+.tf-btn.style-fill {
+    background-color: var(--gl-orange) !important;
+    border-color: var(--gl-orange) !important;
+    color: #fff !important;
+}
+.tf-btn.style-fill:hover {
+    background-color: var(--gl-orange-light) !important;
+    border-color: var(--gl-orange-light) !important;
+}
+
+.tf-btn.style-troke {
+    background: transparent !important;
+    border-color: var(--gl-border) !important;
+    color: var(--gl-text) !important;
+}
+.tf-btn.style-troke:hover {
+    background-color: var(--gl-orange) !important;
+    border-color: var(--gl-orange) !important;
+    color: #fff !important;
+}
+
+.tf-btn.style-fill-white {
+    background-color: var(--gl-text) !important;
+    border-color: var(--gl-text) !important;
+    color: var(--gl-black) !important;
+}
+.tf-btn.style-fill-white:hover {
+    background-color: var(--gl-orange) !important;
+    border-color: var(--gl-orange) !important;
+    color: #fff !important;
+}
+
+.tf-btn-2 {
+    background-color: var(--gl-orange) !important;
+    border-color: var(--gl-orange) !important;
+}
+
+/* ── 6. LOGO AREA ──────────────────────────────────────────── */
+.logo-site .icon-davies-logo::before {
+    content: none;
+}
+.logo-site-text {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--gl-text);
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.logo-site-text span {
+    color: var(--gl-orange);
+}
+
+/* Nav hover accent */
+.nav-menu-main .item-link:hover,
+.nav-menu-main .item-link.active {
+    color: var(--gl-orange) !important;
+}
+
+/* ── 7. PRELOADER ───────────────────────────────────────────── */
+.preloader {
+    background-color: var(--gl-black) !important;
+}
+.inner-bar {
+    background-color: var(--gl-orange) !important;
+}
+
+/* ── 8. HEADER ──────────────────────────────────────────────── */
+.tf-header {
+    background-color: rgba(5, 6, 7, 0.85) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border-bottom: 1px solid var(--gl-border) !important;
+}
+
+/* ── 9. HERO ────────────────────────────────────────────────── */
+.section-hero-v1 .video-overlay {
+    background: linear-gradient(180deg, rgba(5,6,7,0.55) 0%, rgba(15,17,21,0.92) 100%) !important;
+}
+.section-hero-v1 .video-overlay-2 {
+    background: linear-gradient(90deg, rgba(5,6,7,0.7) 0%, transparent 60%) !important;
+}
+
+/* Hero tag line row */
+.section-hero-v1 .tf-list a {
+    color: var(--gl-orange) !important;
+    border-color: var(--gl-border) !important;
+}
+.section-hero-v1 .tf-list a::before {
+    background-color: var(--gl-orange) !important;
+}
+
+/* Davies large title → Goallord agency name */
+.davies-large {
+    font-size: clamp(3.5rem, 9vw, 10rem);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+}
+
+/* ── 10. SERVICE SECTION ─────────────────────────────────────── */
+.section-service-2 .wg-service-2 .title {
+    color: var(--gl-text) !important;
+}
+.section-service-2 .tf-list li span.text-primary {
+    color: var(--gl-orange) !important;
+}
+.br-line {
+    background-color: var(--gl-border) !important;
+}
+
+/* ── 11. PRICING ────────────────────────────────────────────── */
+.wg-plan .br-line.bg-primary {
+    background-color: var(--gl-orange) !important;
+}
+.wg-plan.style-2 .bg-img_1 {
+    background: radial-gradient(ellipse at 50% 0%, rgba(214,106,31,0.18) 0%, transparent 65%) !important;
+}
+.plan-price .text-primary {
+    color: var(--gl-orange) !important;
+}
+.benefit-list li span {
+    color: var(--gl-orange) !important;
+}
+
+/* ── 12. STATS / INDICATORS ─────────────────────────────────── */
+.wg-indicator .indicate-counter .text-primary {
+    color: var(--gl-orange) !important;
+}
+
+/* ── 13. TESTIMONIALS ───────────────────────────────────────── */
+.section-testimonial .testimonial-v01 {
+    background-color: var(--gl-card) !important;
+    border: 1px solid var(--gl-border) !important;
+}
+
+/* ── 14. FAQ ─────────────────────────────────────────────────── */
+.accordion-faq_item .accordion-action .accordion-order {
+    color: var(--gl-orange) !important;
+}
+
+/* ── 15. FOOTER ──────────────────────────────────────────────── */
+.tf-footer {
+    background-color: var(--gl-black) !important;
+}
+.tf-footer .footer-menu-list a:hover {
+    color: var(--gl-orange) !important;
+}
+.tf-footer .br-line {
+    background-color: var(--gl-border) !important;
+}
+.footer-bottom .text-nocopy {
+    color: var(--gl-muted) !important;
+}
+
+/* ── 16. SCROLL-TO-TOP BUTTON ───────────────────────────────── */
+#goTop .border-progress {
+    stroke: var(--gl-orange) !important;
+}
+#goTop:hover {
+    background-color: var(--gl-orange) !important;
+}
+
+/* ── 17. CTA LOGO BORDER LINES ──────────────────────────────── */
+.logo-custom .line-vertical,
+.logo-custom .line-horizontal {
+    background-color: var(--gl-orange) !important;
+}
+.logo-custom .logo-site-sv svg path {
+    fill: var(--gl-orange) !important;
+}
+
+/* ── 18. PROCESS CARDS ──────────────────────────────────────── */
+.wg-process .img-icon {
+    filter: hue-rotate(0deg) saturate(1.5);
+}
+
+/* ── 19. TECH STACK INFINITE BAND ───────────────────────────── */
+.wg-tech.active .tech_text p,
+.wg-tech.active .tech_text h6 {
+    color: var(--gl-orange) !important;
+}
+.wg-tech {
+    border-color: var(--gl-border) !important;
+}
+.wg-tech.active {
+    border-color: var(--gl-orange) !important;
+}
+.wg-tech:hover {
+    border-color: rgba(214,106,31,0.4) !important;
+}
+
+/* ── 20. BRAND/CLIENTS STRIP ────────────────────────────────── */
+.section-brand {
+    border-top: 1px solid var(--gl-border) !important;
+    border-bottom: 1px solid var(--gl-border) !important;
+}
+
+/* ── 21. MOBILE MENU OFFCANVAS ──────────────────────────────── */
+.offcanvas-menu {
+    background-color: var(--gl-black) !important;
+}
+.nav-ul-mb .mb-menu-link .text-primary {
+    color: var(--gl-orange) !important;
+}
+.nav-ul-mb .mb-menu-link {
+    color: var(--gl-text) !important;
+}
+.nav-ul-mb .mb-menu-link:hover span.text {
+    color: var(--gl-orange) !important;
+}
+
+/* ── 22. NICE-SELECT DROPDOWN ───────────────────────────────── */
+.nice-select:hover,
+.nice-select.open {
+    border-color: var(--gl-orange) !important;
+}
+.nice-select .list .option.selected {
+    color: var(--gl-orange) !important;
+}
+.nice-select .list .option:hover {
+    background-color: rgba(214,106,31,0.1) !important;
+    color: var(--gl-orange) !important;
+}
+
+/* ── 23. FORM FOCUS STATES ──────────────────────────────────── */
+.tf-field .tf-input:focus ~ .tf-lable,
+.tf-field .tf-input:not(:placeholder-shown) ~ .tf-lable {
+    color: var(--gl-orange) !important;
+}
+.tf-field .tf-input:focus {
+    border-bottom-color: var(--gl-orange) !important;
+    box-shadow: 0 1px 0 var(--gl-orange) !important;
+}
+
+/* ── 24. TAB BUTTONS (pricing) ──────────────────────────────── */
+.tf-btn-tab.active,
+.tf-btn-tab:hover {
+    color: var(--gl-orange) !important;
+    border-color: var(--gl-orange) !important;
+}
+.tf-btn-tab.active .dot-active,
+.tf-btn-tab:hover .dot-active {
+    background-color: var(--gl-orange) !important;
+}
+
+/* ── 25. goTop scroll indicator ────────────────────────────── */
+:root {
+    --primary-color: var(--gl-orange);
+}
+
+/* ── 26. SECTION HEADER ACCENT LINE ─────────────────────────── */
+.s-header::before,
+.mini-title::before {
+    /* Remove any default accent if needed */
+}
+
+/* ── 27. IMAGES — subtle orange glow on hover ───────────────── */
+.hover-img:hover .feature-image img,
+.hover-img:hover .main-image .image img {
+    box-shadow: 0 0 40px rgba(214,106,31,0.15);
+}
+
+/* ── 28. CAREER / EXPERIENCE LIST ───────────────────────────── */
+.experience-list > li:first-child {
+    color: var(--gl-muted) !important;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* ── 29. AWARD / STATS COUNTER ──────────────────────────────── */
+.award-item span {
+    color: var(--gl-orange) !important;
+}
+
+/* ── 30. GLOBAL SELECTION HIGHLIGHT ─────────────────────────── */
+::selection {
+    background-color: rgba(214,106,31,0.3);
+    color: var(--gl-text);
+}
+
+/* ── 31. CURSOR TRAIL ───────────────────────────────────────── */
+canvas.cursor-trail {
+    mix-blend-mode: screen;
+    pointer-events: none;
+}
+
+/* ── 32. PAGE-SPECIFIC ADJUSTMENTS ─────────────────────────── */
+
+/* Academy page stats block */
+.academy-stats .stat-number {
+    color: var(--gl-orange);
+}
+
+/* Blog category tags */
+.blog-cat-tag {
+    background: rgba(214,106,31,0.12);
+    color: var(--gl-orange);
+    border: 1px solid rgba(214,106,31,0.3);
+    border-radius: 4px;
+    padding: 2px 10px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* Portfolio filter buttons */
+.portfolio-filter .filter-btn.active {
+    background-color: var(--gl-orange) !important;
+    border-color: var(--gl-orange) !important;
+    color: #fff !important;
+}
+
+/* Contact success state */
+.form-success {
+    display: none;
+    text-align: center;
+    padding: 60px 40px;
+}
+.form-success .success-icon {
+    font-size: 64px;
+    color: var(--gl-orange);
+    margin-bottom: 24px;
+}
+.form-success h3 {
+    margin-bottom: 12px;
+}
+.form-success p {
+    color: var(--gl-muted);
+}
+
+/* ── 33. AGENCY WORDMARK IN FOOTER ──────────────────────────── */
+.img-agency {
+    mix-blend-mode: screen;
+    pointer-events: none;
+    user-select: none;
+}
+.img-agency svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+/* ── 34. RESPONSIVE TWEAKS ───────────────────────────────────── */
+@media (max-width: 767px) {
+    .davies-large {
+        font-size: clamp(2.5rem, 14vw, 5rem);
+    }
+}
+
+/* ── 35. BLOG — FEATURED POST ───────────────────────────────── */
+.gl-featured-post {
+    border: 1px solid var(--gl-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.gl-featured-img img {
+    width: 100%;
+    height: 100%;
+    min-height: 360px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s ease;
+}
+.gl-featured-img:hover img {
+    transform: scale(1.03);
+}
+.gl-featured-body {
+    padding: 48px 40px;
+}
+@media (max-width: 991px) {
+    .gl-featured-body { padding: 36px 28px; }
+    .gl-featured-img img { min-height: 260px; }
+}
+
+/* ── 36. BLOG — ARTICLE BODY ────────────────────────────────── */
+.gl-article-body h2 {
+    font-size: clamp(1.4rem, 2.5vw, 2rem);
+}
+.gl-pullquote {
+    border-left: 3px solid var(--gl-orange);
+    padding: 20px 28px;
+    background: var(--gl-card);
+    border-radius: 0 6px 6px 0;
+}
+
+/* ── 37. CONTACT — INFO CARDS ───────────────────────────────── */
+.gl-contact-card {
+    padding: 28px;
+    border: 1px solid var(--gl-border);
+    border-radius: 8px;
+    height: 100%;
+}
+
+/* ── 38. CONTACT — FORM SUCCESS ─────────────────────────────── */
+.gl-form-success {
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── 39. HERO TAGLINE ────────────────────────────────────────── */
+.gl-hero-tagline {
+    font-size: clamp(1rem, 2vw, 1.45rem);
+    font-weight: 500;
+    color: var(--gl-text);
+    line-height: 1.65;
+    margin-top: 28px;
+    max-width: 540px;
+}
+.gl-hero-tagline .word {
+    display: inline-block;
+    margin-right: 0.28em;
+    opacity: 0; /* GSAP reveals after preloader */
+}
