@@ -1784,11 +1784,18 @@
 
       <!-- Portfolio Editor -->
       <div id="cms-portfolio" style="display:none">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <h3 style="font-size:15px;color:var(--muted)">Portfolio Items</h3>
-          <button class="btn btn-primary" onclick="addPortfolioItem()">+ Add Item</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+          <div>
+            <h3 style="font-size:16px;font-weight:700;margin-bottom:4px">Selected Works</h3>
+            <p style="font-size:13px;color:var(--muted)">These projects appear in the homepage slider. Changes go live immediately after saving.</p>
+          </div>
+          <button class="btn btn-primary" onclick="addPortfolioItem()">+ Add Project</button>
         </div>
-        <div id="portfolioList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px"></div>
+        <div id="portfolioList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px"></div>
+        <div id="portfolioEmpty" style="display:none;text-align:center;padding:60px 20px;color:var(--muted)">
+          <div style="font-size:40px;margin-bottom:12px">📁</div>
+          <p>No portfolio items yet. Click "+ Add Project" to add your first one.</p>
+        </div>
       </div>
 
       <!-- Blog Editor -->
@@ -2051,6 +2058,10 @@ function navigate(page) {
   if (page === 'overview' && !chartsInitialized) {
     setTimeout(initCharts, 50);
     chartsInitialized = true;
+  }
+
+  if (page === 'website') {
+    showCmsTab('portfolio'); // auto-open portfolio tab
   }
 
   if (isMobile()) closeMobileSidebar();
@@ -2775,33 +2786,58 @@ async function loadPortfolio() {
   const d = await loadCmsSection('portfolio');
   const items = d?.items || [];
   const container = document.getElementById('portfolioList');
+  const empty = document.getElementById('portfolioEmpty');
+
+  if (!items.length) {
+    container.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
   container.innerHTML = items.map((item, i) => `
-    <div class="card" style="padding:20px" id="pf-${i}">
-      <div class="form-group" style="margin-bottom:10px">
-        <label style="font-size:11px;color:var(--muted)">Title</label>
-        <input class="form-input" style="margin-top:4px" value="${item.title||''}" onchange="updatePortfolioField(${i},'title',this.value)">
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-        <div>
-          <label style="font-size:11px;color:var(--muted)">Category</label>
-          <input class="form-input" style="margin-top:4px" value="${item.category||''}" onchange="updatePortfolioField(${i},'category',this.value)">
+    <div class="card" style="padding:0;overflow:hidden;border:1px solid var(--border);border-radius:12px">
+
+      <!-- Image Preview -->
+      <div style="position:relative;height:180px;background:var(--bg);overflow:hidden;cursor:pointer" onclick="document.getElementById('pfUpload-${i}').click()">
+        ${item.image
+          ? `<img src="${item.image}" style="width:100%;height:100%;object-fit:cover" alt="${item.title||''}">`
+          : `<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:8px">
+               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+               <span style="font-size:12px">Click to upload image</span>
+             </div>`
+        }
+        <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.7);border-radius:6px;padding:4px 10px;font-size:11px;color:#fff">
+          📷 Change Image
         </div>
-        <div>
-          <label style="font-size:11px;color:var(--muted)">URL</label>
-          <input class="form-input" style="margin-top:4px" value="${item.url||''}" onchange="updatePortfolioField(${i},'url',this.value)">
+        <input type="file" id="pfUpload-${i}" accept="image/*" style="display:none" onchange="uploadPortfolioImage(${i}, this)">
+      </div>
+
+      <!-- Fields -->
+      <div style="padding:16px">
+        <div style="margin-bottom:10px">
+          <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.5px">PROJECT TITLE</label>
+          <input class="form-input" style="margin-top:4px;font-size:15px;font-weight:600" value="${item.title||''}" placeholder="e.g. FoodCart Nigeria" onchange="updatePortfolioField(${i},'title',this.value)">
         </div>
-      </div>
-      <div class="form-group" style="margin-bottom:10px">
-        <label style="font-size:11px;color:var(--muted)">Description</label>
-        <input class="form-input" style="margin-top:4px" value="${item.description||''}" onchange="updatePortfolioField(${i},'description',this.value)">
-      </div>
-      <div class="form-group" style="margin-bottom:12px">
-        <label style="font-size:11px;color:var(--muted)">Image URL</label>
-        <input class="form-input" style="margin-top:4px" value="${item.image||''}" onchange="updatePortfolioField(${i},'image',this.value)">
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-primary" style="flex:1" onclick="savePortfolio()">Save</button>
-        <button class="btn btn-danger"  onclick="deletePortfolioItem(${i})">Delete</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div>
+            <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.5px">CATEGORY / TAGS</label>
+            <input class="form-input" style="margin-top:4px" value="${item.category||''}" placeholder="E-commerce, WordPress" onchange="updatePortfolioField(${i},'category',this.value)">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.5px">PROJECT URL</label>
+            <input class="form-input" style="margin-top:4px" value="${item.url||''}" placeholder="https://..." onchange="updatePortfolioField(${i},'url',this.value)">
+          </div>
+        </div>
+        <div style="margin-bottom:14px">
+          <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.5px">DESCRIPTION</label>
+          <input class="form-input" style="margin-top:4px" value="${item.description||''}" placeholder="Short project description" onchange="updatePortfolioField(${i},'description',this.value)">
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="flex:1" onclick="savePortfolioItem(${i}, this)">Save</button>
+          <button class="btn" style="background:rgba(239,68,68,0.1);color:var(--danger);border:1px solid rgba(239,68,68,0.2)" onclick="deletePortfolioItem(${i})">Delete</button>
+        </div>
+        <div id="pfSaveMsg-${i}" style="display:none;text-align:center;margin-top:8px;font-size:12px;color:var(--success)">✓ Saved successfully</div>
       </div>
     </div>
   `).join('');
@@ -2812,20 +2848,58 @@ function updatePortfolioField(index, field, value) {
   cmsCache.portfolio.items[index][field] = value;
 }
 
+async function uploadPortfolioImage(index, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const btn = document.querySelector(`#pfUpload-${index}`).previousElementSibling;
+  btn.textContent = '⏳ Uploading…';
+
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + localStorage.getItem('gl_token') },
+      body: formData
+    });
+    const json = await res.json();
+    if (json.url) {
+      updatePortfolioField(index, 'image', json.url);
+      await saveCmsSection('portfolio', cmsCache.portfolio);
+      loadPortfolio(); // re-render with new image
+    }
+  } catch(e) {
+    alert('Upload failed. Please try again.');
+    btn.textContent = '📷 Change Image';
+  }
+}
+
+async function savePortfolioItem(index, btn) {
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  const ok = await saveCmsSection('portfolio', cmsCache.portfolio);
+  btn.disabled = false;
+  btn.textContent = 'Save';
+  if (ok) {
+    const msg = document.getElementById('pfSaveMsg-' + index);
+    msg.style.display = 'block';
+    setTimeout(() => msg.style.display = 'none', 2500);
+  }
+}
+
 async function savePortfolio() {
   await saveCmsSection('portfolio', cmsCache.portfolio);
-  alert('Portfolio saved!');
 }
 
 function addPortfolioItem() {
   if (!cmsCache.portfolio) cmsCache.portfolio = { items: [] };
-  const newId = (cmsCache.portfolio.items.length + 1);
-  cmsCache.portfolio.items.push({ id: newId, title: 'New Project', category: '', image: '', description: '', url: '#' });
+  cmsCache.portfolio.items.unshift({ id: Date.now(), title: 'New Project', category: '', image: '', description: '', url: '#' });
   loadPortfolio();
 }
 
 function deletePortfolioItem(index) {
-  if (!confirm('Delete this portfolio item?')) return;
+  if (!confirm('Delete this project?')) return;
   cmsCache.portfolio.items.splice(index, 1);
   savePortfolio().then(() => loadPortfolio());
 }
