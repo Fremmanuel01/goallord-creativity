@@ -153,6 +153,19 @@ body {
     -webkit-backdrop-filter: blur(16px) !important;
     border-bottom: 1px solid var(--gl-border) !important;
 }
+.tf-header .header-inner .row {
+    min-height: 64px;
+}
+.tf-header .header-contact {
+    gap: 2px !important;
+    line-height: 1.3;
+}
+.tf-header .btn-mobile-menu {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
 
 /* ── 9. HERO ────────────────────────────────────────────────── */
 .section-hero-v1 .video-overlay {
