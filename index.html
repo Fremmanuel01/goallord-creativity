@@ -1885,6 +1885,99 @@
     <script src="assets/js/gsapAnimation.js"></script>
     <script src="assets/js/main.js"></script>
 
+    <!-- ── API: Hero + Testimonials ──────────────────────────── -->
+    <script>
+    // ── HERO ─────────────────────────────────────────────────
+    fetch('/api/content/hero')
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        var d = res.data;
+        if (!d) return;
+
+        // Update tagline words
+        if (d.headline) {
+          var tagline = document.querySelector('.gl-hero-tagline');
+          if (tagline) {
+            tagline.innerHTML = d.headline.split(' ').map(function(w){
+              return '<span class="word">' + w + '</span>';
+            }).join(' ');
+          }
+        }
+
+        // Update subline description
+        if (d.subline) {
+          var desc = document.querySelector('.section-hero-v1 .desc');
+          if (desc) desc.textContent = d.subline;
+        }
+
+        // Update CTA buttons
+        if (d.cta1) {
+          var c1 = document.querySelector('.section-hero-v1 .tf-btn.style-fill');
+          if (c1) { c1.textContent = d.cta1.text; c1.href = d.cta1.url; }
+        }
+        if (d.cta2) {
+          var c2 = document.querySelector('.section-hero-v1 .tf-btn.style-troke');
+          if (c2) { c2.textContent = d.cta2.text; c2.href = d.cta2.url; }
+        }
+      })
+      .catch(function(){});
+
+    // ── TESTIMONIALS ─────────────────────────────────────────
+    fetch('/api/content/testimonials')
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        var items = res && res.data && res.data.items;
+        if (!items || !items.length) return;
+
+        var wrapper = document.querySelector('.swiper-testimonial .swiper-wrapper');
+        if (!wrapper) return;
+
+        wrapper.innerHTML = items.map(function(t){
+          return '<div class="swiper-slide">' +
+            '<div class="testimonial-v01">' +
+              '<div class="tes-author">' +
+                '<div class="author_image">' +
+                  (t.image
+                    ? '<img loading="lazy" width="437" height="328" src="' + t.image + '" alt="' + t.name + '">'
+                    : '<div style="width:60px;height:60px;border-radius:50%;background:var(--gl-orange,#D66A1F);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:20px">' + (t.name||'?')[0] + '</div>'
+                  ) +
+                '</div>' +
+                '<div class="author_info">' +
+                  '<h6 class="info__name text-body-1 letter-space--1">' + (t.name||'') + '</h6>' +
+                  '<p class="info__duty">' + (t.role||'') + '</p>' +
+                '</div>' +
+              '</div>' +
+              '<div class="br-line"></div>' +
+              '<p class="tes-text text-body-1">"' + (t.text||'') + '"</p>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+
+        // Reinit swiper
+        var swiperEl = document.querySelector('.swiper-testimonial');
+        if (swiperEl && swiperEl.swiper) {
+          swiperEl.swiper.destroy(true, true);
+        }
+        new Swiper('.swiper-testimonial', {
+          loop: true,
+          centeredSlides: true,
+          slidesPerView: 2.59,
+          spaceBetween: 40,
+          breakpoints: {
+            0:   { slidesPerView: 1.2, spaceBetween: 15 },
+            576: { slidesPerView: 1.5, spaceBetween: 15 },
+            768: { slidesPerView: 2.2, spaceBetween: 30 },
+            992: { slidesPerView: 2.59, spaceBetween: 40 }
+          },
+          navigation: {
+            nextEl: '.section-testimonial .nav-next-swiper',
+            prevEl: '.section-testimonial .nav-prev-swiper'
+          }
+        });
+      })
+      .catch(function(){});
+    </script>
+
     <!-- Selected Work Slick Slider — API Connected -->
     <script>
     const DEFAULT_IMAGES = [

@@ -2905,45 +2905,62 @@ function deletePortfolioItem(index) {
 }
 
 // Blog
-async function loadBlog() {
-  const d = await loadCmsSection('blog');
-  const posts = d?.posts || [];
-  const container = document.getElementById('blogList');
-  container.innerHTML = posts.map((post, i) => `
-    <div class="card" style="padding:20px">
+function blogPostCard(post, i, isFeatured) {
+  const prefix = isFeatured ? 'featured' : `post_${i}`;
+  return `
+    <div class="card" style="padding:20px;${isFeatured ? 'border:1px solid var(--orange)' : ''}">
+      ${isFeatured ? '<div style="font-size:11px;color:var(--orange);font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">Featured Post</div>' : ''}
       <div class="form-group" style="margin-bottom:10px">
         <label style="font-size:11px;color:var(--muted)">Title</label>
-        <input class="form-input" style="margin-top:4px" value="${post.title||''}" onchange="updateBlogField(${i},'title',this.value)">
+        <input class="form-input" style="margin-top:4px" value="${(post.title||'').replace(/"/g,'&quot;')}" onchange="updateBlogField('${prefix}','title',this.value)">
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
         <div>
           <label style="font-size:11px;color:var(--muted)">Category</label>
-          <input class="form-input" style="margin-top:4px" value="${post.category||''}" onchange="updateBlogField(${i},'category',this.value)">
+          <input class="form-input" style="margin-top:4px" value="${post.category||''}" onchange="updateBlogField('${prefix}','category',this.value)">
         </div>
         <div>
           <label style="font-size:11px;color:var(--muted)">Date</label>
-          <input class="form-input" style="margin-top:4px" value="${post.date||''}" onchange="updateBlogField(${i},'date',this.value)">
+          <input class="form-input" style="margin-top:4px" value="${post.date||''}" onchange="updateBlogField('${prefix}','date',this.value)">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted)">Read Time</label>
+          <input class="form-input" style="margin-top:4px" value="${post.readTime||''}" onchange="updateBlogField('${prefix}','readTime',this.value)">
         </div>
       </div>
       <div class="form-group" style="margin-bottom:10px">
         <label style="font-size:11px;color:var(--muted)">Excerpt</label>
-        <input class="form-input" style="margin-top:4px" value="${post.excerpt||''}" onchange="updateBlogField(${i},'excerpt',this.value)">
+        <textarea class="form-input" style="margin-top:4px;min-height:60px;resize:vertical" onchange="updateBlogField('${prefix}','excerpt',this.value)">${post.excerpt||''}</textarea>
       </div>
       <div class="form-group" style="margin-bottom:12px">
         <label style="font-size:11px;color:var(--muted)">Image URL</label>
-        <input class="form-input" style="margin-top:4px" value="${post.image||''}" onchange="updateBlogField(${i},'image',this.value)">
+        <input class="form-input" style="margin-top:4px" value="${post.image||''}" onchange="updateBlogField('${prefix}','image',this.value)">
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-primary" style="flex:1" onclick="saveBlog()">Save</button>
-        <button class="btn btn-danger" onclick="deleteBlogPost(${i})">Delete</button>
+        ${!isFeatured ? `<button class="btn btn-danger" onclick="deleteBlogPost(${i})">Delete</button>` : ''}
       </div>
     </div>
-  `).join('');
+  `;
 }
 
-function updateBlogField(index, field, value) {
+async function loadBlog() {
+  const d = await loadCmsSection('blog');
+  const featured = d?.featured || {};
+  const posts = d?.posts || [];
+  const container = document.getElementById('blogList');
+  container.innerHTML = blogPostCard(featured, -1, true) + posts.map((post, i) => blogPostCard(post, i, false)).join('');
+}
+
+function updateBlogField(key, field, value) {
   if (!cmsCache.blog) return;
-  cmsCache.blog.posts[index][field] = value;
+  if (key === 'featured') {
+    cmsCache.blog.featured = cmsCache.blog.featured || {};
+    cmsCache.blog.featured[field] = value;
+  } else {
+    const i = parseInt(key.replace('post_', ''));
+    if (!isNaN(i) && cmsCache.blog.posts[i]) cmsCache.blog.posts[i][field] = value;
+  }
 }
 
 async function saveBlog() {
@@ -2952,8 +2969,8 @@ async function saveBlog() {
 }
 
 function addBlogPost() {
-  if (!cmsCache.blog) cmsCache.blog = { posts: [] };
-  cmsCache.blog.posts.push({ id: Date.now(), title: 'New Post', category: '', date: '', excerpt: '', image: '', url: '#' });
+  if (!cmsCache.blog) cmsCache.blog = { featured: {}, posts: [] };
+  cmsCache.blog.posts.push({ id: Date.now(), title: 'New Post', category: '', date: '', readTime: '', excerpt: '', image: '', url: 'blog-single.html' });
   loadBlog();
 }
 
@@ -2973,12 +2990,16 @@ async function loadTestimonials() {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
         <div>
           <label style="font-size:11px;color:var(--muted)">Name</label>
-          <input class="form-input" style="margin-top:4px" value="${t.name||''}" onchange="updateTestField(${i},'name',this.value)">
+          <input class="form-input" style="margin-top:4px" value="${(t.name||'').replace(/"/g,'&quot;')}" onchange="updateTestField(${i},'name',this.value)">
         </div>
         <div>
-          <label style="font-size:11px;color:var(--muted)">Role</label>
-          <input class="form-input" style="margin-top:4px" value="${t.role||''}" onchange="updateTestField(${i},'role',this.value)">
+          <label style="font-size:11px;color:var(--muted)">Role / Company</label>
+          <input class="form-input" style="margin-top:4px" value="${(t.role||'').replace(/"/g,'&quot;')}" onchange="updateTestField(${i},'role',this.value)">
         </div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px">
+        <label style="font-size:11px;color:var(--muted)">Avatar Image URL</label>
+        <input class="form-input" style="margin-top:4px" value="${t.image||''}" onchange="updateTestField(${i},'image',this.value)">
       </div>
       <div class="form-group" style="margin-bottom:12px">
         <label style="font-size:11px;color:var(--muted)">Testimonial</label>
@@ -3004,7 +3025,7 @@ async function saveTestimonials() {
 
 function addTestimonial() {
   if (!cmsCache.testimonials) cmsCache.testimonials = { items: [] };
-  cmsCache.testimonials.items.push({ id: Date.now(), name: '', role: '', text: '' });
+  cmsCache.testimonials.items.push({ id: Date.now(), name: '', role: '', image: '', text: '' });
   loadTestimonials();
 }
 

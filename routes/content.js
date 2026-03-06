@@ -45,32 +45,44 @@ async function seedContent() {
     {
       section: 'hero',
       data: {
-        headline: 'We Build Brands That Get Noticed.',
-        subline: 'Websites, visuals, and digital strategies for bold Nigerian businesses.',
-        cta1: { text: 'Start a Project', url: 'contact.html' },
-        cta2: { text: 'View Portfolio', url: 'portfolio.html' }
+        headline: 'We Build High-Performing Websites That Turn Visitors Into Clients.',
+        subline: 'We build premium websites, web apps, and digital strategies for businesses that refuse to be ordinary. From Onitsha to the world — bold ideas, flawless execution.',
+        cta1: { text: 'Start Your Project', url: '#contactScroll' },
+        cta2: { text: 'View Portfolio', url: '#workScroll' }
       }
     },
     {
       section: 'portfolio',
       data: {
         items: [
-          { id: 1, title: 'FoodCart Nigeria', category: 'E-commerce', image: '', description: 'Full e-commerce platform for food delivery', url: '#' },
-          { id: 2, title: 'MedHub Clinic',    category: 'Web App',    image: '', description: 'Patient management & appointment booking', url: '#' },
-          { id: 3, title: 'StyleHouse Lagos', category: 'E-commerce', image: '', description: 'Fashion brand with online store',          url: '#' },
-          { id: 4, title: 'Apex Consulting',  category: 'Website',    image: '', description: 'Corporate website & brand identity',       url: '#' },
-          { id: 5, title: 'SwiftPay Finance', category: 'Web App',    image: '', description: 'Fintech dashboard & landing page',         url: '#' },
-          { id: 6, title: 'Greenleaf Farms',  category: 'WordPress',  image: '', description: 'Agricultural business website',            url: '#' },
+          { id: 1, title: 'TechBridge Platform',  category: 'Web App',      image: 'assets/images/section/work-1.jpg', description: 'Fintech platform connecting investors with SMEs across South-East Nigeria.', url: '#' },
+          { id: 2, title: 'AgroMart Nigeria',      category: 'E-commerce',   image: 'assets/images/section/work-2.jpg', description: 'Online marketplace for agricultural products. 40% sales increase in month 1.', url: '#' },
+          { id: 3, title: 'MedConnect Portal',     category: 'Web App',      image: 'assets/images/section/work-3.jpg', description: 'Patient booking and medical records system for a private hospital in Onitsha.', url: '#' },
+          { id: 4, title: 'Starlight Academy',     category: 'WordPress',    image: 'assets/images/section/work-4.jpg', description: 'School website with online enrollment, fee portal, and parent dashboard.', url: '#' },
+          { id: 5, title: 'QuickFix Auto',         category: 'WordPress, SEO', image: 'assets/images/section/work-5.jpg', description: 'Auto service website that jumped from page 5 to page 1 on Google for Abuja keywords.', url: '#' },
+          { id: 6, title: 'StyleHaus Lagos',       category: 'E-commerce',   image: 'assets/images/section/work-6.jpg', description: 'Fashion e-commerce store with Instagram integration and local payment gateway.', url: '#' },
+          { id: 7, title: 'GreenBuild Homes',      category: 'Custom Design', image: 'assets/images/section/work-1.jpg', description: 'Premium real estate website with property listings, 3D gallery, and contact CRM.', url: '#' },
+          { id: 8, title: 'ChurchOnline NG',       category: 'WordPress',    image: 'assets/images/section/work-2.jpg', description: 'Multi-site church platform with livestream integration and member portal.', url: '#' },
+          { id: 9, title: 'Chime Medical Centre',  category: 'Web App',      image: 'assets/images/section/work-3.jpg', description: 'Healthcare booking system and patient portal. Serving 300+ patients monthly.', url: '#' },
         ]
       }
     },
     {
       section: 'blog',
       data: {
+        featured: {
+          title: "Nigeria's Web Landscape in 2026: What Every Business Owner Needs to Know",
+          category: 'Business', date: 'March 2026', readTime: '8 min read',
+          excerpt: 'Over 220 million people. A growing middle class. And fewer than 30% of SMEs with a functional website. The opportunity is enormous — but so is the risk of getting it wrong.',
+          image: 'assets/images/portfolio/img-1.jpg', url: 'blog-single.html'
+        },
         posts: [
-          { id: 1, title: '5 Web Design Trends Dominating 2026', category: 'Design',          date: 'Feb 20 2026', excerpt: 'From glassmorphism to AI-generated layouts — here is what is hot.', image: '', url: '#' },
-          { id: 2, title: 'How to Rank #1 on Google in Nigeria',  category: 'Digital Marketing', date: 'Feb 15 2026', excerpt: 'Local SEO strategies that actually work for Nigerian businesses.',   image: '', url: '#' },
-          { id: 3, title: 'Why Your Brand Needs a Style Guide',    category: 'Branding',         date: 'Feb 10 2026', excerpt: 'Consistency builds trust — and trust builds revenue.',             image: '', url: '#' },
+          { id: 1, title: 'WordPress vs Custom Website: Which Should Your Business Choose in 2026?', category: 'WordPress', date: 'Feb 2026', readTime: '6 min', image: 'assets/images/portfolio/img-2.jpg', url: 'blog-single.html' },
+          { id: 2, title: 'Local SEO for Nigerian Businesses: Rank on Google Without a Big Budget',  category: 'SEO',       date: 'Jan 2026', readTime: '7 min', image: 'assets/images/portfolio/img-3.jpg', url: 'blog-single.html' },
+          { id: 3, title: '5 Signs Your Website Is Costing You Customers (And How to Fix It)',       category: 'Web Design', date: 'Dec 2025', readTime: '5 min', image: 'assets/images/portfolio/img-4.jpg', url: 'blog-single.html' },
+          { id: 4, title: 'Launching an E-commerce Store in Nigeria: The Complete 2026 Checklist',   category: 'Digital Marketing', date: 'Nov 2025', readTime: '9 min', image: 'assets/images/portfolio/img-5.jpg', url: 'blog-single.html' },
+          { id: 5, title: 'How to Validate Your Web App Idea Before Spending a Single Naira',        category: 'Business', date: 'Oct 2025', readTime: '6 min', image: 'assets/images/portfolio/img-6.jpg', url: 'blog-single.html' },
+          { id: 6, title: 'Starting a Web Design Career in Nigeria: What No One Tells You',          category: 'Web Design', date: 'Sep 2025', readTime: '4 min', image: 'assets/images/portfolio/img-7.jpg', url: 'blog-single.html' },
         ]
       }
     },
@@ -78,9 +90,12 @@ async function seedContent() {
       section: 'testimonials',
       data: {
         items: [
-          { id: 1, name: 'Chukwuemeka Obi',   role: 'CEO, FoodCart Nigeria',  text: 'Goallord transformed our online presence completely. Sales increased by 40% in the first month.' },
-          { id: 2, name: 'Fatima Yusuf',       role: 'Founder, StyleHouse',    text: 'Professional, creative, and always on time. Best web team in Onitsha hands down.' },
-          { id: 3, name: 'Dr. Adaeze Nwosu',  role: 'Director, MedHub Clinic', text: 'Our patient portal has never been smoother. The team understood exactly what we needed.' },
+          { id: 1, name: 'Chukwuemeka Obi',  role: 'CEO, Obi Agro Supplies, Onitsha',        image: 'assets/images/section/tes-1.jpg', text: 'Goallord transformed our outdated website into a lead-generating machine. Within 3 months of launch, our online enquiries tripled. The team was professional, fast, and genuinely understood our business.' },
+          { id: 2, name: 'Ngozi Adeleke',    role: 'Founder, StyleHaus Lagos',               image: 'assets/images/section/tes-2.jpg', text: 'Our Shopify store was beautifully designed and set up perfectly. Sales went up 40% in the first month. Goallord delivered exactly what they promised — on time and on budget.' },
+          { id: 3, name: 'Daniel Eze',       role: 'Director, TechBridge Fintech, Enugu',    image: 'assets/images/section/tes-3.jpg', text: "They built our web app MVP in 6 weeks. Clean code, great UX, and the team was easy to work with throughout. We've since signed them on for maintenance and ongoing development." },
+          { id: 4, name: 'Amaka Nwosu',      role: 'Principal, Starlight Academy, Awka',     image: 'assets/images/section/tes-2.jpg', text: 'The school website Goallord built for us is outstanding. Parents love it, registration went fully online, and we look credible. Worth every naira — highly recommended.' },
+          { id: 5, name: 'Seun Balogun',     role: 'Founder, QuickFix Auto, Abuja',          image: 'assets/images/section/tes-1.jpg', text: 'Our Google ranking jumped from page 5 to page 1 for key search terms in Abuja. The SEO work and new website design from Goallord have been a game-changer for our workshop.' },
+          { id: 6, name: 'Ifeoma Chime',     role: 'MD, Chime Medical Centre, Onitsha',      image: 'assets/images/section/tes-3.jpg', text: 'Goallord built our patient portal and booking system from scratch. It\'s been running flawlessly since launch. The team has deep technical knowledge and excellent communication.' },
         ]
       }
     }
