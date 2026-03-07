@@ -508,3 +508,26 @@ canvas.cursor-trail {
     margin-right: 0.28em;
     opacity: 0; /* GSAP reveals after preloader */
 }
+
+/* ── 29. PORTFOLIO GRID — equal-height cards ────────────────── */
+#portfolioGrid .col-md-4,
+#portfolioGrid .col-sm-6 {
+    display: flex;
+    flex-direction: column;
+}
+#portfolioGrid .wg-feature-v01 {
+    flex: 1;
+    overflow: hidden;
+}
+#portfolioGrid .wg-feature-v01 .feature-image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+}
+#portfolioGrid .wg-feature-v01 .feature-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
