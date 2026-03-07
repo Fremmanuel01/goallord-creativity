@@ -585,3 +585,69 @@ canvas.cursor-trail {
 .gl-hero-dark-overlay {
     display: none;
 }
+
+/* ── 32. CARD STACK / TOSS — Selected Works ─────────────────── */
+.gl-card-section {
+    padding: 0 !important;
+    overflow: hidden;
+}
+.gl-card-scene {
+    width: 100%;
+    height: 100vh;
+    min-height: 600px;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+.gl-card-info-col {
+    padding-top: 40px;
+    padding-bottom: 40px;
+}
+.gl-card-title {
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    margin: 8px 0 12px;
+    transition: opacity 0.3s ease;
+}
+.gl-card-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 320px;
+}
+.gl-card-counter {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+}
+.gl-card-deck {
+    position: relative;
+    height: 520px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.gl-card {
+    position: absolute;
+    width: 85%;
+    height: 440px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06) inset;
+    cursor: grab;
+    will-change: transform;
+}
+.gl-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+    user-select: none;
+}
+@media (max-width: 767px) {
+    .gl-card-scene { height: auto; padding: 80px 0; }
+    .gl-card-deck  { height: 280px; }
+    .gl-card       { width: 90%; height: 240px; }
+    .gl-card-title { font-size: 1.8rem; }
+}
