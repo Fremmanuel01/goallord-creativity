@@ -113,9 +113,19 @@ body {
     color: #fff !important;
 }
 
+
+/* ── 5b. TF-BTN-2 BUTTON STYLE & INLINE SVG ARROW ──────────── */
 .tf-btn-2 {
-    background-color: var(--gl-orange) !important;
-    border-color: var(--gl-orange) !important;
+    background: rgba(30, 20, 10, 0.72) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+}
+.tf-btn-2 svg {
+    width: 40px !important;
+    height: 40px !important;
+    stroke: #fff !important;
+    fill: none !important;
+    display: block;
+    flex-shrink: 0;
 }
 
 /* ── 6. LOGO AREA ──────────────────────────────────────────── */
