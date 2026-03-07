@@ -368,17 +368,25 @@
             const $btn  = $form.find('button[type="submit"]');
 
             // Collect nice-select values
-            const track      = $('#trackSelect .current').text().trim();
-            const experience = $form.find('.nc-wrap').eq(1).find('.current').text().trim();
-            const schedule   = $form.find('.nc-wrap').eq(2).find('.current').text().trim();
-            const howFound   = $form.find('.nc-wrap').eq(3).find('.current').text().trim();
+            const trackValueMap = {
+                'web-design':        'Web Design',
+                'wordpress':         'WordPress',
+                'digital-marketing': 'Digital Marketing',
+                'brand-identity':    'Brand Identity',
+                'undecided':         'Other'
+            };
+            const trackDataVal   = $('#trackSelect li.option.selected').data('value') || '';
+            const track          = trackValueMap[trackDataVal] || '';
+            const experience     = $form.find('.nc-wrap').eq(1).find('.current').text().trim();
+            const schedule       = $form.find('.nc-wrap').eq(2).find('.current').text().trim();
+            const howFound       = $form.find('.nc-wrap').eq(3).find('.current').text().trim();
 
             const payload = {
                 fullName:   $form.find('[name="full_name"]').val().trim(),
                 email:      $form.find('[name="email"]').val().trim(),
                 phone:      $form.find('[name="phone"]').val().trim(),
                 location:   $form.find('[name="location"]').val().trim(),
-                track:      track === 'Choose Your Track' ? '' : track,
+                track:      track,
                 experience: experience === 'Experience Level' ? '' : experience,
                 schedule:   schedule   === 'Preferred Schedule' ? '' : schedule,
                 howFound:   howFound   === 'How You Found Us' ? '' : howFound,
