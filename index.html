@@ -244,31 +244,56 @@
         <!-- /Hero Banner -->
 
         <!-- Selected Work -->
-        <!-- Selected Work — Card Stack / Toss -->
-        <div class="section-selected-work gl-card-section" id="workScroll">
-            <div class="gl-card-scene" id="glCardScene">
-                <div class="container h-100">
-                    <div class="row h-100 align-items-center">
-                        <!-- Info panel -->
-                        <div class="col-lg-4 col-md-5 gl-card-info-col">
-                            <p class="mini-title text-caption text-white-64 mb-3">SELECTED WORKS</p>
-                            <p class="gl-card-counter text-caption text-white-64 mb-2" id="glCardCounter">01 / 06</p>
-                            <h3 class="gl-card-title fw-semibold" id="glCardTitle">—</h3>
-                            <p class="gl-card-desc text-white-64" id="glCardDesc"></p>
-                            <div class="gl-card-tags group-btn mt-3" id="glCardTags"></div>
-                            <a href="portfolio.html" class="tf-btn style-troke mt-4 d-inline-flex" id="glCardLink">VIEW PROJECT <i class="icon icon-arrow-long-right ms-2"></i></a>
+        <div class="section-selected-work flat-spacing pb-0" id="workScroll">
+            <div class="bg-img effectFade fadeUp">
+                <img loading="lazy" width="1440" height="720" src="assets/images/item/mountain.png" alt="Goallord Portfolio">
+            </div>
+            <div class="content-wrap-1 wrap-list-btn">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="col-left mb-md-0">
+                                <p class="mini-title text-caption text-white-64 effectFade fadeUp">SELECTED WORKS</p>
+                                <div class="position-relative effectFade fadeUp no-div">
+                                    <div class="slick-nav"></div>
+                                    <div class="image-award">
+                                        <img loading="lazy" width="80" height="80" src="assets/images/item/award.svg" alt="Award">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <!-- Card deck -->
-                        <div class="col-lg-8 col-md-7">
-                            <div class="gl-card-deck" id="glCardDeck">
-                                <!-- cards injected by JS -->
+                        <div class="col-md-8">
+                            <div class="col-right">
+                                <div class="slick-for"></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        <!-- hidden legacy placeholders (old slick JS still runs harmlessly) -->
-        <div style="display:none"><div class="slick-nav"></div><div class="slick-for"></div><ul class="work-tag"></ul></div>
+            <div class="content-wrap-2">
+                <div class="container position-relative z-5">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <ul class="work-tag"></ul>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="group-btn-slider">
+                                <div class="btn-nav-swiper cs-pointer text-caption fw-medium link nav-prev-swiper">
+                                    <i class="icon icon-arrow-long-left"></i> PREV
+                                </div>
+                                <div class="btn-nav-swiper cs-pointer text-caption fw-medium link nav-next-swiper">
+                                    NEXT <i class="icon icon-arrow-long-right"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="col-right">
+                                <p class="text-display-2 letter-space--3 fw-semibold">20<span class="text-primary">25</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <!-- /Selected Work -->
 
@@ -1870,121 +1895,131 @@
       .catch(function(){});
     </script>
 
-    <!-- Selected Work — Card Stack / Toss -->
+    <!-- Selected Work Slick Slider — API Connected -->
+    <script>
+    var DEFAULT_WORK_IMGS = [
+      'assets/images/section/work-1.jpg','assets/images/section/work-2.jpg',
+      'assets/images/section/work-3.jpg','assets/images/section/work-4.jpg',
+      'assets/images/section/work-5.jpg','assets/images/section/work-6.jpg'
+    ];
+    function initPortfolioSlider(items) {
+      if (!items || !items.length) return;
+      var nav = '', imgs = '', tags = '';
+      [items, items].forEach(function(set) {
+        set.forEach(function(item, i) {
+          var img = item.image || DEFAULT_WORK_IMGS[i % DEFAULT_WORK_IMGS.length];
+          var t   = (item.category || '').split(',').map(function(c) {
+            return '<a href="portfolio.html" class="tf-btn style-2">' + c.trim().toUpperCase() + '</a>';
+          }).join('');
+          nav  += '<div><p class="text-slide text-display-2 fw-semibold">' + (item.title||'') + '</p></div>';
+          imgs += '<div><div class="image"><img src="' + img + '" alt="' + (item.title||'') + '"></div></div>';
+          tags += '<li><div class="group-btn">' + t + '</div></li>';
+        });
+      });
+      $('.slick-nav').html(nav);
+      $('.slick-for').html(imgs);
+      $('.work-tag').html(tags);
+      $('.work-tag li:first-child').addClass('active');
+      $('.slick-for').slick({ slidesToShow:1, slidesToScroll:1, arrows:true, prevArrow:$('.section-selected-work .nav-prev-swiper'), nextArrow:$('.section-selected-work .nav-next-swiper'), fade:true, cssEase:'cubic-bezier(0.7,0,0.3,1)', speed:600, asNavFor:'.slick-nav', infinite:true });
+      $('.slick-nav').slick({ slidesToShow:3, slidesToScroll:1, asNavFor:'.slick-for', focusOnSelect:true, arrows:false, infinite:true, centerMode:true });
+      var total = items.length;
+      $('.slick-for').on('afterChange', function(e, slick, cur) {
+        $('.work-tag li').removeClass('active').eq(cur % total).addClass('active');
+      });
+    }
+    $(window).on('load', function() {
+      fetch('/api/content/portfolio')
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          var items = d && d.data && d.data.items ? d.data.items : null;
+          if (items && items.length) initPortfolioSlider(items);
+          else { $('.work-tag li:first-child').addClass('active'); $('.slick-for').slick({slidesToShow:1,fade:true,asNavFor:'.slick-nav',arrows:true,prevArrow:$('.section-selected-work .nav-prev-swiper'),nextArrow:$('.section-selected-work .nav-next-swiper'),infinite:true}); $('.slick-nav').slick({slidesToShow:3,asNavFor:'.slick-for',focusOnSelect:true,arrows:false,infinite:true,centerMode:true}); }
+        })
+        .catch(function(){ $('.slick-for').slick({slidesToShow:1,fade:true,arrows:true,infinite:true}); });
+    });
+    </script>
+
+    <!-- How We Work — Card Stack / Toss (CSS sticky + GSAP scrub) -->
     <script>
     (function() {
-      var DEFAULTS = [
-        'assets/images/section/work-1.jpg','assets/images/section/work-2.jpg',
-        'assets/images/section/work-3.jpg','assets/images/section/work-4.jpg',
-        'assets/images/section/work-5.jpg','assets/images/section/work-6.jpg'
-      ];
-      // Fan: bottom card (i=0) to top card (i=n-1)
       var FAN = [
-        { r:-12, x:-32, y:-16 },
-        { r: -7, x:-18, y: -9 },
+        { r:-13, x:-36, y:-18 },
+        { r: -7, x:-20, y:-10 },
         { r: -2, x: -6, y: -3 },
-        { r:  3, x:  6, y: -3 },
-        { r:  8, x: 18, y: -9 },
-        { r: 13, x: 32, y:-16 }
+        { r:  3, x:  8, y: -3 },
+        { r:  9, x: 22, y:-10 }
       ];
 
-      function showInfo(cards, idx) {
-        var c = cards[idx]; if (!c) return;
-        var el = function(id){ return document.getElementById(id); };
-        var t = el('glCardTitle'), d = el('glCardDesc'),
-            g = el('glCardTags'), k = el('glCardCounter'), l = el('glCardLink');
-        if (t) t.textContent = c.dataset.title || '';
-        if (d) d.textContent = c.dataset.desc  || '';
-        if (k) k.textContent = (idx + 1) + ' / ' + cards.length;
-        if (l) l.href        = c.dataset.url   || 'portfolio.html';
-        if (g) g.innerHTML   = (c.dataset.cat || '').split(',').map(function(s){
-          return '<a href="portfolio.html" class="tf-btn style-2">' + s.trim().toUpperCase() + '</a>';
-        }).join('');
-      }
+      window.addEventListener('load', function() {
+        var section = document.querySelector('.section-process');
+        if (!section) return;
 
-      function buildCards(items) {
-        var deck = document.getElementById('glCardDeck');
-        var section = document.getElementById('workScroll');
-        if (!deck || !section) return;
+        // Collect the 5 process cards
+        var slides = Array.from(section.querySelectorAll('.swiper-slide'));
+        if (!slides.length) return;
+        var n = slides.length;
 
-        var n = Math.min(items.length, 6);
-        deck.innerHTML = '';
+        // Build card deck replacing the swiper
+        var deck = document.createElement('div');
+        deck.id  = 'glProcessDeck';
+        deck.className = 'gl-card-deck';
 
-        for (var i = 0; i < n; i++) {
-          var it = items[i];
+        slides.forEach(function(slide, i) {
           var card = document.createElement('div');
-          card.className = 'gl-card';
-          card.dataset.title = it.title || '';
-          card.dataset.desc  = it.description || '';
-          card.dataset.cat   = it.category || '';
-          card.dataset.url   = it.url || 'portfolio.html';
-          card.innerHTML = '<img src="' + (it.image || DEFAULTS[i % DEFAULTS.length]) + '" alt="' + (it.title||'') + '" loading="lazy">';
+          card.className = 'gl-process-card';
+          card.innerHTML = slide.querySelector('.wg-process').outerHTML;
           deck.appendChild(card);
-        }
+        });
 
-        var cards = Array.from(deck.querySelectorAll('.gl-card'));
+        // Replace .process-list with the deck
+        var processList = section.querySelector('.process-list');
+        processList.parentNode.replaceChild(deck, processList);
 
-        // Set section height so sticky scene stays pinned long enough
-        var SCROLL_PER_CARD = 500;
-        section.style.height = 'calc(100vh + ' + (n * SCROLL_PER_CARD) + 'px)';
+        // Make section sticky-scrollable
+        section.style.position = 'relative';
+        section.style.height = 'calc(100vh + ' + (n * 520) + 'px)';
 
-        // Apply initial fan positions (top card = last index, highest zIndex)
+        // Make the container sticky
+        var container = section.querySelector('.container');
+        container.style.position = 'sticky';
+        container.style.top = '0';
+        container.style.height = '100vh';
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.justifyContent = 'center';
+        container.style.overflow = 'visible';
+
+        var cards = Array.from(deck.querySelectorAll('.gl-process-card'));
+
+        // Fan initial positions
         cards.forEach(function(card, i) {
           var f = FAN[Math.min(i, FAN.length - 1)];
           gsap.set(card, { rotation: f.r, x: f.x, y: f.y, zIndex: i, transformOrigin: '50% 100%' });
         });
 
-        showInfo(cards, n - 1);
-
-        // Build timeline: toss top card, then next, etc. (reverse order)
+        // Timeline: toss cards off top-to-bottom
         var tl = gsap.timeline({ paused: true });
         for (var j = n - 1; j > 0; j--) {
           var dir = (j % 2 === 0) ? 1 : -1;
-          var vw  = window.innerWidth;
           tl.to(cards[j], {
-            x: dir * vw * 1.1,
-            y: -200,
-            rotation: dir * 35,
-            opacity: 0,
-            ease: 'power2.in',
-            duration: 1,
-            onStart: (function(idx){ return function(){ showInfo(cards, idx - 1); }; })(j)
+            x:        dir * window.innerWidth * 1.1,
+            y:        -220,
+            rotation: dir * 38,
+            opacity:  0,
+            ease:     'power2.in',
+            duration: 1
           });
         }
 
-        // Use ScrollTrigger with scrub — NO pin (CSS sticky handles it)
         ScrollTrigger.create({
           trigger:   section,
           start:     'top top',
           end:       'bottom bottom',
-          scrub:     1,
-          animation: tl,
-          onRefresh: function() {
-            // recalculate vw on resize
-            for (var j = n - 1; j > 0; j--) {
-              var dir = (j % 2 === 0) ? 1 : -1;
-              gsap.set(cards[j], {});
-            }
-          }
+          scrub:     1.2,
+          animation: tl
         });
 
         ScrollTrigger.refresh();
-      }
-
-      function fallbackItems() {
-        return DEFAULTS.map(function(img, i) {
-          return { image: img, title: 'Project ' + (i+1), category: 'Web Design', description: '', url: 'portfolio.html' };
-        });
-      }
-
-      window.addEventListener('load', function() {
-        fetch('/api/content/portfolio')
-          .then(function(r){ return r.json(); })
-          .then(function(data){
-            var items = data && data.data && data.data.items ? data.data.items : [];
-            buildCards(items.length ? items : fallbackItems());
-          })
-          .catch(function(){ buildCards(fallbackItems()); });
       });
     })();
     </script>
