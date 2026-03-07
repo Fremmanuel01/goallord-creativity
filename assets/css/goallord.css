@@ -22,6 +22,10 @@
     --gl-border:       #2A2F3A;
     --gl-text:         #F4F6FA;
     --gl-muted:        #A0A6B3;
+
+    /* Override template's green --primary with burnt orange */
+    --primary:         #D66A1F;
+    --primary-color:   #D66A1F;
 }
 
 /* ── 3. PRIMARY ACCENT (was #07C42C green → now Burnt Orange) ─ */
@@ -586,37 +590,3 @@ canvas.cursor-trail {
     display: none;
 }
 
-/* ── 32. CARD STACK / TOSS — How We Work ────────────────────── */
-
-/* Section is made tall by JS; overflow:visible so cards can fly out */
-.section-process {
-    overflow: visible !important;
-}
-/* The deck sits centered in the sticky container */
-#glProcessDeck {
-    position: relative;
-    height: 520px;
-    width: 100%;
-    max-width: 640px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: visible;
-}
-.gl-process-card {
-    position: absolute;
-    width: 90%;
-    max-width: 580px;
-    will-change: transform;
-    backface-visibility: hidden;
-}
-/* Keep the existing wg-process card styling */
-.gl-process-card .wg-process {
-    border-radius: 16px;
-    overflow: hidden;
-}
-@media (max-width: 767px) {
-    #glProcessDeck   { height: 360px; }
-    .gl-process-card { width: 95%; }
-}
