@@ -1250,6 +1250,37 @@
       <span>Orders</span>
     </div>
 
+    <div class="nav-label">Academy</div>
+
+    <div class="nav-item" data-page="students" title="Students">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <span>Students</span>
+    </div>
+
+    <div class="nav-item" data-page="attendance" title="Attendance">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+        <polyline points="9 16 11 18 15 14"/>
+      </svg>
+      <span>Attendance</span>
+    </div>
+
+    <div class="nav-item" data-page="payments" title="Payments">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+        <line x1="1" y1="10" x2="23" y2="10"/>
+      </svg>
+      <span>Payments</span>
+    </div>
+
     <div class="nav-label">Website</div>
 
     <div class="nav-item" data-page="website" title="Website Content">
@@ -1817,6 +1848,113 @@
       </div>
     </div>
 
+    <!-- ── STUDENTS PAGE ── -->
+    <div class="page" id="page-students">
+      <div class="section-header" style="margin-bottom:20px">
+        <h2>Academy Students</h2>
+        <button class="btn btn-primary" onclick="openAddStudent()">+ Add Student</button>
+      </div>
+      <!-- Filters -->
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+        <input class="form-input" id="stu-search" placeholder="Search name or email…" style="max-width:220px" oninput="filterStudents()">
+        <select class="form-input" id="stu-cohort-filter" style="max-width:160px" onchange="filterStudents()">
+          <option value="">All Cohorts</option>
+        </select>
+        <select class="form-input" id="stu-track-filter" style="max-width:180px" onchange="filterStudents()">
+          <option value="">All Tracks</option>
+          <option>Web Design</option>
+          <option>WordPress</option>
+          <option>Digital Marketing</option>
+          <option>Brand Identity</option>
+          <option>Other</option>
+        </select>
+        <select class="form-input" id="stu-status-filter" style="max-width:140px" onchange="filterStudents()">
+          <option value="">All Statuses</option>
+          <option>Active</option>
+          <option>Suspended</option>
+          <option>Graduated</option>
+        </select>
+      </div>
+      <div id="stuTableWrap" class="table-wrapper">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Name</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Email</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Track</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Cohort</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Status</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Actions</th>
+          </tr></thead>
+          <tbody id="stuTableBody"><tr><td colspan="6" style="padding:32px;text-align:center;color:var(--muted)">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── ATTENDANCE PAGE ── -->
+    <div class="page" id="page-attendance">
+      <div class="section-header" style="margin-bottom:20px">
+        <h2>Attendance</h2>
+        <button class="btn btn-primary" onclick="openTakeAttendance()">+ Take Attendance</button>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+        <select class="form-input" id="att-cohort-filter" style="max-width:160px" onchange="loadAttendancePage()">
+          <option value="">All Cohorts</option>
+        </select>
+        <input class="form-input" id="att-month-filter" type="month" style="max-width:160px" onchange="loadAttendancePage()">
+      </div>
+      <div id="attTableWrap" class="table-wrapper">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Date</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Cohort</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Track</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Present</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Absent</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Taken By</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Actions</th>
+          </tr></thead>
+          <tbody id="attTableBody"><tr><td colspan="7" style="padding:32px;text-align:center;color:var(--muted)">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── PAYMENTS PAGE ── -->
+    <div class="page" id="page-payments">
+      <div class="section-header" style="margin-bottom:20px">
+        <h2>Monthly Payments</h2>
+        <button class="btn btn-primary" onclick="openRecordPayment()">+ Record Payment</button>
+      </div>
+      <!-- Summary cards -->
+      <div id="payAdminSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px"></div>
+      <!-- Filters -->
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+        <input class="form-input" id="pay-month-filter" type="month" style="max-width:160px" onchange="loadPaymentsPage()">
+        <select class="form-input" id="pay-cohort-filter" style="max-width:160px" onchange="loadPaymentsPage()">
+          <option value="">All Cohorts</option>
+        </select>
+        <select class="form-input" id="pay-status-filter" style="max-width:140px" onchange="loadPaymentsPage()">
+          <option value="">All Statuses</option>
+          <option>Paid</option>
+          <option>Partial</option>
+          <option>Unpaid</option>
+        </select>
+      </div>
+      <div class="table-wrapper">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Student</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Month</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Amount Due</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Amount Paid</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Status</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Method</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Actions</th>
+          </tr></thead>
+          <tbody id="payTableBody"><tr><td colspan="7" style="padding:32px;text-align:center;color:var(--muted)">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -1967,6 +2105,135 @@
   </div>
 </div>
 
+<!-- Add Student Modal -->
+<div class="modal-overlay" id="addStudentModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="addStudentTitle">Add Student</h3>
+      <button class="modal-close" onclick="closeModal('addStudentModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="stu-edit-id">
+      <div class="modal-form">
+        <div class="modal-form-row">
+          <div class="form-group"><label>Full Name</label><input class="form-input" id="stu-fullName" placeholder="Full name"></div>
+          <div class="form-group"><label>Email</label><input class="form-input" id="stu-email" type="email" placeholder="student@email.com"></div>
+        </div>
+        <div class="modal-form-row">
+          <div class="form-group"><label>Password <span style="font-weight:400;color:var(--muted)">(leave blank to keep)</span></label><input class="form-input" id="stu-password" type="password" placeholder="••••••••"></div>
+          <div class="form-group"><label>Phone</label><input class="form-input" id="stu-phone" placeholder="08012345678"></div>
+        </div>
+        <div class="modal-form-row">
+          <div class="form-group"><label>Track</label>
+            <select class="form-input" id="stu-track">
+              <option>Web Design</option><option>WordPress</option><option>Digital Marketing</option><option>Brand Identity</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Cohort</label><input class="form-input" id="stu-cohort" placeholder="e.g. 2026-A"></div>
+        </div>
+        <div class="modal-form-row">
+          <div class="form-group"><label>Status</label>
+            <select class="form-input" id="stu-status">
+              <option>Active</option><option>Suspended</option><option>Graduated</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Notes</label><input class="form-input" id="stu-notes" placeholder="Optional notes"></div>
+        </div>
+        <div id="stuModalError" style="display:none;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 14px;color:#ff7070;font-size:13px;margin-top:8px"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addStudentModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveStuBtn" onclick="saveStudent()">Save Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- Take Attendance Modal -->
+<div class="modal-overlay" id="takeAttendanceModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3>Take Attendance</h3>
+      <button class="modal-close" onclick="closeModal('takeAttendanceModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-form">
+        <div class="modal-form-row">
+          <div class="form-group"><label>Cohort</label>
+            <select class="form-input" id="att-cohort-input" onchange="loadStudentsForAttendance()">
+              <option value="">— Select cohort —</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Class Date</label><input class="form-input" id="att-date-input" type="date" onchange="loadStudentsForAttendance()"></div>
+        </div>
+        <div class="modal-form-row">
+          <div class="form-group"><label>Track (optional)</label><input class="form-input" id="att-track-input" placeholder="e.g. Web Design"></div>
+          <div class="form-group"><label>Notes (optional)</label><input class="form-input" id="att-notes-input" placeholder="Session notes…"></div>
+        </div>
+        <div id="attStudentList" style="margin-top:8px;max-height:320px;overflow-y:auto;"></div>
+        <div id="attModalError" style="display:none;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 14px;color:#ff7070;font-size:13px;margin-top:8px"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('takeAttendanceModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveAttBtn" onclick="saveAttendance()">Save Attendance</button>
+    </div>
+  </div>
+</div>
+
+<!-- Record Payment Modal -->
+<div class="modal-overlay" id="recordPaymentModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Record Payment</h3>
+      <button class="modal-close" onclick="closeModal('recordPaymentModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="pay-edit-id">
+      <div class="modal-form">
+        <div class="form-group"><label>Student</label>
+          <select class="form-input" id="pay-student-select">
+            <option value="">— Select student —</option>
+          </select>
+        </div>
+        <div class="modal-form-row">
+          <div class="form-group"><label>Month</label><input class="form-input" id="pay-month-input" type="month"></div>
+          <div class="form-group"><label>Amount Paid (₦)</label><input class="form-input" id="pay-amount-input" type="number" min="0" placeholder="100000"></div>
+        </div>
+        <div class="modal-form-row">
+          <div class="form-group"><label>Method</label>
+            <select class="form-input" id="pay-method-input">
+              <option value="">— Select method —</option>
+              <option>Bank Transfer</option><option>Cash</option><option>POS</option><option>Paystack</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Reference</label><input class="form-input" id="pay-ref-input" placeholder="Transaction reference"></div>
+        </div>
+        <div class="form-group"><label>Notes</label><input class="form-input" id="pay-notes-input" placeholder="Optional notes"></div>
+        <div id="payModalError" style="display:none;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 14px;color:#ff7070;font-size:13px;margin-top:8px"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('recordPaymentModal')">Cancel</button>
+      <button class="btn btn-primary" id="savePayBtn" onclick="savePayment()">Save Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Attendance Session Modal -->
+<div class="modal-overlay" id="viewAttendanceModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="viewAttTitle">Attendance Session</h3>
+      <button class="modal-close" onclick="closeModal('viewAttendanceModal')">✕</button>
+    </div>
+    <div class="modal-body" id="viewAttBody">Loading…</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('viewAttendanceModal')">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════════════════════════
      JAVASCRIPT
 ═══════════════════════════════════════════════════════ -->
@@ -2045,6 +2312,9 @@ const pageTitles = {
   store:      'Store & Products',
   orders:     'Orders & Transactions',
   settings:   'Settings',
+  students:   'Academy Students',
+  attendance: 'Attendance',
+  payments:   'Monthly Payments',
 };
 
 function navigate(page) {
@@ -2063,6 +2333,10 @@ function navigate(page) {
   if (page === 'website') {
     showCmsTab('portfolio'); // auto-open portfolio tab
   }
+
+  if (page === 'students')   loadStudents();
+  if (page === 'attendance') loadAttendancePage();
+  if (page === 'payments')   loadPaymentsPage();
 
   if (isMobile()) closeMobileSidebar();
 
@@ -3041,6 +3315,410 @@ document.addEventListener('DOMContentLoaded', () => {
   loadClientsFromAPI();
   loadOverviewStats();
 });
+
+// ═══════════════════════════════════════════════════════════
+//  ACADEMY — STUDENTS
+// ═══════════════════════════════════════════════════════════
+let allStudents = [];
+
+async function loadStudents() {
+  const res = await apiFetch('/api/students?limit=500');
+  if (!res) return;
+  allStudents = res.data || [];
+
+  // Populate cohort filters
+  const cohorts = [...new Set(allStudents.map(s => s.cohort).filter(Boolean))].sort();
+  ['stu-cohort-filter','att-cohort-filter','pay-cohort-filter'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const current = el.value;
+    el.innerHTML = '<option value="">All Cohorts</option>' + cohorts.map(c => `<option value="${c}">${c}</option>`).join('');
+    el.value = current;
+  });
+  ['att-cohort-input'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const current = el.value;
+    el.innerHTML = '<option value="">— Select cohort —</option>' + cohorts.map(c => `<option value="${c}">${c}</option>`).join('');
+    el.value = current;
+  });
+
+  // Populate student selects for payment
+  const pSelect = document.getElementById('pay-student-select');
+  if (pSelect) {
+    pSelect.innerHTML = '<option value="">— Select student —</option>' +
+      allStudents.filter(s => s.status === 'Active').map(s => `<option value="${s._id}">${s.fullName} (${s.cohort})</option>`).join('');
+  }
+
+  filterStudents();
+}
+
+function filterStudents() {
+  const search = (document.getElementById('stu-search')?.value || '').toLowerCase();
+  const cohort = document.getElementById('stu-cohort-filter')?.value || '';
+  const track  = document.getElementById('stu-track-filter')?.value || '';
+  const status = document.getElementById('stu-status-filter')?.value || '';
+
+  const filtered = allStudents.filter(s =>
+    (!search || s.fullName.toLowerCase().includes(search) || s.email.toLowerCase().includes(search)) &&
+    (!cohort || s.cohort === cohort) &&
+    (!track  || s.track  === track)  &&
+    (!status || s.status === status)
+  );
+
+  const tbody = document.getElementById('stuTableBody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:32px;text-align:center;color:var(--muted)">No students found.</td></tr>';
+    return;
+  }
+  const statusColors = { Active: 'var(--success)', Suspended: 'var(--warning)', Graduated: '#6a9fff' };
+  tbody.innerHTML = filtered.map(s => `
+    <tr>
+      <td style="padding:12px 14px;font-weight:600">${s.fullName}</td>
+      <td style="padding:12px 14px;color:var(--muted);font-size:13px">${s.email}</td>
+      <td style="padding:12px 14px;font-size:13px">${s.track}</td>
+      <td style="padding:12px 14px;font-size:13px">${s.cohort}</td>
+      <td style="padding:12px 14px"><span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:${statusColors[s.status]+'22'};color:${statusColors[s.status]}">${s.status}</span></td>
+      <td style="padding:12px 14px">
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="openEditStudent('${s._id}')">Edit</button>
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--danger)" onclick="deleteStudent('${s._id}','${s.fullName}')">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openAddStudent() {
+  document.getElementById('addStudentTitle').textContent = 'Add Student';
+  document.getElementById('stu-edit-id').value = '';
+  ['stu-fullName','stu-email','stu-password','stu-phone','stu-cohort','stu-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('stu-track').value = 'Web Design';
+  document.getElementById('stu-status').value = 'Active';
+  document.getElementById('stuModalError').style.display = 'none';
+  document.getElementById('stu-password').placeholder = '••••••••';
+  openModal('addStudentModal');
+}
+
+async function openEditStudent(id) {
+  const s = allStudents.find(x => x._id === id);
+  if (!s) return;
+  document.getElementById('addStudentTitle').textContent = 'Edit Student';
+  document.getElementById('stu-edit-id').value = s._id;
+  document.getElementById('stu-fullName').value = s.fullName || '';
+  document.getElementById('stu-email').value    = s.email    || '';
+  document.getElementById('stu-password').value = '';
+  document.getElementById('stu-password').placeholder = 'Leave blank to keep';
+  document.getElementById('stu-phone').value    = s.phone    || '';
+  document.getElementById('stu-track').value    = s.track    || 'Web Design';
+  document.getElementById('stu-cohort').value   = s.cohort   || '';
+  document.getElementById('stu-status').value   = s.status   || 'Active';
+  document.getElementById('stu-notes').value    = s.notes    || '';
+  document.getElementById('stuModalError').style.display = 'none';
+  openModal('addStudentModal');
+}
+
+async function saveStudent() {
+  const editId = document.getElementById('stu-edit-id').value;
+  const errEl = document.getElementById('stuModalError');
+  const body = {
+    fullName: document.getElementById('stu-fullName').value.trim(),
+    email:    document.getElementById('stu-email').value.trim(),
+    phone:    document.getElementById('stu-phone').value.trim(),
+    track:    document.getElementById('stu-track').value,
+    cohort:   document.getElementById('stu-cohort').value.trim(),
+    status:   document.getElementById('stu-status').value,
+    notes:    document.getElementById('stu-notes').value.trim(),
+  };
+  const pw = document.getElementById('stu-password').value;
+  if (pw) body.password = pw;
+  if (!editId && !pw) { showErr(errEl, 'Password is required for new students.'); return; }
+  if (!body.fullName || !body.email || !body.cohort) { showErr(errEl, 'Full name, email and cohort are required.'); return; }
+
+  const btn = document.getElementById('saveStuBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const url = editId ? `/api/students/${editId}` : '/api/students';
+  const method = editId ? 'PATCH' : 'POST';
+  const res = await apiFetch(url, { method, body: JSON.stringify(body) });
+  btn.disabled = false; btn.textContent = 'Save Student';
+  if (!res) { showErr(errEl, 'Request failed.'); return; }
+  closeModal('addStudentModal');
+  loadStudents();
+}
+
+async function deleteStudent(id, name) {
+  if (!confirm(`Delete student "${name}"? This cannot be undone.`)) return;
+  await apiFetch(`/api/students/${id}`, { method: 'DELETE' });
+  loadStudents();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ACADEMY — ATTENDANCE
+// ═══════════════════════════════════════════════════════════
+async function loadAttendancePage() {
+  if (allStudents.length === 0) await loadStudents();
+  const cohort = document.getElementById('att-cohort-filter')?.value || '';
+  const month  = document.getElementById('att-month-filter')?.value || '';
+  let url = '/api/attendance?limit=200';
+  if (cohort) url += '&cohort=' + encodeURIComponent(cohort);
+  if (month)  url += '&month='  + encodeURIComponent(month);
+
+  const res = await apiFetch(url);
+  const docs = res?.data || [];
+  const tbody = document.getElementById('attTableBody');
+  if (docs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:32px;text-align:center;color:var(--muted)">No sessions recorded yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = docs.map(r => `
+    <tr>
+      <td style="padding:12px 14px;font-weight:600">${fmtDateAdmin(r.classDate)}</td>
+      <td style="padding:12px 14px">${r.cohort}</td>
+      <td style="padding:12px 14px;color:var(--muted);font-size:13px">${r.track || '—'}</td>
+      <td style="padding:12px 14px"><span style="color:var(--success);font-weight:700">${r.presentStudents?.length || 0}</span></td>
+      <td style="padding:12px 14px"><span style="color:var(--danger);font-weight:700">${r.absentStudents?.length || 0}</span></td>
+      <td style="padding:12px 14px;color:var(--muted);font-size:13px">${r.takenBy || 'Admin'}</td>
+      <td style="padding:12px 14px"><button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="viewAttendanceSession('${r._id}')">View</button></td>
+    </tr>
+  `).join('');
+}
+
+function openTakeAttendance() {
+  if (allStudents.length === 0) { loadStudents().then(() => openTakeAttendance()); return; }
+  document.getElementById('att-date-input').value = new Date().toISOString().slice(0,10);
+  document.getElementById('att-track-input').value = '';
+  document.getElementById('att-notes-input').value = '';
+  document.getElementById('attStudentList').innerHTML = '<p style="color:var(--muted);font-size:13px">Select a cohort to load students.</p>';
+  document.getElementById('attModalError').style.display = 'none';
+  openModal('takeAttendanceModal');
+}
+
+function loadStudentsForAttendance() {
+  const cohort = document.getElementById('att-cohort-input').value;
+  const container = document.getElementById('attStudentList');
+  if (!cohort) { container.innerHTML = '<p style="color:var(--muted);font-size:13px">Select a cohort to load students.</p>'; return; }
+  const students = allStudents.filter(s => s.cohort === cohort && s.status === 'Active');
+  if (students.length === 0) { container.innerHTML = '<p style="color:var(--muted);font-size:13px">No active students in this cohort.</p>'; return; }
+  container.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <strong style="font-size:13px">${students.length} students</strong>
+      <div>
+        <button class="btn btn-ghost" style="font-size:12px;padding:4px 10px" onclick="markAllPresent(true)">Mark All Present</button>
+        <button class="btn btn-ghost" style="font-size:12px;padding:4px 10px" onclick="markAllPresent(false)">Mark All Absent</button>
+      </div>
+    </div>
+    <div style="display:grid;gap:8px">` +
+    students.map(s => `
+      <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:pointer">
+        <input type="checkbox" class="att-check" data-id="${s._id}" checked style="width:16px;height:16px;accent-color:var(--blue)">
+        <div>
+          <div style="font-size:14px;font-weight:600">${s.fullName}</div>
+          <div style="font-size:12px;color:var(--muted)">${s.track}</div>
+        </div>
+      </label>`).join('') + '</div>';
+}
+
+function markAllPresent(val) {
+  document.querySelectorAll('.att-check').forEach(cb => cb.checked = val);
+}
+
+async function saveAttendance() {
+  const cohort = document.getElementById('att-cohort-input').value;
+  const classDate = document.getElementById('att-date-input').value;
+  const errEl = document.getElementById('attModalError');
+  if (!cohort)    { showErr(errEl, 'Please select a cohort.');   return; }
+  if (!classDate) { showErr(errEl, 'Please select a class date.'); return; }
+
+  const presentStudentIds = [...document.querySelectorAll('.att-check:checked')].map(cb => cb.dataset.id);
+  const body = {
+    cohort, classDate,
+    track: document.getElementById('att-track-input').value.trim(),
+    notes: document.getElementById('att-notes-input').value.trim(),
+    presentStudentIds
+  };
+
+  const btn = document.getElementById('saveAttBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const res = await apiFetch('/api/attendance', { method: 'POST', body: JSON.stringify(body) });
+  btn.disabled = false; btn.textContent = 'Save Attendance';
+  if (!res) { showErr(errEl, 'Failed to save attendance.'); return; }
+  closeModal('takeAttendanceModal');
+  loadAttendancePage();
+}
+
+async function viewAttendanceSession(id) {
+  const body = document.getElementById('viewAttBody');
+  body.innerHTML = 'Loading…';
+  openModal('viewAttendanceModal');
+  const doc = await apiFetch('/api/attendance/' + id);
+  if (!doc) { body.innerHTML = 'Failed to load.'; return; }
+  document.getElementById('viewAttTitle').textContent = 'Attendance — ' + fmtDateAdmin(doc.classDate);
+  const present = doc.presentStudents || [];
+  const absent  = doc.absentStudents  || [];
+  body.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <h4 style="font-size:13px;color:var(--success);margin-bottom:12px">Present (${present.length})</h4>
+        ${present.length ? present.map(s => `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:14px">${s.fullName}</div>`).join('') : '<p style="color:var(--muted);font-size:13px">None</p>'}
+      </div>
+      <div>
+        <h4 style="font-size:13px;color:var(--danger);margin-bottom:12px">Absent (${absent.length})</h4>
+        ${absent.length ? absent.map(s => `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:14px">${s.fullName}</div>`).join('') : '<p style="color:var(--muted);font-size:13px">None</p>'}
+      </div>
+    </div>
+    ${doc.notes ? `<p style="margin-top:16px;font-size:13px;color:var(--muted)"><strong>Notes:</strong> ${doc.notes}</p>` : ''}
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ACADEMY — PAYMENTS
+// ═══════════════════════════════════════════════════════════
+async function loadPaymentsPage() {
+  if (allStudents.length === 0) await loadStudents();
+  const month  = document.getElementById('pay-month-filter')?.value || '';
+  const cohort = document.getElementById('pay-cohort-filter')?.value || '';
+  const status = document.getElementById('pay-status-filter')?.value || '';
+
+  if (month) {
+    // Use summary endpoint for month view
+    let url = `/api/payments/summary/${month}`;
+    if (cohort) url += '?cohort=' + encodeURIComponent(cohort);
+    const res = await apiFetch(url);
+    if (!res) return;
+    renderPaySummaryCards(res.totalDue, res.totalPaid, res.outstanding);
+    const filtered = status ? res.data.filter(r => r.status === status) : res.data;
+    renderPayTable(filtered, true);
+  } else {
+    let url = '/api/payments?limit=500';
+    if (status) url += '&status=' + encodeURIComponent(status);
+    const res = await apiFetch(url);
+    if (!res) return;
+    const docs = res.data || [];
+    const totalPaid = docs.reduce((s, p) => s + (p.amountPaid || 0), 0);
+    const totalDue  = docs.reduce((s, p) => s + (p.amountDue  || 0), 0);
+    renderPaySummaryCards(totalDue, totalPaid, totalDue - totalPaid);
+    const filtered = cohort ? docs.filter(p => p.student?.cohort === cohort) : docs;
+    renderPayTable(filtered, false);
+  }
+}
+
+function renderPaySummaryCards(due, paid, outstanding) {
+  document.getElementById('payAdminSummary').innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px">
+      <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Total Due</div>
+      <div style="font-size:22px;font-weight:800;color:var(--orange)">₦${Number(due).toLocaleString()}</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px">
+      <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Total Paid</div>
+      <div style="font-size:22px;font-weight:800;color:var(--success)">₦${Number(paid).toLocaleString()}</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px">
+      <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Outstanding</div>
+      <div style="font-size:22px;font-weight:800;color:var(--danger)">₦${Number(outstanding).toLocaleString()}</div>
+    </div>
+  `;
+}
+
+function renderPayTable(rows, isSummary) {
+  const tbody = document.getElementById('payTableBody');
+  if (!rows || rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:32px;text-align:center;color:var(--muted)">No payment records found.</td></tr>';
+    return;
+  }
+  const statusStyle = { Paid: ['rgba(34,197,94,0.15)','var(--success)'], Partial: ['rgba(245,158,11,0.15)','var(--warning)'], Unpaid: ['rgba(239,68,68,0.12)','var(--danger)'] };
+  tbody.innerHTML = rows.map(r => {
+    const name  = isSummary ? r.student?.fullName : (r.student?.fullName || '—');
+    const month = isSummary ? document.getElementById('pay-month-filter').value : r.month;
+    const status = r.status || 'Unpaid';
+    const [bg, color] = statusStyle[status] || statusStyle.Unpaid;
+    const payId = r.paymentId || r._id;
+    return `<tr>
+      <td style="padding:12px 14px;font-weight:600">${name}</td>
+      <td style="padding:12px 14px">${fmtMonth(month)}</td>
+      <td style="padding:12px 14px">₦${Number(r.amountDue).toLocaleString()}</td>
+      <td style="padding:12px 14px;font-weight:600">₦${Number(r.amountPaid || 0).toLocaleString()}</td>
+      <td style="padding:12px 14px"><span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:${bg};color:${color}">${status}</span></td>
+      <td style="padding:12px 14px;color:var(--muted);font-size:13px">${r.method || '—'}</td>
+      <td style="padding:12px 14px">
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="openEditPayment(${JSON.stringify({ id: payId, studentId: r.student?._id || r.student, month, amountPaid: r.amountPaid, method: r.method, reference: r.reference, notes: r.notes }).replace(/"/g,'&quot;')})">Edit</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openRecordPayment() {
+  if (allStudents.length === 0) { loadStudents().then(openRecordPayment); return; }
+  document.getElementById('pay-edit-id').value = '';
+  document.getElementById('pay-student-select').value = '';
+  document.getElementById('pay-month-input').value = new Date().toISOString().slice(0,7);
+  document.getElementById('pay-amount-input').value = '';
+  document.getElementById('pay-method-input').value = '';
+  document.getElementById('pay-ref-input').value = '';
+  document.getElementById('pay-notes-input').value = '';
+  document.getElementById('payModalError').style.display = 'none';
+  openModal('recordPaymentModal');
+}
+
+function openEditPayment(data) {
+  document.getElementById('pay-edit-id').value    = data.id || '';
+  const pSel = document.getElementById('pay-student-select');
+  if (data.studentId) pSel.value = data.studentId;
+  document.getElementById('pay-month-input').value  = data.month  || '';
+  document.getElementById('pay-amount-input').value = data.amountPaid || '';
+  document.getElementById('pay-method-input').value = data.method || '';
+  document.getElementById('pay-ref-input').value    = data.reference || '';
+  document.getElementById('pay-notes-input').value  = data.notes  || '';
+  document.getElementById('payModalError').style.display = 'none';
+  openModal('recordPaymentModal');
+}
+
+async function savePayment() {
+  const editId  = document.getElementById('pay-edit-id').value;
+  const errEl   = document.getElementById('payModalError');
+  const studentId = document.getElementById('pay-student-select').value;
+  const month     = document.getElementById('pay-month-input').value;
+  const amountPaid = document.getElementById('pay-amount-input').value;
+  if (!studentId) { showErr(errEl, 'Please select a student.'); return; }
+  if (!month)     { showErr(errEl, 'Please select a month.'); return; }
+
+  const body = {
+    studentId, month,
+    amountPaid: Number(amountPaid) || 0,
+    method:    document.getElementById('pay-method-input').value,
+    reference: document.getElementById('pay-ref-input').value.trim(),
+    notes:     document.getElementById('pay-notes-input').value.trim(),
+  };
+
+  const btn = document.getElementById('savePayBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  let res;
+  if (editId) {
+    res = await apiFetch(`/api/payments/${editId}`, { method: 'PATCH', body: JSON.stringify(body) });
+  } else {
+    res = await apiFetch('/api/payments', { method: 'POST', body: JSON.stringify(body) });
+  }
+  btn.disabled = false; btn.textContent = 'Save Payment';
+  if (!res) { showErr(errEl, 'Failed to save payment.'); return; }
+  closeModal('recordPaymentModal');
+  loadPaymentsPage();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SHARED HELPERS
+// ═══════════════════════════════════════════════════════════
+function fmtDateAdmin(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+function fmtMonth(m) {
+  if (!m) return '—';
+  const [y, mo] = String(m).split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return (months[parseInt(mo,10)-1] || mo) + ' ' + y;
+}
+function showErr(el, msg) {
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
 </script>
 </body>
 </html>
