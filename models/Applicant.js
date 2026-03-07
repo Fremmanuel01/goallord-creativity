@@ -12,9 +12,12 @@ const applicantSchema = new mongoose.Schema({
   goal:       { type: String },
   why:        { type: String },
   background: { type: String },
-  status:     { type: String, enum: ['Pending', 'Reviewed', 'Accepted', 'Rejected'], default: 'Pending' },
-  notes:      { type: String, default: '' },
-  createdAt:  { type: Date, default: Date.now }
+  status:              { type: String, enum: ['Pending', 'Reviewed', 'Accepted', 'Rejected'], default: 'Pending' },
+  notes:               { type: String, default: '' },
+  emailVerified:       { type: Boolean, default: false },
+  emailVerifyToken:    { type: String },
+  emailVerifyExpires:  { type: Date },
+  createdAt:           { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('Applicant', applicantSchema);

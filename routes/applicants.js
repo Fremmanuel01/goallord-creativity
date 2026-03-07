@@ -1,16 +1,96 @@
-const express = require('express');
+const express  = require('express');
+const crypto   = require('crypto');
+const bcrypt   = require('bcryptjs');
 const Applicant = require('../models/Applicant');
+const Student   = require('../models/Student');
 const { requireAuth } = require('../middleware/auth');
+const { sendMail }    = require('../utils/mailer');
+const { verificationEmail, acceptanceEmail } = require('../utils/emailTemplates');
 
 const router = express.Router();
+
+const TRACK_DURATION = {
+  'Web Design':        '12 Weeks',
+  'WordPress':         '12 Weeks',
+  'Digital Marketing': '8 Weeks',
+  'Brand Identity':    '12 Weeks',
+  'Other':             '12 Weeks'
+};
+
+function generatePassword() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let pwd = 'Gl' + new Date().getFullYear();
+  for (let i = 0; i < 6; i++) {
+    pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return pwd;
+}
 
 // POST /api/applicants — public (apply form)
 router.post('/', async (req, res) => {
   try {
-    const applicant = await Applicant.create(req.body);
-    res.status(201).json({ success: true, id: applicant._id });
+    const token   = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+
+    const applicant = await Applicant.create({
+      ...req.body,
+      emailVerifyToken:   token,
+      emailVerifyExpires: expires
+    });
+
+    const host      = process.env.HOST || `${req.protocol}://${req.get('host')}`;
+    const verifyUrl = `${host}/api/applicants/verify/${token}`;
+
+    try {
+      await sendMail({
+        to:      applicant.email,
+        subject: 'Verify your email — Goallord Creativity Academy',
+        html:    verificationEmail({ fullName: applicant.fullName, verifyUrl })
+      });
+    } catch (mailErr) {
+      console.error('Verification email failed:', mailErr.message);
+      // Don't block the applicant — log but continue
+    }
+
+    res.status(201).json({ success: true, id: applicant._id, emailSent: true });
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+// GET /api/applicants/verify/:token — public (email verification link)
+router.get('/verify/:token', async (req, res) => {
+  try {
+    const applicant = await Applicant.findOne({
+      emailVerifyToken:   req.params.token,
+      emailVerifyExpires: { $gt: new Date() }
+    });
+
+    if (!applicant) {
+      return res.status(400).send(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Link Expired</title>
+<style>body{background:#0F1115;color:#F4F6FA;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center}
+.box{max-width:420px;padding:40px;background:#171A21;border-radius:12px;border:1px solid #2A2F3A}
+h2{color:#D66A1F;margin:0 0 16px}p{color:#A0A6B3;margin:0 0 24px}a{color:#D66A1F}</style></head>
+<body><div class="box"><h2>Link Expired</h2><p>This verification link has expired or is invalid. Please submit a new application.</p>
+<a href="/apply.html">Back to Apply</a></div></body></html>`);
+    }
+
+    applicant.emailVerified      = true;
+    applicant.emailVerifyToken   = undefined;
+    applicant.emailVerifyExpires = undefined;
+    await applicant.save();
+
+    return res.send(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Email Verified</title>
+<style>body{background:#0F1115;color:#F4F6FA;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center}
+.box{max-width:420px;padding:40px;background:#171A21;border-radius:12px;border:1px solid #2A2F3A}
+h2{color:#D66A1F;margin:0 0 16px}p{color:#A0A6B3;margin:0 0 24px}a{color:#D66A1F}</style></head>
+<body><div class="box"><h2>Email Verified!</h2>
+<p>Your email has been verified. We'll review your application and get back to you within 48 hours.</p>
+<a href="/academy.html">Back to Academy</a></div></body></html>`);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -54,8 +134,54 @@ router.patch('/:id', requireAuth, async (req, res) => {
     const update = {};
     if (status !== undefined) update.status = status;
     if (notes  !== undefined) update.notes  = notes;
+
     const doc = await Applicant.findByIdAndUpdate(req.params.id, update, { new: true });
     if (!doc) return res.status(404).json({ error: 'Not found' });
+
+    // Auto-create student account and send acceptance email
+    if (status === 'Accepted') {
+      const existing = await Student.findOne({ email: doc.email });
+      if (!existing) {
+        const plainPassword = generatePassword();
+        const hashed        = await bcrypt.hash(plainPassword, 12);
+        const cohort        = new Date().toLocaleString('en-GB', { month: 'long', year: 'numeric' });
+
+        const student = await Student.create({
+          fullName:     doc.fullName,
+          email:        doc.email,
+          password:     hashed,
+          phone:        doc.phone || '',
+          track:        doc.track || 'Other',
+          cohort,
+          status:       'Active',
+          applicantRef: doc._id
+        });
+
+        const host     = process.env.HOST || 'https://goallordcreativity.com';
+        const loginUrl = `${host}/student-login.html`;
+        const duration = TRACK_DURATION[doc.track] || '12 Weeks';
+
+        try {
+          await sendMail({
+            to:      doc.email,
+            subject: `You've been accepted — Goallord Creativity Academy`,
+            html:    acceptanceEmail({
+              fullName: doc.fullName,
+              track:    doc.track || 'Other',
+              duration,
+              email:    doc.email,
+              password: plainPassword,
+              loginUrl
+            })
+          });
+        } catch (mailErr) {
+          console.error('Acceptance email failed:', mailErr.message);
+        }
+
+        return res.json({ ...doc.toObject(), studentCreated: true, studentId: student._id });
+      }
+    }
+
     res.json(doc);
   } catch (err) {
     res.status(500).json({ error: err.message });
