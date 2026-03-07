@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Dashboard — Goallord Academy</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --orange: #D66A1F; --blue: #1E4BFF;
+    --bg: #0F1115; --card: #171A21; --border: #2A2F3A;
+    --text: #F4F6FA; --muted: #A0A6B3;
+    --green: #22c55e; --red: #ef4444; --yellow: #f59e0b;
+  }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── TOP NAV ── */
+  .topnav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--card); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px; height: 60px;
+  }
+  .topnav-brand { display: flex; align-items: center; gap: 10px; }
+  .topnav-brand .logo-mark { width: 36px; height: 36px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: #fff; }
+  .topnav-brand .logo-name { font-size: 15px; font-weight: 700; }
+  .topnav-brand .logo-sub { font-size: 11px; color: var(--muted); font-weight: 400; letter-spacing: 0.5px; }
+  .topnav-right { display: flex; align-items: center; gap: 16px; }
+  .student-name { font-size: 13px; color: var(--muted); }
+  .student-name strong { color: var(--text); }
+  .btn-logout { padding: 7px 14px; border: 1px solid var(--border); border-radius: 7px; background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; transition: color 0.2s, border-color 0.2s; }
+  .btn-logout:hover { color: var(--text); border-color: var(--muted); }
+
+  /* ── MAIN ── */
+  .main { max-width: 960px; margin: 0 auto; padding: 32px 24px 60px; }
+
+  /* ── PAGE HEADER ── */
+  .page-header { margin-bottom: 32px; }
+  .page-header h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+  .page-header p { color: var(--muted); font-size: 14px; }
+
+  /* ── TABS ── */
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+  .tab { padding: 10px 20px; font-size: 14px; font-weight: 600; color: var(--muted); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: color 0.2s; margin-bottom: -1px; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  /* ── STAT CARDS ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .stat-card .stat-label { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; }
+  .stat-card .stat-value { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+  .stat-card .stat-sub { font-size: 12px; color: var(--muted); }
+  .stat-card.blue .stat-value { color: #6a9fff; }
+  .stat-card.green .stat-value { color: var(--green); }
+  .stat-card.orange .stat-value { color: var(--orange); }
+  .stat-card.red .stat-value { color: var(--red); }
+
+  /* ── SECTION ── */
+  .section-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+
+  /* ── TABLE ── */
+  .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02); }
+  td { padding: 13px 16px; font-size: 14px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ── BADGES ── */
+  .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .badge-present { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-absent { background: rgba(239,68,68,0.12); color: var(--red); }
+  .badge-paid { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-partial { background: rgba(245,158,11,0.15); color: var(--yellow); }
+  .badge-unpaid { background: rgba(239,68,68,0.12); color: var(--red); }
+
+  /* ── EMPTY STATE ── */
+  .empty { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 14px; }
+  .empty .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.5; }
+
+  /* ── LOADING ── */
+  .loading { text-align: center; padding: 60px 24px; color: var(--muted); font-size: 14px; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+  .progress-fill { height: 100%; border-radius: 3px; background: #6a9fff; transition: width 0.5s ease; }
+  .progress-fill.green { background: var(--green); }
+  .progress-fill.yellow { background: var(--yellow); }
+  .progress-fill.red { background: var(--red); }
+
+  /* ── PAYMENT SUMMARY CARDS ── */
+  .pay-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .pay-summary .stat-card .stat-value { font-size: 22px; }
+
+  @media (max-width: 600px) {
+    .topnav { padding: 0 16px; }
+    .main { padding: 20px 16px 48px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    th, td { padding: 10px 12px; }
+    .student-name { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-brand">
+    <div class="logo-mark">A</div>
+    <div>
+      <div class="logo-name">Goallord Academy</div>
+      <div class="logo-sub">Student Portal</div>
+    </div>
+  </div>
+  <div class="topnav-right">
+    <div class="student-name">Welcome, <strong id="studentNameNav">—</strong></div>
+    <button class="btn-logout" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="page-header">
+    <h1 id="pageTitle">My Dashboard</h1>
+    <p id="pageSubtitle" style="color:var(--muted);font-size:14px;">Loading your data…</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('overview')">Overview</button>
+    <button class="tab" onclick="switchTab('attendance')">My Attendance</button>
+    <button class="tab" onclick="switchTab('payments')">My Payments</button>
+  </div>
+
+  <!-- ── OVERVIEW TAB ── -->
+  <div id="tab-overview">
+    <div id="loadingState" class="loading">Loading your data…</div>
+    <div id="overviewContent" style="display:none;">
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <div class="stat-label">Classes Attended</div>
+          <div class="stat-value" id="ov-present">—</div>
+          <div class="stat-sub" id="ov-total-classes">of — total classes</div>
+        </div>
+        <div class="stat-card green" id="ov-rate-card">
+          <div class="stat-label">Attendance Rate</div>
+          <div class="stat-value" id="ov-rate">—%</div>
+          <div class="progress-bar" style="margin-top:10px;"><div class="progress-fill" id="ov-rate-bar" style="width:0%"></div></div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-label">Total Paid</div>
+          <div class="stat-value" id="ov-paid">—</div>
+          <div class="stat-sub">this session</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Outstanding</div>
+          <div class="stat-value" id="ov-outstanding">—</div>
+          <div class="stat-sub">balance due</div>
+        </div>
+      </div>
+
+      <div class="section-title">My Profile</div>
+      <div class="table-wrap" style="margin-bottom:28px;">
+        <table>
+          <tr><td style="color:var(--muted);width:40%">Full Name</td><td id="prof-name">—</td></tr>
+          <tr><td style="color:var(--muted)">Email</td><td id="prof-email">—</td></tr>
+          <tr><td style="color:var(--muted)">Track</td><td id="prof-track">—</td></tr>
+          <tr><td style="color:var(--muted)">Cohort</td><td id="prof-cohort">—</td></tr>
+          <tr><td style="color:var(--muted)">Status</td><td id="prof-status">—</td></tr>
+        </table>
+      </div>
+
+      <div class="section-title">Recent Attendance (Last 5)</div>
+      <div class="table-wrap" id="ov-recent-attend">
+        <div class="empty"><div class="empty-icon">📅</div>No records yet.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ATTENDANCE TAB ── -->
+  <div id="tab-attendance" style="display:none;">
+    <div id="attend-stats" class="stats-grid" style="margin-bottom:24px;">
+      <div class="stat-card blue">
+        <div class="stat-label">Total Classes</div>
+        <div class="stat-value" id="att-total">—</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Present</div>
+        <div class="stat-value" id="att-present">—</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-label">Absent</div>
+        <div class="stat-value" id="att-absent">—</div>
+      </div>
+      <div class="stat-card" style="">
+        <div class="stat-label">Attendance Rate</div>
+        <div class="stat-value" id="att-rate" style="color:#6a9fff;">—%</div>
+        <div class="progress-bar"><div class="progress-fill" id="att-rate-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="section-title">All Attendance Records</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Cohort</th>
+            <th>Track</th>
+            <th>Status</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="attendTableBody">
+          <tr><td colspan="5" class="empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── PAYMENTS TAB ── -->
+  <div id="tab-payments" style="display:none;">
+    <div class="pay-summary">
+      <div class="stat-card orange">
+        <div class="stat-label">Total Due</div>
+        <div class="stat-value" id="pay-due">—</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Total Paid</div>
+        <div class="stat-value" id="pay-paid">—</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-label">Outstanding</div>
+        <div class="stat-value" id="pay-outstanding">—</div>
+      </div>
+    </div>
+    <div class="section-title">Payment History</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Amount Due</th>
+            <th>Amount Paid</th>
+            <th>Status</th>
+            <th>Method</th>
+            <th>Reference</th>
+            <th>Paid On</th>
+          </tr>
+        </thead>
+        <tbody id="payTableBody">
+          <tr><td colspan="7" class="empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script>
+  const TOKEN_KEY = 'gl_student_token';
+  const STUDENT_KEY = 'gl_student';
+
+  // ── Auth guard ──────────────────────────────────────────────
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) window.location.href = 'student-login.html';
+
+  let studentData = null;
+  let attendData = null;
+  let payData = null;
+
+  // ── Logout ──────────────────────────────────────────────────
+  function logout() {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(STUDENT_KEY);
+    window.location.href = 'student-login.html';
+  }
+
+  // ── Tab switching ────────────────────────────────────────────
+  function switchTab(tab) {
+    ['overview','attendance','payments'].forEach(t => {
+      document.getElementById('tab-' + t).style.display = t === tab ? '' : 'none';
+    });
+    document.querySelectorAll('.tab').forEach((btn, i) => {
+      const tabs = ['overview','attendance','payments'];
+      btn.classList.toggle('active', tabs[i] === tab);
+    });
+  }
+
+  // ── Format helpers ───────────────────────────────────────────
+  function fmt(n) {
+    return '₦' + Number(n).toLocaleString('en-NG');
+  }
+  function fmtDate(d) {
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+  function fmtMonth(m) {
+    if (!m) return '—';
+    const [y, mo] = m.split('-');
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return (months[parseInt(mo,10)-1] || mo) + ' ' + y;
+  }
+
+  // ── Load all data ─────────────────────────────────────────────
+  async function loadAll() {
+    const headers = { 'Authorization': 'Bearer ' + token };
+    try {
+      const [meRes, attendRes, payRes] = await Promise.all([
+        fetch('/api/students/me', { headers }),
+        fetch('/api/attendance/me', { headers }),
+        fetch('/api/payments/me', { headers })
+      ]);
+
+      if (meRes.status === 401 || meRes.status === 403) {
+        logout(); return;
+      }
+
+      studentData = await meRes.json();
+      attendData  = await attendRes.json();
+      payData     = await payRes.json();
+
+      renderAll();
+    } catch (err) {
+      document.getElementById('loadingState').textContent = 'Failed to load data. Please refresh.';
+    }
+  }
+
+  function renderAll() {
+    const s = studentData;
+
+    // Nav name
+    document.getElementById('studentNameNav').textContent = s.fullName || s.email;
+    document.getElementById('pageTitle').textContent = 'Welcome, ' + (s.fullName ? s.fullName.split(' ')[0] : 'Student');
+    document.getElementById('pageSubtitle').textContent = s.track + ' · Cohort ' + s.cohort;
+
+    // ── Profile
+    document.getElementById('prof-name').textContent = s.fullName || '—';
+    document.getElementById('prof-email').textContent = s.email || '—';
+    document.getElementById('prof-track').textContent = s.track || '—';
+    document.getElementById('prof-cohort').textContent = s.cohort || '—';
+    document.getElementById('prof-status').innerHTML = '<span class="badge badge-' + (s.status === 'Active' ? 'present' : 'absent') + '">' + s.status + '</span>';
+
+    // ── Attendance stats
+    const totalClasses = attendData.totalClasses || 0;
+    const totalPresent = attendData.totalPresent || 0;
+    const totalAbsent  = totalClasses - totalPresent;
+    const rate = totalClasses > 0 ? Math.round((totalPresent / totalClasses) * 100) : 0;
+    const rateColor = rate >= 80 ? 'green' : rate >= 60 ? 'yellow' : 'red';
+
+    // Overview stats
+    document.getElementById('ov-present').textContent = totalPresent;
+    document.getElementById('ov-total-classes').textContent = 'of ' + totalClasses + ' total classes';
+    document.getElementById('ov-rate').textContent = rate + '%';
+    const rateBar = document.getElementById('ov-rate-bar');
+    rateBar.style.width = rate + '%';
+    rateBar.className = 'progress-fill ' + rateColor;
+
+    // Payment stats overview
+    document.getElementById('ov-paid').textContent = fmt(payData.totalPaid || 0);
+    document.getElementById('ov-outstanding').textContent = fmt(payData.outstanding || 0);
+
+    // ── Recent attendance (last 5)
+    const recent5 = (attendData.data || []).slice(0, 5);
+    const ovAttend = document.getElementById('ov-recent-attend');
+    if (recent5.length === 0) {
+      ovAttend.innerHTML = '<div class="empty"><div class="empty-icon">📅</div>No attendance records yet.</div>';
+    } else {
+      ovAttend.innerHTML = '<table><thead><tr><th>Date</th><th>Status</th></tr></thead><tbody>' +
+        recent5.map(r =>
+          '<tr><td>' + fmtDate(r.classDate) + '</td><td>' +
+          (r.present ? '<span class="badge badge-present">Present</span>' : '<span class="badge badge-absent">Absent</span>') +
+          '</td></tr>'
+        ).join('') + '</tbody></table>';
+    }
+
+    // ── Attendance tab
+    document.getElementById('att-total').textContent = totalClasses;
+    document.getElementById('att-present').textContent = totalPresent;
+    document.getElementById('att-absent').textContent = totalAbsent;
+    document.getElementById('att-rate').textContent = rate + '%';
+    const attBar = document.getElementById('att-rate-bar');
+    attBar.style.width = rate + '%';
+    attBar.className = 'progress-fill ' + rateColor;
+
+    const attBody = document.getElementById('attendTableBody');
+    const history = attendData.data || [];
+    if (history.length === 0) {
+      attBody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">📅</div>No attendance records yet.</div></td></tr>';
+    } else {
+      attBody.innerHTML = history.map(r =>
+        '<tr>' +
+        '<td>' + fmtDate(r.classDate) + '</td>' +
+        '<td>' + (r.cohort || '—') + '</td>' +
+        '<td>' + (r.track || '—') + '</td>' +
+        '<td>' + (r.present ? '<span class="badge badge-present">Present</span>' : '<span class="badge badge-absent">Absent</span>') + '</td>' +
+        '<td style="color:var(--muted);font-size:13px;">' + (r.notes || '') + '</td>' +
+        '</tr>'
+      ).join('');
+    }
+
+    // ── Payments tab
+    document.getElementById('pay-due').textContent = fmt(payData.totalDue || 0);
+    document.getElementById('pay-paid').textContent = fmt(payData.totalPaid || 0);
+    document.getElementById('pay-outstanding').textContent = fmt(payData.outstanding || 0);
+
+    const payBody = document.getElementById('payTableBody');
+    const payHistory = payData.data || [];
+    if (payHistory.length === 0) {
+      payBody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">₦</div>No payment records yet.</div></td></tr>';
+    } else {
+      payBody.innerHTML = payHistory.map(p => {
+        const statusClass = p.status === 'Paid' ? 'paid' : p.status === 'Partial' ? 'partial' : 'unpaid';
+        return '<tr>' +
+          '<td style="font-weight:600">' + fmtMonth(p.month) + '</td>' +
+          '<td>' + fmt(p.amountDue) + '</td>' +
+          '<td>' + fmt(p.amountPaid) + '</td>' +
+          '<td><span class="badge badge-' + statusClass + '">' + p.status + '</span></td>' +
+          '<td style="color:var(--muted)">' + (p.method || '—') + '</td>' +
+          '<td style="color:var(--muted);font-size:13px;">' + (p.reference || '—') + '</td>' +
+          '<td style="color:var(--muted)">' + (p.paidAt ? fmtDate(p.paidAt) : '—') + '</td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    // Show overview
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('overviewContent').style.display = '';
+  }
+
+  loadAll();
+</script>
+</body>
+</html>

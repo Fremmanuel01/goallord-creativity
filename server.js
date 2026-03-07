@@ -22,6 +22,9 @@ app.use('/api/products',   require('./routes/products'));
 app.use('/api/orders',     require('./routes/orders'));
 app.use('/api/content',    require('./routes/content'));
 app.use('/api/upload',     require('./routes/upload'));
+app.use('/api/students',   require('./routes/students'));
+app.use('/api/attendance', require('./routes/attendance'));
+app.use('/api/payments',   require('./routes/payments'));
 
 // ─── FALLBACK: serve index.html for any unmatched GET ─────────
 app.get('*', (req, res) => {
