@@ -587,28 +587,37 @@ canvas.cursor-trail {
 }
 
 /* ── 32. CARD STACK / TOSS — Selected Works ─────────────────── */
+
+/*
+ * Uses CSS sticky (NOT gsap pin) so there's zero conflict with
+ * gsapAnimation.js. The section is tall (set by JS), the inner
+ * scene is sticky:top:0, and ScrollTrigger scrubs the card timeline.
+ * overflow:visible is critical — cards must fly outside section bounds.
+ */
 .gl-card-section {
     padding: 0 !important;
-    overflow: hidden;
+    overflow: visible !important;
+    position: relative;
 }
 .gl-card-scene {
+    position: sticky;
+    top: 0;
     width: 100%;
     height: 100vh;
     min-height: 600px;
     display: flex;
     align-items: center;
-    position: relative;
+    overflow: visible;
+    z-index: 1;
 }
 .gl-card-info-col {
-    padding-top: 40px;
-    padding-bottom: 40px;
+    padding: 40px 0;
 }
 .gl-card-title {
-    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-size: clamp(1.8rem, 3.5vw, 3rem);
     letter-spacing: -0.04em;
     line-height: 1.1;
     margin: 8px 0 12px;
-    transition: opacity 0.3s ease;
 }
 .gl-card-desc {
     font-size: 14px;
@@ -626,6 +635,7 @@ canvas.cursor-trail {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: visible;
 }
 .gl-card {
     position: absolute;
@@ -634,8 +644,8 @@ canvas.cursor-trail {
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06) inset;
-    cursor: grab;
     will-change: transform;
+    backface-visibility: hidden;
 }
 .gl-card img {
     width: 100%;
@@ -646,8 +656,8 @@ canvas.cursor-trail {
     user-select: none;
 }
 @media (max-width: 767px) {
-    .gl-card-scene { height: auto; padding: 80px 0; }
-    .gl-card-deck  { height: 280px; }
-    .gl-card       { width: 90%; height: 240px; }
-    .gl-card-title { font-size: 1.8rem; }
+    .gl-card-scene { height: 100svh; }
+    .gl-card-deck  { height: 300px; }
+    .gl-card       { width: 90%; height: 260px; }
+    .gl-card-title { font-size: 1.6rem; }
 }
