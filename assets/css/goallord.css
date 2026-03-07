@@ -532,8 +532,24 @@ canvas.cursor-trail {
     display: block;
 }
 
-/* ── 30. HERO VIDEO — dark abstract overlay ─────────────────── */
+/* ── 30. HERO VIDEO — fix stacking + dark abstract overlay ──── */
+
+/*
+ * ROOT CAUSE: .bg-video has z-index:-1 in styles.css. Because
+ * .section-hero-v1 only has position:relative (no z-index), it does
+ * NOT form a stacking context, so z-index:-1 on .bg-video places it
+ * BEHIND the body background (#0F1115), making the video invisible.
+ * FIX: Give .section-hero-v1 isolation:isolate to form a stacking
+ * context, then raise .bg-video to z-index:1 so it renders inside
+ * the hero. Bump content layers above it.
+ */
+.section-hero-v1 {
+    isolation: isolate;
+}
 .section-hero-v1 .bg-video {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 1 !important;
     overflow: hidden;
 }
 .section-hero-v1 .bg-video video {
@@ -542,20 +558,29 @@ canvas.cursor-trail {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    z-index: 0;
 }
 .section-hero-v1 .bg-video .video-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(5, 6, 7, 0.55) !important;
+    z-index: 1;
+    background: rgba(5, 6, 7, 0.5) !important;
     mix-blend-mode: normal !important;
     pointer-events: none;
 }
 .section-hero-v1 .bg-video .video-overlay-2 {
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, transparent 40%, rgba(5,6,7,0.92) 100%) !important;
+    z-index: 2;
+    background: linear-gradient(180deg, transparent 30%, rgba(5,6,7,0.9) 100%) !important;
     opacity: 1 !important;
     pointer-events: none;
+}
+.section-hero-v1 .overlay {
+    z-index: 2 !important;
+}
+.section-hero-v1 .content-wrap {
+    z-index: 3 !important;
 }
 .gl-hero-dark-overlay {
     display: none;
