@@ -531,3 +531,71 @@ canvas.cursor-trail {
     object-fit: cover;
     display: block;
 }
+
+/* ── 30. HERO VIDEO — dark abstract overlay ─────────────────── */
+.section-hero-v1 .bg-video video {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+.section-hero-v1 .video-overlay {
+    background: linear-gradient(180deg, rgba(5,6,7,0.6) 0%, rgba(15,17,21,0.95) 100%) !important;
+}
+.gl-hero-dark-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 6, 7, 0.45);
+    pointer-events: none;
+}
+
+/* ── 31. LIQUID CURSOR ──────────────────────────────────────── */
+.gl-custom-cursor,
+.gl-custom-cursor * {
+    cursor: none !important;
+}
+
+.gl-cursor-wrap {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 99999;
+    /* metaball trick: high contrast on blurred elements creates liquid merge */
+    filter: url('#gl-liquid-filter');
+}
+
+.gl-cursor-blob {
+    position: fixed;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--gl-orange);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease, background 0.3s ease;
+    will-change: transform;
+    pointer-events: none;
+    mix-blend-mode: normal;
+}
+
+.gl-cursor-dot {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ffffff;
+    transform: translate(-50%, -50%);
+    will-change: transform;
+    pointer-events: none;
+}
+
+/* hover states */
+.gl-custom-cursor a:hover ~ #glCursorWrap .gl-cursor-blob,
+.gl-cursor-blob.is-hovering {
+    width: 72px;
+    height: 72px;
+    background: var(--gl-orange-light);
+}
+
+.gl-cursor-blob.is-clicking {
+    width: 36px;
+    height: 36px;
+}

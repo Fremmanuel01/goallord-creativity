@@ -95,7 +95,12 @@
     </script>
 </head>
 
-<body class="counter-scroll">
+<body class="counter-scroll gl-custom-cursor">
+    <!-- Liquid Cursor -->
+    <div class="gl-cursor-wrap" id="glCursorWrap">
+        <div class="gl-cursor-blob"  id="glBlob"></div>
+        <div class="gl-cursor-dot"   id="glDot"></div>
+    </div>
     <canvas class="cursor-trail d-none d-xl-block" id="trail"></canvas>
 
     <!-- Scroll Top -->
@@ -176,11 +181,11 @@
             <div class="overlay"></div>
             <div class="bg-video">
                 <video class="" muted="" autoplay="" loop="" playsinline="">
-                    <source src="assets/images/video/corridor.webm" type="video/mp4">
+                    <source src="assets/images/video/wave-bg.mp4" type="video/mp4">
                 </video>
                 <div class="video-overlay"></div>
                 <div class="video-overlay-2"></div>
-                <div class="video-overlay-2"></div>
+                <div class="gl-hero-dark-overlay"></div>
             </div>
             <div class="content-wrap">
                 <div class="container">
@@ -2126,5 +2131,81 @@
         });
     });
     </script>
+
+<!-- SVG filter for liquid metaball effect -->
+<svg style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="gl-liquid-filter" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur"/>
+      <feColorMatrix in="blur" mode="matrix"
+        values="1 0 0 0 0
+                0 1 0 0 0
+                0 0 1 0 0
+                0 0 0 28 -10" result="liquid"/>
+      <feComposite in="SourceGraphic" in2="liquid" operator="atop"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- Liquid cursor JS -->
+<script>
+(function() {
+  var blob = document.getElementById('glBlob');
+  var dot  = document.getElementById('glDot');
+  if (!blob || !dot) return;
+
+  // Disable on touch devices
+  if ('ontouchstart' in window) {
+    document.getElementById('glCursorWrap').style.display = 'none';
+    document.body.classList.remove('gl-custom-cursor');
+    return;
+  }
+
+  var mx = window.innerWidth  / 2;
+  var my = window.innerHeight / 2;
+  var bx = mx, by = my;
+
+  // Track real mouse position
+  document.addEventListener('mousemove', function(e) {
+    mx = e.clientX;
+    my = e.clientY;
+  });
+
+  // Hover: enlarge blob on interactive elements
+  var interactables = 'a, button, [role="button"], input, textarea, select, label, .tf-btn, .filter-btn, .nav-link, .item-link';
+  document.addEventListener('mouseover', function(e) {
+    if (e.target.closest(interactables)) {
+      blob.classList.add('is-hovering');
+    }
+  });
+  document.addEventListener('mouseout', function(e) {
+    if (e.target.closest(interactables)) {
+      blob.classList.remove('is-hovering');
+    }
+  });
+
+  // Click: shrink on press
+  document.addEventListener('mousedown', function() { blob.classList.add('is-clicking'); });
+  document.addEventListener('mouseup',   function() { blob.classList.remove('is-clicking'); });
+
+  // Animate: dot snaps instantly, blob follows with lerp
+  var lerp = 0.12;
+  function tick() {
+    // blob lags behind
+    bx += (mx - bx) * lerp;
+    by += (my - by) * lerp;
+
+    blob.style.left = bx + 'px';
+    blob.style.top  = by + 'px';
+
+    // dot snaps
+    dot.style.left = mx + 'px';
+    dot.style.top  = my + 'px';
+
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
 </body>
 </html>
