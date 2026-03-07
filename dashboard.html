@@ -2431,11 +2431,28 @@ function renderApplicants(list) {
 }
 
 function updateApplicantStatus(id, status) {
-  applicantStatuses[id] = status;
-  localStorage.setItem('gl_app_statuses', JSON.stringify(applicantStatuses));
-  const cell = document.getElementById('app-badge-' + id);
-  if (cell) cell.innerHTML = badge(status);
-  renderOverviewApplicants();
+  const token = localStorage.getItem('gl_token');
+  fetch('/api/applicants/' + id, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ status })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.error) { alert('Error: ' + data.error); return; }
+    // Update local cache so filter/render stay consistent
+    const app = APPLICANTS.find(x => x.id === id);
+    if (app) app.status = status;
+    applicantStatuses[id] = status;
+    localStorage.setItem('gl_app_statuses', JSON.stringify(applicantStatuses));
+    const cell = document.getElementById('app-badge-' + id);
+    if (cell) cell.innerHTML = badge(status);
+    renderOverviewApplicants();
+    if (data.studentCreated) {
+      alert('Student account created and acceptance email sent.');
+    }
+  })
+  .catch(err => console.error('Status update failed:', err));
 }
 
 function viewApplicant(id) {
