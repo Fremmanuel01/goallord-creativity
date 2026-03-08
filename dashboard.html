@@ -3823,13 +3823,16 @@ async function uploadPortfolioImage(index, input) {
       body: formData
     });
     const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'Upload failed (' + res.status + ')');
     if (json.url) {
       updatePortfolioField(index, 'image', json.url);
       await saveCmsSection('portfolio', cmsCache.portfolio);
       loadPortfolio(); // re-render with new image
+      showToast('Image uploaded successfully', 'success');
     }
   } catch(e) {
-    showToast('Upload failed. Please try again.', 'error');
+    console.error('Upload error:', e.message);
+    showToast('Upload failed: ' + e.message, 'error');
     btn.textContent = '📷 Change Image';
   }
 }
@@ -3959,8 +3962,16 @@ async function loadTestimonials() {
         </div>
       </div>
       <div class="form-group" style="margin-bottom:10px">
-        <label style="font-size:11px;color:var(--muted)">Avatar Image URL</label>
-        <input class="form-input" style="margin-top:4px" value="${t.image||''}" onchange="updateTestField(${i},'image',this.value)">
+        <label style="font-size:11px;color:var(--muted)">Avatar Photo</label>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+          ${t.image ? `<img src="${t.image}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--border);" id="tesAvatar-${i}">` : `<div style="width:48px;height:48px;border-radius:50%;background:rgba(214,106,31,0.15);display:flex;align-items:center;justify-content:center;color:var(--orange);font-size:20px;font-weight:700;flex-shrink:0;" id="tesAvatar-${i}">${(t.name||'?')[0].toUpperCase()}</div>`}
+          <div style="flex:1;">
+            <button class="btn btn-secondary" style="width:100%;font-size:12px;" onclick="document.getElementById('tesImgUpload-${i}').click()">📷 Upload Photo</button>
+            <input type="file" id="tesImgUpload-${i}" accept="image/*" style="display:none" onchange="uploadTestimonialImage(${i}, this)">
+            <p style="font-size:10px;color:var(--muted);margin-top:4px;">or paste URL:</p>
+            <input class="form-input" style="margin-top:2px;font-size:12px;" value="${t.image||''}" placeholder="https://..." onchange="updateTestField(${i},'image',this.value)">
+          </div>
+        </div>
       </div>
       <div class="form-group" style="margin-bottom:12px">
         <label style="font-size:11px;color:var(--muted)">Testimonial</label>
@@ -3995,6 +4006,38 @@ function deleteTestimonial(index) {
     cmsCache.testimonials.items.splice(index, 1);
     saveTestimonials().then(() => loadTestimonials());
   });
+}
+
+async function uploadTestimonialImage(index, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const btn = input.previousElementSibling;
+  const origText = btn.textContent;
+  btn.textContent = '⏳ Uploading…';
+  btn.disabled = true;
+  const formData = new FormData();
+  formData.append('image', file);
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + localStorage.getItem('gl_token') },
+      body: formData
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'Upload failed (' + res.status + ')');
+    if (json.url) {
+      updateTestField(index, 'image', json.url);
+      await saveTestimonials();
+      loadTestimonials();
+      showToast('Photo uploaded successfully', 'success');
+    }
+  } catch(e) {
+    console.error('Testimonial upload error:', e.message);
+    showToast('Upload failed: ' + e.message, 'error');
+  } finally {
+    btn.textContent = origText;
+    btn.disabled = false;
+  }
 }
 
 // ── Load API data on page init ────────────────────────────────
