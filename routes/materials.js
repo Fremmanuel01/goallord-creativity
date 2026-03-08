@@ -1,9 +1,29 @@
 const express  = require('express');
 const Material = require('../models/Material');
+const Student  = require('../models/Student');
 const { requireAuth } = require('../middleware/auth');
 const { requireLecturer } = require('../middleware/lecturerAuth');
+const { requireStudentAuth } = require('../middleware/studentAuth');
 
 const router = express.Router();
+
+// GET /api/materials/student — student: published materials for their batch
+router.get('/student', requireStudentAuth, async (req, res) => {
+  try {
+    const student = await Student.findById(req.user.id).select('batch');
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+
+    const filter = { published: true };
+    if (student.batch) filter.batch = student.batch;
+
+    const docs = await Material.find(filter)
+      .populate('lecturer', 'fullName')
+      .sort({ week: 1, createdAt: -1 });
+    res.json(docs);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // GET /api/materials?batch=&week=&published=
 router.get('/', requireLecturer, async (req, res) => {
