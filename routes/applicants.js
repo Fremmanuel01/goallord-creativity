@@ -10,6 +10,36 @@ const { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAccep
 
 const router = express.Router();
 
+// POST /api/applicants/upload-photo — public (applicant uploads profile photo before submission)
+router.post('/upload-photo', async (req, res) => {
+  try {
+    const cloudinary = require('cloudinary');
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key:    process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET
+    });
+    const multer = require('multer');
+    const { CloudinaryStorage } = require('multer-storage-cloudinary');
+    const storage = new CloudinaryStorage({
+      cloudinary,
+      params: {
+        folder: 'goallord/applicants',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+        transformation: [{ width: 400, height: 400, crop: 'fill', gravity: 'face', quality: 'auto' }]
+      }
+    });
+    const upload = multer({ storage, limits: { fileSize: 3 * 1024 * 1024 } }).single('photo');
+    upload(req, res, (err) => {
+      if (err) return res.status(400).json({ error: err.message });
+      if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+      res.json({ url: req.file.path });
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 const TRACK_DURATION = {
   'Web Design':        '12 Weeks',
   'WordPress':         '12 Weeks',
