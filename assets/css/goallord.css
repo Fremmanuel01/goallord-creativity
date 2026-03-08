@@ -10,6 +10,11 @@
         "San Francisco", "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
 }
 
+/* ── 1b. LOGO IMAGE ─────────────────────────────────────────── */
+/* Replace text logo-site with image */
+a.logo-site { display: inline-flex; align-items: center; }
+a.logo-site img { height: 40px; width: auto; display: block; }
+
 /* ── 2. BRAND COLOR TOKENS ─────────────────────────────────── */
 :root {
     --gl-orange:       #D66A1F;   /* Burnt Orange — Primary */
