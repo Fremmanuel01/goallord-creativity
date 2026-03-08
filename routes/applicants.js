@@ -52,7 +52,6 @@ router.post('/', async (req, res) => {
     }
 
     // Notify admin of new application
-    const host = process.env.HOST || `${req.protocol}://${req.get('host')}`;
     try {
       await sendMail({
         to:      process.env.EMAIL_FROM,
