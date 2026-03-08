@@ -2748,7 +2748,7 @@ function renderOverviewApplicants() {
 
 function renderOverviewOrders() {
   const tbody = document.querySelector('#recentOrdersTable tbody');
-  const recent = ORDERS.slice(0,5);
+  const recent = (window.ORDERS || ORDERS).slice(0, 5);
   tbody.innerHTML = recent.map(o => `<tr onclick="navigate('orders')">
     <td style="font-size:0.775rem">${o.product}</td>
     <td class="muted">${o.buyer}</td>
@@ -2766,7 +2766,7 @@ function initCharts() {
 
   // Revenue line chart
   const revCtx = document.getElementById('revenueChart').getContext('2d');
-  new Chart(revCtx, {
+  window._revenueChart = new Chart(revCtx, {
     type: 'line',
     data: {
       labels: ['Oct','Nov','Dec','Jan','Feb','Mar'],
@@ -3021,6 +3021,67 @@ async function loadOverviewStats() {
   // Update donut chart with real track distribution
   if (window.APPLICANTS && window.APPLICANTS.length && window._donutChart) {
     updateDonutChart();
+  }
+
+  // Update revenue chart
+  updateRevenueChart();
+}
+
+async function loadOrdersFromAPI() {
+  const data = await apiFetch('/api/orders?limit=500');
+  if (!data) return;
+  window.ORDERS = data.data.map(o => ({
+    id:       '#' + (o.orderId || o._id.slice(-6).toUpperCase()),
+    product:  o.productId?.name || 'Unknown Product',
+    buyer:    o.buyerName,
+    amount:   (o.currency === 'EUR' ? '€' : '₦') + (o.amount || 0),
+    category: o.category || 'Other',
+    date:     new Date(o.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }),
+    status:   o.status
+  }));
+  if (typeof renderOrders === 'function') renderOrders();
+  if (typeof renderOverviewOrders === 'function') renderOverviewOrders();
+}
+
+async function updateRevenueChart() {
+  // Build last 6 month labels + keys
+  const months = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({
+      label: d.toLocaleString('en', { month: 'short' }),
+      key:   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    });
+  }
+
+  const [ordersData, paymentsData] = await Promise.all([
+    apiFetch('/api/orders?limit=500'),
+    apiFetch('/api/payments?limit=500')
+  ]);
+
+  // Sum EUR order amounts by month
+  const ordersByMonth = {};
+  (ordersData?.data || []).forEach(o => {
+    const key = (o.createdAt || '').slice(0, 7);
+    ordersByMonth[key] = (ordersByMonth[key] || 0) + (o.amount || 0);
+  });
+
+  // Sum student payments by month (NGN → EUR at ~1500)
+  const paymentsByMonth = {};
+  (paymentsData?.data || []).forEach(p => {
+    const key = p.month || '';
+    paymentsByMonth[key] = (paymentsByMonth[key] || 0) + ((p.amountPaid || 0) / 1500);
+  });
+
+  const orderAmounts   = months.map(m => Math.round(ordersByMonth[m.key]   || 0));
+  const paymentAmounts = months.map(m => Math.round(paymentsByMonth[m.key] || 0));
+
+  if (window._revenueChart) {
+    window._revenueChart.data.labels            = months.map(m => m.label);
+    window._revenueChart.data.datasets[0].data  = orderAmounts;
+    window._revenueChart.data.datasets[1].data  = paymentAmounts;
+    window._revenueChart.update();
   }
 }
 
@@ -3348,6 +3409,7 @@ function deleteTestimonial(index) {
 document.addEventListener('DOMContentLoaded', () => {
   loadApplicantsFromAPI();
   loadClientsFromAPI();
+  loadOrdersFromAPI();
   loadOverviewStats();
 });
 
