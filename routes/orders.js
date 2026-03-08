@@ -2,6 +2,8 @@ const express = require('express');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const { requireAuth } = require('../middleware/auth');
+const { sendMail } = require('../utils/mailer');
+const { receiptEmail } = require('../utils/emailTemplates');
 
 const router = express.Router();
 
@@ -54,6 +56,37 @@ router.patch('/:id', requireAuth, async (req, res) => {
     const doc = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/orders/:id/email-receipt — protected (email receipt to buyer)
+router.post('/:id/email-receipt', requireAuth, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id).populate('productId', 'name');
+    if (!order) return res.status(404).json({ error: 'Not found' });
+
+    const currencySymbol = order.currency === 'EUR' ? '€' : '₦';
+    const receiptNum = 'ORD-' + (order.orderId || order._id.toString().slice(-8).toUpperCase());
+
+    await sendMail({
+      to: order.buyerEmail,
+      subject: `Order Receipt ${receiptNum} — Goallord Creativity`,
+      html: receiptEmail({
+        receiptNumber: receiptNum,
+        date: order.createdAt || new Date(),
+        recipientName: order.buyerName,
+        recipientEmail: order.buyerEmail,
+        description: order.productId?.name || 'Digital Product',
+        amount: order.amount,
+        currency: currencySymbol,
+        method: 'Online',
+        reference: order.orderId || order._id.toString().slice(-8).toUpperCase(),
+        issuedBy: 'Goallord Creativity Limited'
+      })
+    });
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -1,9 +1,11 @@
 const express  = require('express');
 const crypto   = require('crypto');
+const https    = require('https');
 const bcrypt   = require('bcryptjs');
 const Applicant = require('../models/Applicant');
 const Student   = require('../models/Student');
 const Batch     = require('../models/Batch');
+const Payment   = require('../models/Payment');
 const { requireAuth } = require('../middleware/auth');
 const { sendMail }    = require('../utils/mailer');
 const { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail } = require('../utils/emailTemplates');
@@ -128,15 +130,200 @@ h2{color:#D66A1F;margin:0 0 16px}p{color:#A0A6B3;margin:0 0 24px}a{color:#D66A1F
     applicant.emailVerifyExpires = undefined;
     await applicant.save();
 
-    return res.send(`<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Email Verified</title>
-<style>body{background:#0F1115;color:#F4F6FA;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center}
-.box{max-width:420px;padding:40px;background:#171A21;border-radius:12px;border:1px solid #2A2F3A}
-h2{color:#D66A1F;margin:0 0 16px}p{color:#A0A6B3;margin:0 0 24px}a{color:#D66A1F}</style></head>
-<body><div class="box"><h2>Email Verified!</h2>
-<p>Your email has been verified. We'll review your application and get back to you within 48 hours.</p>
-<a href="/academy.html">Back to Academy</a></div></body></html>`);
+    // Redirect to payment page
+    return res.redirect(`/apply-payment.html?id=${applicant._id}`);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Helper: create student account from applicant ─────────────
+async function createStudentFromApplicant(applicant, paymentPlan) {
+  const plainPassword = generatePassword();
+  const hashed        = await bcrypt.hash(plainPassword, 12);
+  const cohort        = new Date().toLocaleString('en-GB', { month: 'long', year: 'numeric' });
+  const activeBatch   = await Batch.findOne({ isActive: true }).select('_id');
+
+  const student = await Student.create({
+    fullName:          applicant.fullName,
+    email:             applicant.email,
+    password:          hashed,
+    phone:             applicant.phone || '',
+    track:             applicant.track || 'Other',
+    cohort,
+    batch:             activeBatch ? activeBatch._id : undefined,
+    status:            'Active',
+    applicantRef:      applicant._id,
+    applicationFeePaid: true,
+    paymentPlan:       paymentPlan === 'full' ? 'full_upfront' : 'monthly'
+  });
+
+  // Create application fee payment record (already paid)
+  const appFee = Number(process.env.APPLICATION_FEE) || 20000;
+  await Payment.create({
+    student:    student._id,
+    batch:      activeBatch ? activeBatch._id : undefined,
+    category:   'application_fee',
+    amountDue:  appFee,
+    amountPaid: appFee,
+    method:     applicant.applicationFeeRef ? 'Bank Transfer' : 'Paystack',
+    reference:  applicant.applicationFeeRef || '',
+    recordedBy: 'System',
+    paidAt:     new Date()
+  });
+
+  // Create tuition payment records
+  const fullFee    = Number(process.env.FULL_TUITION_FEE)    || 150000;
+  const monthlyFee = Number(process.env.MONTHLY_TUITION_FEE) || 60000;
+  const now = new Date();
+
+  if (paymentPlan === 'full') {
+    await Payment.create({
+      student: student._id, batch: activeBatch ? activeBatch._id : undefined,
+      category: 'full_tuition_payment', amountDue: fullFee, amountPaid: 0,
+      dueDate: new Date(now.getFullYear(), now.getMonth() + 1, 1),
+      recordedBy: 'System'
+    });
+  } else {
+    for (let i = 1; i <= 3; i++) {
+      await Payment.create({
+        student: student._id, batch: activeBatch ? activeBatch._id : undefined,
+        category: `tuition_month_${i}`, amountDue: monthlyFee, amountPaid: 0,
+        dueDate: new Date(now.getFullYear(), now.getMonth() + i, 1),
+        recordedBy: 'System'
+      });
+    }
+  }
+
+  // Send acceptance email with credentials
+  const host     = process.env.HOST || 'https://goallordcreativity.com';
+  const loginUrl = `${host}/student-login.html`;
+  const duration = TRACK_DURATION[applicant.track] || '12 Weeks';
+
+  await sendMail({
+    to:      applicant.email,
+    subject: `Welcome to Goallord Creativity Academy — Your Login Details`,
+    html:    acceptanceEmail({ fullName: applicant.fullName, track: applicant.track || 'Other', duration, email: applicant.email, password: plainPassword, loginUrl })
+  }).catch(e => console.error('Acceptance email failed:', e.message));
+
+  await sendMail({
+    to:      process.env.EMAIL_FROM,
+    subject: `New Student Enrolled: ${applicant.fullName} — ${applicant.track || 'Other'}`,
+    html:    adminAcceptanceNotificationEmail({ fullName: applicant.fullName, email: applicant.email, track: applicant.track || 'Other', studentId: student._id.toString(), dashboardUrl: `${host}/dashboard.html` })
+  }).catch(e => console.error('Admin notification failed:', e.message));
+
+  return student;
+}
+
+// GET /api/applicants/:id/payment-info — public (payment page fetches this)
+router.get('/:id/payment-info', async (req, res) => {
+  try {
+    const applicant = await Applicant.findById(req.params.id).select('fullName email track emailVerified applicationFeePaid');
+    if (!applicant) return res.status(404).json({ error: 'Application not found' });
+    if (!applicant.emailVerified) return res.status(403).json({ error: 'Email not verified' });
+    res.json({
+      fullName:           applicant.fullName,
+      email:              applicant.email,
+      track:              applicant.track,
+      applicationFeePaid: applicant.applicationFeePaid
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/applicants/:id/pay-application — public (Paystack app fee payment)
+router.post('/:id/pay-application', async (req, res) => {
+  try {
+    const { reference, paymentPlan } = req.body;
+    if (!reference || !paymentPlan) return res.status(400).json({ error: 'reference and paymentPlan are required' });
+
+    const applicant = await Applicant.findById(req.params.id);
+    if (!applicant) return res.status(404).json({ error: 'Application not found' });
+    if (!applicant.emailVerified) return res.status(403).json({ error: 'Email not verified' });
+    if (applicant.applicationFeePaid) return res.status(400).json({ error: 'Application fee already paid' });
+
+    // Verify with Paystack
+    const psData = await new Promise((resolve, reject) => {
+      const psReq = https.request({
+        hostname: 'api.paystack.co',
+        path: `/transaction/verify/${encodeURIComponent(reference)}`,
+        method: 'GET',
+        headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` }
+      }, (psRes) => {
+        let body = '';
+        psRes.on('data', c => body += c);
+        psRes.on('end', () => { try { resolve(JSON.parse(body)); } catch { reject(new Error('Invalid Paystack response')); } });
+      });
+      psReq.on('error', reject);
+      psReq.end();
+    });
+
+    if (!psData.data || psData.data.status !== 'success')
+      return res.status(400).json({ error: 'Payment verification failed. Please try again.' });
+
+    const appFee = Number(process.env.APPLICATION_FEE) || 20000;
+    if (psData.data.amount / 100 < appFee)
+      return res.status(400).json({ error: `Amount paid (₦${psData.data.amount / 100}) is less than application fee (₦${appFee})` });
+
+    // Mark fee paid
+    applicant.applicationFeePaid = true;
+    applicant.applicationFeeRef  = reference;
+    applicant.status             = 'Accepted';
+    await applicant.save();
+
+    // Create student account
+    const student = await createStudentFromApplicant(applicant, paymentPlan);
+
+    res.json({ success: true, studentId: student._id });
+  } catch (err) {
+    console.error('pay-application error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/applicants/:id/bank-transfer-fee — public (submit bank transfer ref, awaits admin confirm)
+router.post('/:id/bank-transfer-fee', async (req, res) => {
+  try {
+    const { reference, paymentPlan } = req.body;
+    if (!reference || !paymentPlan) return res.status(400).json({ error: 'reference and paymentPlan are required' });
+
+    const applicant = await Applicant.findById(req.params.id);
+    if (!applicant) return res.status(404).json({ error: 'Application not found' });
+    if (!applicant.emailVerified) return res.status(403).json({ error: 'Email not verified' });
+    if (applicant.applicationFeePaid) return res.status(400).json({ error: 'Application fee already paid' });
+
+    applicant.applicationFeeRef  = reference;
+    applicant.pendingPaymentPlan = paymentPlan;
+    await applicant.save();
+
+    res.json({ success: true, message: 'Transfer reference submitted. Admin will confirm within 24 hours and you\'ll receive login details by email.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/applicants/:id/confirm-fee — admin: confirm bank transfer, create student
+router.post('/:id/confirm-fee', requireAuth, async (req, res) => {
+  try {
+    const applicant = await Applicant.findById(req.params.id);
+    if (!applicant) return res.status(404).json({ error: 'Application not found' });
+    if (applicant.applicationFeePaid) return res.status(400).json({ error: 'Fee already confirmed' });
+    if (!applicant.applicationFeeRef) return res.status(400).json({ error: 'No bank transfer reference on record' });
+
+    const paymentPlan = req.body.paymentPlan || applicant.pendingPaymentPlan || 'monthly';
+
+    applicant.applicationFeePaid = true;
+    applicant.status             = 'Accepted';
+    await applicant.save();
+
+    const existing = await Student.findOne({ email: applicant.email });
+    if (existing) return res.status(400).json({ error: 'Student account already exists for this email' });
+
+    const student = await createStudentFromApplicant(applicant, paymentPlan);
+    res.json({ success: true, studentId: student._id });
+  } catch (err) {
+    console.error('confirm-fee error:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -197,15 +384,16 @@ router.patch('/:id', requireAuth, async (req, res) => {
         const activeBatch = await Batch.findOne({ isActive: true }).select('_id');
 
         const student = await Student.create({
-          fullName:     doc.fullName,
-          email:        doc.email,
-          password:     hashed,
-          phone:        doc.phone || '',
-          track:        doc.track || 'Other',
+          fullName:          doc.fullName,
+          email:             doc.email,
+          password:          hashed,
+          phone:             doc.phone || '',
+          track:             doc.track || 'Other',
           cohort,
-          batch:        activeBatch ? activeBatch._id : undefined,
-          status:       'Active',
-          applicantRef: doc._id
+          batch:             activeBatch ? activeBatch._id : undefined,
+          status:            'Active',
+          applicantRef:      doc._id,
+          applicationFeePaid: true
         });
 
         const host     = process.env.HOST || 'https://goallordcreativity.com';

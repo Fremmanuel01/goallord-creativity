@@ -2684,17 +2684,39 @@ function renderApplicants(list) {
       <td id="app-badge-${a.id}">${badge(st)}</td>
       <td class="muted">${a.date}</td>
       <td>
-        <div style="display:flex;gap:6px;align-items:center">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
           <select class="status-select" onchange="updateApplicantStatus('${a.id}', this.value)" title="Change status">
             ${['Pending','Reviewed','Accepted','Rejected'].map(s => `<option ${s===st?'selected':''}>${s}</option>`).join('')}
           </select>
           <button class="btn-icon" onclick="viewApplicant('${a.id}')" title="View details">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
+          ${a.applicationFeeRef && !a.applicationFeePaid
+            ? `<button title="Bank transfer ref: ${a.applicationFeeRef}" style="padding:4px 9px;font-size:11px;font-weight:600;background:#1E4BFF;color:#fff;border:none;border-radius:5px;cursor:pointer;" onclick="confirmApplicantFee('${a.id}','${a.pendingPaymentPlan||'monthly'}')">Confirm Fee ₦</button>`
+            : a.applicationFeePaid ? `<span style="font-size:11px;color:#22c55e;font-weight:600;">✓ Fee Paid</span>` : ''
+          }
         </div>
       </td>
     </tr>`;
   }).join('');
+}
+
+async function confirmApplicantFee(id, pendingPlan) {
+  const plan = confirm(
+    `Confirm bank transfer fee payment for this applicant?\n\nThis will create their student account with plan: ${pendingPlan || 'monthly'}.\n\nOK = Confirm | Cancel = Cancel`
+  ) ? pendingPlan || 'monthly' : null;
+  if (!plan) return;
+  try {
+    const res = await apiFetch(`/api/applicants/${id}/confirm-fee`, { method: 'POST', body: JSON.stringify({ paymentPlan: plan }) });
+    if (res && res.success) {
+      showToast('Fee confirmed! Student account created and credentials emailed.', 'success');
+      loadApplicantsFromAPI();
+    } else {
+      showToast((res && res.error) || 'Confirmation failed.', 'error');
+    }
+  } catch(e) {
+    showToast('Network error: ' + e.message, 'error');
+  }
 }
 
 function updateApplicantStatus(id, status) {
@@ -3086,7 +3108,9 @@ function renderOrders() {
     return;
   }
 
-  tbody.innerHTML = list.map(o => `<tr>
+  tbody.innerHTML = list.map(o => {
+    const rcptData = JSON.stringify(buildOrderReceipt(o)).replace(/"/g,'&quot;');
+    return `<tr>
     <td style="font-weight:600;color:var(--orange);font-size:0.8rem">${o.id}</td>
     <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.product}</td>
     <td>${o.buyer}</td>
@@ -3095,11 +3119,12 @@ function renderOrders() {
     <td class="muted">${o.date}</td>
     <td>${badge(o.status)}</td>
     <td>
-      <button class="btn-icon" title="View receipt">
+      ${o.status === 'Paid' ? `<button style="padding:5px 10px;font-size:12px;background:#22c55e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick='openReceipt(${rcptData})'>Receipt</button>` : `<button class="btn-icon" title="View" disabled style="opacity:0.4">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-      </button>
+      </button>`}
     </td>
-  </tr>`).join('');
+  </tr>`;
+  }).join('');
 }
 
 document.querySelectorAll('.tab-btn[data-ordertab]').forEach(btn => {
@@ -3353,23 +3378,26 @@ async function loadApplicantsFromAPI() {
   if (!data) return;
   // Merge into APPLICANTS array (used by existing renderApplicants)
   window.APPLICANTS = data.data.map(a => ({
-    id:           a._id,
-    name:         a.fullName,
-    email:        a.email,
-    phone:        a.phone,
-    location:     a.location,
-    track:        a.track,
-    experience:   a.experience,
-    schedule:     a.schedule,
-    howFound:     a.howFound,
-    goal:         a.goal,
-    why:          a.why,
-    background:   a.background,
-    notes:        a.notes,
-    photo:        a.profilePhoto,
-    emailVerified: a.emailVerified,
-    status:       a.status,
-    date:         new Date(a.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
+    id:                 a._id,
+    name:               a.fullName,
+    email:              a.email,
+    phone:              a.phone,
+    location:           a.location,
+    track:              a.track,
+    experience:         a.experience,
+    schedule:           a.schedule,
+    howFound:           a.howFound,
+    goal:               a.goal,
+    why:                a.why,
+    background:         a.background,
+    notes:              a.notes,
+    photo:              a.profilePhoto,
+    emailVerified:      a.emailVerified,
+    applicationFeePaid: a.applicationFeePaid,
+    applicationFeeRef:  a.applicationFeeRef,
+    pendingPaymentPlan: a.pendingPaymentPlan,
+    status:             a.status,
+    date:               new Date(a.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
   }));
   if (typeof renderApplicants === 'function') renderApplicants(window.APPLICANTS);
   renderOverviewApplicants();
@@ -3419,13 +3447,21 @@ async function loadOrdersFromAPI() {
   const data = await apiFetch('/api/orders?limit=500');
   if (!data) return;
   window.ORDERS = data.data.map(o => ({
-    id:       '#' + (o.orderId || o._id.slice(-6).toUpperCase()),
-    product:  o.productId?.name || 'Unknown Product',
-    buyer:    o.buyerName,
-    amount:   (o.currency === 'EUR' ? '€' : '₦') + (o.amount || 0),
-    category: o.category || 'Other',
-    date:     new Date(o.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }),
-    status:   o.status
+    _id:        o._id,
+    id:         '#' + (o.orderId || o._id.slice(-6).toUpperCase()),
+    orderId:    o.orderId,
+    product:    o.productId?.name || 'Unknown Product',
+    productId:  o.productId,
+    buyer:      o.buyerName,
+    buyerName:  o.buyerName,
+    buyerEmail: o.buyerEmail,
+    rawAmount:  o.amount,
+    currency:   o.currency,
+    amount:     (o.currency === 'EUR' ? '€' : '₦') + (o.amount || 0),
+    category:   o.category || 'Other',
+    date:       new Date(o.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }),
+    createdAt:  o.createdAt,
+    status:     o.status
   }));
   if (typeof renderOrders === 'function') renderOrders();
   if (typeof renderOverviewOrders === 'function') renderOverviewOrders();
@@ -4210,6 +4246,9 @@ function renderPayTable(rows) {
       method: r.method, reference: r.reference, notes: r.notes,
       dueDate: r.dueDate ? r.dueDate.slice(0,10) : ''
     }).replace(/"/g,'&quot;');
+    const receiptData = JSON.stringify(buildPaymentReceipt(r)).replace(/"/g,'&quot;');
+    const isPaid = status === 'paid' || status === 'fully_paid';
+    const isBankPending = r.method === 'Bank Transfer' && status === 'pending';
     return `<tr>
       <td style="padding:12px 14px;font-weight:600">${r.student?.fullName || '—'}<br><span style="font-size:12px;color:var(--muted);font-weight:400">${r.student?.track || ''}</span></td>
       <td style="padding:12px 14px">${PAY_CAT_LABEL[r.category] || r.category || '—'}</td>
@@ -4218,8 +4257,10 @@ function renderPayTable(rows) {
       <td style="padding:12px 14px"><span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:${bg};color:${color}">${status.replace('_',' ')}</span></td>
       <td style="padding:12px 14px;color:var(--muted);font-size:13px">${r.method || '—'}</td>
       <td style="padding:12px 14px;color:var(--muted);font-size:13px">${r.dueDate ? fmtDateAdmin(r.dueDate) : '—'}</td>
-      <td style="padding:12px 14px">
+      <td style="padding:12px 14px;display:flex;gap:6px;flex-wrap:wrap;">
         <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick='openEditPayment(${editData})'>Edit</button>
+        ${isBankPending ? `<button style="padding:5px 10px;font-size:12px;background:#1E4BFF;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick="confirmBankTransfer('${r._id}',${r.amountDue})">Confirm</button>` : ''}
+        ${isPaid ? `<button style="padding:5px 10px;font-size:12px;background:#22c55e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick='openReceipt(${receiptData})'>Receipt</button>` : ''}
       </td>
     </tr>`;
   }).join('');
@@ -4623,6 +4664,167 @@ function showErr(el, msg) {
     </div>
   </div>
 </div>
+
+<!-- ══ RECEIPT MODAL ══════════════════════════════════════════ -->
+<div id="receiptModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);overflow-y:auto;padding:40px 20px;">
+  <div style="background:#171A21;border:1px solid #2A2F3A;border-radius:12px;max-width:600px;margin:0 auto;overflow:hidden;">
+    <!-- Receipt Header -->
+    <div style="background:#D66A1F;padding:28px 36px;text-align:center;">
+      <h2 style="margin:0;color:#fff;font-size:20px;font-weight:700;letter-spacing:2px;">GOALLORD CREATIVITY ACADEMY</h2>
+      <p style="margin:6px 0 0;color:rgba(255,255,255,0.8);font-size:12px;letter-spacing:1px;">Onitsha, Nigeria &bull; hello@goallordcreativity.com</p>
+    </div>
+    <!-- Receipt Meta -->
+    <div style="background:#1E4BFF;padding:14px 36px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="color:rgba(255,255,255,0.7);font-size:11px;letter-spacing:.5px;margin-bottom:3px;">RECEIPT NO.</div>
+        <div id="rcp-number" style="color:#fff;font-size:16px;font-weight:700;font-family:monospace;"></div>
+      </div>
+      <div style="text-align:right;">
+        <div style="color:rgba(255,255,255,0.7);font-size:11px;letter-spacing:.5px;margin-bottom:3px;">DATE ISSUED</div>
+        <div id="rcp-date" style="color:#fff;font-size:14px;font-weight:600;"></div>
+      </div>
+    </div>
+    <!-- Body -->
+    <div style="padding:32px 36px;">
+      <!-- Bill To -->
+      <div style="margin-bottom:24px;">
+        <div style="font-size:11px;color:#A0A6B3;letter-spacing:1px;font-weight:600;text-transform:uppercase;margin-bottom:8px;">Bill To</div>
+        <div id="rcp-name" style="color:#F4F6FA;font-size:16px;font-weight:600;"></div>
+        <div id="rcp-email" style="color:#A0A6B3;font-size:13px;margin-top:2px;"></div>
+      </div>
+      <!-- Line items -->
+      <table style="width:100%;border-collapse:collapse;border:1px solid #2A2F3A;border-radius:8px;overflow:hidden;margin-bottom:24px;">
+        <thead>
+          <tr style="background:#0F1115;">
+            <th style="padding:10px 14px;text-align:left;color:#A0A6B3;font-size:11px;letter-spacing:.5px;font-weight:600;text-transform:uppercase;">Description</th>
+            <th style="padding:10px 14px;text-align:right;color:#A0A6B3;font-size:11px;letter-spacing:.5px;font-weight:600;text-transform:uppercase;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-top:1px solid #2A2F3A;">
+            <td id="rcp-desc" style="padding:12px 14px;color:#F4F6FA;font-size:14px;"></td>
+            <td id="rcp-amt" style="padding:12px 14px;color:#F4F6FA;font-size:14px;font-weight:600;text-align:right;"></td>
+          </tr>
+          <tr style="background:#0F1115;border-top:1px solid #2A2F3A;">
+            <td style="padding:10px 14px;color:#F4F6FA;font-size:14px;font-weight:700;text-align:right;">Total</td>
+            <td id="rcp-total" style="padding:10px 14px;color:#D66A1F;font-size:16px;font-weight:800;text-align:right;"></td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- Payment details -->
+      <div style="background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+        <div style="font-size:11px;color:#A0A6B3;letter-spacing:1px;font-weight:600;text-transform:uppercase;margin-bottom:10px;">Payment Details</div>
+        <table style="width:100%;">
+          <tr><td style="color:#A0A6B3;font-size:13px;width:110px;padding:4px 0;">Method:</td><td id="rcp-method" style="color:#F4F6FA;font-size:13px;font-weight:600;padding:4px 0;"></td></tr>
+          <tr><td style="color:#A0A6B3;font-size:13px;padding:4px 0;">Reference:</td><td id="rcp-ref" style="color:#F4F6FA;font-size:13px;font-family:monospace;padding:4px 0;"></td></tr>
+        </table>
+      </div>
+      <!-- Footer message -->
+      <p style="color:#A0A6B3;font-size:13px;text-align:center;border-top:1px solid #2A2F3A;padding-top:20px;margin-bottom:24px;">
+        Thank you for your payment — <strong style="color:#F4F6FA;">Goallord Creativity Academy</strong>
+      </p>
+      <!-- Action buttons (no-print) -->
+      <div class="no-print" style="display:flex;gap:10px;justify-content:flex-end;">
+        <button onclick="window.print()" style="padding:9px 18px;background:#D66A1F;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">Print / Save PDF</button>
+        <button id="rcpEmailBtn" onclick="emailReceiptFromModal()" style="padding:9px 18px;background:#1E4BFF;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">Email Receipt</button>
+        <button onclick="closeReceipt()" style="padding:9px 18px;background:transparent;color:#A0A6B3;border:1px solid #2A2F3A;border-radius:6px;font-size:13px;cursor:pointer;">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @media print {
+    body > *:not(#receiptModal) { display: none !important; }
+    #receiptModal { position: static !important; background: white !important; padding: 0 !important; }
+    #receiptModal > div { border: none !important; border-radius: 0 !important; }
+    .no-print { display: none !important; }
+  }
+</style>
+
+<script>
+// ── Receipt modal ─────────────────────────────────────────────
+let _rcpContext = null; // { type: 'payment'|'order', id: '...' }
+
+function openReceipt(data) {
+  _rcpContext = { type: data.type, id: data.id };
+  document.getElementById('rcp-number').textContent  = data.receiptNumber || '—';
+  document.getElementById('rcp-date').textContent    = data.date ? new Date(data.date).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }) : '—';
+  document.getElementById('rcp-name').textContent    = data.name || '—';
+  document.getElementById('rcp-email').textContent   = data.email || '';
+  document.getElementById('rcp-desc').textContent    = data.description || '—';
+  const amtStr = (data.currency || '₦') + Number(data.amount || 0).toLocaleString();
+  document.getElementById('rcp-amt').textContent     = amtStr;
+  document.getElementById('rcp-total').textContent   = amtStr;
+  document.getElementById('rcp-method').textContent  = data.method || '—';
+  document.getElementById('rcp-ref').textContent     = data.reference || '—';
+  document.getElementById('receiptModal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeReceipt() {
+  document.getElementById('receiptModal').style.display = 'none';
+  document.body.style.overflow = '';
+  _rcpContext = null;
+}
+
+async function emailReceiptFromModal() {
+  if (!_rcpContext) return;
+  const btn = document.getElementById('rcpEmailBtn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const endpoint = _rcpContext.type === 'order'
+      ? `/api/orders/${_rcpContext.id}/email-receipt`
+      : `/api/payments/${_rcpContext.id}/email-receipt`;
+    const res = await apiFetch(endpoint, { method: 'POST' });
+    if (res) { btn.textContent = 'Sent ✓'; btn.style.background = '#22c55e'; }
+    else { btn.disabled = false; btn.textContent = 'Email Receipt'; }
+  } catch { btn.disabled = false; btn.textContent = 'Email Receipt'; }
+}
+
+function buildPaymentReceipt(r) {
+  const catLabels = { application_fee:'Application Fee', tuition_month_1:'Tuition Month 1', tuition_month_2:'Tuition Month 2', tuition_month_3:'Tuition Month 3', full_tuition_payment:'Full Tuition Payment' };
+  return {
+    type: 'payment', id: r._id,
+    receiptNumber: r.receiptNumber || ('RCP-' + new Date().getFullYear() + '-????'),
+    date: r.receiptIssuedAt || r.paidAt || new Date(),
+    name: r.student?.fullName || '—',
+    email: r.student?.email || '',
+    description: catLabels[r.category] || r.category || '—',
+    amount: r.amountPaid || r.amountDue,
+    currency: '₦',
+    method: r.method || '—',
+    reference: r.reference || '—'
+  };
+}
+
+function buildOrderReceipt(o) {
+  return {
+    type: 'order', id: o._id,
+    receiptNumber: 'ORD-' + (o.orderId || o._id?.slice(-8)?.toUpperCase() || ''),
+    date: o.createdAt || new Date(),
+    name: o.buyerName || '—',
+    email: o.buyerEmail || '',
+    description: o.productId?.name || 'Digital Product',
+    amount: o.amount,
+    currency: o.currency === 'EUR' ? '€' : '₦',
+    method: 'Online',
+    reference: o.orderId || o._id?.slice(-8)?.toUpperCase() || '—'
+  };
+}
+
+async function confirmBankTransfer(id, amountDue) {
+  if (!confirm('Confirm this bank transfer and mark as paid?')) return;
+  const res = await apiFetch(`/api/payments/${id}`, { method: 'PATCH', body: JSON.stringify({ amountPaid: amountDue }) });
+  if (!res) return;
+  // Reload payment row and open receipt
+  const updated = await apiFetch(`/api/payments/${id}`);
+  if (updated) {
+    openReceipt(buildPaymentReceipt({ ...updated, _id: id }));
+  }
+  loadPaymentsFromAPI();
+}
+</script>
 
 </body>
 </html>

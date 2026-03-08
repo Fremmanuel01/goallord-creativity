@@ -14,6 +14,28 @@ app.use(express.urlencoded({ extended: true }));
 // ─── STATIC FILES (serve the website) ────────────────────────
 app.use(express.static(path.join(__dirname)));
 
+// ─── PUBLIC CONFIG ────────────────────────────────────────────
+app.get('/api/config/public', (req, res) => {
+  res.json({
+    paystackPublicKey: process.env.PAYSTACK_PUBLIC_KEY || '',
+    bank: {
+      name:        process.env.BANK_NAME || '',
+      number:      process.env.BANK_ACCOUNT_NUMBER || '',
+      accountName: process.env.BANK_ACCOUNT_NAME || ''
+    },
+    bank2: {
+      name:        process.env.BANK2_NAME || '',
+      number:      process.env.BANK2_ACCOUNT_NUMBER || '',
+      accountName: process.env.BANK2_ACCOUNT_NAME || ''
+    },
+    fees: {
+      application:    Number(process.env.APPLICATION_FEE)    || 20000,
+      fullTuition:    Number(process.env.FULL_TUITION_FEE)   || 150000,
+      monthlyTuition: Number(process.env.MONTHLY_TUITION_FEE) || 60000
+    }
+  });
+});
+
 // ─── API ROUTES ───────────────────────────────────────────────
 app.use('/api/auth',          require('./routes/auth'));
 app.use('/api/applicants',    require('./routes/applicants'));

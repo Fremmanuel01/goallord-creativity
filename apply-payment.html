@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Complete Your Application — Goallord Creativity Academy</title>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --orange: #D66A1F; --blue: #1E4BFF;
+    --bg: #0F1115; --card: #171A21; --border: #2A2F3A;
+    --text: #F4F6FA; --muted: #A0A6B3;
+    --green: #22c55e; --red: #ef4444;
+  }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 16px 80px; }
+
+  .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 48px; }
+  .logo-mark { width: 44px; height: 44px; background: var(--orange); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; color: #fff; letter-spacing: -1px; }
+  .logo-text { font-size: 15px; font-weight: 700; letter-spacing: .5px; color: var(--text); line-height: 1.2; }
+  .logo-sub { font-size: 11px; color: var(--muted); font-weight: 400; letter-spacing: .3px; }
+
+  .container { width: 100%; max-width: 540px; }
+
+  .page-title { text-align: center; margin-bottom: 32px; }
+  .page-title h1 { font-size: 26px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+  .page-title p { font-size: 14px; color: var(--muted); }
+
+  /* Step indicator */
+  .steps { display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 36px; }
+  .step { display: flex; align-items: center; gap: 8px; }
+  .step-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; border: 2px solid var(--border); color: var(--muted); background: var(--card); transition: all .3s; flex-shrink: 0; }
+  .step-circle.active { border-color: var(--orange); color: var(--orange); background: rgba(214,106,31,0.1); }
+  .step-circle.done { border-color: var(--green); color: #fff; background: var(--green); }
+  .step-label { font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+  .step-label.active { color: var(--orange); font-weight: 600; }
+  .step-label.done { color: var(--green); }
+  .step-line { width: 48px; height: 2px; background: var(--border); margin: 0 8px; flex-shrink: 0; transition: background .3s; }
+  .step-line.done { background: var(--green); }
+
+  /* Applicant info card */
+  .applicant-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+  .applicant-avatar { width: 44px; height: 44px; border-radius: 50%; background: rgba(214,106,31,0.15); border: 2px solid var(--orange); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: var(--orange); flex-shrink: 0; }
+  .applicant-name { font-size: 16px; font-weight: 700; color: var(--text); }
+  .applicant-meta { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  /* Section box */
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin-bottom: 20px; }
+  .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 16px; }
+
+  /* Amount badge */
+  .amount-badge { background: rgba(214,106,31,0.12); border: 1px solid rgba(214,106,31,0.3); border-radius: 8px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .amount-label { font-size: 14px; color: var(--text); font-weight: 500; }
+  .amount-value { font-size: 22px; font-weight: 800; color: var(--orange); }
+
+  /* Buttons */
+  .btn-pay { width: 100%; padding: 14px; background: var(--orange); color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background .2s; letter-spacing: .3px; }
+  .btn-pay:hover { background: #c05a12; }
+  .btn-pay:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary { width: 100%; padding: 13px; background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all .2s; margin-top: 10px; }
+  .btn-secondary:hover { border-color: var(--muted); color: var(--text); }
+  .btn-blue { width: 100%; padding: 14px; background: var(--blue); color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity .2s; }
+  .btn-blue:hover { opacity: .88; }
+  .btn-blue:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Bank details */
+  .bank-panel { display: none; margin-top: 16px; }
+  .bank-panel.open { display: block; }
+  .bank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .bank-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .bank-card-title { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; margin-bottom: 8px; }
+  .bank-row { font-size: 12px; color: var(--muted); padding: 2px 0; }
+  .bank-row span { color: var(--text); font-weight: 600; }
+  .bank-row .acct-num { font-family: monospace; font-size: 14px; letter-spacing: 1px; color: var(--orange); }
+
+  /* Plan cards */
+  .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .plan-card { background: var(--bg); border: 2px solid var(--border); border-radius: 10px; padding: 18px; cursor: pointer; transition: all .2s; text-align: center; position: relative; }
+  .plan-card:hover { border-color: var(--muted); }
+  .plan-card.selected { border-color: var(--orange); background: rgba(214,106,31,0.06); }
+  .plan-card.selected::after { content: '✓'; position: absolute; top: 10px; right: 12px; width: 20px; height: 20px; background: var(--orange); color: #fff; border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .plan-icon { font-size: 28px; margin-bottom: 8px; }
+  .plan-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .plan-price { font-size: 20px; font-weight: 800; color: var(--orange); }
+  .plan-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  /* Input */
+  .input-group { margin-bottom: 14px; }
+  .input-label { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; display: block; }
+  .input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 11px 14px; color: var(--text); font-size: 14px; outline: none; transition: border-color .2s; }
+  .input:focus { border-color: var(--orange); }
+
+  /* Alerts */
+  .alert { padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; display: none; line-height: 1.5; }
+  .alert-error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+  .alert-success { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: #86efac; }
+  .alert-info { background: rgba(30,75,255,0.1); border: 1px solid rgba(30,75,255,0.3); color: #93c5fd; }
+
+  /* Success screen */
+  #successScreen { display: none; text-align: center; }
+  .success-icon { width: 80px; height: 80px; background: rgba(34,197,94,0.15); border: 3px solid var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; margin: 0 auto 24px; }
+  .success-title { font-size: 28px; font-weight: 800; color: var(--green); margin-bottom: 10px; }
+  .success-sub { font-size: 15px; color: var(--muted); line-height: 1.6; margin-bottom: 32px; }
+  .success-email { color: var(--orange); font-weight: 600; }
+
+  /* Bank pending screen */
+  #bankPendingScreen { display: none; text-align: center; }
+  .pending-icon { width: 80px; height: 80px; background: rgba(30,75,255,0.1); border: 3px solid var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; margin: 0 auto 24px; }
+
+  /* Divider */
+  .or-divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; }
+  .or-divider::before, .or-divider::after { content:''; flex:1; height:1px; background: var(--border); }
+  .or-divider span { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  @media (max-width: 480px) {
+    .plan-grid { grid-template-columns: 1fr; }
+    .bank-grid { grid-template-columns: 1fr; }
+    .steps { gap: 0; }
+    .step-label { display: none; }
+    .step-line { width: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="logo">
+  <div class="logo-mark">GL</div>
+  <div>
+    <div class="logo-text">Goallord Creativity</div>
+    <div class="logo-sub">Academy Application</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Step indicator -->
+  <div class="steps" id="stepsBar">
+    <div class="step">
+      <div class="step-circle active" id="sc1">1</div>
+      <div class="step-label active" id="sl1">Application Fee</div>
+    </div>
+    <div class="step-line" id="line1"></div>
+    <div class="step">
+      <div class="step-circle" id="sc2">2</div>
+      <div class="step-label" id="sl2">Choose Plan</div>
+    </div>
+    <div class="step-line" id="line2"></div>
+    <div class="step">
+      <div class="step-circle" id="sc3">3</div>
+      <div class="step-label" id="sl3">Done</div>
+    </div>
+  </div>
+
+  <!-- Applicant info card -->
+  <div class="applicant-card" id="applicantCard" style="display:none;">
+    <div class="applicant-avatar" id="applicantInitial">?</div>
+    <div>
+      <div class="applicant-name" id="applicantName">Loading…</div>
+      <div class="applicant-meta" id="applicantMeta"></div>
+    </div>
+  </div>
+
+  <!-- ── STEP 1: Application Fee ───────────────────────────── -->
+  <div id="step1">
+    <div class="section">
+      <div class="section-title">Step 1 — Application Fee</div>
+      <div class="amount-badge">
+        <span class="amount-label">Application Fee</span>
+        <span class="amount-value" id="feeDisplay">₦20,000</span>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6;">
+        Pay your application fee to complete enrolment. You'll choose your tuition plan in the next step and receive your login details immediately after.
+      </p>
+
+      <div id="alreadyPaidMsg" class="alert alert-info" style="display:none;">
+        Your application fee has already been paid. Please proceed to choose your tuition plan.
+      </div>
+      <div id="step1Error" class="alert alert-error"></div>
+
+      <!-- Paystack button -->
+      <button class="btn-pay" id="paystackBtn" onclick="startPaystack()">
+        Pay ₦<span id="payBtnAmt">20,000</span> with Card / Bank
+      </button>
+
+      <div class="or-divider"><span>or</span></div>
+
+      <!-- Bank transfer toggle -->
+      <button class="btn-secondary" id="bankToggleBtn" onclick="toggleBankPanel()">
+        Pay via Bank Transfer ▼
+      </button>
+
+      <!-- Bank panel -->
+      <div class="bank-panel" id="bankPanel">
+        <p style="font-size:13px;color:var(--muted);margin:16px 0 12px;line-height:1.5;">
+          Transfer <strong style="color:var(--orange);">₦<span id="bankAmt">20,000</span></strong> to any of the accounts below, then enter your transfer reference:
+        </p>
+        <div class="bank-grid">
+          <div class="bank-card">
+            <div class="bank-card-title">Account 1</div>
+            <div class="bank-row">Bank: <span id="b1-name">—</span></div>
+            <div class="bank-row">Acct No.: <span class="acct-num" id="b1-num">—</span></div>
+            <div class="bank-row">Name: <span id="b1-acct">—</span></div>
+          </div>
+          <div class="bank-card">
+            <div class="bank-card-title">Account 2</div>
+            <div class="bank-row">Bank: <span id="b2-name">—</span></div>
+            <div class="bank-row">Acct No.: <span class="acct-num" id="b2-num">—</span></div>
+            <div class="bank-row">Name: <span id="b2-acct">—</span></div>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label" for="bankRef">Transfer Reference / Teller Number *</label>
+          <input type="text" id="bankRef" class="input" placeholder="e.g. TRF202603150001">
+        </div>
+        <div id="bankError" class="alert alert-error"></div>
+        <button class="btn-blue" id="bankSubmitBtn" onclick="submitBankTransfer()">
+          Submit Transfer Reference →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: Choose Tuition Plan ──────────────────────── -->
+  <div id="step2" style="display:none;">
+    <div class="section">
+      <div class="section-title">Step 2 — Choose Your Tuition Plan</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5;">
+        Select how you'd like to pay your tuition. You can manage payments from your student dashboard.
+      </p>
+      <div class="plan-grid">
+        <div class="plan-card" id="plan-full" onclick="selectPlan('full')">
+          <div class="plan-icon">💳</div>
+          <div class="plan-name">Full Payment</div>
+          <div class="plan-price" id="fullPriceDisplay">₦150,000</div>
+          <div class="plan-sub">One-time payment<br>Save on total cost</div>
+        </div>
+        <div class="plan-card" id="plan-monthly" onclick="selectPlan('monthly')">
+          <div class="plan-icon">📅</div>
+          <div class="plan-name">Monthly Plan</div>
+          <div class="plan-price" id="monthlyPriceDisplay">₦60,000</div>
+          <div class="plan-sub">× 3 months<br>Pay in installments</div>
+        </div>
+      </div>
+      <div id="step2Error" class="alert alert-error"></div>
+      <button class="btn-pay" id="confirmPlanBtn" onclick="confirmPlan()" disabled>
+        Confirm Plan &amp; Complete Enrolment →
+      </button>
+    </div>
+  </div>
+
+  <!-- ── SUCCESS screen ───────────────────────────────────── -->
+  <div id="successScreen">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">You're In!</div>
+    <p class="success-sub">
+      Your application is complete and your student account has been created.<br><br>
+      Login details have been sent to<br>
+      <span class="success-email" id="successEmail"></span>
+    </p>
+    <a href="/student-login.html" style="display:inline-block;background:var(--orange);color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:15px;font-weight:700;letter-spacing:.3px;">
+      Go to Student Login →
+    </a>
+  </div>
+
+  <!-- ── BANK PENDING screen ───────────────────────────────── -->
+  <div id="bankPendingScreen">
+    <div class="pending-icon">⏳</div>
+    <h2 style="font-size:24px;font-weight:800;color:var(--text);margin-bottom:10px;">Reference Submitted!</h2>
+    <p class="success-sub">
+      Your transfer reference has been recorded. Admin will confirm your payment within <strong style="color:var(--text);">24 hours</strong> and you'll receive your login details at<br>
+      <span class="success-email" id="pendingEmail"></span>
+    </p>
+    <a href="/academy.html" style="display:inline-block;background:var(--card);color:var(--muted);text-decoration:none;padding:12px 28px;border-radius:8px;font-size:14px;border:1px solid var(--border);">
+      Back to Academy
+    </a>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+  const params       = new URLSearchParams(window.location.search);
+  const applicantId  = params.get('id');
+
+  let paystackPublicKey = '';
+  let fees = { application: 20000, fullTuition: 150000, monthlyTuition: 60000 };
+  let bank1 = {}, bank2 = {};
+  let applicantEmail = '';
+  let applicantName  = '';
+  let selectedPlan   = null;
+  let feeAlreadyPaid = false;
+  let bankTransferPending = false; // fee submitted via bank transfer, awaiting confirmation
+
+  // ── Bootstrap ────────────────────────────────────────────────
+  (async function init() {
+    if (!applicantId) {
+      showGlobalError('Invalid payment link. Please recheck your verification email.');
+      return;
+    }
+
+    // Load config + applicant info in parallel
+    const [cfgRes, appRes] = await Promise.all([
+      fetch('/api/config/public'),
+      fetch(`/api/applicants/${applicantId}/payment-info`)
+    ]);
+
+    if (!cfgRes.ok) { showGlobalError('Could not load configuration. Please refresh.'); return; }
+    const cfg = await cfgRes.json();
+    paystackPublicKey = cfg.paystackPublicKey || '';
+    bank1 = cfg.bank  || {};
+    bank2 = cfg.bank2 || {};
+    fees  = cfg.fees  || fees;
+
+    // Populate bank details
+    document.getElementById('b1-name').textContent = bank1.name        || '—';
+    document.getElementById('b1-num').textContent  = bank1.number      || '—';
+    document.getElementById('b1-acct').textContent = bank1.accountName || '—';
+    document.getElementById('b2-name').textContent = bank2.name        || '—';
+    document.getElementById('b2-num').textContent  = bank2.number      || '—';
+    document.getElementById('b2-acct').textContent = bank2.accountName || '—';
+
+    // Populate fee displays
+    const fmtFee = n => n.toLocaleString();
+    document.getElementById('feeDisplay').textContent      = '₦' + fmtFee(fees.application);
+    document.getElementById('payBtnAmt').textContent       = fmtFee(fees.application);
+    document.getElementById('bankAmt').textContent         = fmtFee(fees.application);
+    document.getElementById('fullPriceDisplay').textContent  = '₦' + fmtFee(fees.fullTuition);
+    document.getElementById('monthlyPriceDisplay').textContent = '₦' + fmtFee(fees.monthlyTuition);
+
+    if (!appRes.ok) {
+      const err = await appRes.json().catch(() => ({}));
+      showGlobalError(err.error || 'Could not load application. Please use the link from your verification email.');
+      return;
+    }
+    const app = await appRes.json();
+    applicantEmail = app.email;
+    applicantName  = app.fullName;
+
+    // Show applicant card
+    document.getElementById('applicantCard').style.display = 'flex';
+    document.getElementById('applicantName').textContent   = app.fullName;
+    document.getElementById('applicantMeta').textContent   = (app.track || 'Academy') + ' Programme · ' + app.email;
+    document.getElementById('applicantInitial').textContent = app.fullName.charAt(0).toUpperCase();
+
+    if (app.applicationFeePaid) {
+      // Fee already paid — skip to plan selection
+      feeAlreadyPaid = true;
+      document.getElementById('alreadyPaidMsg').style.display = 'block';
+      document.getElementById('paystackBtn').style.display    = 'none';
+      document.getElementById('bankToggleBtn').style.display  = 'none';
+      document.querySelector('.or-divider').style.display     = 'none';
+      goToStep2();
+    }
+  })();
+
+  function showGlobalError(msg) {
+    document.querySelector('.container').innerHTML = `
+      <div style="background:var(--card);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:36px;text-align:center;">
+        <div style="font-size:40px;margin-bottom:16px;">⚠️</div>
+        <h2 style="color:#fca5a5;font-size:18px;margin-bottom:10px;">Something went wrong</h2>
+        <p style="color:var(--muted);font-size:14px;line-height:1.6;">${msg}</p>
+        <a href="/apply.html" style="display:inline-block;margin-top:20px;color:var(--orange);font-size:13px;">Resubmit Application</a>
+      </div>`;
+  }
+
+  // ── Step navigation ──────────────────────────────────────────
+  function goToStep2() {
+    document.getElementById('step1').style.display = 'none';
+    document.getElementById('step2').style.display = 'block';
+    // Update step indicator
+    document.getElementById('sc1').className = 'step-circle done';
+    document.getElementById('sl1').className = 'step-label done';
+    document.getElementById('line1').className = 'step-line done';
+    document.getElementById('sc2').className = 'step-circle active';
+    document.getElementById('sl2').className = 'step-label active';
+  }
+
+  function goToSuccess() {
+    document.getElementById('stepsBar').style.display  = 'none';
+    document.getElementById('applicantCard').style.display = 'none';
+    document.getElementById('step1').style.display     = 'none';
+    document.getElementById('step2').style.display     = 'none';
+    document.getElementById('successScreen').style.display = 'block';
+    document.getElementById('successEmail').textContent = applicantEmail;
+  }
+
+  function goToBankPending() {
+    document.getElementById('stepsBar').style.display      = 'none';
+    document.getElementById('applicantCard').style.display = 'none';
+    document.getElementById('step1').style.display         = 'none';
+    document.getElementById('step2').style.display         = 'none';
+    document.getElementById('bankPendingScreen').style.display = 'block';
+    document.getElementById('pendingEmail').textContent    = applicantEmail;
+  }
+
+  // ── Plan selection ───────────────────────────────────────────
+  function selectPlan(plan) {
+    selectedPlan = plan;
+    document.getElementById('plan-full').classList.toggle('selected', plan === 'full');
+    document.getElementById('plan-monthly').classList.toggle('selected', plan === 'monthly');
+    document.getElementById('confirmPlanBtn').disabled = false;
+  }
+
+  async function confirmPlan() {
+    if (!selectedPlan) return;
+    const btn = document.getElementById('confirmPlanBtn');
+    const errEl = document.getElementById('step2Error');
+    errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Processing…';
+
+    if (bankTransferPending) {
+      // Bank transfer already submitted — just record plan choice
+      try {
+        const res = await fetch(`/api/applicants/${applicantId}/bank-transfer-fee`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reference: document.getElementById('bankRef').value || 'pending', paymentPlan: selectedPlan })
+        });
+        // Regardless of response (may already have reference), show pending
+        goToBankPending();
+      } catch { goToBankPending(); }
+      return;
+    }
+
+    // Should not reach here in normal flow (Paystack triggers confirmPlan automatically)
+    btn.disabled = false;
+    btn.textContent = 'Confirm Plan & Complete Enrolment →';
+  }
+
+  // ── Paystack flow ────────────────────────────────────────────
+  function startPaystack() {
+    const errEl = document.getElementById('step1Error');
+    errEl.style.display = 'none';
+    if (!paystackPublicKey) { errEl.textContent = 'Payment gateway not configured. Please use bank transfer or contact admin.'; errEl.style.display = 'block'; return; }
+    if (!applicantEmail) { errEl.textContent = 'Could not load applicant email. Please refresh.'; errEl.style.display = 'block'; return; }
+
+    const handler = PaystackPop.setup({
+      key:      paystackPublicKey,
+      email:    applicantEmail,
+      amount:   fees.application * 100,
+      currency: 'NGN',
+      ref:      'APPFEE-' + applicantId + '-' + Date.now(),
+      metadata: { applicantId, type: 'application_fee' },
+      onSuccess: async function(tx) {
+        await verifyPaystackFee(tx.reference);
+      },
+      onCancel: function() {}
+    });
+    handler.openIframe();
+  }
+
+  async function verifyPaystackFee(reference) {
+    const btn   = document.getElementById('paystackBtn');
+    const errEl = document.getElementById('step1Error');
+    btn.disabled    = true;
+    btn.textContent = 'Verifying payment…';
+    errEl.style.display = 'none';
+
+    // Move to step 2 for plan selection while verifying
+    goToStep2();
+    document.getElementById('confirmPlanBtn').disabled = true;
+    document.getElementById('confirmPlanBtn').textContent = 'Confirm Plan & Activate Account →';
+
+    // Override confirmPlanBtn to complete the Paystack flow
+    document.getElementById('confirmPlanBtn').onclick = async function() {
+      if (!selectedPlan) return;
+      const planBtn = document.getElementById('confirmPlanBtn');
+      const s2err   = document.getElementById('step2Error');
+      s2err.style.display = 'none';
+      planBtn.disabled    = true;
+      planBtn.textContent = 'Creating your account…';
+
+      try {
+        const res  = await fetch(`/api/applicants/${applicantId}/pay-application`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ reference, paymentPlan: selectedPlan })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          s2err.textContent    = data.error || 'Could not activate account. Please contact admin.';
+          s2err.style.display  = 'block';
+          planBtn.disabled     = false;
+          planBtn.textContent  = 'Confirm Plan & Activate Account →';
+          return;
+        }
+        goToSuccess();
+      } catch(e) {
+        s2err.textContent   = 'Network error. Please contact admin with reference: ' + reference;
+        s2err.style.display = 'block';
+        planBtn.disabled    = false;
+        planBtn.textContent = 'Retry →';
+      }
+    };
+    document.getElementById('confirmPlanBtn').disabled = false;
+  }
+
+  // ── Bank transfer flow ───────────────────────────────────────
+  function toggleBankPanel() {
+    const panel = document.getElementById('bankPanel');
+    const btn   = document.getElementById('bankToggleBtn');
+    const isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open', !isOpen);
+    btn.textContent = isOpen ? 'Pay via Bank Transfer ▼' : 'Pay via Bank Transfer ▲';
+  }
+
+  async function submitBankTransfer() {
+    const ref   = document.getElementById('bankRef').value.trim();
+    const errEl = document.getElementById('bankError');
+    errEl.style.display = 'none';
+    if (!ref) { errEl.textContent = 'Please enter your transfer reference number.'; errEl.style.display = 'block'; return; }
+
+    const btn = document.getElementById('bankSubmitBtn');
+    btn.disabled    = true;
+    btn.textContent = 'Submitting…';
+
+    try {
+      const res  = await fetch(`/api/applicants/${applicantId}/bank-transfer-fee`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ reference: ref, paymentPlan: 'monthly' }) // temp plan, will update in step 2
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        errEl.textContent  = data.error || 'Submission failed. Please try again.';
+        errEl.style.display = 'block';
+        btn.disabled       = false;
+        btn.textContent    = 'Submit Transfer Reference →';
+        return;
+      }
+      // Go to plan selection, then pending screen
+      bankTransferPending = true;
+      goToStep2();
+      document.getElementById('confirmPlanBtn').textContent = 'Submit Plan Choice →';
+    } catch {
+      errEl.textContent   = 'Network error. Please try again.';
+      errEl.style.display = 'block';
+      btn.disabled        = false;
+      btn.textContent     = 'Submit Transfer Reference →';
+    }
+  }
+</script>
+
+</body>
+</html>
