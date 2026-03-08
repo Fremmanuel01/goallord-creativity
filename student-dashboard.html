@@ -736,22 +736,45 @@
   }
 
   // ── Flashcards ───────────────────────────────────────────────
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
   async function loadFlashcards() {
     flashcardsLoaded = true;
     const cont = document.getElementById('flashcardsContent');
     cont.innerHTML = '<div class="loading">Loading…</div>';
     try {
-      const res = await fetch('/api/flashcards/sets/student', { headers: { 'Authorization': 'Bearer ' + token } });
-      const data = await res.json();
-      const sets = Array.isArray(data) ? data : (data.data || []);
+      const [setsRes, progRes] = await Promise.all([
+        fetch('/api/flashcards/sets/student', { headers: { 'Authorization': 'Bearer ' + token } }),
+        fetch('/api/flashcards/sets/student/progress', { headers: { 'Authorization': 'Bearer ' + token } })
+      ]);
+      const setsData = await setsRes.json();
+      const sets = Array.isArray(setsData) ? setsData : (setsData.data || []);
+      const progress = await progRes.json().catch(() => []);
+      const progMap = {};
+      if (Array.isArray(progress)) progress.forEach(p => { progMap[String(p._id)] = p; });
+
       if (!sets.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">🃏</div>No flashcard sets yet.</div>'; return; }
       cont.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">' +
-        sets.map(s => `
+        sets.map(s => {
+          const prog = progMap[String(s._id)];
+          const done = !!prog;
+          const score = done ? Math.round(prog.correct / prog.total * 100) : null;
+          const indicator = done
+            ? `<div style="width:26px;height:26px;border-radius:50%;background:#22c55e;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;flex-shrink:0">✓</div>`
+            : `<div style="width:26px;height:26px;border-radius:50%;border:2px solid #ef4444;flex-shrink:0"></div>`;
+          return `
           <div class="table-wrap" style="padding:20px;cursor:pointer" onclick="startQuiz('${s._id}','${s.title.replace(/'/g,'')}')">
-            <div style="font-weight:700;margin-bottom:6px">${s.title}</div>
-            <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Week ${s.week} · ${s.topic || 'General'}</div>
-            <button style="background:var(--blue);color:#fff;border:none;padding:7px 16px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer">Start Quiz →</button>
-          </div>`).join('') + '</div>';
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
+              <div style="font-weight:700">${escHtml(s.title)}</div>
+              ${indicator}
+            </div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:${done ? '6px' : '12px'}">Week ${s.week} · ${escHtml(s.topic || 'General')}</div>
+            ${done ? `<div style="font-size:12px;color:${score >= 70 ? '#22c55e' : '#f59e0b'};margin-bottom:10px;font-weight:600">Last score: ${score}%</div>` : ''}
+            <button style="background:${done ? 'transparent' : 'var(--blue)'};color:${done ? 'var(--muted)' : '#fff'};border:${done ? '1px solid var(--border)' : 'none'};padding:7px 16px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer">${done ? 'Retake Quiz →' : 'Start Quiz →'}</button>
+          </div>`;
+        }).join('') + '</div>';
     } catch { cont.innerHTML = '<div class="empty">Failed to load flashcards.</div>'; }
   }
 
@@ -773,32 +796,49 @@
     document.getElementById('quizProgress').textContent = `Card ${quizIdx + 1} of ${quizCards.length}`;
     const hasOptions = card.options && card.options.length > 0;
     document.getElementById('quizCard').innerHTML = `
-      <div style="font-size:18px;font-weight:700;margin-bottom:28px;line-height:1.5">${card.question}</div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:28px;line-height:1.5">${escHtml(card.question)}</div>
       ${hasOptions
         ? `<div style="display:flex;flex-direction:column;gap:10px;text-align:left;max-width:400px;margin:0 auto">
-            ${card.options.map((opt,i) => `<button onclick="answerCard(this,'${opt.replace(/'/g,"\\'")}','${card.correctAnswer.replace(/'/g,"\\'")}','${card._id}')"
-              style="width:100%;text-align:left;padding:12px 16px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;cursor:pointer">${opt}</button>`).join('')}
+            ${card.options.map(opt => `<button
+              data-opt="${escHtml(opt)}"
+              data-correct="${escHtml(card.correctAnswer)}"
+              data-cardid="${card._id}"
+              onclick="answerCard(this)"
+              style="width:100%;text-align:left;padding:12px 16px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;cursor:pointer">${escHtml(opt)}</button>`).join('')}
           </div>`
         : `<div style="display:flex;gap:10px;max-width:400px;margin:0 auto;flex-direction:column">
-            <input id="openAnswer" style="padding:12px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;width:100%" placeholder="Type your answer…">
-            <button onclick="submitOpenAnswer('${card.correctAnswer.replace(/'/g,"\\'")}','${card._id}')"
+            <input id="openAnswer" data-correct="${escHtml(card.correctAnswer)}" data-cardid="${card._id}"
+              style="padding:12px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;width:100%" placeholder="Type your answer…">
+            <button onclick="submitOpenAnswer()"
               style="background:var(--blue);color:#fff;border:none;padding:11px 24px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">Submit</button>
           </div>`}
     `;
   }
 
-  function answerCard(btn, chosen, correct, cardId) {
+  function answerCard(btn) {
+    const chosen = btn.dataset.opt;
+    const correct = btn.dataset.correct;
+    const cardId = btn.dataset.cardid;
     const isCorrect = chosen === correct;
     btn.style.background = isCorrect ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.15)';
     btn.style.borderColor = isCorrect ? 'var(--green)' : 'var(--red)';
+    // Highlight the correct answer if wrong
+    if (!isCorrect) {
+      document.querySelectorAll('#quizCard button').forEach(b => {
+        if (b.dataset.opt === correct) b.style.borderColor = 'var(--green)';
+      });
+    }
     document.querySelectorAll('#quizCard button').forEach(b => b.disabled = true);
     quizResponses.push({ flashcard: cardId, answer: chosen, isCorrect });
-    setTimeout(nextCard, 1200);
+    setTimeout(nextCard, 1400);
   }
 
-  function submitOpenAnswer(correct, cardId) {
-    const val = document.getElementById('openAnswer').value.trim();
+  function submitOpenAnswer() {
+    const input = document.getElementById('openAnswer');
+    const val = input.value.trim();
     if (!val) return;
+    const correct = input.dataset.correct;
+    const cardId = input.dataset.cardid;
     const isCorrect = val.toLowerCase() === correct.toLowerCase();
     quizResponses.push({ flashcard: cardId, answer: val, isCorrect });
     nextCard();
@@ -834,6 +874,9 @@
     document.getElementById('flashcardQuiz').style.display = 'none';
     document.getElementById('flashcardsContent').style.display = '';
     document.getElementById('quizCard').style.display = '';
+    // Reload grid so progress indicators update immediately
+    flashcardsLoaded = false;
+    loadFlashcards();
   }
 
   loadAll();
