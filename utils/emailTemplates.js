@@ -227,4 +227,42 @@ function adminAcceptanceNotificationEmail({ fullName, email, track, studentId, d
 </html>`;
 }
 
-module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail };
+function passwordResetEmail({ fullName, resetUrl, role }) {
+  const roleLabel = role === 'lecturer' ? 'Lecturer' : 'Student';
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Reset Your Password</title></head>
+<body style="margin:0;padding:0;background:#0F1115;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0F1115;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#171A21;border-radius:12px;border:1px solid #2A2F3A;overflow:hidden;max-width:600px;width:100%;">
+        <tr><td style="background:#D66A1F;padding:32px 40px;text-align:center;">
+          <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700;letter-spacing:2px;">GOALLORD CREATIVITY</h1>
+          <p style="margin:8px 0 0;color:rgba(255,255,255,0.8);font-size:13px;letter-spacing:1px;">PASSWORD RESET — ${roleLabel.toUpperCase()} PORTAL</p>
+        </td></tr>
+        <tr><td style="padding:40px;">
+          <h2 style="color:#F4F6FA;font-size:22px;margin:0 0 16px;">Reset Your Password</h2>
+          <p style="color:#A0A6B3;font-size:15px;line-height:1.6;margin:0 0 12px;">Hi ${fullName},</p>
+          <p style="color:#A0A6B3;font-size:15px;line-height:1.6;margin:0 0 32px;">
+            We received a request to reset your ${roleLabel} Portal password. Click the button below to set a new password. This link expires in <strong style="color:#F4F6FA;">1 hour</strong>.
+          </p>
+          <div style="text-align:center;margin:0 0 32px;">
+            <a href="${resetUrl}" style="display:inline-block;background:#D66A1F;color:#fff;text-decoration:none;padding:16px 40px;border-radius:6px;font-size:14px;font-weight:700;letter-spacing:1px;">RESET MY PASSWORD</a>
+          </div>
+          <p style="color:#A0A6B3;font-size:13px;line-height:1.6;margin:0 0 8px;">Or copy and paste this link:</p>
+          <p style="font-size:12px;word-break:break-all;margin:0 0 32px;"><a href="${resetUrl}" style="color:#D66A1F;">${resetUrl}</a></p>
+          <p style="color:#A0A6B3;font-size:13px;line-height:1.6;margin:0;border-top:1px solid #2A2F3A;padding-top:24px;">
+            If you did not request a password reset, please ignore this email. Your password will not change.
+          </p>
+        </td></tr>
+        <tr><td style="padding:24px 40px;border-top:1px solid #2A2F3A;text-align:center;">
+          <p style="color:#A0A6B3;font-size:12px;margin:0;">Goallord Creativity Limited &bull; Onitsha, Nigeria</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail };
