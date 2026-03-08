@@ -35,6 +35,21 @@ router.get('/me', requireStudent, async (req, res) => {
   }
 });
 
+// ── GET /api/attendance/open — student: find open session for their batch ──
+router.get('/open', requireStudent, async (req, res) => {
+  try {
+    const studentId = req.student.id;
+    const student = await Student.findById(studentId).select('batch');
+    if (!student || !student.batch) return res.json({ session: null });
+
+    const session = await Attendance.findOne({ batch: student.batch, isOpen: true })
+      .select('_id week day topic classDate');
+    res.json({ session: session || null });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── GET /api/attendance — admin/lecturer: list sessions ────────
 router.get('/', requireAuth, async (req, res) => {
   try {

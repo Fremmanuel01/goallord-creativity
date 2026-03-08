@@ -3,6 +3,7 @@ const crypto   = require('crypto');
 const bcrypt   = require('bcryptjs');
 const Applicant = require('../models/Applicant');
 const Student   = require('../models/Student');
+const Batch     = require('../models/Batch');
 const { requireAuth } = require('../middleware/auth');
 const { sendMail }    = require('../utils/mailer');
 const { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail } = require('../utils/emailTemplates');
@@ -162,6 +163,9 @@ router.patch('/:id', requireAuth, async (req, res) => {
         const hashed        = await bcrypt.hash(plainPassword, 12);
         const cohort        = new Date().toLocaleString('en-GB', { month: 'long', year: 'numeric' });
 
+        // Assign to the current active batch
+        const activeBatch = await Batch.findOne({ isActive: true }).select('_id');
+
         const student = await Student.create({
           fullName:     doc.fullName,
           email:        doc.email,
@@ -169,6 +173,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
           phone:        doc.phone || '',
           track:        doc.track || 'Other',
           cohort,
+          batch:        activeBatch ? activeBatch._id : undefined,
           status:       'Active',
           applicantRef: doc._id
         });

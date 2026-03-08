@@ -1983,36 +1983,44 @@
     <!-- ── PAYMENTS PAGE ── -->
     <div class="page" id="page-payments">
       <div class="section-header" style="margin-bottom:20px">
-        <h2>Monthly Payments</h2>
+        <h2>Payments</h2>
         <button class="btn btn-primary" onclick="openRecordPayment()">+ Record Payment</button>
       </div>
       <!-- Summary cards -->
       <div id="payAdminSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px"></div>
       <!-- Filters -->
       <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
-        <input class="form-input" id="pay-month-filter" type="month" style="max-width:160px" onchange="loadPaymentsPage()">
-        <select class="form-input" id="pay-cohort-filter" style="max-width:160px" onchange="loadPaymentsPage()">
-          <option value="">All Cohorts</option>
+        <select class="form-input" id="pay-category-filter" style="max-width:200px" onchange="loadPaymentsPage()">
+          <option value="">All Categories</option>
+          <option value="application_fee">Application Fee</option>
+          <option value="tuition_month_1">Tuition Month 1</option>
+          <option value="tuition_month_2">Tuition Month 2</option>
+          <option value="tuition_month_3">Tuition Month 3</option>
+          <option value="full_tuition_payment">Full Tuition</option>
         </select>
-        <select class="form-input" id="pay-status-filter" style="max-width:140px" onchange="loadPaymentsPage()">
+        <select class="form-input" id="pay-status-filter" style="max-width:160px" onchange="loadPaymentsPage()">
           <option value="">All Statuses</option>
-          <option>Paid</option>
-          <option>Partial</option>
-          <option>Unpaid</option>
+          <option value="pending">Pending</option>
+          <option value="paid">Paid</option>
+          <option value="partially_paid">Partially Paid</option>
+          <option value="overdue">Overdue</option>
+          <option value="fully_paid">Fully Paid</option>
         </select>
+        <input class="form-input" id="pay-search" placeholder="Search student…" style="max-width:200px" oninput="filterPayTable()">
       </div>
       <div class="table-wrapper">
         <table style="width:100%;border-collapse:collapse">
           <thead><tr>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Student</th>
-            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Month</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Category</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Amount Due</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Amount Paid</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Status</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Method</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Due Date</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Actions</th>
           </tr></thead>
-          <tbody id="payTableBody"><tr><td colspan="7" style="padding:32px;text-align:center;color:var(--muted)">Loading…</td></tr></tbody>
+          <tbody id="payTableBody"><tr><td colspan="8" style="padding:32px;text-align:center;color:var(--muted)">Loading…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -2247,20 +2255,33 @@
 <div class="modal-overlay" id="recordPaymentModal">
   <div class="modal">
     <div class="modal-header">
-      <h3>Record Payment</h3>
+      <h3 id="payModalTitle">Record Payment</h3>
       <button class="modal-close" onclick="closeModal('recordPaymentModal')">✕</button>
     </div>
     <div class="modal-body">
       <input type="hidden" id="pay-edit-id">
       <div class="modal-form">
-        <div class="form-group"><label>Student</label>
+        <div class="form-group"><label>Student *</label>
           <select class="form-input" id="pay-student-select">
             <option value="">— Select student —</option>
           </select>
         </div>
         <div class="modal-form-row">
-          <div class="form-group"><label>Month</label><input class="form-input" id="pay-month-input" type="month"></div>
-          <div class="form-group"><label>Amount Paid (₦)</label><input class="form-input" id="pay-amount-input" type="number" min="0" placeholder="100000"></div>
+          <div class="form-group"><label>Category *</label>
+            <select class="form-input" id="pay-category-input">
+              <option value="">— Select category —</option>
+              <option value="application_fee">Application Fee</option>
+              <option value="tuition_month_1">Tuition Month 1</option>
+              <option value="tuition_month_2">Tuition Month 2</option>
+              <option value="tuition_month_3">Tuition Month 3</option>
+              <option value="full_tuition_payment">Full Tuition Payment</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Amount Due (₦) *</label><input class="form-input" id="pay-due-input" type="number" min="0" placeholder="e.g. 20000"></div>
+        </div>
+        <div class="modal-form-row">
+          <div class="form-group"><label>Amount Paid (₦)</label><input class="form-input" id="pay-amount-input" type="number" min="0" placeholder="0"></div>
+          <div class="form-group"><label>Due Date</label><input class="form-input" id="pay-duedate-input" type="date"></div>
         </div>
         <div class="modal-form-row">
           <div class="form-group"><label>Method</label>
@@ -3491,7 +3512,7 @@ async function loadStudents() {
 
   // Populate cohort filters
   const cohorts = [...new Set(allStudents.map(s => s.cohort).filter(Boolean))].sort();
-  ['stu-cohort-filter','att-cohort-filter','pay-cohort-filter'].forEach(id => {
+  ['stu-cohort-filter','att-cohort-filter'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const current = el.value;
@@ -3734,33 +3755,49 @@ async function viewAttendanceSession(id) {
 // ═══════════════════════════════════════════════════════════
 //  ACADEMY — PAYMENTS
 // ═══════════════════════════════════════════════════════════
+const PAY_CAT_LABEL = {
+  application_fee:     'Application Fee',
+  tuition_month_1:     'Tuition Month 1',
+  tuition_month_2:     'Tuition Month 2',
+  tuition_month_3:     'Tuition Month 3',
+  full_tuition_payment:'Full Tuition'
+};
+const PAY_STATUS_STYLE = {
+  paid:           ['rgba(34,197,94,0.15)',  'var(--success)'],
+  fully_paid:     ['rgba(34,197,94,0.15)',  'var(--success)'],
+  partially_paid: ['rgba(245,158,11,0.15)', 'var(--warning)'],
+  overdue:        ['rgba(239,68,68,0.12)',  'var(--danger)'],
+  pending:        ['rgba(160,166,179,0.1)', 'var(--muted)'],
+  failed:         ['rgba(239,68,68,0.12)',  'var(--danger)'],
+};
+
+let allPayments = [];
+
 async function loadPaymentsPage() {
   if (allStudents.length === 0) await loadStudents();
-  const month  = document.getElementById('pay-month-filter')?.value || '';
-  const cohort = document.getElementById('pay-cohort-filter')?.value || '';
-  const status = document.getElementById('pay-status-filter')?.value || '';
+  const category = document.getElementById('pay-category-filter')?.value || '';
+  const status   = document.getElementById('pay-status-filter')?.value   || '';
 
-  if (month) {
-    // Use summary endpoint for month view
-    let url = `/api/payments/summary/${month}`;
-    if (cohort) url += '?cohort=' + encodeURIComponent(cohort);
-    const res = await apiFetch(url);
-    if (!res) return;
-    renderPaySummaryCards(res.totalDue, res.totalPaid, res.outstanding);
-    const filtered = status ? res.data.filter(r => r.status === status) : res.data;
-    renderPayTable(filtered, true);
-  } else {
-    let url = '/api/payments?limit=500';
-    if (status) url += '&status=' + encodeURIComponent(status);
-    const res = await apiFetch(url);
-    if (!res) return;
-    const docs = res.data || [];
-    const totalPaid = docs.reduce((s, p) => s + (p.amountPaid || 0), 0);
-    const totalDue  = docs.reduce((s, p) => s + (p.amountDue  || 0), 0);
-    renderPaySummaryCards(totalDue, totalPaid, totalDue - totalPaid);
-    const filtered = cohort ? docs.filter(p => p.student?.cohort === cohort) : docs;
-    renderPayTable(filtered, false);
-  }
+  let url = '/api/payments?limit=1000';
+  if (category) url += '&category=' + encodeURIComponent(category);
+  if (status)   url += '&status='   + encodeURIComponent(status);
+
+  const res = await apiFetch(url);
+  if (!res) return;
+  allPayments = res.data || [];
+
+  const totalDue  = allPayments.reduce((s, p) => s + (p.amountDue  || 0), 0);
+  const totalPaid = allPayments.reduce((s, p) => s + (p.amountPaid || 0), 0);
+  renderPaySummaryCards(totalDue, totalPaid, totalDue - totalPaid);
+  filterPayTable();
+}
+
+function filterPayTable() {
+  const q = (document.getElementById('pay-search')?.value || '').toLowerCase();
+  const rows = q
+    ? allPayments.filter(p => (p.student?.fullName || '').toLowerCase().includes(q) || (p.student?.email || '').toLowerCase().includes(q))
+    : allPayments;
+  renderPayTable(rows);
 }
 
 function renderPaySummaryCards(due, paid, outstanding) {
@@ -3780,28 +3817,31 @@ function renderPaySummaryCards(due, paid, outstanding) {
   `;
 }
 
-function renderPayTable(rows, isSummary) {
+function renderPayTable(rows) {
   const tbody = document.getElementById('payTableBody');
   if (!rows || rows.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="padding:32px;text-align:center;color:var(--muted)">No payment records found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:32px;text-align:center;color:var(--muted)">No payment records found.</td></tr>';
     return;
   }
-  const statusStyle = { Paid: ['rgba(34,197,94,0.15)','var(--success)'], Partial: ['rgba(245,158,11,0.15)','var(--warning)'], Unpaid: ['rgba(239,68,68,0.12)','var(--danger)'] };
   tbody.innerHTML = rows.map(r => {
-    const name  = isSummary ? r.student?.fullName : (r.student?.fullName || '—');
-    const month = isSummary ? document.getElementById('pay-month-filter').value : r.month;
-    const status = r.status || 'Unpaid';
-    const [bg, color] = statusStyle[status] || statusStyle.Unpaid;
-    const payId = r.paymentId || r._id;
+    const status = r.status || 'pending';
+    const [bg, color] = PAY_STATUS_STYLE[status] || PAY_STATUS_STYLE.pending;
+    const editData = JSON.stringify({
+      id: r._id, studentId: r.student?._id, category: r.category,
+      amountDue: r.amountDue, amountPaid: r.amountPaid,
+      method: r.method, reference: r.reference, notes: r.notes,
+      dueDate: r.dueDate ? r.dueDate.slice(0,10) : ''
+    }).replace(/"/g,'&quot;');
     return `<tr>
-      <td style="padding:12px 14px;font-weight:600">${name}</td>
-      <td style="padding:12px 14px">${fmtMonth(month)}</td>
+      <td style="padding:12px 14px;font-weight:600">${r.student?.fullName || '—'}<br><span style="font-size:12px;color:var(--muted);font-weight:400">${r.student?.track || ''}</span></td>
+      <td style="padding:12px 14px">${PAY_CAT_LABEL[r.category] || r.category || '—'}</td>
       <td style="padding:12px 14px">₦${Number(r.amountDue).toLocaleString()}</td>
       <td style="padding:12px 14px;font-weight:600">₦${Number(r.amountPaid || 0).toLocaleString()}</td>
-      <td style="padding:12px 14px"><span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:${bg};color:${color}">${status}</span></td>
+      <td style="padding:12px 14px"><span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:${bg};color:${color}">${status.replace('_',' ')}</span></td>
       <td style="padding:12px 14px;color:var(--muted);font-size:13px">${r.method || '—'}</td>
+      <td style="padding:12px 14px;color:var(--muted);font-size:13px">${r.dueDate ? fmtDateAdmin(r.dueDate) : '—'}</td>
       <td style="padding:12px 14px">
-        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="openEditPayment(${JSON.stringify({ id: payId, studentId: r.student?._id || r.student, month, amountPaid: r.amountPaid, method: r.method, reference: r.reference, notes: r.notes }).replace(/"/g,'&quot;')})">Edit</button>
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick='openEditPayment(${editData})'>Edit</button>
       </td>
     </tr>`;
   }).join('');
@@ -3809,45 +3849,54 @@ function renderPayTable(rows, isSummary) {
 
 function openRecordPayment() {
   if (allStudents.length === 0) { loadStudents().then(openRecordPayment); return; }
-  document.getElementById('pay-edit-id').value = '';
+  document.getElementById('payModalTitle').textContent = 'Record Payment';
+  document.getElementById('pay-edit-id').value        = '';
   document.getElementById('pay-student-select').value = '';
-  document.getElementById('pay-month-input').value = new Date().toISOString().slice(0,7);
-  document.getElementById('pay-amount-input').value = '';
-  document.getElementById('pay-method-input').value = '';
-  document.getElementById('pay-ref-input').value = '';
-  document.getElementById('pay-notes-input').value = '';
+  document.getElementById('pay-category-input').value = '';
+  document.getElementById('pay-due-input').value      = '';
+  document.getElementById('pay-amount-input').value   = '';
+  document.getElementById('pay-duedate-input').value  = '';
+  document.getElementById('pay-method-input').value   = '';
+  document.getElementById('pay-ref-input').value      = '';
+  document.getElementById('pay-notes-input').value    = '';
   document.getElementById('payModalError').style.display = 'none';
   openModal('recordPaymentModal');
 }
 
 function openEditPayment(data) {
-  document.getElementById('pay-edit-id').value    = data.id || '';
-  const pSel = document.getElementById('pay-student-select');
-  if (data.studentId) pSel.value = data.studentId;
-  document.getElementById('pay-month-input').value  = data.month  || '';
-  document.getElementById('pay-amount-input').value = data.amountPaid || '';
-  document.getElementById('pay-method-input').value = data.method || '';
-  document.getElementById('pay-ref-input').value    = data.reference || '';
-  document.getElementById('pay-notes-input').value  = data.notes  || '';
-  document.getElementById('payModalError').style.display = 'none';
+  document.getElementById('payModalTitle').textContent    = 'Edit Payment';
+  document.getElementById('pay-edit-id').value            = data.id     || '';
+  document.getElementById('pay-student-select').value     = data.studentId || '';
+  document.getElementById('pay-category-input').value     = data.category  || '';
+  document.getElementById('pay-due-input').value          = data.amountDue || '';
+  document.getElementById('pay-amount-input').value       = data.amountPaid ?? '';
+  document.getElementById('pay-duedate-input').value      = data.dueDate   || '';
+  document.getElementById('pay-method-input').value       = data.method    || '';
+  document.getElementById('pay-ref-input').value          = data.reference || '';
+  document.getElementById('pay-notes-input').value        = data.notes     || '';
+  document.getElementById('payModalError').style.display  = 'none';
   openModal('recordPaymentModal');
 }
 
 async function savePayment() {
-  const editId  = document.getElementById('pay-edit-id').value;
-  const errEl   = document.getElementById('payModalError');
+  const editId    = document.getElementById('pay-edit-id').value;
+  const errEl     = document.getElementById('payModalError');
   const studentId = document.getElementById('pay-student-select').value;
-  const month     = document.getElementById('pay-month-input').value;
-  const amountPaid = document.getElementById('pay-amount-input').value;
+  const category  = document.getElementById('pay-category-input').value;
+  const amountDue = document.getElementById('pay-due-input').value;
   if (!studentId) { showErr(errEl, 'Please select a student.'); return; }
-  if (!month)     { showErr(errEl, 'Please select a month.'); return; }
+  if (!category)  { showErr(errEl, 'Please select a category.'); return; }
+  if (!amountDue) { showErr(errEl, 'Amount due is required.'); return; }
 
   const body = {
-    studentId, month,
-    amountPaid: Number(amountPaid) || 0,
-    method:    document.getElementById('pay-method-input').value,
-    reference: document.getElementById('pay-ref-input').value.trim(),
-    notes:     document.getElementById('pay-notes-input').value.trim(),
+    studentId,
+    category,
+    amountDue:  Number(amountDue),
+    amountPaid: Number(document.getElementById('pay-amount-input').value) || 0,
+    dueDate:    document.getElementById('pay-duedate-input').value  || undefined,
+    method:     document.getElementById('pay-method-input').value,
+    reference:  document.getElementById('pay-ref-input').value.trim(),
+    notes:      document.getElementById('pay-notes-input').value.trim(),
   };
 
   const btn = document.getElementById('savePayBtn');
@@ -3859,7 +3908,7 @@ async function savePayment() {
     res = await apiFetch('/api/payments', { method: 'POST', body: JSON.stringify(body) });
   }
   btn.disabled = false; btn.textContent = 'Save Payment';
-  if (!res) { showErr(errEl, 'Failed to save payment.'); return; }
+  if (!res) { showErr(errEl, res?.error || 'Failed to save payment.'); return; }
   closeModal('recordPaymentModal');
   loadPaymentsPage();
 }

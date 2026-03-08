@@ -98,6 +98,7 @@
     <button class="tab" onclick="switchTab('flashcards')">Flashcards</button>
     <button class="tab" onclick="switchTab('attendance')">Attendance</button>
     <button class="tab" onclick="switchTab('curriculum')">Curriculum</button>
+    <button class="tab" onclick="switchTab('students')">Students</button>
   </div>
 
   <!-- ── OVERVIEW ── -->
@@ -192,6 +193,20 @@
     <div class="table-wrap">
       <table><thead><tr><th>Week</th><th>Day</th><th>Topic</th><th>Objectives</th><th>Actions</th></tr></thead>
       <tbody id="curTableBody"><tr><td colspan="5" class="loading">Loading…</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ── STUDENTS TAB ── -->
+  <div id="tab-students" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="section-title" style="margin:0">Batch Students</div>
+      <input id="stu-search" placeholder="Search by name or email…" style="max-width:240px" oninput="filterStudents()">
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Track</th><th>Status</th><th>Enrolled</th></tr></thead>
+        <tbody id="stuTableBody"><tr><td colspan="5" class="loading">Loading…</td></tr></tbody>
+      </table>
     </div>
   </div>
 </main>
@@ -330,7 +345,7 @@ document.getElementById('pageTitle').textContent = 'Welcome, ' + (lec.fullName ?
 
 function logout() { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(LEC_KEY); window.location.href = 'lecturer-login.html'; }
 
-const ALL_TABS = ['overview','materials','assignments','flashcards','attendance','curriculum'];
+const ALL_TABS = ['overview','materials','assignments','flashcards','attendance','curriculum','students'];
 let loaded = {};
 
 function switchTab(tab) {
@@ -346,6 +361,7 @@ const LOADERS = {
   flashcards:  loadFlashcards,
   attendance:  loadAttendance,
   curriculum:  loadCurriculum,
+  students:    loadStudents,
 };
 
 // ── Helpers ─────────────────────────────────────────────────
@@ -868,6 +884,48 @@ async function deleteCurriculum(id) {
   if (!confirm('Delete this entry?')) return;
   await api(`/api/curriculum/${id}`, { method: 'DELETE' });
   loadCurriculum();
+}
+
+// ── STUDENTS ─────────────────────────────────────────────────
+let allBatchStudents = [];
+
+async function loadStudents() {
+  const tbody = document.getElementById('stuTableBody');
+  tbody.innerHTML = '<tr><td colspan="5" class="loading">Loading…</td></tr>';
+
+  // Get active batch first
+  const batchData = await api('/api/batches/active');
+  if (!batchData || !batchData._id) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">No active batch found.</td></tr>';
+    return;
+  }
+
+  const data = await api(`/api/students?batch=${batchData._id}&limit=200`);
+  allBatchStudents = (data && data.data) ? data.data : [];
+  renderStudentTable(allBatchStudents);
+}
+
+function renderStudentTable(students) {
+  const tbody = document.getElementById('stuTableBody');
+  if (!students.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">No students in active batch.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = students.map(s => `<tr>
+    <td style="font-weight:600">${s.fullName}</td>
+    <td style="color:var(--muted);font-size:13px">${s.email}</td>
+    <td>${s.track || '—'}</td>
+    <td><span style="font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600;background:${s.status==='Active'?'rgba(34,197,94,0.15)':'rgba(239,68,68,0.12)'};color:${s.status==='Active'?'var(--green)':'var(--red)'}">${s.status}</span></td>
+    <td style="color:var(--muted);font-size:13px">${fmtDate(s.createdAt)}</td>
+  </tr>`).join('');
+}
+
+function filterStudents() {
+  const q = document.getElementById('stu-search').value.trim().toLowerCase();
+  if (!q) { renderStudentTable(allBatchStudents); return; }
+  renderStudentTable(allBatchStudents.filter(s =>
+    s.fullName.toLowerCase().includes(q) || s.email.toLowerCase().includes(q)
+  ));
 }
 
 // ── INIT ─────────────────────────────────────────────────────

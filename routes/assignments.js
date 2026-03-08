@@ -1,12 +1,40 @@
 const express    = require('express');
 const Assignment = require('../models/Assignment');
 const Submission = require('../models/Submission');
+const Student    = require('../models/Student');
 const { requireLecturer } = require('../middleware/lecturerAuth');
 const { requireStudentAuth } = require('../middleware/studentAuth');
 
 const router = express.Router();
 
 // ── ASSIGNMENTS ──────────────────────────────────────────────
+
+// GET /api/assignments/student — student: published assignments + own submission status
+router.get('/student', requireStudentAuth, async (req, res) => {
+  try {
+    const student = await Student.findById(req.user.id).select('batch');
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+
+    const assignments = await Assignment.find({ batch: student.batch, published: true })
+      .populate('lecturer', 'fullName').sort({ week: 1, deadline: 1 });
+
+    const assignmentIds = assignments.map(a => a._id);
+    const mySubmissions = await Submission.find({ assignment: { $in: assignmentIds }, student: req.user.id })
+      .select('assignment content score feedback scoredAt isLate submittedAt');
+
+    const subMap = {};
+    mySubmissions.forEach(s => { subMap[s.assignment.toString()] = s; });
+
+    const result = assignments.map(a => ({
+      ...a.toObject(),
+      mySubmission: subMap[a._id.toString()] || null
+    }));
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // GET /api/assignments?batch=&week=
 router.get('/', requireLecturer, async (req, res) => {

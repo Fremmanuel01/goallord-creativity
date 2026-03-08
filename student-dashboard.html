@@ -180,6 +180,14 @@
 
   <!-- ── ATTENDANCE TAB ── -->
   <div id="tab-attendance" style="display:none;">
+    <!-- Self-mark banner (shown when a session window is open) -->
+    <div id="selfMarkBanner" style="display:none;background:rgba(214,106,31,0.12);border:1px solid rgba(214,106,31,0.4);border-radius:10px;padding:16px 20px;margin-bottom:20px;align-items:center;justify-content:space-between;gap:16px;">
+      <div>
+        <div style="font-weight:700;color:#D66A1F;margin-bottom:4px">Attendance window is open!</div>
+        <div id="selfMarkLabel" style="font-size:13px;color:var(--muted)">Click to mark yourself present.</div>
+      </div>
+      <button id="selfMarkBtn" onclick="markSelfPresent()" style="background:#D66A1F;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap">Mark Present</button>
+    </div>
     <div id="attend-stats" class="stats-grid" style="margin-bottom:24px;">
       <div class="stat-card blue">
         <div class="stat-label">Total Classes</div>
@@ -231,6 +239,20 @@
     <div class="section-title">Assignments</div>
     <div id="assignmentsContent">
       <div class="loading">Loading assignments…</div>
+    </div>
+  </div>
+
+  <!-- Submit Assignment Modal -->
+  <div id="submitModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#171A21;border:1px solid #2A2F3A;border-radius:14px;padding:32px;width:100%;max-width:520px;margin:16px;">
+      <h3 id="submitModalTitle" style="margin:0 0 6px;font-size:18px;">Submit Assignment</h3>
+      <p id="submitModalDesc" style="font-size:13px;color:var(--muted);margin:0 0 20px;"></p>
+      <label style="font-size:13px;font-weight:600;color:var(--muted);display:block;margin-bottom:8px;">Your Answer / Work</label>
+      <textarea id="submitContent" rows="6" style="width:100%;padding:12px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:14px;resize:vertical;outline:none;" placeholder="Paste your answer, link to your work, or describe your solution…"></textarea>
+      <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
+        <button onclick="closeSubmitModal()" style="padding:10px 20px;background:transparent;border:1px solid #2A2F3A;border-radius:8px;color:var(--muted);cursor:pointer;">Cancel</button>
+        <button id="submitConfirmBtn" onclick="confirmSubmit()" style="padding:10px 22px;background:#D66A1F;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Submit</button>
+      </div>
     </div>
   </div>
 
@@ -330,6 +352,7 @@
     if (tab === 'materials'   && !materialsLoaded)   loadMaterials();
     if (tab === 'assignments' && !assignmentsLoaded) loadAssignments();
     if (tab === 'flashcards'  && !flashcardsLoaded)  loadFlashcards();
+    if (tab === 'attendance') loadOpenSession();
   }
 
   // ── Format helpers ───────────────────────────────────────────
@@ -474,6 +497,46 @@
     document.getElementById('overviewContent').style.display = '';
   }
 
+  // ── Self-mark attendance ──────────────────────────────────────
+  let openSessionId = null;
+  async function loadOpenSession() {
+    try {
+      const res = await fetch('/api/attendance/open', { headers: { 'Authorization': 'Bearer ' + token } });
+      const data = await res.json();
+      const banner = document.getElementById('selfMarkBanner');
+      if (data.session) {
+        openSessionId = data.session._id;
+        document.getElementById('selfMarkLabel').textContent =
+          `Week ${data.session.week} · ${data.session.day}${data.session.topic ? ' — ' + data.session.topic : ''}`;
+        banner.style.display = 'flex';
+      } else {
+        openSessionId = null;
+        banner.style.display = 'none';
+      }
+    } catch { /* ignore */ }
+  }
+
+  async function markSelfPresent() {
+    if (!openSessionId) return;
+    const btn = document.getElementById('selfMarkBtn');
+    btn.disabled = true; btn.textContent = 'Marking…';
+    try {
+      const res = await fetch('/api/attendance/' + openSessionId + '/self-mark', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        btn.textContent = 'Marked Present ✓';
+        btn.style.background = '#22c55e';
+        document.getElementById('selfMarkLabel').textContent = 'You have been marked present for this session.';
+      } else {
+        btn.disabled = false; btn.textContent = 'Mark Present';
+        alert(data.error || 'Could not mark attendance.');
+      }
+    } catch { btn.disabled = false; btn.textContent = 'Mark Present'; }
+  }
+
   // ── Materials ────────────────────────────────────────────────
   async function loadMaterials() {
     materialsLoaded = true;
@@ -504,27 +567,79 @@
   }
 
   // ── Assignments ──────────────────────────────────────────────
+  let currentSubmitId = null;
   async function loadAssignments() {
     assignmentsLoaded = true;
     const cont = document.getElementById('assignmentsContent');
     cont.innerHTML = '<div class="loading">Loading…</div>';
     try {
-      const res = await fetch('/api/assignments?published=true', { headers: { 'Authorization': 'Bearer ' + token } });
-      const data = await res.json();
-      const items = Array.isArray(data) ? data : (data.data || []);
-      if (!items.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">📝</div>No assignments yet.</div>'; return; }
-      cont.innerHTML = '<div class="table-wrap"><table><thead><tr><th>Title</th><th>Week</th><th>Deadline</th><th>Max Score</th><th>Status</th></tr></thead><tbody>' +
+      const res = await fetch('/api/assignments/student', { headers: { 'Authorization': 'Bearer ' + token } });
+      const items = await res.json();
+      if (!Array.isArray(items) || !items.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">📝</div>No assignments yet.</div>'; return; }
+      cont.innerHTML = '<div class="table-wrap"><table><thead><tr><th>Title</th><th>Week</th><th>Deadline</th><th>Max Score</th><th>Status</th><th></th></tr></thead><tbody>' +
         items.map(a => {
           const isPast = new Date(a.deadline) < new Date();
+          const sub = a.mySubmission;
+          let statusCell, actionCell;
+          if (sub) {
+            const scored = sub.score != null;
+            statusCell = scored
+              ? `<span style="color:var(--green);font-weight:600">${sub.score}/${a.maxScore} scored</span>`
+              : `<span style="color:var(--blue);font-size:12px">Submitted${sub.isLate ? ' (late)' : ''}</span>`;
+            actionCell = scored && sub.feedback
+              ? `<span style="font-size:12px;color:var(--muted)" title="${sub.feedback}">Feedback ✓</span>`
+              : '';
+          } else if (isPast) {
+            statusCell = '<span style="color:var(--red);font-size:12px">Missed</span>';
+            actionCell = '';
+          } else {
+            statusCell = '<span style="color:var(--muted);font-size:12px">Pending</span>';
+            actionCell = `<button onclick="openSubmitModal('${a._id}','${a.title.replace(/'/g,"\\'")}','${(a.description||'').replace(/'/g,"\\'").replace(/\n/g,' ')}')" style="background:var(--orange);color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Submit</button>`;
+          }
           return `<tr>
             <td style="font-weight:600">${a.title}</td>
             <td>Week ${a.week}</td>
-            <td>${fmtDate(a.deadline)} ${isPast ? '<span style="color:var(--red);font-size:11px">(Closed)</span>' : ''}</td>
+            <td>${fmtDate(a.deadline)} ${isPast && !sub ? '<span style="color:var(--red);font-size:11px">(Closed)</span>' : ''}</td>
             <td>${a.maxScore}</td>
-            <td><span style="font-size:12px;color:var(--muted)">View on portal</span></td>
+            <td>${statusCell}</td>
+            <td>${actionCell}</td>
           </tr>`;
         }).join('') + '</tbody></table></div>';
     } catch { cont.innerHTML = '<div class="empty">Failed to load assignments.</div>'; }
+  }
+
+  function openSubmitModal(id, title, desc) {
+    currentSubmitId = id;
+    document.getElementById('submitModalTitle').textContent = 'Submit: ' + title;
+    document.getElementById('submitModalDesc').textContent = desc || '';
+    document.getElementById('submitContent').value = '';
+    document.getElementById('submitConfirmBtn').disabled = false;
+    document.getElementById('submitConfirmBtn').textContent = 'Submit';
+    document.getElementById('submitModal').style.display = 'flex';
+  }
+
+  function closeSubmitModal() {
+    document.getElementById('submitModal').style.display = 'none';
+    currentSubmitId = null;
+  }
+
+  async function confirmSubmit() {
+    const content = document.getElementById('submitContent').value.trim();
+    if (!content) { alert('Please enter your answer or work.'); return; }
+    const btn = document.getElementById('submitConfirmBtn');
+    btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      const res = await fetch('/api/assignments/' + currentSubmitId + '/submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ content })
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || 'Submission failed.'); btn.disabled = false; btn.textContent = 'Submit'; return; }
+      closeSubmitModal();
+      assignmentsLoaded = false;
+      loadAssignments();
+    } catch { alert('Network error. Please try again.'); btn.disabled = false; btn.textContent = 'Submit'; }
   }
 
   // ── Flashcards ───────────────────────────────────────────────
