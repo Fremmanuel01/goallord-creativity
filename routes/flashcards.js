@@ -104,6 +104,21 @@ router.delete('/cards/:cardId', requireLecturer, async (req, res) => {
 
 // ── STUDENT READ ROUTES ──────────────────────────────────────
 
+// GET /api/flashcards/sets/student/progress — sets the student has completed + scores
+router.get('/sets/student/progress', requireStudentAuth, async (req, res) => {
+  try {
+    const mongoose = require('mongoose');
+    const studentId = new mongoose.Types.ObjectId(req.user.id);
+    const results = await FlashcardResponse.aggregate([
+      { $match: { student: studentId } },
+      { $group: { _id: '$set', total: { $sum: 1 }, correct: { $sum: { $cond: ['$isCorrect', 1, 0] } } } }
+    ]);
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/flashcards/sets/student — student: published sets for their batch
 router.get('/sets/student', requireStudentAuth, async (req, res) => {
   try {
