@@ -83,6 +83,41 @@ router.patch('/me/password', requireStudent, async (req, res) => {
   }
 });
 
+// ── PATCH /api/students/me/photo — student: upload profile picture ──
+router.patch('/me/photo', requireStudent, async (req, res) => {
+  try {
+    const cloudinary = require('cloudinary');
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key:    process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET
+    });
+    const multer = require('multer');
+    const { CloudinaryStorage } = require('multer-storage-cloudinary');
+    const storage = new CloudinaryStorage({
+      cloudinary,
+      params: {
+        folder: 'goallord/students',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+        transformation: [{ width: 400, height: 400, crop: 'fill', gravity: 'face', quality: 'auto' }]
+      }
+    });
+    const upload = multer({ storage, limits: { fileSize: 3 * 1024 * 1024 } }).single('photo');
+    upload(req, res, async (err) => {
+      if (err) return res.status(400).json({ error: err.message });
+      if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+      const student = await Student.findByIdAndUpdate(
+        req.student.id,
+        { profilePicture: req.file.path },
+        { new: true }
+      ).select('-password -resetToken -resetExpires');
+      res.json({ url: req.file.path, student });
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── POST /api/students/forgot-password — public ─────────────────
 router.post('/forgot-password', async (req, res) => {
   try {
