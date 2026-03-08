@@ -21,6 +21,126 @@
     <link rel="stylesheet" type="text/css" href="assets/css/styles.css">
     <link rel="stylesheet" type="text/css" href="assets/css/goallord.css">
     <link rel="shortcut icon" href="assets/images/logo/favicon.svg">
+    <style>
+        /* Portal Dropdown */
+        .portal-wrap { position: relative; }
+        .portal-toggle {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 18px; background: transparent;
+            border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;
+            color: #A0A6B3; font-size: 11px; font-weight: 700;
+            letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer;
+            transition: border-color 0.2s, color 0.2s; white-space: nowrap;
+        }
+        .portal-toggle:hover { border-color: var(--gl-orange); color: #F4F6FA; }
+        .portal-toggle .caret { font-size: 8px; transition: transform 0.2s; display: inline-block; }
+        .portal-toggle.open .caret { transform: rotate(180deg); }
+        .portal-menu {
+            display: none; position: absolute; top: calc(100% + 10px); right: 0;
+            background: #171A21; border: 1px solid #2A2F3A; border-radius: 10px;
+            padding: 8px; min-width: 210px; z-index: 9999;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.5);
+        }
+        .portal-menu.open { display: block; }
+        .portal-menu a {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 14px; border-radius: 7px; text-decoration: none;
+            color: #A0A6B3; font-size: 13px; font-weight: 600;
+            transition: background 0.15s, color 0.15s;
+        }
+        .portal-menu a:hover { background: rgba(255,255,255,0.05); color: #F4F6FA; }
+        .portal-menu a .pm-icon {
+            width: 30px; height: 30px; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; flex-shrink: 0;
+        }
+        .portal-menu a.pm-student .pm-icon { background: rgba(30,75,255,0.15); }
+        .portal-menu a.pm-lecturer .pm-icon { background: rgba(214,106,31,0.12); }
+        .portal-menu a.pm-admin .pm-icon { background: rgba(255,255,255,0.06); }
+        .portal-menu .pm-divider { height: 1px; background: #2A2F3A; margin: 6px 8px; }
+        .portal-menu .pm-label {
+            font-size: 10px; color: #4a5060; letter-spacing: 1.5px;
+            text-transform: uppercase; padding: 4px 14px 2px; font-weight: 700;
+        }
+
+        /* Enrolled Banner in Hero */
+        .enrolled-bar {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: rgba(30,75,255,0.08); border: 1px solid rgba(30,75,255,0.2);
+            border-radius: 8px; padding: 10px 16px; margin-top: 28px;
+            text-decoration: none; transition: border-color 0.2s, background 0.2s;
+        }
+        .enrolled-bar:hover { border-color: rgba(30,75,255,0.4); background: rgba(30,75,255,0.12); }
+        .enrolled-bar .eb-dot {
+            width: 8px; height: 8px; background: #4a7fff; border-radius: 50%;
+            flex-shrink: 0; animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%,100% { opacity:1; transform:scale(1); }
+            50% { opacity:0.5; transform:scale(0.8); }
+        }
+        .enrolled-bar .eb-text { font-size: 13px; color: #A0A6B3; }
+        .enrolled-bar .eb-text strong { color: #6a9fff; font-weight: 600; }
+        .enrolled-bar .eb-arrow { color: #4a7fff; font-size: 13px; }
+
+        /* Portal Access Section */
+        .section-portal-access { background: var(--gl-bg, #0F1115); }
+        .portal-card {
+            border: 1px solid #2A2F3A; border-radius: 12px;
+            padding: 32px 28px; height: 100%;
+            transition: border-color 0.25s, transform 0.25s;
+            display: flex; flex-direction: column;
+        }
+        .portal-card:hover { transform: translateY(-4px); }
+        .portal-card.pc-student { border-color: rgba(30,75,255,0.3); background: rgba(30,75,255,0.04); }
+        .portal-card.pc-student:hover { border-color: rgba(30,75,255,0.6); }
+        .portal-card.pc-lecturer { border-color: rgba(214,106,31,0.3); background: rgba(214,106,31,0.04); }
+        .portal-card.pc-lecturer:hover { border-color: rgba(214,106,31,0.6); }
+        .portal-card.pc-admin { border-color: rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); }
+        .portal-card.pc-admin:hover { border-color: rgba(255,255,255,0.18); }
+        .portal-card .pc-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; margin-bottom: 20px; flex-shrink: 0;
+        }
+        .pc-student .pc-icon { background: rgba(30,75,255,0.15); }
+        .pc-lecturer .pc-icon { background: rgba(214,106,31,0.15); }
+        .pc-admin .pc-icon { background: rgba(255,255,255,0.06); }
+        .portal-card h5 { margin-bottom: 8px; }
+        .portal-card p { color: #A0A6B3; font-size: 14px; line-height: 1.6; margin-bottom: 20px; flex: 1; }
+        .portal-card .pc-features { list-style: none; padding: 0; margin: 0 0 24px; display: flex; flex-direction: column; gap: 8px; }
+        .portal-card .pc-features li { font-size: 13px; color: #A0A6B3; display: flex; align-items: center; gap: 8px; }
+        .portal-card .pc-features li::before { content: '✓'; font-size: 11px; flex-shrink: 0; }
+        .pc-student .pc-features li::before { color: #4a7fff; }
+        .pc-lecturer .pc-features li::before { color: var(--gl-orange); }
+        .pc-admin .pc-features li::before { color: #6a7080; }
+        .btn-portal {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 13px 20px; border-radius: 8px; text-decoration: none;
+            font-size: 12px; font-weight: 700; letter-spacing: 1.2px;
+            text-transform: uppercase; transition: opacity 0.2s, transform 0.1s;
+            width: 100%; text-align: center;
+        }
+        .btn-portal:hover { opacity: 0.85; transform: scale(0.98); }
+        .btn-portal.bp-blue { background: #1E4BFF; color: #fff; }
+        .btn-portal.bp-orange { background: var(--gl-orange); color: #fff; }
+        .btn-portal.bp-ghost { background: transparent; color: #A0A6B3; border: 1px solid #2A2F3A; }
+        .btn-portal.bp-ghost:hover { color: #F4F6FA; border-color: #4a5060; }
+
+        /* Mobile portal links in offcanvas */
+        .mb-portal-links { padding: 20px 0 0; border-top: 1px solid #2A2F3A; margin-top: 16px; }
+        .mb-portal-links p { font-size: 10px; color: #4a5060; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; margin-bottom: 12px; }
+        .mb-portal-links .mb-portal-row { display: flex; flex-direction: column; gap: 8px; }
+        .mb-portal-links a.mb-portal-link {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 16px; background: rgba(255,255,255,0.04);
+            border: 1px solid #2A2F3A; border-radius: 8px;
+            text-decoration: none; color: #A0A6B3; font-size: 14px; font-weight: 600;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .mb-portal-links a.mb-portal-link:hover { border-color: var(--gl-orange); color: #F4F6FA; }
+        .mb-portal-links a.mb-portal-link .mpl-icon { font-size: 18px; flex-shrink: 0; }
+    </style>
 </head>
 <body class="counter-scroll">
     <canvas class="cursor-trail d-none d-xl-block" id="trail"></canvas>
@@ -51,6 +171,29 @@
                     <p class="text-caption">WAT <span class="clock"></span></p>
                 </div></div>
                 <div class="col-6 col-sm-3 col-md-3 d-flex justify-content-end align-items-center gap-2">
+                    <!-- Portal dropdown (desktop) -->
+                    <div class="portal-wrap d-none d-lg-block">
+                        <button class="portal-toggle" id="portalToggleBtn" onclick="togglePortal(event)" aria-haspopup="true" aria-expanded="false">
+                            PORTAL <span class="caret">▾</span>
+                        </button>
+                        <div class="portal-menu" id="portalMenu" role="menu">
+                            <p class="pm-label">STUDENT & STAFF</p>
+                            <a href="student-login.html" class="pm-student" role="menuitem">
+                                <span class="pm-icon">🎓</span>
+                                <span><strong>Student Portal</strong><br><small style="font-weight:400;font-size:11px;color:#4a5060;">Attendance &amp; payments</small></span>
+                            </a>
+                            <a href="lecturer-login.html" class="pm-lecturer" role="menuitem">
+                                <span class="pm-icon">📚</span>
+                                <span><strong>Lecturer Portal</strong><br><small style="font-weight:400;font-size:11px;color:#4a5060;">Classes &amp; records</small></span>
+                            </a>
+                            <div class="pm-divider"></div>
+                            <p class="pm-label">ADMINISTRATION</p>
+                            <a href="login.html" class="pm-admin" role="menuitem">
+                                <span class="pm-icon">⚙️</span>
+                                <span><strong>Admin Dashboard</strong><br><small style="font-weight:400;font-size:11px;color:#4a5060;">System access</small></span>
+                            </a>
+                        </div>
+                    </div>
                     <a href="apply.html" class="tf-btn style-fill d-none d-lg-inline-flex text-caption fw-medium">APPLY NOW</a>
                     <button type="button" class="btn-mobile-menu open-mb-menu text-caption text-white link" style="white-space:nowrap;gap:6px;flex-shrink:0"><i class="icon icon-menu"></i> MENU</button>
                 </div>
@@ -64,11 +207,18 @@
                     <div class="col-lg-7">
                         <h6 class="mini-title text-caption text-white-64 effectFade fadeUp">GOALLORD ACADEMY</h6>
                         <h1 class="text-display-2 fw-semibold letter-space--3 effectFade fadeUp mt-3">Launch Your Career in<br>Web Design &amp; Development</h1>
+                        <!-- Already enrolled link -->
+                        <a href="student-login.html" class="enrolled-bar effectFade fadeUp" style="display:inline-flex;">
+                            <span class="eb-dot"></span>
+                            <span class="eb-text">Already enrolled? <strong>Sign in to your Student Portal</strong></span>
+                            <span class="eb-arrow">→</span>
+                        </a>
                     </div>
                     <div class="col-lg-4 offset-lg-1">
                         <p class="text-white-64 effectFade fadeRight" style="line-height: 1.7;">Hands-on, practical training in Onitsha, Nigeria. Learn web design, WordPress development, and digital marketing from real practitioners — not textbooks.</p>
-                        <div class="mt-4 effectFade fadeRight">
+                        <div class="mt-4 d-flex flex-wrap gap-3 effectFade fadeRight">
                             <a href="apply.html" class="tf-btn style-fill"><span class="text-caption fw-medium">APPLY NOW</span></a>
+                            <a href="#portal-access" class="tf-btn style-troke"><span class="text-caption fw-medium">PORTAL LOGIN</span></a>
                         </div>
                     </div>
                 </div>
@@ -274,6 +424,75 @@
             </div>
         </section>
 
+        <!-- Portal Access Section -->
+        <section id="portal-access" class="section-portal-access flat-spacing">
+            <div class="container">
+                <div class="s-header">
+                    <div>
+                        <h6 class="mini-title text-caption text-white-64 effectFade fadeUp mb-3">ALREADY ENROLLED?</h6>
+                        <h2 class="text-display-2 fw-semibold letter-space--3 effectFade fadeUp">Access Your Portal</h2>
+                    </div>
+                    <p class="text-white-64 effectFade fadeRight" style="max-width:360px; line-height:1.7;">Students and staff can sign in to their dedicated portals to track progress, manage classes, and stay up to date.</p>
+                </div>
+                <div class="row mt-5">
+                    <!-- Student Portal -->
+                    <div class="col-md-4 mb-4">
+                        <div class="portal-card pc-student effectFade fadeUp">
+                            <div class="pc-icon">🎓</div>
+                            <p class="text-primary text-caption fw-medium letter-space--1 mb-2">STUDENT PORTAL</p>
+                            <h5 class="letter-space--2 mb-2">Student Dashboard</h5>
+                            <p>View your attendance records, track monthly payment status, check your programme progress, and receive announcements from your instructors.</p>
+                            <ul class="pc-features">
+                                <li>Attendance history &amp; records</li>
+                                <li>Payment status &amp; receipts</li>
+                                <li>Programme progress overview</li>
+                                <li>Instructor announcements</li>
+                            </ul>
+                            <a href="student-login.html" class="btn-portal bp-blue">
+                                <span>🎓</span> Sign In as Student
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Lecturer Portal -->
+                    <div class="col-md-4 mb-4">
+                        <div class="portal-card pc-lecturer effectFade fadeUp">
+                            <div class="pc-icon">📚</div>
+                            <p class="text-primary text-caption fw-medium letter-space--1 mb-2">LECTURER PORTAL</p>
+                            <h5 class="letter-space--2 mb-2">Lecturer Dashboard</h5>
+                            <p>Manage your class schedule, record student attendance, post lesson notes, and monitor your cohort's progress through the programme.</p>
+                            <ul class="pc-features">
+                                <li>Record &amp; manage attendance</li>
+                                <li>View assigned cohorts</li>
+                                <li>Post lesson content</li>
+                                <li>Student progress tracking</li>
+                            </ul>
+                            <a href="lecturer-login.html" class="btn-portal bp-orange">
+                                <span>📚</span> Sign In as Lecturer
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Admin -->
+                    <div class="col-md-4 mb-4">
+                        <div class="portal-card pc-admin effectFade fadeUp">
+                            <div class="pc-icon">⚙️</div>
+                            <p style="color:#4a5060;" class="text-caption fw-medium letter-space--1 mb-2">ADMINISTRATION</p>
+                            <h5 class="letter-space--2 mb-2">Admin Dashboard</h5>
+                            <p style="color:#4a5060;">Restricted access for academy administrators. Manage applications, students, payments, orders, and system settings.</p>
+                            <ul class="pc-features" style="opacity:0.5;">
+                                <li>Manage applicants &amp; students</li>
+                                <li>Process payments &amp; receipts</li>
+                                <li>Oversee all cohorts</li>
+                                <li>System configuration</li>
+                            </ul>
+                            <a href="login.html" class="btn-portal bp-ghost">
+                                <span>⚙️</span> Admin Access Only
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Tuition -->
         <section class="section-pricing flat-spacing">
             <div class="container">
@@ -323,7 +542,10 @@
             <div class="container text-center">
                 <h2 class="text-display-2 letter-space--3 effectFade fadeUp">Ready to Start Your Tech Career?</h2>
                 <p class="text-white-64 mt-3 mb-5 effectFade fadeUp">Applications are open for the next intake. Limited spots available — apply today.</p>
-                <a href="apply.html" class="tf-btn style-fill effectFade fadeUp"><span class="text-caption fw-medium">APPLY NOW</span></a>
+                <div class="d-flex justify-content-center flex-wrap gap-3 effectFade fadeUp">
+                    <a href="apply.html" class="tf-btn style-fill"><span class="text-caption fw-medium">APPLY NOW</span></a>
+                    <a href="student-login.html" class="tf-btn style-troke"><span class="text-caption fw-medium">STUDENT PORTAL</span></a>
+                </div>
             </div>
         </section>
 
@@ -346,13 +568,11 @@
                     <li><a href="contact.html" class="link letter-space--2 h5">Contact</a></li>
                     <li><a href="alumni.html" class="link letter-space--2 h5">Alumni</a></li>
                 </ul></div>
-                <div class="col-6 col-sm-2 col-md-1"><p class="footer-heading text-caption fw-medium text-white-64">SOCIALS</p></div>
+                <div class="col-6 col-sm-2 col-md-1"><p class="footer-heading text-caption fw-medium text-white-64">PORTALS</p></div>
                 <div class="col-6 col-sm-4 col-md-3"><ul class="footer-menu-list mb-0">
-                    <li><a href="#" class="link letter-space--2 h5">Instagram</a></li>
-                    <li><a href="#" class="link letter-space--2 h5">LinkedIn</a></li>
-                    <li><a href="#" class="link letter-space--2 h5">Twitter (X)</a></li>
-                    <li><a href="#" class="link letter-space--2 h5">Facebook</a></li>
-                    <li><a href="#" class="link letter-space--2 h5">YouTube</a></li>
+                    <li><a href="student-login.html" class="link letter-space--2 h5">Student Portal</a></li>
+                    <li><a href="lecturer-login.html" class="link letter-space--2 h5">Lecturer Portal</a></li>
+                    <li><a href="login.html" class="link letter-space--2 h5" style="opacity:0.4;">Admin</a></li>
                 </ul></div>
             </div></div></div>
             <div class="footer-bottom"><div class="container">
@@ -365,18 +585,35 @@
         </footer>
     </main>
 
+    <!-- Mobile Offcanvas Menu -->
     <div class="offcanvas-menu">
         <div class="offcanvas-content"><div class="container h-100"><div class="offcanvas-content_wrapin">
             <div class="canvas_head">
                 <a href="index.html" class="logo-site"><span class="logo-site-text">GOAL<span>LORD</span></span></a>
                 <div class="btn-mobile-menu close-mb-menu text-caption link"><i class="icon icon-close"></i> CLOSE</div>
             </div>
-            <div class="canvas_center"><ul class="nav-ul-mb">
-                <li><div class="item close-mb-menu"><a href="index.html" class="mb-menu-link text-display-1"><span class="text">Home</span><div class="infiniteSlide_text_main"><div class="infiniteSlide infiniteSlide_text" data-clone="5"><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Go Home</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Go Home</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Go Home</p></div></div></a></div></li>
-                <li><div class="item close-mb-menu"><a href="academy.html" class="mb-menu-link text-display-1"><span class="text">Academy</span><div class="infiniteSlide_text_main"><div class="infiniteSlide infiniteSlide_text" data-clone="5"><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Join Academy</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Join Academy</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Join Academy</p></div></div></a></div></li>
-                <li><div class="item close-mb-menu"><a href="alumni.html" class="mb-menu-link text-display-1"><span class="text">Alumni</span><div class="infiniteSlide_text_main"><div class="infiniteSlide infiniteSlide_text" data-clone="5"><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> View Alumni</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> View Alumni</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> View Alumni</p></div></div></a></div></li>
-                <li><div class="item close-mb-menu"><a href="apply.html" class="mb-menu-link text-display-1"><span class="text">Apply Now</span><div class="infiniteSlide_text_main"><div class="infiniteSlide infiniteSlide_text" data-clone="5"><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Apply Now</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Apply Now</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Apply Now</p></div></div></a></div></li>
-            </ul></div>
+            <div class="canvas_center">
+                <ul class="nav-ul-mb">
+                    <li><div class="item close-mb-menu"><a href="index.html" class="mb-menu-link text-display-1"><span class="text">Home</span><div class="infiniteSlide_text_main"><div class="infiniteSlide infiniteSlide_text" data-clone="5"><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Go Home</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Go Home</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Go Home</p></div></div></a></div></li>
+                    <li><div class="item close-mb-menu"><a href="academy.html" class="mb-menu-link text-display-1"><span class="text">Academy</span><div class="infiniteSlide_text_main"><div class="infiniteSlide infiniteSlide_text" data-clone="5"><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Join Academy</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Join Academy</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Join Academy</p></div></div></a></div></li>
+                    <li><div class="item close-mb-menu"><a href="alumni.html" class="mb-menu-link text-display-1"><span class="text">Alumni</span><div class="infiniteSlide_text_main"><div class="infiniteSlide infiniteSlide_text" data-clone="5"><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> View Alumni</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> View Alumni</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> View Alumni</p></div></div></a></div></li>
+                    <li><div class="item close-mb-menu"><a href="apply.html" class="mb-menu-link text-display-1"><span class="text">Apply Now</span><div class="infiniteSlide_text_main"><div class="infiniteSlide infiniteSlide_text" data-clone="5"><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Apply Now</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Apply Now</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Apply Now</p></div></div></a></div></li>
+                </ul>
+                <!-- Portal Links in Mobile Menu -->
+                <div class="mb-portal-links">
+                    <p>PORTAL LOGIN</p>
+                    <div class="mb-portal-row">
+                        <a href="student-login.html" class="mb-portal-link close-mb-menu">
+                            <span class="mpl-icon">🎓</span>
+                            <span>Student Portal — View attendance &amp; payments</span>
+                        </a>
+                        <a href="lecturer-login.html" class="mb-portal-link close-mb-menu">
+                            <span class="mpl-icon">📚</span>
+                            <span>Lecturer Portal — Manage classes</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
             <div class="canvas_bot"><p class="text-caption text-white-64 letter-space--1">hello@goallordcreativity.com</p></div>
         </div></div></div>
     </div>
@@ -395,5 +632,37 @@
     <script src="assets/js/infinityslide.js"></script>
     <script src="assets/js/gsapAnimation.js"></script>
     <script src="assets/js/main.js"></script>
+
+    <script>
+        // Portal dropdown toggle
+        function togglePortal(e) {
+            e.stopPropagation();
+            var btn = document.getElementById('portalToggleBtn');
+            var menu = document.getElementById('portalMenu');
+            var isOpen = menu.classList.contains('open');
+            menu.classList.toggle('open', !isOpen);
+            btn.classList.toggle('open', !isOpen);
+            btn.setAttribute('aria-expanded', String(!isOpen));
+        }
+
+        // Close portal dropdown on outside click
+        document.addEventListener('click', function(e) {
+            var wrap = document.querySelector('.portal-wrap');
+            if (wrap && !wrap.contains(e.target)) {
+                document.getElementById('portalMenu').classList.remove('open');
+                document.getElementById('portalToggleBtn').classList.remove('open');
+                document.getElementById('portalToggleBtn').setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href="#portal-access"]').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                var target = document.getElementById('portal-access');
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    </script>
 </body>
 </html>
