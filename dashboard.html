@@ -2166,6 +2166,49 @@
   </div>
 </div>
 
+<!-- View Student Modal -->
+<div class="modal-overlay" id="viewStudentModal">
+  <div class="modal" style="max-width:580px;padding:0;overflow:hidden">
+    <!-- Hero -->
+    <div class="vap-hero">
+      <button class="modal-close" onclick="closeModal('viewStudentModal')" style="position:absolute;top:16px;right:16px">✕</button>
+      <div style="display:flex;align-items:center;gap:20px">
+        <div class="vap-avatar-ring">
+          <img id="vsAvatarImg" src="" style="display:none">
+          <span id="vsInitials"></span>
+        </div>
+        <div style="min-width:0">
+          <div style="font-size:1.1rem;font-weight:800;color:var(--text);margin-bottom:7px" id="vsName">—</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <span id="vsTrackBadge" style="background:rgba(214,106,31,0.15);color:#D66A1F;border:1px solid rgba(214,106,31,0.3);padding:3px 11px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.03em"></span>
+            <span id="vsStatusBadge"></span>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px" id="vsEnrolled"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Body -->
+    <div class="vap-body">
+      <!-- Contact row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px" id="vsContactRow"></div>
+      <div class="vap-section-divider"></div>
+      <!-- Detail fields -->
+      <div id="vsFields"></div>
+      <!-- Notes -->
+      <div style="margin-top:4px">
+        <div class="vap-field-label" style="margin-bottom:8px">Admin Notes</div>
+        <textarea id="vsNotes" class="vap-notes-input" placeholder="Add internal notes…"></textarea>
+        <button onclick="saveStudentNotes()" style="margin-top:8px;background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;transition:border-color .15s,color .15s" onmouseenter="this.style.color='var(--text)';this.style.borderColor='rgba(255,255,255,0.3)'" onmouseleave="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">Save Notes</button>
+      </div>
+    </div>
+    <!-- Footer -->
+    <div class="vap-footer">
+      <button class="vap-btn vap-btn-close" onclick="closeModal('viewStudentModal')">Close</button>
+      <button class="vap-btn" style="background:var(--blue);color:#fff;border:none" onclick="closeModal('viewStudentModal');openEditStudent(_vsId)">Edit Student</button>
+    </div>
+  </div>
+</div>
+
 <!-- Custom Confirm Dialog -->
 <div class="modal-overlay" id="glConfirmModal">
   <div class="modal" style="max-width:400px">
@@ -3825,6 +3868,7 @@ function filterStudents() {
       <td style="padding:12px 14px;font-size:13px">${s.cohort}</td>
       <td style="padding:12px 14px"><span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:${statusColors[s.status]+'22'};color:${statusColors[s.status]}">${s.status}</span></td>
       <td style="padding:12px 14px">
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;display:inline-flex;align-items:center;gap:4px" onclick="viewStudent('${s._id}')" title="View profile"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
         <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="openEditStudent('${s._id}')">Edit</button>
         <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--danger)" onclick="deleteStudent('${s._id}','${s.fullName}')">Delete</button>
       </td>
@@ -3887,6 +3931,78 @@ async function saveStudent() {
   if (!res) { showErr(errEl, 'Request failed.'); return; }
   closeModal('addStudentModal');
   loadStudents();
+}
+
+// ─── View Student Profile Modal ───────────────────────────────
+let _vsId = null;
+
+function viewStudent(id) {
+  _vsId = id;
+  const s = allStudents.find(x => x._id === id);
+  if (!s) return;
+
+  // Avatar
+  const initials = s.fullName.trim().split(' ').map(p => p[0] || '').join('').substring(0,2).toUpperCase();
+  document.getElementById('vsInitials').textContent = initials;
+  const img = document.getElementById('vsAvatarImg');
+  if (s.profilePicture) {
+    img.src = s.profilePicture; img.style.display = '';
+    document.getElementById('vsInitials').style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    document.getElementById('vsInitials').style.display = '';
+  }
+
+  document.getElementById('vsName').textContent = s.fullName;
+  document.getElementById('vsTrackBadge').textContent = s.track || 'No Track';
+  const statusColors = { Active: '#22c55e', Suspended: '#f59e0b', Graduated: '#6a9fff' };
+  const sc = statusColors[s.status] || 'var(--muted)';
+  document.getElementById('vsStatusBadge').innerHTML = `<span style="background:${sc}22;color:${sc};border:1px solid ${sc}44;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700">${s.status}</span>`;
+  document.getElementById('vsEnrolled').textContent = s.enrolledAt ? 'Enrolled ' + new Date(s.enrolledAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '';
+  document.getElementById('vsNotes').value = s.notes || '';
+
+  // Contact
+  document.getElementById('vsContactRow').innerHTML = [
+    { label: 'Email',  val: s.email,          href: 'mailto:' + s.email },
+    { label: 'Phone',  val: s.phone || '—',   href: s.phone ? 'tel:' + s.phone : null },
+    { label: 'Cohort', val: s.cohort || '—',  href: null }
+  ].map(c => `
+    <${c.href ? `a href="${c.href}"` : 'div'} class="vap-contact-card">
+      <div class="vc-label">${c.label}</div>
+      <div class="vc-val">${c.val}</div>
+    </${c.href ? 'a' : 'div'}>`
+  ).join('');
+
+  // Detail fields
+  const fields = [
+    { label: 'Payment Plan',   val: s.paymentPlan   ? s.paymentPlan.replace('_', ' ') : null },
+    { label: 'Payment Status', val: s.paymentStatus ? s.paymentStatus.replace('_', ' ') : null },
+    { label: 'App Fee Paid',   val: s.applicationFeePaid ? 'Yes' : 'No' }
+  ].filter(f => f.val);
+
+  document.getElementById('vsFields').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+      ${fields.map(f => `
+        <div>
+          <div class="vap-field-label">${f.label}</div>
+          <div class="vap-field-val" style="text-transform:capitalize">${f.val}</div>
+        </div>`).join('')}
+    </div>`;
+
+  openModal('viewStudentModal');
+}
+
+async function saveStudentNotes() {
+  if (!_vsId) return;
+  const notes = document.getElementById('vsNotes').value;
+  const res = await apiFetch(`/api/students/${_vsId}`, { method: 'PATCH', body: JSON.stringify({ notes }) });
+  if (res) {
+    const s = allStudents.find(x => x._id === _vsId);
+    if (s) s.notes = notes;
+    showToast('Notes saved');
+  } else {
+    showToast('Failed to save', 'error');
+  }
 }
 
 async function deleteStudent(id, name) {
