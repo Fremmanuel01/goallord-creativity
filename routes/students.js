@@ -86,7 +86,7 @@ router.patch('/me/password', requireStudent, async (req, res) => {
 // ── PATCH /api/students/me/photo — student: upload profile picture ──
 router.patch('/me/photo', requireStudent, async (req, res) => {
   try {
-    const cloudinary = require('cloudinary');
+    const cloudinary = require('cloudinary').v2;
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
       api_key:    process.env.CLOUDINARY_API_KEY,
