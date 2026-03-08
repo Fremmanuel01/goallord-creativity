@@ -2166,6 +2166,23 @@
   </div>
 </div>
 
+<!-- Custom Confirm Dialog -->
+<div class="modal-overlay" id="glConfirmModal">
+  <div class="modal" style="max-width:400px">
+    <div style="padding:32px 28px 20px;text-align:center">
+      <div id="glConfirmIconWrap" style="width:54px;height:54px;border-radius:50%;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
+        <svg id="glConfirmIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div id="glConfirmMsg" style="font-size:15px;font-weight:700;color:var(--text);line-height:1.5;margin-bottom:6px"></div>
+      <div id="glConfirmSub" style="font-size:13px;color:var(--muted);line-height:1.55"></div>
+    </div>
+    <div style="padding:4px 24px 24px;display:flex;gap:10px">
+      <button onclick="glConfirmResolve(false)" style="flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text);padding:11px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s" onmouseenter="this.style.background='rgba(255,255,255,0.08)'" onmouseleave="this.style.background='rgba(255,255,255,0.04)'">Cancel</button>
+      <button id="glConfirmOkBtn" onclick="glConfirmResolve(true)" style="flex:1;background:#ef4444;border:none;color:#fff;padding:11px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s" onmouseenter="this.style.opacity='.85'" onmouseleave="this.style.opacity='1'">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <!-- View Client Modal -->
 <div class="modal-overlay" id="viewClientModal">
   <div class="modal">
@@ -2676,6 +2693,33 @@ function showToast(msg, type = 'success') {
   _toastTimer = setTimeout(() => { el.className = ''; }, 3500);
 }
 
+// ─── Custom Confirm Dialog ───────────────────────────────────
+let _glConfirmCb = null;
+function glConfirm(msg, sub, btnLabel, accent, cb) {
+  // accent: 'danger' (red, default) | 'primary' (blue)
+  if (typeof accent === 'function') { cb = accent; accent = 'danger'; }
+  document.getElementById('glConfirmMsg').textContent = msg;
+  const subEl = document.getElementById('glConfirmSub');
+  subEl.textContent = sub || '';
+  subEl.style.display = sub ? '' : 'none';
+  const okBtn = document.getElementById('glConfirmOkBtn');
+  okBtn.textContent = btnLabel || 'Confirm';
+  const isDanger = accent !== 'primary';
+  okBtn.style.background = isDanger ? '#ef4444' : 'var(--blue)';
+  const iconWrap = document.getElementById('glConfirmIconWrap');
+  const icon = document.getElementById('glConfirmIcon');
+  iconWrap.style.background = isDanger ? 'rgba(239,68,68,0.1)' : 'rgba(30,75,255,0.1)';
+  iconWrap.style.borderColor = isDanger ? 'rgba(239,68,68,0.25)' : 'rgba(30,75,255,0.25)';
+  icon.setAttribute('stroke', isDanger ? '#ef4444' : '#1E4BFF');
+  _glConfirmCb = cb;
+  openModal('glConfirmModal');
+}
+function glConfirmResolve(ok) {
+  closeModal('glConfirmModal');
+  if (ok && _glConfirmCb) _glConfirmCb();
+  _glConfirmCb = null;
+}
+
 // ─── View Applicant Profile Modal ────────────────────────────
 let _vapId = null;
 
@@ -2920,10 +2964,11 @@ function toggleProduct(id) {
 }
 
 function deleteProduct(id) {
-  if (!confirm('Delete this product?')) return;
-  products = products.filter(p => p.id !== id);
-  localStorage.setItem('gl_products', JSON.stringify(products));
-  renderProducts();
+  glConfirm('Delete this product?', 'This action cannot be undone.', 'Delete', () => {
+    products = products.filter(p => p.id !== id);
+    localStorage.setItem('gl_products', JSON.stringify(products));
+    renderProducts();
+  });
 }
 
 let editProductId = null;
@@ -3569,9 +3614,10 @@ function addPortfolioItem() {
 }
 
 function deletePortfolioItem(index) {
-  if (!confirm('Delete this project?')) return;
-  cmsCache.portfolio.items.splice(index, 1);
-  savePortfolio().then(() => loadPortfolio());
+  glConfirm('Delete this project?', 'The portfolio item will be permanently removed.', 'Delete', () => {
+    cmsCache.portfolio.items.splice(index, 1);
+    savePortfolio().then(() => loadPortfolio());
+  });
 }
 
 // Blog
@@ -3645,9 +3691,10 @@ function addBlogPost() {
 }
 
 function deleteBlogPost(index) {
-  if (!confirm('Delete this post?')) return;
-  cmsCache.blog.posts.splice(index, 1);
-  saveBlog().then(() => loadBlog());
+  glConfirm('Delete this blog post?', 'The post will be permanently removed.', 'Delete', () => {
+    cmsCache.blog.posts.splice(index, 1);
+    saveBlog().then(() => loadBlog());
+  });
 }
 
 // Testimonials
@@ -3700,9 +3747,10 @@ function addTestimonial() {
 }
 
 function deleteTestimonial(index) {
-  if (!confirm('Delete this testimonial?')) return;
-  cmsCache.testimonials.items.splice(index, 1);
-  saveTestimonials().then(() => loadTestimonials());
+  glConfirm('Delete this testimonial?', 'The testimonial will be permanently removed.', 'Delete', () => {
+    cmsCache.testimonials.items.splice(index, 1);
+    saveTestimonials().then(() => loadTestimonials());
+  });
 }
 
 // ── Load API data on page init ────────────────────────────────
@@ -3842,9 +3890,11 @@ async function saveStudent() {
 }
 
 async function deleteStudent(id, name) {
-  if (!confirm(`Delete student "${name}"? This cannot be undone.`)) return;
-  await apiFetch(`/api/students/${id}`, { method: 'DELETE' });
-  loadStudents();
+  glConfirm(`Delete "${name}"?`, 'This student account will be permanently removed and cannot be recovered.', 'Delete Student', async () => {
+    await apiFetch(`/api/students/${id}`, { method: 'DELETE' });
+    loadStudents();
+    showToast(`${name} deleted`);
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -4215,15 +4265,18 @@ async function saveBatch() {
 }
 
 async function setActiveBatch(id) {
-  if (!confirm('Set this batch as the active batch? This will deactivate all others.')) return;
-  const res = await apiFetch(`/api/batches/${id}`, { method: 'PATCH', body: JSON.stringify({ isActive: true }) });
-  if (res) loadBatches();
+  glConfirm('Set as active batch?', 'All other batches will be deactivated. New accepted applicants will be assigned to this batch.', 'Set Active', 'primary', async () => {
+    const res = await apiFetch(`/api/batches/${id}`, { method: 'PATCH', body: JSON.stringify({ isActive: true }) });
+    if (res) { loadBatches(); showToast('Active batch updated', 'success'); }
+  });
 }
 
 async function deleteBatch(id, name) {
-  if (!confirm(`Delete batch "${name}"? This cannot be undone.`)) return;
-  await apiFetch(`/api/batches/${id}`, { method: 'DELETE' });
-  loadBatches();
+  glConfirm(`Delete "${name}"?`, 'This batch will be permanently deleted. Students in this batch will be unassigned.', 'Delete Batch', async () => {
+    await apiFetch(`/api/batches/${id}`, { method: 'DELETE' });
+    loadBatches();
+    showToast(`Batch deleted`);
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -4321,9 +4374,11 @@ async function saveLecturer() {
 }
 
 async function deleteLecturer(id, name) {
-  if (!confirm(`Delete lecturer "${name}"?`)) return;
-  await apiFetch(`/api/lecturers/${id}`, { method: 'DELETE' });
-  loadLecturers();
+  glConfirm(`Delete "${name}"?`, 'This lecturer account will be permanently removed.', 'Delete Lecturer', async () => {
+    await apiFetch(`/api/lecturers/${id}`, { method: 'DELETE' });
+    loadLecturers();
+    showToast(`${name} deleted`);
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
