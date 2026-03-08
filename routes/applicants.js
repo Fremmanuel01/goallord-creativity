@@ -275,7 +275,21 @@ router.post('/:id/pay-application', async (req, res) => {
     // Create student account
     const student = await createStudentFromApplicant(applicant, paymentPlan);
 
-    res.json({ success: true, studentId: student._id });
+    // Fetch app fee payment for receipt data
+    const appFeePayment = await Payment.findOne({ student: student._id, category: 'application_fee' });
+
+    res.json({
+      success: true,
+      studentId: student._id,
+      receipt: {
+        receiptNumber:   appFeePayment ? appFeePayment.receiptNumber   : '',
+        receiptIssuedAt: appFeePayment ? appFeePayment.receiptIssuedAt : new Date(),
+        name:      applicant.fullName,
+        email:     applicant.email,
+        amount:    appFee,
+        reference
+      }
+    });
   } catch (err) {
     console.error('pay-application error:', err);
     res.status(500).json({ error: err.message });
