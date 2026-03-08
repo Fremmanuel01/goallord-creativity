@@ -2395,7 +2395,9 @@ function catBadge(cat) {
 
 // ─── APPLICANTS ──────────────────────────────────────────
 function getStatus(id) {
-  return applicantStatuses[id] || APPLICANTS.find(a => a.id === id).status;
+  if (applicantStatuses[id]) return applicantStatuses[id];
+  const a = APPLICANTS.find(a => a.id === id);
+  return a ? a.status : 'Pending';
 }
 
 function renderApplicants(list) {
@@ -2418,10 +2420,10 @@ function renderApplicants(list) {
       <td class="muted">${a.date}</td>
       <td>
         <div style="display:flex;gap:6px;align-items:center">
-          <select class="status-select" onchange="updateApplicantStatus(${a.id}, this.value)" title="Change status">
+          <select class="status-select" onchange="updateApplicantStatus('${a.id}', this.value)" title="Change status">
             ${['Pending','Reviewed','Accepted','Rejected'].map(s => `<option ${s===st?'selected':''}>${s}</option>`).join('')}
           </select>
-          <button class="btn-icon" onclick="viewApplicant(${a.id})" title="View details">
+          <button class="btn-icon" onclick="viewApplicant('${a.id}')" title="View details">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
         </div>
@@ -2981,7 +2983,7 @@ async function loadApplicantsFromAPI() {
     status:     a.status,
     date:       new Date(a.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
   }));
-  if (typeof renderApplicants === 'function') renderApplicants();
+  if (typeof renderApplicants === 'function') renderApplicants(window.APPLICANTS);
 }
 
 async function loadClientsFromAPI() {
