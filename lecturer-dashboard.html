@@ -67,6 +67,24 @@
   .stat-card .sv { font-size: 26px; font-weight: 800; }
   .sv.orange { color: var(--orange); } .sv.blue { color: #6a9fff; } .sv.green { color: var(--green); }
   @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } .topnav { padding: 0 16px; } .main { padding: 20px 14px 48px; } }
+  .bell-wrap { position: relative; }
+  .bell-btn { background: transparent; border: 1px solid var(--border); border-radius: 7px; padding: 7px 11px; cursor: pointer; color: var(--muted); font-size: 16px; position: relative; transition: color 0.2s, border-color 0.2s; }
+  .bell-btn:hover { color: var(--text); border-color: var(--muted); }
+  .bell-badge { position: absolute; top: -5px; right: -5px; background: #ef4444; color: #fff; font-size: 10px; font-weight: 700; min-width: 17px; height: 17px; border-radius: 9px; display: none; align-items: center; justify-content: center; padding: 0 3px; }
+  .notif-panel { display: none; position: absolute; top: calc(100% + 10px); right: 0; width: 320px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,0.5); z-index: 300; overflow: hidden; }
+  .notif-panel.open { display: block; }
+  .notif-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .notif-head span { font-size: 13px; font-weight: 700; }
+  .notif-head button { font-size: 11px; background: transparent; border: none; color: var(--orange); cursor: pointer; font-weight: 600; }
+  .notif-list { max-height: 320px; overflow-y: auto; }
+  .notif-item { padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
+  .notif-item:hover { background: rgba(255,255,255,0.03); }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-item.unread { background: rgba(214,106,31,0.06); }
+  .notif-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+  .notif-msg { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .notif-time { font-size: 11px; color: var(--muted); margin-top: 4px; opacity: 0.7; }
+  .notif-empty { padding: 32px 16px; text-align: center; color: var(--muted); font-size: 13px; }
 </style>
 </head>
 <body>
@@ -81,6 +99,21 @@
   </div>
   <div class="topnav-right">
     <div class="lec-name">Welcome, <strong id="lecNameNav">—</strong></div>
+    <div class="bell-wrap">
+      <button class="bell-btn" onclick="toggleNotifPanel()" title="Notifications">
+        🔔
+        <span class="bell-badge" id="bellBadge"></span>
+      </button>
+      <div class="notif-panel" id="notifPanel">
+        <div class="notif-head">
+          <span>Notifications</span>
+          <button onclick="markAllRead()">Mark all read</button>
+        </div>
+        <div class="notif-list" id="notifList">
+          <div class="notif-empty">Loading…</div>
+        </div>
+      </div>
+    </div>
     <button class="btn-logout" onclick="logout()">Sign Out</button>
   </div>
 </nav>
@@ -928,9 +961,57 @@ function filterStudents() {
   ));
 }
 
+// ── NOTIFICATIONS ────────────────────────────────────────────
+let notifOpen = false;
+async function loadNotifications() {
+  try {
+    const res = await fetch('/api/notifications', { headers: authHeaders() });
+    const data = await res.json();
+    const badge = document.getElementById('bellBadge');
+    const list  = document.getElementById('notifList');
+    if (data.unread > 0) {
+      badge.textContent = data.unread > 9 ? '9+' : data.unread;
+      badge.style.display = 'flex';
+    } else { badge.style.display = 'none'; }
+    const items = data.notifications || [];
+    if (!items.length) { list.innerHTML = '<div class="notif-empty">No notifications yet.</div>'; return; }
+    list.innerHTML = items.map(n => `
+      <div class="notif-item ${n.read ? '' : 'unread'}" onclick="readNotif('${n._id}',this)">
+        <div class="notif-title">${n.title || 'Notification'}</div>
+        <div class="notif-msg">${n.message || ''}</div>
+        <div class="notif-time">${fmtDate(n.createdAt)}</div>
+      </div>`).join('');
+  } catch { /* ignore */ }
+}
+
+function toggleNotifPanel() {
+  notifOpen = !notifOpen;
+  document.getElementById('notifPanel').classList.toggle('open', notifOpen);
+  if (notifOpen) loadNotifications();
+}
+
+document.addEventListener('click', e => {
+  if (notifOpen && !e.target.closest('.bell-wrap')) {
+    notifOpen = false;
+    document.getElementById('notifPanel').classList.remove('open');
+  }
+});
+
+async function readNotif(id, el) {
+  el.classList.remove('unread');
+  await fetch('/api/notifications/' + id + '/read', { method: 'PATCH', headers: authHeaders() }).catch(() => {});
+  loadNotifications();
+}
+
+async function markAllRead() {
+  await fetch('/api/notifications/read-all', { method: 'PATCH', headers: authHeaders() }).catch(() => {});
+  loadNotifications();
+}
+
 // ── INIT ─────────────────────────────────────────────────────
 loaded['overview'] = true;
 loadOverview();
+loadNotifications();
 </script>
 </body>
 </html>

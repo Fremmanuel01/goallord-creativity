@@ -1,8 +1,11 @@
-const express  = require('express');
+const express   = require('express');
 const bcrypt    = require('bcryptjs');
+const crypto    = require('crypto');
 const jwt       = require('jsonwebtoken');
 const Lecturer  = require('../models/Lecturer');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth }        = require('../middleware/auth');
+const { sendMail }           = require('../utils/mailer');
+const { passwordResetEmail } = require('../utils/emailTemplates');
 
 const router = express.Router();
 
@@ -84,6 +87,54 @@ router.patch('/:id', requireAuth, async (req, res) => {
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
     await Lecturer.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/lecturers/forgot-password — public ────────────────
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const lecturer = await Lecturer.findOne({ email: email?.toLowerCase() });
+    if (!lecturer) return res.json({ success: true });
+
+    const token   = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000);
+    lecturer.resetToken   = token;
+    lecturer.resetExpires = expires;
+    await lecturer.save();
+
+    const host     = process.env.HOST || 'https://goallordcreativity.com';
+    const resetUrl = `${host}/reset-password.html?token=${token}&role=lecturer`;
+
+    await sendMail({
+      to:      lecturer.email,
+      subject: 'Reset your password — Goallord Academy',
+      html:    passwordResetEmail({ fullName: lecturer.fullName, resetUrl, role: 'lecturer' })
+    }).catch(e => console.error('Reset email error:', e.message));
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/lecturers/reset-password — public ─────────────────
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) return res.status(400).json({ error: 'token and newPassword are required' });
+    if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+    const lecturer = await Lecturer.findOne({ resetToken: token, resetExpires: { $gt: new Date() } });
+    if (!lecturer) return res.status(400).json({ error: 'Reset link is invalid or has expired' });
+
+    lecturer.password     = await bcrypt.hash(newPassword, 12);
+    lecturer.resetToken   = undefined;
+    lecturer.resetExpires = undefined;
+    await lecturer.save();
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

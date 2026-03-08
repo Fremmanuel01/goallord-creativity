@@ -1,10 +1,13 @@
-const express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const Student = require('../models/Student');
-const { requireAuth } = require('../middleware/auth');
-const { requireStudent } = require('../middleware/studentAuth');
-const { requireLecturer } = require('../middleware/lecturerAuth');
+const express  = require('express');
+const bcrypt   = require('bcryptjs');
+const crypto   = require('crypto');
+const jwt      = require('jsonwebtoken');
+const Student  = require('../models/Student');
+const { requireAuth }       = require('../middleware/auth');
+const { requireStudent }    = require('../middleware/studentAuth');
+const { requireLecturer }   = require('../middleware/lecturerAuth');
+const { sendMail }          = require('../utils/mailer');
+const { passwordResetEmail } = require('../utils/emailTemplates');
 
 const router = express.Router();
 
@@ -39,9 +42,91 @@ router.post('/login', async (req, res) => {
 // ── GET /api/students/me — student auth ────────────────────────
 router.get('/me', requireStudent, async (req, res) => {
   try {
-    const student = await Student.findById(req.student.id).select('-password');
+    const student = await Student.findById(req.student.id).select('-password -resetToken -resetExpires');
     if (!student) return res.status(404).json({ error: 'Student not found' });
     res.json(student);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── PATCH /api/students/me — student: update own profile ───────
+router.patch('/me', requireStudent, async (req, res) => {
+  try {
+    const { fullName, phone } = req.body;
+    const update = {};
+    if (fullName) update.fullName = fullName.trim();
+    if (phone !== undefined) update.phone = phone.trim();
+    const student = await Student.findByIdAndUpdate(req.student.id, update, { new: true }).select('-password -resetToken -resetExpires');
+    res.json(student);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ── PATCH /api/students/me/password — student: change own password
+router.patch('/me/password', requireStudent, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) return res.status(400).json({ error: 'currentPassword and newPassword are required' });
+    if (newPassword.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' });
+
+    const student = await Student.findById(req.student.id);
+    const match = await bcrypt.compare(currentPassword, student.password);
+    if (!match) return res.status(401).json({ error: 'Current password is incorrect' });
+
+    student.password = await bcrypt.hash(newPassword, 12);
+    await student.save();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ── POST /api/students/forgot-password — public ─────────────────
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const student = await Student.findOne({ email: email?.toLowerCase() });
+    // Always respond OK to prevent email enumeration
+    if (!student) return res.json({ success: true });
+
+    const token   = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    student.resetToken   = token;
+    student.resetExpires = expires;
+    await student.save();
+
+    const host     = process.env.HOST || 'https://goallordcreativity.com';
+    const resetUrl = `${host}/reset-password.html?token=${token}&role=student`;
+
+    await sendMail({
+      to:      student.email,
+      subject: 'Reset your password — Goallord Academy',
+      html:    passwordResetEmail({ fullName: student.fullName, resetUrl, role: 'student' })
+    }).catch(e => console.error('Reset email error:', e.message));
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/students/reset-password — public ──────────────────
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) return res.status(400).json({ error: 'token and newPassword are required' });
+    if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+    const student = await Student.findOne({ resetToken: token, resetExpires: { $gt: new Date() } });
+    if (!student) return res.status(400).json({ error: 'Reset link is invalid or has expired' });
+
+    student.password     = await bcrypt.hash(newPassword, 12);
+    student.resetToken   = undefined;
+    student.resetExpires = undefined;
+    await student.save();
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

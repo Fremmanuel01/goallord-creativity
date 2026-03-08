@@ -30,6 +30,25 @@
   .student-name strong { color: var(--text); }
   .btn-logout { padding: 7px 14px; border: 1px solid var(--border); border-radius: 7px; background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; transition: color 0.2s, border-color 0.2s; }
   .btn-logout:hover { color: var(--text); border-color: var(--muted); }
+  /* ── NOTIFICATION BELL ── */
+  .bell-wrap { position: relative; }
+  .bell-btn { background: transparent; border: 1px solid var(--border); border-radius: 7px; padding: 7px 11px; cursor: pointer; color: var(--muted); font-size: 16px; position: relative; transition: color 0.2s, border-color 0.2s; }
+  .bell-btn:hover { color: var(--text); border-color: var(--muted); }
+  .bell-badge { position: absolute; top: -5px; right: -5px; background: #ef4444; color: #fff; font-size: 10px; font-weight: 700; min-width: 17px; height: 17px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 3px; display: none; }
+  .notif-panel { display: none; position: absolute; top: calc(100% + 10px); right: 0; width: 320px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,0.5); z-index: 200; overflow: hidden; }
+  .notif-panel.open { display: block; }
+  .notif-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .notif-head span { font-size: 13px; font-weight: 700; }
+  .notif-head button { font-size: 11px; background: transparent; border: none; color: var(--orange); cursor: pointer; font-weight: 600; }
+  .notif-list { max-height: 320px; overflow-y: auto; }
+  .notif-item { padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
+  .notif-item:hover { background: rgba(255,255,255,0.03); }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-item.unread { background: rgba(214,106,31,0.06); }
+  .notif-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+  .notif-msg { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .notif-time { font-size: 11px; color: var(--muted); margin-top: 4px; opacity: 0.7; }
+  .notif-empty { padding: 32px 16px; text-align: center; color: var(--muted); font-size: 13px; }
 
   /* ── MAIN ── */
   .main { max-width: 960px; margin: 0 auto; padding: 32px 24px 60px; }
@@ -114,6 +133,21 @@
   </div>
   <div class="topnav-right">
     <div class="student-name">Welcome, <strong id="studentNameNav">—</strong></div>
+    <div class="bell-wrap">
+      <button class="bell-btn" onclick="toggleNotifPanel()" title="Notifications">
+        🔔
+        <span class="bell-badge" id="bellBadge"></span>
+      </button>
+      <div class="notif-panel" id="notifPanel">
+        <div class="notif-head">
+          <span>Notifications</span>
+          <button onclick="markAllRead()">Mark all read</button>
+        </div>
+        <div class="notif-list" id="notifList">
+          <div class="notif-empty">Loading…</div>
+        </div>
+      </div>
+    </div>
     <button class="btn-logout" onclick="logout()">Sign Out</button>
   </div>
 </nav>
@@ -124,13 +158,14 @@
     <p id="pageSubtitle" style="color:var(--muted);font-size:14px;">Loading your data…</p>
   </div>
 
-  <div class="tabs">
+  <div class="tabs" style="overflow-x:auto;flex-wrap:nowrap;">
     <button class="tab active" onclick="switchTab('overview')">Overview</button>
     <button class="tab" onclick="switchTab('attendance')">Attendance</button>
     <button class="tab" onclick="switchTab('payments')">Payments</button>
     <button class="tab" onclick="switchTab('materials')">Materials</button>
     <button class="tab" onclick="switchTab('assignments')">Assignments</button>
     <button class="tab" onclick="switchTab('flashcards')">Flashcards</button>
+    <button class="tab" onclick="switchTab('profile')">Profile</button>
   </div>
 
   <!-- ── OVERVIEW TAB ── -->
@@ -242,6 +277,63 @@
     </div>
   </div>
 
+  <!-- ── PROFILE TAB ── -->
+  <div id="tab-profile" style="display:none;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:720px;">
+
+      <!-- Edit Info Card -->
+      <div class="table-wrap" style="padding:24px;grid-column:1/-1;">
+        <div class="section-title" style="margin-bottom:20px;">Profile Information</div>
+        <div id="profileErr" style="display:none;background:rgba(220,60,60,0.12);border:1px solid rgba(220,60,60,0.3);border-radius:8px;padding:10px 14px;color:#ff7070;font-size:13px;margin-bottom:16px;"></div>
+        <div id="profileOk" style="display:none;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:10px 14px;color:#22c55e;font-size:13px;margin-bottom:16px;"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Full Name</label>
+            <input id="prof-name" type="text" style="width:100%;padding:11px 14px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:14px;outline:none;" placeholder="Your full name">
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Phone</label>
+            <input id="prof-phone" type="tel" style="width:100%;padding:11px 14px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:14px;outline:none;" placeholder="e.g. 08012345678">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Email (read-only)</label>
+            <input id="prof-email" type="email" readonly style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.02);border:1px solid #2A2F3A;border-radius:8px;color:var(--muted);font-size:14px;outline:none;">
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Track (read-only)</label>
+            <input id="prof-track" type="text" readonly style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.02);border:1px solid #2A2F3A;border-radius:8px;color:var(--muted);font-size:14px;outline:none;">
+          </div>
+        </div>
+        <button onclick="saveProfile()" id="saveProfileBtn" style="padding:11px 28px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Save Changes</button>
+      </div>
+
+      <!-- Change Password Card -->
+      <div class="table-wrap" style="padding:24px;grid-column:1/-1;">
+        <div class="section-title" style="margin-bottom:20px;">Change Password</div>
+        <div id="pwErr" style="display:none;background:rgba(220,60,60,0.12);border:1px solid rgba(220,60,60,0.3);border-radius:8px;padding:10px 14px;color:#ff7070;font-size:13px;margin-bottom:16px;"></div>
+        <div id="pwOk" style="display:none;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:10px 14px;color:#22c55e;font-size:13px;margin-bottom:16px;"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px;">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Current Password</label>
+            <input id="pw-current" type="password" style="width:100%;padding:11px 14px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:14px;outline:none;" placeholder="••••••••">
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">New Password</label>
+            <input id="pw-new" type="password" style="width:100%;padding:11px 14px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:14px;outline:none;" placeholder="Min 6 characters">
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Confirm New</label>
+            <input id="pw-confirm" type="password" style="width:100%;padding:11px 14px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:14px;outline:none;" placeholder="Repeat new password">
+          </div>
+        </div>
+        <button onclick="changePassword()" id="changePwBtn" style="padding:11px 28px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Update Password</button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Submit Assignment Modal -->
   <div id="submitModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;">
     <div style="background:#171A21;border:1px solid #2A2F3A;border-radius:14px;padding:32px;width:100%;max-width:520px;margin:16px;">
@@ -340,7 +432,7 @@
   }
 
   // ── Tab switching ────────────────────────────────────────────
-  const ALL_TABS = ['overview','attendance','payments','materials','assignments','flashcards'];
+  const ALL_TABS = ['overview','attendance','payments','materials','assignments','flashcards','profile'];
 
   function switchTab(tab) {
     ALL_TABS.forEach(t => {
@@ -353,6 +445,7 @@
     if (tab === 'assignments' && !assignmentsLoaded) loadAssignments();
     if (tab === 'flashcards'  && !flashcardsLoaded)  loadFlashcards();
     if (tab === 'attendance') loadOpenSession();
+    if (tab === 'profile') loadProfile();
   }
 
   // ── Format helpers ───────────────────────────────────────────
@@ -744,6 +837,125 @@
   }
 
   loadAll();
+
+  // ── Notifications ─────────────────────────────────────────────
+  let notifOpen = false;
+  async function loadNotifications() {
+    try {
+      const res = await fetch('/api/notifications', { headers: { 'Authorization': 'Bearer ' + token } });
+      const data = await res.json();
+      const badge = document.getElementById('bellBadge');
+      const list  = document.getElementById('notifList');
+      if (data.unread > 0) {
+        badge.textContent = data.unread > 9 ? '9+' : data.unread;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+      const items = data.notifications || [];
+      if (!items.length) { list.innerHTML = '<div class="notif-empty">No notifications yet.</div>'; return; }
+      list.innerHTML = items.map(n => `
+        <div class="notif-item ${n.read ? '' : 'unread'}" onclick="readNotif('${n._id}',this)">
+          <div class="notif-title">${n.title || 'Notification'}</div>
+          <div class="notif-msg">${n.message || ''}</div>
+          <div class="notif-time">${new Date(n.createdAt).toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'})}</div>
+        </div>`).join('');
+    } catch { /* ignore */ }
+  }
+
+  function toggleNotifPanel() {
+    notifOpen = !notifOpen;
+    document.getElementById('notifPanel').classList.toggle('open', notifOpen);
+    if (notifOpen) loadNotifications();
+  }
+
+  document.addEventListener('click', e => {
+    if (notifOpen && !e.target.closest('.bell-wrap')) {
+      notifOpen = false;
+      document.getElementById('notifPanel').classList.remove('open');
+    }
+  });
+
+  async function readNotif(id, el) {
+    el.classList.remove('unread');
+    await fetch('/api/notifications/' + id + '/read', { method: 'PATCH', headers: { 'Authorization': 'Bearer ' + token } }).catch(() => {});
+    loadNotifications();
+  }
+
+  async function markAllRead() {
+    await fetch('/api/notifications/read-all', { method: 'PATCH', headers: { 'Authorization': 'Bearer ' + token } }).catch(() => {});
+    loadNotifications();
+  }
+
+  // Load bell badge count on init
+  loadNotifications();
+
+  // ── Profile ───────────────────────────────────────────────────
+  let profileLoaded = false;
+  function loadProfile() {
+    if (profileLoaded || !studentData) return;
+    profileLoaded = true;
+    document.getElementById('prof-name').value  = studentData.fullName || '';
+    document.getElementById('prof-phone').value = studentData.phone    || '';
+    document.getElementById('prof-email').value = studentData.email    || '';
+    document.getElementById('prof-track').value = studentData.track    || '';
+  }
+
+  async function saveProfile() {
+    const btn = document.getElementById('saveProfileBtn');
+    const err = document.getElementById('profileErr');
+    const ok  = document.getElementById('profileOk');
+    err.style.display = 'none'; ok.style.display = 'none';
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      const res = await fetch('/api/students/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({
+          fullName: document.getElementById('prof-name').value.trim(),
+          phone:    document.getElementById('prof-phone').value.trim()
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) { err.textContent = data.error || 'Save failed.'; err.style.display = 'block'; }
+      else {
+        ok.textContent = 'Profile updated!'; ok.style.display = 'block';
+        studentData = { ...studentData, ...data };
+        document.getElementById('studentNameNav').textContent = data.fullName;
+      }
+    } catch { err.textContent = 'Network error.'; err.style.display = 'block'; }
+    btn.disabled = false; btn.textContent = 'Save Changes';
+  }
+
+  async function changePassword() {
+    const btn = document.getElementById('changePwBtn');
+    const err = document.getElementById('pwErr');
+    const ok  = document.getElementById('pwOk');
+    err.style.display = 'none'; ok.style.display = 'none';
+    const cur  = document.getElementById('pw-current').value;
+    const nw   = document.getElementById('pw-new').value;
+    const conf = document.getElementById('pw-confirm').value;
+    if (!cur || !nw || !conf) { err.textContent = 'All fields are required.'; err.style.display = 'block'; return; }
+    if (nw !== conf) { err.textContent = 'New passwords do not match.'; err.style.display = 'block'; return; }
+    if (nw.length < 6) { err.textContent = 'Password must be at least 6 characters.'; err.style.display = 'block'; return; }
+    btn.disabled = true; btn.textContent = 'Updating…';
+    try {
+      const res = await fetch('/api/students/me/password', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ currentPassword: cur, newPassword: nw })
+      });
+      const data = await res.json();
+      if (!res.ok) { err.textContent = data.error || 'Failed.'; err.style.display = 'block'; }
+      else {
+        ok.textContent = 'Password updated successfully!'; ok.style.display = 'block';
+        document.getElementById('pw-current').value = '';
+        document.getElementById('pw-new').value = '';
+        document.getElementById('pw-confirm').value = '';
+      }
+    } catch { err.textContent = 'Network error.'; err.style.display = 'block'; }
+    btn.disabled = false; btn.textContent = 'Update Password';
+  }
 </script>
 </body>
 </html>

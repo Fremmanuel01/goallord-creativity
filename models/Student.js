@@ -16,7 +16,9 @@ const studentSchema = new mongoose.Schema({
   status:             { type: String, enum: ['Active', 'Suspended', 'Graduated'], default: 'Active' },
   applicantRef:       { type: mongoose.Schema.Types.ObjectId, ref: 'Applicant' },
   notes:              { type: String, default: '' },
-  enrolledAt:         { type: Date, default: Date.now }
+  enrolledAt:         { type: Date, default: Date.now },
+  resetToken:         { type: String },
+  resetExpires:       { type: Date }
 });
 
 module.exports = mongoose.model('Student', studentSchema);

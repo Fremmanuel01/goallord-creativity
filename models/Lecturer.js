@@ -11,7 +11,9 @@ const lecturerSchema = new mongoose.Schema({
   batches:        [{ type: mongoose.Schema.Types.ObjectId, ref: 'Batch' }],
   status:         { type: String, enum: ['Active', 'Inactive'], default: 'Active' },
   createdBy:      { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  createdAt:      { type: Date, default: Date.now }
+  createdAt:      { type: Date, default: Date.now },
+  resetToken:     { type: String },
+  resetExpires:   { type: Date }
 });
 
 module.exports = mongoose.model('Lecturer', lecturerSchema);
