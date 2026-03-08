@@ -3861,14 +3861,13 @@ function filterStudents() {
   }
   const statusColors = { Active: 'var(--success)', Suspended: 'var(--warning)', Graduated: '#6a9fff' };
   tbody.innerHTML = filtered.map(s => `
-    <tr>
+    <tr style="cursor:pointer" onclick="viewStudent('${s._id}')" onmouseenter="this.style.background='rgba(255,255,255,0.03)'" onmouseleave="this.style.background=''">
       <td style="padding:12px 14px;font-weight:600">${s.fullName}</td>
       <td style="padding:12px 14px;color:var(--muted);font-size:13px">${s.email}</td>
       <td style="padding:12px 14px;font-size:13px">${s.track}</td>
       <td style="padding:12px 14px;font-size:13px">${s.cohort}</td>
       <td style="padding:12px 14px"><span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:${statusColors[s.status]+'22'};color:${statusColors[s.status]}">${s.status}</span></td>
-      <td style="padding:12px 14px">
-        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;display:inline-flex;align-items:center;gap:4px" onclick="viewStudent('${s._id}')" title="View profile"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      <td style="padding:12px 14px" onclick="event.stopPropagation()">
         <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="openEditStudent('${s._id}')">Edit</button>
         <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--danger)" onclick="deleteStudent('${s._id}','${s.fullName}')">Delete</button>
       </td>
