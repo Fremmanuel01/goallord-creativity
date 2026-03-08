@@ -636,7 +636,7 @@
     const cont = document.getElementById('materialsContent');
     cont.innerHTML = '<div class="loading">Loading…</div>';
     try {
-      const res = await fetch('/api/materials?published=true', { headers: { 'Authorization': 'Bearer ' + token } });
+      const res = await fetch('/api/materials/student', { headers: { 'Authorization': 'Bearer ' + token } });
       const data = await res.json();
       const items = Array.isArray(data) ? data : (data.data || []);
       if (!items.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">📚</div>No materials published yet.</div>'; return; }
@@ -741,7 +741,7 @@
     const cont = document.getElementById('flashcardsContent');
     cont.innerHTML = '<div class="loading">Loading…</div>';
     try {
-      const res = await fetch('/api/flashcards/sets?published=true', { headers: { 'Authorization': 'Bearer ' + token } });
+      const res = await fetch('/api/flashcards/sets/student', { headers: { 'Authorization': 'Bearer ' + token } });
       const data = await res.json();
       const sets = Array.isArray(data) ? data : (data.data || []);
       if (!sets.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">🃏</div>No flashcard sets yet.</div>'; return; }
@@ -762,7 +762,7 @@
     document.getElementById('quizResult').style.display = 'none';
     quizSetId = setId; quizIdx = 0; quizResponses = [];
 
-    const res = await fetch('/api/flashcards/sets/' + setId + '/cards', { headers: { 'Authorization': 'Bearer ' + token } });
+    const res = await fetch('/api/flashcards/sets/' + setId + '/cards/student', { headers: { 'Authorization': 'Bearer ' + token } });
     quizCards = await res.json();
     if (!quizCards.length) { document.getElementById('quizCard').innerHTML = '<div class="empty">No cards in this set.</div>'; return; }
     showCard();

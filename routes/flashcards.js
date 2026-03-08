@@ -2,6 +2,7 @@ const express          = require('express');
 const FlashcardSet     = require('../models/FlashcardSet');
 const Flashcard        = require('../models/Flashcard');
 const FlashcardResponse = require('../models/FlashcardResponse');
+const Student          = require('../models/Student');
 const { requireLecturer } = require('../middleware/lecturerAuth');
 const { requireStudentAuth } = require('../middleware/studentAuth');
 
@@ -96,6 +97,38 @@ router.delete('/cards/:cardId', requireLecturer, async (req, res) => {
   try {
     await Flashcard.findByIdAndDelete(req.params.cardId);
     res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── STUDENT READ ROUTES ──────────────────────────────────────
+
+// GET /api/flashcards/sets/student — student: published sets for their batch
+router.get('/sets/student', requireStudentAuth, async (req, res) => {
+  try {
+    const student = await Student.findById(req.user.id).select('batch');
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+
+    const filter = { published: true };
+    if (student.batch) filter.batch = student.batch;
+
+    const sets = await FlashcardSet.find(filter)
+      .populate('lecturer', 'fullName')
+      .sort({ week: 1, createdAt: -1 });
+    res.json(sets);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/flashcards/sets/:setId/cards/student — student: cards in a set
+router.get('/sets/:setId/cards/student', requireStudentAuth, async (req, res) => {
+  try {
+    const set = await FlashcardSet.findById(req.params.setId);
+    if (!set || !set.published) return res.status(404).json({ error: 'Set not found' });
+    const cards = await Flashcard.find({ set: req.params.setId }).sort({ order: 1 });
+    res.json(cards);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
