@@ -20,6 +20,7 @@ router.post('/login', async (req, res) => {
     const student = await Student.findOne({ email: email.toLowerCase() });
     if (!student) return res.status(401).json({ error: 'Invalid credentials' });
     if (student.status === 'Suspended') return res.status(403).json({ error: 'Account suspended. Contact admin.' });
+    if (!student.applicationFeePaid) return res.status(403).json({ error: 'Application fee not paid. Please complete payment to access your dashboard.', paymentRequired: true });
 
     const match = await bcrypt.compare(password, student.password);
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });

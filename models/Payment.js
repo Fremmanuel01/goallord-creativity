@@ -20,14 +20,16 @@ const paymentSchema = new mongoose.Schema({
   method:         { type: String, default: '' },
   reference:      { type: String, default: '' },
   notes:          { type: String, default: '' },
-  recordedBy:     { type: String, default: 'Admin' },
-  reminderSentAt: { type: Date },
-  createdAt:      { type: Date, default: Date.now }
+  recordedBy:      { type: String, default: 'Admin' },
+  reminderSentAt:  { type: Date },
+  receiptNumber:   { type: String, default: '' },
+  receiptIssuedAt: { type: Date },
+  createdAt:       { type: Date, default: Date.now }
 });
 
 paymentSchema.index({ student: 1, category: 1 }, { unique: true });
 
-paymentSchema.pre('save', function(next) {
+paymentSchema.pre('save', async function(next) {
   const now = new Date();
   if (this.category === 'full_tuition_payment' && this.amountPaid >= this.amountDue) {
     this.status = 'fully_paid';
@@ -39,6 +41,11 @@ paymentSchema.pre('save', function(next) {
     this.status = 'partially_paid';
   } else if (this.dueDate && this.dueDate < now) {
     this.status = 'overdue';
+  }
+  if (['paid', 'fully_paid'].includes(this.status) && !this.receiptNumber) {
+    const count = await mongoose.model('Payment').countDocuments({ receiptNumber: { $ne: '' } });
+    this.receiptNumber = 'RCP-' + new Date().getFullYear() + '-' + String(count + 1).padStart(4, '0');
+    this.receiptIssuedAt = new Date();
   }
   next();
 });

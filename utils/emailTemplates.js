@@ -265,4 +265,100 @@ function passwordResetEmail({ fullName, resetUrl, role }) {
 </html>`;
 }
 
-module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail };
+function receiptEmail({ receiptNumber, date, recipientName, recipientEmail, description, amount, currency, method, reference, issuedBy }) {
+  const formattedDate = new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const formattedAmount = currency + Number(amount).toLocaleString();
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Receipt ${receiptNumber}</title>
+</head>
+<body style="margin:0;padding:0;background:#0F1115;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0F1115;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#171A21;border-radius:12px;border:1px solid #2A2F3A;overflow:hidden;max-width:600px;width:100%;">
+        <!-- Header -->
+        <tr><td style="background:#D66A1F;padding:32px 40px;text-align:center;">
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:2px;">GOALLORD CREATIVITY</h1>
+          <p style="margin:8px 0 0;color:rgba(255,255,255,0.8);font-size:13px;letter-spacing:1px;">PAYMENT RECEIPT</p>
+        </td></tr>
+        <!-- Receipt Meta -->
+        <tr><td style="background:#1E4BFF;padding:16px 40px;">
+          <table width="100%">
+            <tr>
+              <td style="color:rgba(255,255,255,0.75);font-size:12px;letter-spacing:.5px;">RECEIPT NO.</td>
+              <td style="text-align:right;color:rgba(255,255,255,0.75);font-size:12px;letter-spacing:.5px;">DATE ISSUED</td>
+            </tr>
+            <tr>
+              <td style="color:#ffffff;font-size:16px;font-weight:700;font-family:monospace;padding-top:4px;">${receiptNumber}</td>
+              <td style="text-align:right;color:#ffffff;font-size:14px;font-weight:600;padding-top:4px;">${formattedDate}</td>
+            </tr>
+          </table>
+        </td></tr>
+        <!-- Body -->
+        <tr><td style="padding:40px;">
+          <!-- Bill To -->
+          <h3 style="color:#A0A6B3;font-size:11px;letter-spacing:1px;margin:0 0 12px;text-transform:uppercase;">Bill To</h3>
+          <p style="color:#F4F6FA;font-size:16px;font-weight:600;margin:0 0 4px;">${recipientName}</p>
+          <p style="color:#A0A6B3;font-size:14px;margin:0 0 32px;">${recipientEmail}</p>
+
+          <!-- Items Table -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #2A2F3A;border-radius:8px;overflow:hidden;margin-bottom:32px;">
+            <thead>
+              <tr style="background:#0F1115;">
+                <th style="padding:12px 16px;text-align:left;color:#A0A6B3;font-size:11px;letter-spacing:.5px;font-weight:600;text-transform:uppercase;">Description</th>
+                <th style="padding:12px 16px;text-align:right;color:#A0A6B3;font-size:11px;letter-spacing:.5px;font-weight:600;text-transform:uppercase;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-top:1px solid #2A2F3A;">
+                <td style="padding:14px 16px;color:#F4F6FA;font-size:14px;">${description}</td>
+                <td style="padding:14px 16px;color:#F4F6FA;font-size:14px;font-weight:600;text-align:right;">${formattedAmount}</td>
+              </tr>
+              <tr style="background:#0F1115;border-top:1px solid #2A2F3A;">
+                <td style="padding:12px 16px;color:#F4F6FA;font-size:14px;font-weight:700;text-align:right;">Total</td>
+                <td style="padding:12px 16px;color:#D66A1F;font-size:16px;font-weight:800;text-align:right;">${formattedAmount}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Payment Details -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#0F1115;border-radius:8px;border:1px solid #2A2F3A;margin-bottom:32px;">
+            <tr><td style="padding:16px 20px;border-bottom:1px solid #2A2F3A;">
+              <p style="margin:0;color:#A0A6B3;font-size:11px;letter-spacing:1px;font-weight:600;text-transform:uppercase;">Payment Details</p>
+            </td></tr>
+            <tr><td style="padding:16px 20px;">
+              <table width="100%">
+                <tr>
+                  <td style="padding:5px 0;color:#A0A6B3;font-size:13px;width:130px;">Method:</td>
+                  <td style="padding:5px 0;color:#F4F6FA;font-size:13px;font-weight:600;">${method}</td>
+                </tr>
+                <tr>
+                  <td style="padding:5px 0;color:#A0A6B3;font-size:13px;">Reference:</td>
+                  <td style="padding:5px 0;color:#F4F6FA;font-size:13px;font-family:monospace;">${reference}</td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+
+          <!-- Footer message -->
+          <p style="color:#A0A6B3;font-size:13px;line-height:1.6;margin:0;border-top:1px solid #2A2F3A;padding-top:24px;text-align:center;">
+            Thank you for your payment.<br>
+            <strong style="color:#F4F6FA;">${issuedBy}</strong>
+          </p>
+        </td></tr>
+        <!-- Footer -->
+        <tr><td style="padding:24px 40px;border-top:1px solid #2A2F3A;text-align:center;">
+          <p style="color:#A0A6B3;font-size:12px;margin:0;">Goallord Creativity Limited &bull; Onitsha, Nigeria</p>
+          <p style="margin:4px 0 0;"><a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;font-size:12px;text-decoration:none;">hello@goallordcreativity.com</a></p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail };
