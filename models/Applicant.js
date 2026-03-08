@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const applicantSchema = new mongoose.Schema({
   fullName:   { type: String, required: true },
-  email:      { type: String, required: true, lowercase: true },
+  email:      { type: String, required: true, lowercase: true, unique: true },
   phone:      { type: String },
   location:   { type: String },
   track:      { type: String, enum: ['Web Design', 'WordPress', 'Digital Marketing', 'Brand Identity', 'Other'] },

@@ -349,23 +349,72 @@
   }
 
   .notif-btn:hover { color: var(--text); border-color: var(--muted); }
+  .notif-btn.active { color: var(--text); border-color: var(--orange); }
 
   .notif-badge {
     position: absolute;
     top: -4px;
     right: -4px;
-    width: 17px;
+    min-width: 17px;
     height: 17px;
+    padding: 0 4px;
     background: var(--danger);
-    border-radius: 50%;
+    border-radius: 9px;
     font-size: 0.6rem;
     font-weight: 700;
     color: #fff;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     border: 2px solid var(--surface);
   }
+  .notif-badge.show { display: flex; }
+
+  /* Admin notification panel */
+  .notif-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 320px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    z-index: 500;
+    overflow: hidden;
+  }
+  .notif-panel.open { display: block; }
+  .notif-panel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+  }
+  .notif-panel-head span { font-size: 13px; font-weight: 700; }
+  .notif-panel-head button { font-size: 11px; background: transparent; border: none; color: var(--orange); cursor: pointer; font-weight: 600; }
+  .notif-list { max-height: 340px; overflow-y: auto; }
+  .notif-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 13px 16px; border-bottom: 1px solid var(--border);
+    cursor: pointer; transition: background 0.15s;
+  }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-item:hover { background: rgba(255,255,255,0.03); }
+  .notif-item-icon {
+    width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 15px;
+  }
+  .notif-item-icon.orange { background: rgba(214,106,31,0.15); }
+  .notif-item-icon.blue   { background: rgba(30,75,255,0.15); }
+  .notif-item-icon.green  { background: rgba(34,197,94,0.15); }
+  .notif-item-icon.red    { background: rgba(239,68,68,0.12); }
+  .notif-item-body { flex: 1; min-width: 0; }
+  .notif-item-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .notif-item-sub   { font-size: 11px; color: var(--muted); line-height: 1.4; }
+  .notif-item-count {
+    font-size: 18px; font-weight: 800; color: var(--orange);
+    flex-shrink: 0; align-self: center;
+  }
+  .notif-empty { padding: 28px 16px; text-align: center; color: var(--muted); font-size: 13px; }
 
   .topbar-avatar {
     width: 36px;
@@ -1427,12 +1476,21 @@
         </svg>
         <input class="search-input" type="text" placeholder="Search…" id="globalSearch">
       </div>
-      <div class="notif-btn">
+      <div class="notif-btn" id="adminBell" onclick="toggleAdminNotifs()" title="Notifications" style="position:relative;">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
           <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
         </svg>
-        <div class="notif-badge">3</div>
+        <div class="notif-badge" id="adminBadge"></div>
+        <div class="notif-panel" id="adminNotifPanel">
+          <div class="notif-panel-head">
+            <span>Pending Actions</span>
+            <button onclick="event.stopPropagation();loadAdminNotifs()">Refresh</button>
+          </div>
+          <div class="notif-list" id="adminNotifList">
+            <div class="notif-empty">Loading…</div>
+          </div>
+        </div>
       </div>
       <div class="topbar-avatar" id="topbarAvatar">GL</div>
       <button onclick="glLogout()" title="Sign out" style="background:none;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:8px;transition:0.2s" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Sign Out</button>
@@ -3356,6 +3414,113 @@ function glLogout() {
   localStorage.removeItem('gl_user');
   window.location.href = 'login.html';
 }
+
+// ── Admin Notifications Bell ──────────────────────────────────
+let adminNotifOpen = false;
+
+async function loadAdminNotifs() {
+  const list  = document.getElementById('adminNotifList');
+  const badge = document.getElementById('adminBadge');
+  const token = localStorage.getItem('gl_token');
+  if (!token) return;
+
+  const h = { 'Authorization': 'Bearer ' + token };
+
+  try {
+    // Fetch pending counts in parallel
+    const [appRes, ordRes, payRes] = await Promise.all([
+      fetch('/api/applicants?status=Pending&limit=1',       { headers: h }),
+      fetch('/api/orders?status=Pending&limit=1',           { headers: h }),
+      fetch('/api/applicants?limit=200',                    { headers: h })  // for bank-transfer check
+    ]);
+
+    const appData  = appRes.ok  ? await appRes.json()  : { total: 0 };
+    const ordData  = ordRes.ok  ? await ordRes.json()  : { total: 0 };
+    const allApps  = payRes.ok  ? await payRes.json()  : { data: [] };
+
+    const pendingApps    = appData.total || 0;
+    const pendingOrders  = ordData.total || 0;
+    const bankPending    = (allApps.data || []).filter(a => a.applicationFeeRef && !a.applicationFeePaid).length;
+
+    const totalActions = pendingApps + pendingOrders + bankPending;
+
+    // Update badge
+    if (totalActions > 0) {
+      badge.textContent = totalActions > 99 ? '99+' : totalActions;
+      badge.classList.add('show');
+    } else {
+      badge.classList.remove('show');
+    }
+
+    // Build panel items
+    if (totalActions === 0) {
+      list.innerHTML = '<div class="notif-empty">✓ All caught up — no pending actions.</div>';
+      return;
+    }
+
+    let html = '';
+
+    if (pendingApps > 0) {
+      html += `<div class="notif-item" onclick="event.stopPropagation();navigate('applicants');toggleAdminNotifs();">
+        <div class="notif-item-icon orange">📋</div>
+        <div class="notif-item-body">
+          <div class="notif-item-title">New Applications</div>
+          <div class="notif-item-sub">Review pending applicants</div>
+        </div>
+        <div class="notif-item-count">${pendingApps}</div>
+      </div>`;
+    }
+
+    if (bankPending > 0) {
+      html += `<div class="notif-item" onclick="event.stopPropagation();navigate('applicants');toggleAdminNotifs();">
+        <div class="notif-item-icon red">🏦</div>
+        <div class="notif-item-body">
+          <div class="notif-item-title">Bank Transfers Pending</div>
+          <div class="notif-item-sub">Confirm payment & activate accounts</div>
+        </div>
+        <div class="notif-item-count">${bankPending}</div>
+      </div>`;
+    }
+
+    if (pendingOrders > 0) {
+      html += `<div class="notif-item" onclick="event.stopPropagation();navigate('orders');toggleAdminNotifs();">
+        <div class="notif-item-icon blue">🛒</div>
+        <div class="notif-item-body">
+          <div class="notif-item-title">Pending Orders</div>
+          <div class="notif-item-sub">Orders awaiting fulfilment</div>
+        </div>
+        <div class="notif-item-count">${pendingOrders}</div>
+      </div>`;
+    }
+
+    list.innerHTML = html;
+  } catch (e) {
+    list.innerHTML = '<div class="notif-empty">Could not load notifications.</div>';
+  }
+}
+
+function toggleAdminNotifs() {
+  adminNotifOpen = !adminNotifOpen;
+  const panel = document.getElementById('adminNotifPanel');
+  const bell  = document.getElementById('adminBell');
+  panel.classList.toggle('open', adminNotifOpen);
+  bell.classList.toggle('active', adminNotifOpen);
+  if (adminNotifOpen) loadAdminNotifs();
+}
+
+// Close panel when clicking outside
+document.addEventListener('click', function(e) {
+  if (adminNotifOpen && !e.target.closest('#adminBell')) {
+    adminNotifOpen = false;
+    document.getElementById('adminNotifPanel').classList.remove('open');
+    document.getElementById('adminBell').classList.remove('active');
+  }
+});
+
+// Load badge count on page load
+window.addEventListener('load', function() {
+  setTimeout(loadAdminNotifs, 800);
+});
 
 // ── API helpers ───────────────────────────────────────────────
 function apiHeaders() {
