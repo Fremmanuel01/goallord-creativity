@@ -19,6 +19,7 @@ const applicantSchema = new mongoose.Schema({
   emailVerifyExpires:  { type: Date },
   applicationFeePaid:  { type: Boolean, default: false },
   applicationFeeRef:   { type: String, default: '' },
+  profilePhoto:        { type: String, default: '' },
   createdAt:           { type: Date, default: Date.now }
 });
 

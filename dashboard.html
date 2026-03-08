@@ -1131,6 +1131,83 @@
     gap: 10px;
   }
 
+  /* ─── TOAST NOTIFICATION ──────────────────────────────── */
+  #gl-toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1e2330;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s, transform 0.25s;
+    white-space: nowrap;
+  }
+  #gl-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+  #gl-toast .toast-icon { font-size: 16px; flex-shrink: 0; }
+
+  /* ─── APPLICANT PROFILE MODAL ─────────────────────────── */
+  .vap-hero {
+    background: linear-gradient(135deg, rgba(214,106,31,0.12) 0%, rgba(30,75,255,0.08) 100%);
+    padding: 28px 28px 20px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .vap-avatar-ring {
+    width: 76px; height: 76px;
+    border-radius: 50%;
+    border: 3px solid #D66A1F;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(214,106,31,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 800; color: #D66A1F;
+    position: relative;
+  }
+  .vap-avatar-ring img { width: 100%; height: 100%; object-fit: cover; }
+  .vap-contact-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-decoration: none;
+    display: block;
+    transition: background 0.15s, border-color 0.15s;
+    overflow: hidden;
+  }
+  .vap-contact-card:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2); }
+  .vap-contact-card .vc-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .vap-contact-card .vc-val { font-size: 13px; color: var(--text); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vap-field-label { font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+  .vap-field-val { font-size: 14px; color: var(--text); line-height: 1.65; }
+  .vap-body { padding: 22px 28px; max-height: 56vh; overflow-y: auto; }
+  .vap-footer { padding: 14px 28px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; align-items: center; }
+  .vap-btn { border: none; padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+  .vap-btn:active { transform: scale(0.97); }
+  .vap-btn-close { background: rgba(255,255,255,0.04); border: 1px solid var(--border) !important; color: var(--muted); }
+  .vap-btn-reject { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3) !important; color: #ef4444; }
+  .vap-btn-accept { background: linear-gradient(135deg, #D66A1F, #e8832a); color: #fff; box-shadow: 0 4px 14px rgba(214,106,31,0.35); }
+  .vap-btn-accept:hover { opacity: 0.9; }
+  .vap-notes-input {
+    width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    border-radius: 9px; padding: 12px; color: var(--text); font-size: 13px;
+    resize: vertical; min-height: 76px; font-family: inherit; line-height: 1.6;
+    transition: border-color 0.15s;
+  }
+  .vap-notes-input:focus { outline: none; border-color: rgba(214,106,31,0.5); }
+  .vap-section-divider { height: 1px; background: var(--border); margin: 18px 0; }
+
   /* ─── MOBILE OVERLAY ──────────────────────────────────── */
   .sidebar-overlay {
     display: none;
@@ -2032,19 +2109,60 @@
      MODALS
 ═══════════════════════════════════════════════════════ -->
 
-<!-- View Applicant Modal -->
+<!-- Toast -->
+<div id="gl-toast"><span class="toast-icon" id="gl-toast-icon">✓</span><span id="gl-toast-msg"></span></div>
+
+<!-- View Applicant Modal — Profile Card -->
 <div class="modal-overlay" id="viewApplicantModal">
-  <div class="modal modal-lg">
-    <div class="modal-header">
-      <h3>Applicant Details</h3>
-      <button class="modal-close" onclick="closeModal('viewApplicantModal')">✕</button>
+  <div class="modal" style="max-width:660px;padding:0;overflow:hidden">
+
+    <!-- Hero: avatar + name + badges -->
+    <div class="vap-hero">
+      <button class="modal-close" onclick="closeModal('viewApplicantModal')" style="position:absolute;top:16px;right:16px">✕</button>
+      <div style="display:flex;align-items:center;gap:20px">
+        <div class="vap-avatar-ring">
+          <img id="vapAvatarImg" src="" style="display:none">
+          <span id="vapInitials"></span>
+        </div>
+        <div style="min-width:0">
+          <div style="font-size:1.15rem;font-weight:800;color:var(--text);margin-bottom:8px" id="vapName">—</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <span id="vapTrackBadge" style="background:rgba(214,106,31,0.15);color:#D66A1F;border:1px solid rgba(214,106,31,0.3);padding:3px 11px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.03em"></span>
+            <span id="vapStatusBadge"></span>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:7px" id="vapDate"></div>
+        </div>
+      </div>
     </div>
-    <div class="modal-body">
-      <div class="detail-grid" id="applicantDetailGrid"></div>
+
+    <!-- Body -->
+    <div class="vap-body">
+
+      <!-- Contact row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px" id="vapContactRow"></div>
+
+      <div class="vap-section-divider"></div>
+
+      <!-- Application fields -->
+      <div id="vapFields"></div>
+
+      <div class="vap-section-divider"></div>
+
+      <!-- Admin Notes -->
+      <div>
+        <div class="vap-field-label" style="margin-bottom:8px">Admin Notes</div>
+        <textarea id="vapNotes" class="vap-notes-input" placeholder="Add internal notes about this applicant…"></textarea>
+        <button onclick="saveVapNotes()" style="margin-top:8px;background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;transition:border-color .15s,color .15s" onmouseenter="this.style.color='var(--text)';this.style.borderColor='rgba(255,255,255,0.3)'" onmouseleave="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">Save Notes</button>
+      </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('viewApplicantModal')">Close</button>
+
+    <!-- Footer actions -->
+    <div class="vap-footer">
+      <button class="vap-btn vap-btn-close" onclick="closeModal('viewApplicantModal')">Close</button>
+      <button class="vap-btn vap-btn-reject" id="vapRejectBtn" onclick="vapSetStatus('Rejected')">✕ Reject</button>
+      <button class="vap-btn vap-btn-accept" id="vapAcceptBtn" onclick="vapSetStatus('Accepted')">✓ Accept</button>
     </div>
+
   </div>
 </div>
 
@@ -2528,7 +2646,7 @@ function updateApplicantStatus(id, status) {
   })
   .then(r => r.json())
   .then(data => {
-    if (data.error) { alert('Error: ' + data.error); return; }
+    if (data.error) { showToast('Error: ' + data.error, 'error'); return; }
     // Update local cache so filter/render stay consistent
     const app = APPLICANTS.find(x => x.id === id);
     if (app) app.status = status;
@@ -2538,26 +2656,113 @@ function updateApplicantStatus(id, status) {
     if (cell) cell.innerHTML = badge(status);
     renderOverviewApplicants();
     if (data.studentCreated) {
-      alert('Student account created and acceptance email sent.');
+      showToast('Student account created — acceptance email sent!');
     }
   })
   .catch(err => console.error('Status update failed:', err));
 }
 
+// ─── Toast ───────────────────────────────────────────────────
+let _toastTimer;
+function showToast(msg, type = 'success') {
+  const el  = document.getElementById('gl-toast');
+  const ico = document.getElementById('gl-toast-icon');
+  const txt = document.getElementById('gl-toast-msg');
+  txt.textContent = msg;
+  ico.textContent = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+  ico.style.color = type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#f59e0b';
+  el.className = 'show';
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { el.className = ''; }, 3500);
+}
+
+// ─── View Applicant Profile Modal ────────────────────────────
+let _vapId = null;
+
 function viewApplicant(id) {
+  _vapId = id;
   const a = APPLICANTS.find(x => x.id === id);
+  if (!a) return;
   const st = getStatus(id);
-  document.getElementById('applicantDetailGrid').innerHTML = `
-    <div class="detail-item"><div class="d-label">Full Name</div><div class="d-value">${a.name}</div></div>
-    <div class="detail-item"><div class="d-label">Email</div><div class="d-value">${a.email}</div></div>
-    <div class="detail-item"><div class="d-label">Phone</div><div class="d-value">${a.phone}</div></div>
-    <div class="detail-item"><div class="d-label">Track</div><div class="d-value">${a.track}</div></div>
-    <div class="detail-item"><div class="d-label">Experience Level</div><div class="d-value">${a.experience}</div></div>
-    <div class="detail-item"><div class="d-label">Preferred Schedule</div><div class="d-value">${a.schedule}</div></div>
-    <div class="detail-item"><div class="d-label">Application Status</div><div class="d-value">${badge(st)}</div></div>
-    <div class="detail-item"><div class="d-label">Date Applied</div><div class="d-value">${a.date}</div></div>
-  `;
+
+  // Avatar
+  const initials = a.name.trim().split(' ').map(p => p[0] || '').join('').substring(0,2).toUpperCase();
+  document.getElementById('vapInitials').textContent = initials;
+  const img = document.getElementById('vapAvatarImg');
+  if (a.photo) {
+    img.src = a.photo; img.style.display = '';
+    document.getElementById('vapInitials').style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    document.getElementById('vapInitials').style.display = '';
+  }
+
+  document.getElementById('vapName').textContent = a.name;
+  document.getElementById('vapTrackBadge').textContent = a.track || 'No Track';
+  document.getElementById('vapStatusBadge').innerHTML = badge(st);
+  document.getElementById('vapDate').textContent = (a.emailVerified ? '✉ Verified · ' : '⚠ Unverified · ') + 'Applied ' + a.date;
+  document.getElementById('vapNotes').value = a.notes || '';
+
+  // Contact cards
+  document.getElementById('vapContactRow').innerHTML = [
+    { label: 'Email', val: a.email,    href: 'mailto:' + a.email },
+    { label: 'Phone', val: a.phone || '—', href: a.phone ? 'tel:' + a.phone : null },
+    { label: 'Location', val: a.location || '—', href: null }
+  ].map(c => `
+    <${c.href ? `a href="${c.href}"` : 'div'} class="vap-contact-card">
+      <div class="vc-label">${c.label}</div>
+      <div class="vc-val">${c.val}</div>
+    </${c.href ? 'a' : 'div'}>`
+  ).join('');
+
+  // Application fields
+  const fields = [
+    { label: 'Experience Level',  val: a.experience },
+    { label: 'Preferred Schedule', val: a.schedule },
+    { label: 'How They Found Us', val: a.howFound },
+    { label: 'Their Goal',        val: a.goal },
+    { label: 'Why They Applied',  val: a.why },
+    { label: 'Background',        val: a.background }
+  ].filter(f => f.val && f.val.trim());
+
+  document.getElementById('vapFields').innerHTML = fields.length
+    ? fields.map(f => `
+      <div style="margin-bottom:16px">
+        <div class="vap-field-label">${f.label}</div>
+        <div class="vap-field-val">${f.val}</div>
+      </div>`).join('')
+    : '<div style="color:var(--muted);font-size:13px">No additional details.</div>';
+
+  // Show/hide action buttons based on current status
+  document.getElementById('vapAcceptBtn').style.display = st === 'Accepted' ? 'none' : '';
+  document.getElementById('vapRejectBtn').style.display = st === 'Rejected'  ? 'none' : '';
+
   openModal('viewApplicantModal');
+}
+
+async function vapSetStatus(status) {
+  if (!_vapId) return;
+  const btn = status === 'Accepted' ? document.getElementById('vapAcceptBtn') : document.getElementById('vapRejectBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  await updateApplicantStatus(_vapId, status);
+  document.getElementById('vapStatusBadge').innerHTML = badge(status);
+  document.getElementById('vapAcceptBtn').style.display = status === 'Accepted' ? 'none' : '';
+  document.getElementById('vapRejectBtn').style.display = status === 'Rejected'  ? 'none' : '';
+  btn.disabled = false;
+  btn.textContent = status === 'Accepted' ? '✓ Accept' : '✕ Reject';
+}
+
+async function saveVapNotes() {
+  if (!_vapId) return;
+  const notes = document.getElementById('vapNotes').value;
+  const res = await apiFetch('/api/applicants/' + _vapId, { method: 'PATCH', body: JSON.stringify({ notes }) });
+  if (res) {
+    const a = APPLICANTS.find(x => x.id === _vapId);
+    if (a) a.notes = notes;
+    showToast('Notes saved');
+  } else {
+    showToast('Failed to save', 'error');
+  }
 }
 
 function filterApplicants() {
@@ -3060,15 +3265,23 @@ async function loadApplicantsFromAPI() {
   if (!data) return;
   // Merge into APPLICANTS array (used by existing renderApplicants)
   window.APPLICANTS = data.data.map(a => ({
-    id:         a._id,
-    name:       a.fullName,
-    email:      a.email,
-    phone:      a.phone,
-    track:      a.track,
-    experience: a.experience,
-    schedule:   a.schedule,
-    status:     a.status,
-    date:       new Date(a.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
+    id:           a._id,
+    name:         a.fullName,
+    email:        a.email,
+    phone:        a.phone,
+    location:     a.location,
+    track:        a.track,
+    experience:   a.experience,
+    schedule:     a.schedule,
+    howFound:     a.howFound,
+    goal:         a.goal,
+    why:          a.why,
+    background:   a.background,
+    notes:        a.notes,
+    photo:        a.profilePhoto,
+    emailVerified: a.emailVerified,
+    status:       a.status,
+    date:         new Date(a.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
   }));
   if (typeof renderApplicants === 'function') renderApplicants(window.APPLICANTS);
   renderOverviewApplicants();
@@ -3327,7 +3540,7 @@ async function uploadPortfolioImage(index, input) {
       loadPortfolio(); // re-render with new image
     }
   } catch(e) {
-    alert('Upload failed. Please try again.');
+    showToast('Upload failed. Please try again.', 'error');
     btn.textContent = '📷 Change Image';
   }
 }
@@ -3422,7 +3635,7 @@ function updateBlogField(key, field, value) {
 
 async function saveBlog() {
   await saveCmsSection('blog', cmsCache.blog);
-  alert('Blog saved!');
+  showToast('Blog saved!');
 }
 
 function addBlogPost() {
@@ -3477,7 +3690,7 @@ function updateTestField(index, field, value) {
 
 async function saveTestimonials() {
   await saveCmsSection('testimonials', cmsCache.testimonials);
-  alert('Testimonials saved!');
+  showToast('Testimonials saved!');
 }
 
 function addTestimonial() {

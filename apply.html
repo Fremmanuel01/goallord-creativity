@@ -22,6 +22,7 @@
     <link rel="stylesheet" type="text/css" href="assets/css/goallord.css">
     <link rel="shortcut icon" href="assets/images/logo/favicon.svg">
     <link rel="apple-touch-icon-precomposed" href="assets/images/logo/favicon.svg">
+    <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 </head>
 <body class="counter-scroll">
     <canvas class="cursor-trail d-none d-xl-block" id="trail"></canvas>
@@ -139,6 +140,23 @@
 
                         <form id="applyForm" class="form-cta" novalidate>
                             <div class="form-content">
+
+                                <!-- Profile Photo Upload -->
+                                <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:36px;gap:12px">
+                                    <div id="photoRing" onclick="document.getElementById('photoFileInput').click()" style="width:110px;height:110px;border-radius:50%;background:rgba(214,106,31,0.08);border:2px dashed rgba(214,106,31,0.5);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;transition:border-color .2s,box-shadow .2s" onmouseenter="this.style.boxShadow='0 0 0 4px rgba(214,106,31,0.15)';this.style.borderColor='#D66A1F'" onmouseleave="this.style.boxShadow='';this.style.borderColor='rgba(214,106,31,0.5)'">
+                                        <img id="photoPreview" src="" style="width:100%;height:100%;object-fit:cover;display:none;position:absolute;inset:0">
+                                        <div id="photoPlaceholder" style="display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none">
+                                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D66A1F" stroke-width="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                            <span style="font-size:11px;color:rgba(214,106,31,0.8);font-weight:600;letter-spacing:.04em">UPLOAD PHOTO</span>
+                                        </div>
+                                        <div id="photoSpinner" style="display:none;position:absolute;inset:0;background:rgba(15,17,21,0.7);align-items:center;justify-content:center">
+                                            <div style="width:22px;height:22px;border:2px solid rgba(255,255,255,0.2);border-top-color:#D66A1F;border-radius:50%;animation:spin .7s linear infinite"></div>
+                                        </div>
+                                    </div>
+                                    <p style="font-size:12px;color:rgba(164,166,179,0.7);margin:0;text-align:center">Profile photo — optional · JPG, PNG, WEBP · max 3MB</p>
+                                    <input type="file" id="photoFileInput" accept="image/jpeg,image/png,image/webp" style="display:none">
+                                    <input type="hidden" id="profilePhotoUrl" name="profilePhoto">
+                                </div>
 
                                 <!-- Personal Details -->
                                 <p class="text-caption text-primary fw-medium letter-space--1 mb-4">// PERSONAL DETAILS</p>
@@ -371,6 +389,35 @@
         }
 
         // Form submission → POST /api/applicants
+        // ── Profile photo upload ─────────────────────────────────
+        document.getElementById('photoFileInput').addEventListener('change', async function () {
+            const file = this.files[0];
+            if (!file) return;
+            // Preview immediately
+            const reader = new FileReader();
+            reader.onload = e => {
+                document.getElementById('photoPreview').src = e.target.result;
+                document.getElementById('photoPreview').style.display = '';
+                document.getElementById('photoPlaceholder').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+            // Upload to Cloudinary
+            const spinner = document.getElementById('photoSpinner');
+            spinner.style.display = 'flex';
+            try {
+                const fd = new FormData();
+                fd.append('photo', file);
+                const res = await fetch('/api/applicants/upload-photo', { method: 'POST', body: fd });
+                const data = await res.json();
+                if (data.url) {
+                    document.getElementById('profilePhotoUrl').value = data.url;
+                    document.getElementById('photoRing').style.borderStyle = 'solid';
+                    document.getElementById('photoRing').style.borderColor = '#22c55e';
+                }
+            } catch {}
+            spinner.style.display = 'none';
+        });
+
         $('#applyForm').on('submit', async function (e) {
             e.preventDefault();
             const $form = $(this);
@@ -399,9 +446,10 @@
                 experience: experience === 'Experience Level' ? '' : experience,
                 schedule:   schedule   === 'Preferred Schedule' ? '' : schedule,
                 howFound:   howFound   === 'How You Found Us' ? '' : howFound,
-                goal:       $form.find('[name="goal"]').val().trim(),
-                why:        $form.find('[name="why"]').val().trim(),
-                background: $form.find('[name="background"]').val().trim()
+                goal:         $form.find('[name="goal"]').val().trim(),
+                why:          $form.find('[name="why"]').val().trim(),
+                background:   $form.find('[name="background"]').val().trim(),
+                profilePhoto: document.getElementById('profilePhotoUrl').value || ''
             };
 
             $btn.prop('disabled', true).text('Submitting…');
