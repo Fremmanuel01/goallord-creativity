@@ -44,6 +44,16 @@
     <link rel="shortcut icon" href="assets/images/logo/favicon.svg">
     <link rel="apple-touch-icon-precomposed" href="assets/images/logo/favicon.svg">
 
+    <style>
+        /* Hero refactor: brand name now full-width below both cols */
+        .gl-hero-r.section-hero-v1 { align-items: flex-end; }
+        .gl-hero-r .content-wrap { width: 100%; }
+        /* Remove template's large margin-bottom that was only needed
+           when GOALLORD lived inside col-left */
+        .gl-hero-r .tf-list.vertical { margin-bottom: 0 !important; }
+        .gl-hero-top-row { margin-bottom: 0; }
+        .gl-hero-brand { line-height: 0.88; overflow: hidden; }
+    </style>
     <!-- FAQ Schema -->
     <script type="application/ld+json">
     {
@@ -175,7 +185,7 @@
         <!-- /Header -->
 
         <!-- Hero Banner -->
-        <div class="section-hero-v1">
+        <div class="section-hero-v1 gl-hero-r">
             <div class="overlay"></div>
             <div class="bg-video">
                 <video muted autoplay loop playsinline preload="auto">
@@ -187,67 +197,48 @@
             </div>
             <div class="content-wrap">
                 <div class="container">
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="col-left">
-                                <ul class="tf-list vertical text-caption fw-medium">
-                                    <li><a href="#serviceScroll" class="link effectFade fadeUp">WEB DESIGN</a></li>
-                                    <li><a href="#serviceScroll" class="link effectFade fadeUp">WEB DEVELOPMENT</a></li>
-                                    <li><a href="#serviceScroll" class="link effectFade fadeUp">DIGITAL MARKETING</a></li>
-                                </ul>
-                                <div class="davies-large">
-                                    <div class="effectFade fadeRotateX">
-                                        GOALLORD<span class="text-primary">_</span>
-                                    </div>
-                                </div>
-                                <p class="gl-hero-tagline">
-                                    <span class="word">We</span>
-                                    <span class="word">Build</span>
-                                    <span class="word">High-Performing</span>
-                                    <span class="word">Websites</span>
-                                    <span class="word">That</span>
-                                    <span class="word">Turn</span>
-                                    <span class="word">Visitors</span>
-                                    <span class="word">Into</span>
-                                    <span class="word">Clients.</span>
-                                </p>
-                            </div>
+                    <!-- Top info row: service tags left, cta right -->
+                    <div class="row align-items-start gl-hero-top-row">
+                        <div class="col-md-7">
+                            <ul class="tf-list vertical text-caption fw-medium">
+                                <li><a href="#serviceScroll" class="link effectFade fadeUp">WEB DESIGN</a></li>
+                                <li><a href="#serviceScroll" class="link effectFade fadeUp">WEB DEVELOPMENT</a></li>
+                                <li><a href="#serviceScroll" class="link effectFade fadeUp">DIGITAL MARKETING</a></li>
+                            </ul>
                         </div>
-                        <div class="col-md-4">
-                            <div class="col-right">
-                                <div class="top text-caption fw-medium d-flex justify-content-between align-items-center effectFade">
-                                    <p class="title text-has-dot">
-                                        <span class="br-dot"></span>
-                                        ONITSHA, NIGERIA
-                                    </p>
-                                    <span>© 2025</span>
-                                </div>
-                                <div class="bot">
-                                    <p class="desc text-white-64 effectFade fadeRight view-visible">
-                                        Websites, visuals, and digital strategies for bold Nigerian businesses. From Onitsha to the world — bold ideas, flawless execution.
-                                    </p>
-                                    <!-- Primary CTAs -->
-                                    <div class="effectFade fadeRight view-visible" style="display:flex;gap:12px;margin-top:28px;">
-                                        <a href="#contactScroll" class="tf-btn style-fill" style="flex:1;text-align:center;justify-content:center;">
-                                            <span class="text-caption fw-medium">START A PROJECT</span>
-                                        </a>
-                                        <a href="#workScroll" class="tf-btn style-troke" style="flex:1;text-align:center;justify-content:center;">
-                                            <span class="text-caption fw-medium">VIEW PORTFOLIO</span>
-                                        </a>
-                                    </div>
-                                    <!-- Social proof -->
-                                    <p class="text-caption text-white-64 effectFade fadeRight view-visible" style="margin-top:16px;">
-                                        50+ projects delivered &nbsp;·&nbsp; 98% client satisfaction
-                                    </p>
-                                    <!-- Academy CTA — subtle pill link -->
-                                    <a href="apply.html" class="effectFade fadeRight view-visible" style="display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:9px 16px;background:rgba(214,106,31,0.08);border:1px solid rgba(214,106,31,0.22);border-radius:50px;text-decoration:none;transition:border-color 0.2s,background 0.2s;">
-                                        <span style="font-size:11px;color:#D66A1F;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;">🎓 Apply to the Academy</span>
-                                        <span style="color:#D66A1F;font-size:12px;font-weight:700;">→</span>
-                                    </a>
-                                </div>
+                        <div class="col-md-5">
+                            <div class="d-flex justify-content-between align-items-center text-caption fw-medium effectFade" style="margin-bottom:20px;">
+                                <p class="title text-has-dot mb-0"><span class="br-dot"></span>ONITSHA, NIGERIA</p>
+                                <span>© 2025</span>
+                            </div>
+                            <p class="text-white-64 effectFade fadeRight" style="font-size:15px;line-height:1.7;margin-bottom:24px;max-width:340px;">
+                                Websites, visuals, and digital strategies for bold Nigerian businesses.
+                            </p>
+                            <div class="effectFade fadeRight" style="display:flex;gap:12px;flex-wrap:wrap;">
+                                <a href="#contactScroll" class="tf-btn style-fill"><span class="text-caption fw-medium">START A PROJECT</span></a>
+                                <a href="#workScroll" class="tf-btn style-troke"><span class="text-caption fw-medium">VIEW PORTFOLIO</span></a>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:18px;">
+                                <p class="text-caption text-white-64 effectFade mb-0">50+ projects delivered · 98% satisfaction</p>
+                                <a href="apply.html" class="effectFade" style="display:inline-flex;align-items:center;gap:6px;padding:6px 13px;background:rgba(214,106,31,0.08);border:1px solid rgba(214,106,31,0.25);border-radius:50px;text-decoration:none;flex-shrink:0;">
+                                    <span style="font-size:11px;color:#D66A1F;font-weight:700;letter-spacing:0.8px;white-space:nowrap;">🎓 ACADEMY →</span>
+                                </a>
                             </div>
                         </div>
                     </div>
+                    <!-- Full-width brand name — sits below both columns, no overlap -->
+                    <div class="davies-large gl-hero-brand" style="margin-top:clamp(24px,4vw,60px);">
+                        <div class="effectFade fadeRotateX">GOALLORD<span class="text-primary">_</span></div>
+                    </div>
+                    <!-- Tagline -->
+                    <p class="gl-hero-tagline">
+                        <span class="word">We</span>
+                        <span class="word">Build</span>
+                        <span class="word">Brands</span>
+                        <span class="word">That</span>
+                        <span class="word">Get</span>
+                        <span class="word">Noticed.</span>
+                    </p>
                 </div>
             </div>
         </div>
