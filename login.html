@@ -196,6 +196,33 @@
 
   .back-link a:hover { text-decoration: underline; }
 
+  .portal-switcher {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .portal-switcher p {
+    font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 12px; letter-spacing: 0.3px;
+  }
+
+  .portal-links {
+    display: flex; gap: 10px;
+  }
+
+  .portal-link {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 11px 14px; border: 1px solid var(--border); border-radius: 10px;
+    text-decoration: none; font-size: 13px; font-weight: 600; color: var(--muted);
+    background: var(--card); transition: border-color 0.2s, color 0.2s;
+  }
+
+  .portal-link:hover { border-color: var(--orange); color: var(--text); }
+
+  .portal-link .pl-icon { font-size: 16px; line-height: 1; }
+  .portal-link .pl-label { line-height: 1.2; }
+  .portal-link .pl-label small { display: block; font-size: 10px; font-weight: 400; color: var(--muted); margin-top: 1px; }
+
   @media (max-width: 768px) {
     body { flex-direction: column; }
     .brand-panel { flex: none; padding: 40px 28px 32px; }
@@ -259,6 +286,20 @@
 
     <div class="back-link">
       <a href="index.html">&larr; Back to website</a>
+    </div>
+
+    <div class="portal-switcher">
+      <p>NOT AN ADMIN? SIGN IN AS</p>
+      <div class="portal-links">
+        <a href="student-login.html" class="portal-link">
+          <span class="pl-icon">🎓</span>
+          <span class="pl-label">Student<small>Portal</small></span>
+        </a>
+        <a href="lecturer-login.html" class="portal-link">
+          <span class="pl-icon">📚</span>
+          <span class="pl-label">Lecturer<small>Portal</small></span>
+        </a>
+      </div>
     </div>
   </div>
 </div>
