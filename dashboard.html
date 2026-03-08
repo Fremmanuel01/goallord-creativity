@@ -1262,6 +1262,22 @@
       <span>Students</span>
     </div>
 
+    <div class="nav-item" data-page="batches" title="Batches">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      <span>Batches</span>
+    </div>
+
+    <div class="nav-item" data-page="lecturers" title="Lecturers">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span>Lecturers</span>
+    </div>
+
     <div class="nav-item" data-page="attendance" title="Attendance">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
@@ -1890,6 +1906,52 @@
       </div>
     </div>
 
+    <!-- ── BATCHES PAGE ── -->
+    <div class="page" id="page-batches">
+      <div class="section-header" style="margin-bottom:20px">
+        <h2>Batches</h2>
+        <button class="btn btn-primary" onclick="openAddBatch()">+ New Batch</button>
+      </div>
+      <div id="batchTableWrap" class="table-wrapper">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Batch</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Track</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Start</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">End</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Weeks</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Status</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Actions</th>
+          </tr></thead>
+          <tbody id="batchTableBody"><tr><td colspan="7" style="padding:32px;text-align:center;color:var(--muted)">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── LECTURERS PAGE ── -->
+    <div class="page" id="page-lecturers">
+      <div class="section-header" style="margin-bottom:20px">
+        <h2>Lecturers</h2>
+        <button class="btn btn-primary" onclick="openAddLecturer()">+ Add Lecturer</button>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:20px">
+        <input class="form-input" id="lec-search" placeholder="Search name or email…" style="max-width:260px" oninput="filterLecturers()">
+      </div>
+      <div id="lecTableWrap" class="table-wrapper">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Name</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Email</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Specialization</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Batches</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Status</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Actions</th>
+          </tr></thead>
+          <tbody id="lecTableBody"><tr><td colspan="6" style="padding:32px;text-align:center;color:var(--muted)">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- ── ATTENDANCE PAGE ── -->
     <div class="page" id="page-attendance">
       <div class="section-header" style="margin-bottom:20px">
@@ -2313,8 +2375,10 @@ const pageTitles = {
   orders:     'Orders & Transactions',
   settings:   'Settings',
   students:   'Academy Students',
+  batches:    'Batches',
+  lecturers:  'Lecturers',
   attendance: 'Attendance',
-  payments:   'Monthly Payments',
+  payments:   'Payments',
 };
 
 function navigate(page) {
@@ -2335,6 +2399,8 @@ function navigate(page) {
   }
 
   if (page === 'students')   loadStudents();
+  if (page === 'batches')    loadBatches();
+  if (page === 'lecturers')  loadLecturers();
   if (page === 'attendance') loadAttendancePage();
   if (page === 'payments')   loadPaymentsPage();
 
@@ -3799,6 +3865,206 @@ async function savePayment() {
 }
 
 // ═══════════════════════════════════════════════════════════
+//  ACADEMY — BATCHES
+// ═══════════════════════════════════════════════════════════
+let allBatches = [];
+
+async function loadBatches() {
+  const res = await apiFetch('/api/batches');
+  if (!res) return;
+  allBatches = res;
+  renderBatchTable(allBatches);
+}
+
+function renderBatchTable(batches) {
+  const tbody = document.getElementById('batchTableBody');
+  if (!batches.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:32px;text-align:center;color:var(--muted)">No batches yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = batches.map(b => `<tr>
+    <td style="padding:12px 14px;font-weight:600">${b.name}</td>
+    <td style="padding:12px 14px;color:var(--muted)">${b.track || '—'}</td>
+    <td style="padding:12px 14px">${b.startDate ? fmtDateAdmin(b.startDate) : '—'}</td>
+    <td style="padding:12px 14px">${b.endDate   ? fmtDateAdmin(b.endDate)   : '—'}</td>
+    <td style="padding:12px 14px">${b.totalWeeks}</td>
+    <td style="padding:12px 14px">
+      ${b.isActive
+        ? '<span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(34,197,94,0.15);color:var(--success)">Active</span>'
+        : '<span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(160,166,179,0.1);color:var(--muted)">Inactive</span>'}
+    </td>
+    <td style="padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="openEditBatch('${b._id}')">Edit</button>
+      ${!b.isActive ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--success)" onclick="setActiveBatch('${b._id}')">Set Active</button>` : ''}
+      <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--danger)" onclick="deleteBatch('${b._id}','${b.name}')">Delete</button>
+    </td>
+  </tr>`).join('');
+}
+
+function openAddBatch() {
+  document.getElementById('batchModalTitle').textContent = 'New Batch';
+  document.getElementById('batch-edit-id').value = '';
+  ['batch-name','batch-number','batch-track','batch-start','batch-end','batch-weeks','batch-notes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = el.tagName === 'SELECT' ? '' : (id === 'batch-weeks' ? '12' : '');
+  });
+  openModal('batchModal');
+}
+
+async function openEditBatch(id) {
+  const batch = allBatches.find(b => b._id === id);
+  if (!batch) return;
+  document.getElementById('batchModalTitle').textContent = 'Edit Batch';
+  document.getElementById('batch-edit-id').value = id;
+  document.getElementById('batch-name').value    = batch.name || '';
+  document.getElementById('batch-number').value  = batch.number || '';
+  document.getElementById('batch-track').value   = batch.track || '';
+  document.getElementById('batch-start').value   = batch.startDate ? batch.startDate.slice(0,10) : '';
+  document.getElementById('batch-end').value     = batch.endDate   ? batch.endDate.slice(0,10)   : '';
+  document.getElementById('batch-weeks').value   = batch.totalWeeks || 12;
+  document.getElementById('batch-notes').value   = batch.notes || '';
+  openModal('batchModal');
+}
+
+async function saveBatch() {
+  const editId = document.getElementById('batch-edit-id').value;
+  const body = {
+    name:       document.getElementById('batch-name').value.trim(),
+    number:     Number(document.getElementById('batch-number').value),
+    track:      document.getElementById('batch-track').value,
+    startDate:  document.getElementById('batch-start').value || undefined,
+    endDate:    document.getElementById('batch-end').value   || undefined,
+    totalWeeks: Number(document.getElementById('batch-weeks').value) || 12,
+    notes:      document.getElementById('batch-notes').value.trim(),
+  };
+  if (!body.name || !body.number) { alert('Batch name and number are required.'); return; }
+  const btn = document.getElementById('saveBatchBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  let res;
+  if (editId) {
+    res = await apiFetch(`/api/batches/${editId}`, { method: 'PATCH', body: JSON.stringify(body) });
+  } else {
+    res = await apiFetch('/api/batches', { method: 'POST', body: JSON.stringify(body) });
+  }
+  btn.disabled = false; btn.textContent = 'Save';
+  if (!res) return;
+  closeModal('batchModal');
+  loadBatches();
+}
+
+async function setActiveBatch(id) {
+  if (!confirm('Set this batch as the active batch? This will deactivate all others.')) return;
+  const res = await apiFetch(`/api/batches/${id}`, { method: 'PATCH', body: JSON.stringify({ isActive: true }) });
+  if (res) loadBatches();
+}
+
+async function deleteBatch(id, name) {
+  if (!confirm(`Delete batch "${name}"? This cannot be undone.`)) return;
+  await apiFetch(`/api/batches/${id}`, { method: 'DELETE' });
+  loadBatches();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ACADEMY — LECTURERS
+// ═══════════════════════════════════════════════════════════
+let allLecturers = [];
+
+async function loadLecturers() {
+  const res = await apiFetch('/api/lecturers');
+  if (!res) return;
+  allLecturers = Array.isArray(res) ? res : (res.data || []);
+  renderLecturerTable(allLecturers);
+}
+
+function renderLecturerTable(lecs) {
+  const tbody = document.getElementById('lecTableBody');
+  if (!lecs.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:32px;text-align:center;color:var(--muted)">No lecturers yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = lecs.map(l => `<tr>
+    <td style="padding:12px 14px;font-weight:600">${l.fullName}</td>
+    <td style="padding:12px 14px;color:var(--muted)">${l.email}</td>
+    <td style="padding:12px 14px">${l.specialization || '—'}</td>
+    <td style="padding:12px 14px">${(l.batches || []).map(b => b.name || b).join(', ') || '—'}</td>
+    <td style="padding:12px 14px">
+      <span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:${l.status==='Active'?'rgba(34,197,94,0.15)':'rgba(160,166,179,0.1)'};color:${l.status==='Active'?'var(--success)':'var(--muted)'}">${l.status}</span>
+    </td>
+    <td style="padding:12px 14px;display:flex;gap:8px">
+      <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="openEditLecturer('${l._id}')">Edit</button>
+      <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--danger)" onclick="deleteLecturer('${l._id}','${l.fullName.replace(/'/g,'')}')">Delete</button>
+    </td>
+  </tr>`).join('');
+}
+
+function filterLecturers() {
+  const q = document.getElementById('lec-search').value.toLowerCase();
+  renderLecturerTable(allLecturers.filter(l => l.fullName.toLowerCase().includes(q) || l.email.toLowerCase().includes(q)));
+}
+
+function openAddLecturer() {
+  document.getElementById('lecModalTitle').textContent = 'Add Lecturer';
+  document.getElementById('lec-edit-id').value = '';
+  ['lec-fullname','lec-email','lec-password','lec-phone','lec-specialization','lec-bio'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('lec-status').value = 'Active';
+  document.getElementById('lec-password-row').style.display = '';
+  openModal('lecturerModal');
+}
+
+async function openEditLecturer(id) {
+  const l = allLecturers.find(x => x._id === id);
+  if (!l) return;
+  document.getElementById('lecModalTitle').textContent = 'Edit Lecturer';
+  document.getElementById('lec-edit-id').value       = id;
+  document.getElementById('lec-fullname').value      = l.fullName || '';
+  document.getElementById('lec-email').value         = l.email || '';
+  document.getElementById('lec-password').value      = '';
+  document.getElementById('lec-phone').value         = l.phone || '';
+  document.getElementById('lec-specialization').value = l.specialization || '';
+  document.getElementById('lec-bio').value           = l.bio || '';
+  document.getElementById('lec-status').value        = l.status || 'Active';
+  document.getElementById('lec-password-row').style.display = '';
+  openModal('lecturerModal');
+}
+
+async function saveLecturer() {
+  const editId = document.getElementById('lec-edit-id').value;
+  const body = {
+    fullName:       document.getElementById('lec-fullname').value.trim(),
+    email:          document.getElementById('lec-email').value.trim(),
+    phone:          document.getElementById('lec-phone').value.trim(),
+    specialization: document.getElementById('lec-specialization').value.trim(),
+    bio:            document.getElementById('lec-bio').value.trim(),
+    status:         document.getElementById('lec-status').value,
+  };
+  const pwd = document.getElementById('lec-password').value;
+  if (!editId && !pwd) { alert('Password is required for new lecturers.'); return; }
+  if (pwd) body.password = pwd;
+  if (!body.fullName || !body.email) { alert('Name and email are required.'); return; }
+
+  const btn = document.getElementById('saveLecBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  let res;
+  if (editId) {
+    res = await apiFetch(`/api/lecturers/${editId}`, { method: 'PATCH', body: JSON.stringify(body) });
+  } else {
+    res = await apiFetch('/api/lecturers', { method: 'POST', body: JSON.stringify(body) });
+  }
+  btn.disabled = false; btn.textContent = 'Save';
+  if (!res) return;
+  closeModal('lecturerModal');
+  loadLecturers();
+}
+
+async function deleteLecturer(id, name) {
+  if (!confirm(`Delete lecturer "${name}"?`)) return;
+  await apiFetch(`/api/lecturers/${id}`, { method: 'DELETE' });
+  loadLecturers();
+}
+
+// ═══════════════════════════════════════════════════════════
 //  SHARED HELPERS
 // ═══════════════════════════════════════════════════════════
 function fmtDateAdmin(d) {
@@ -3817,5 +4083,114 @@ function showErr(el, msg) {
 }
 
 </script>
+
+<!-- Batch Modal -->
+<div class="modal-overlay" id="batchModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="batchModalTitle">New Batch</h3>
+      <button class="modal-close" onclick="closeModal('batchModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="batch-edit-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Batch Name *</label>
+          <input class="form-input" id="batch-name" placeholder="e.g. Batch 100">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Batch Number *</label>
+          <input class="form-input" id="batch-number" type="number" placeholder="e.g. 100">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Track</label>
+        <select class="form-input" id="batch-track">
+          <option value="">All Tracks</option>
+          <option>Web Design</option>
+          <option>WordPress</option>
+          <option>Digital Marketing</option>
+          <option>Brand Identity</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Start Date</label>
+          <input class="form-input" id="batch-start" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">End Date</label>
+          <input class="form-input" id="batch-end" type="date">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Total Weeks</label>
+        <input class="form-input" id="batch-weeks" type="number" value="12">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <textarea class="form-input" id="batch-notes" rows="2" style="resize:vertical"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('batchModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveBatchBtn" onclick="saveBatch()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lecturer Modal -->
+<div class="modal-overlay" id="lecturerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="lecModalTitle">Add Lecturer</h3>
+      <button class="modal-close" onclick="closeModal('lecturerModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="lec-edit-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input class="form-input" id="lec-fullname" placeholder="Full name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email *</label>
+          <input class="form-input" id="lec-email" type="email" placeholder="email@example.com">
+        </div>
+      </div>
+      <div class="form-group" id="lec-password-row">
+        <label class="form-label">Password <span style="color:var(--muted);font-weight:400">(leave blank to keep existing)</span></label>
+        <input class="form-input" id="lec-password" type="password" placeholder="Min 6 characters">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input class="form-input" id="lec-phone" placeholder="+234...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Specialization</label>
+          <input class="form-input" id="lec-specialization" placeholder="e.g. Web Design">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Bio</label>
+        <textarea class="form-input" id="lec-bio" rows="2" style="resize:vertical" placeholder="Short bio"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-input" id="lec-status">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('lecturerModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveLecBtn" onclick="saveLecturer()">Save</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

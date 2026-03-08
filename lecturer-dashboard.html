@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecturer Dashboard — Goallord Academy</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --orange: #D66A1F; --blue: #1E4BFF;
+    --bg: #0F1115; --card: #171A21; --border: #2A2F3A;
+    --text: #F4F6FA; --muted: #A0A6B3;
+    --green: #22c55e; --red: #ef4444; --yellow: #f59e0b;
+  }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .topnav { position: sticky; top: 0; z-index: 100; background: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; height: 60px; }
+  .topnav-brand { display: flex; align-items: center; gap: 10px; }
+  .logo-mark { width: 36px; height: 36px; background: var(--orange); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #fff; }
+  .logo-name { font-size: 15px; font-weight: 700; }
+  .logo-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; }
+  .topnav-right { display: flex; align-items: center; gap: 16px; }
+  .lec-name { font-size: 13px; color: var(--muted); }
+  .lec-name strong { color: var(--text); }
+  .btn-logout { padding: 7px 14px; border: 1px solid var(--border); border-radius: 7px; background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; }
+  .btn-logout:hover { color: var(--text); border-color: var(--muted); }
+  .main { max-width: 1100px; margin: 0 auto; padding: 32px 24px 60px; }
+  .page-header { margin-bottom: 28px; }
+  .page-header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .page-header p { color: var(--muted); font-size: 14px; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 28px; flex-wrap: wrap; }
+  .tab { padding: 10px 18px; font-size: 14px; font-weight: 600; color: var(--muted); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; margin-bottom: -1px; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+  .section-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: var(--text); }
+  .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02); }
+  td { padding: 12px 14px; font-size: 14px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .empty { text-align: center; padding: 40px 24px; color: var(--muted); font-size: 14px; }
+  .loading { text-align: center; padding: 48px; color: var(--muted); }
+  .btn { padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+  .btn-primary { background: var(--orange); color: #fff; }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+  .btn-danger { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: var(--red); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { margin-bottom: 14px; }
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.3px; }
+  input, select, textarea { width: 100%; padding: 10px 13px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; outline: none; font-family: inherit; }
+  input:focus, select:focus, textarea:focus { border-color: var(--orange); }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--card); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; padding: 28px; }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .modal-header h3 { font-size: 17px; font-weight: 700; }
+  .modal-close { background: none; border: none; font-size: 20px; color: var(--muted); cursor: pointer; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  .error-msg { background: rgba(220,60,60,0.12); border: 1px solid rgba(220,60,60,0.3); border-radius: 8px; padding: 10px 14px; color: #ff7070; font-size: 13px; margin-bottom: 14px; display: none; }
+  .badge-pub { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-draft { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; background: rgba(160,166,179,0.1); color: var(--muted); }
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 14px; margin-bottom: 24px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+  .stat-card .sl { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 6px; }
+  .stat-card .sv { font-size: 26px; font-weight: 800; }
+  .sv.orange { color: var(--orange); } .sv.blue { color: #6a9fff; } .sv.green { color: var(--green); }
+  @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } .topnav { padding: 0 16px; } .main { padding: 20px 14px 48px; } }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-brand">
+    <div class="logo-mark">GL</div>
+    <div>
+      <div class="logo-name">Goallord Academy</div>
+      <div class="logo-sub">Lecturer Portal</div>
+    </div>
+  </div>
+  <div class="topnav-right">
+    <div class="lec-name">Welcome, <strong id="lecNameNav">—</strong></div>
+    <button class="btn-logout" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="page-header">
+    <h1 id="pageTitle">My Dashboard</h1>
+    <p id="pageSubtitle" style="color:var(--muted);font-size:14px;">Loading…</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('overview')">Overview</button>
+    <button class="tab" onclick="switchTab('materials')">Materials</button>
+    <button class="tab" onclick="switchTab('assignments')">Assignments</button>
+    <button class="tab" onclick="switchTab('flashcards')">Flashcards</button>
+    <button class="tab" onclick="switchTab('attendance')">Attendance</button>
+    <button class="tab" onclick="switchTab('curriculum')">Curriculum</button>
+  </div>
+
+  <!-- ── OVERVIEW ── -->
+  <div id="tab-overview">
+    <div class="stats-row">
+      <div class="stat-card"><div class="sl">Materials</div><div class="sv blue" id="ov-mats">—</div></div>
+      <div class="stat-card"><div class="sl">Assignments</div><div class="sv orange" id="ov-asgn">—</div></div>
+      <div class="stat-card"><div class="sl">Flashcard Sets</div><div class="sv green" id="ov-flash">—</div></div>
+    </div>
+    <div class="section-title">Active Batch</div>
+    <div id="ov-batch" class="table-wrap" style="padding:16px;font-size:14px;color:var(--muted)">Loading…</div>
+  </div>
+
+  <!-- ── MATERIALS ── -->
+  <div id="tab-materials" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="section-title" style="margin:0">Study Materials</div>
+      <button class="btn btn-primary" onclick="openAddMaterial()">+ Add Material</button>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <select id="mat-week-filter" style="max-width:140px" onchange="loadMaterials()">
+        <option value="">All Weeks</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Title</th><th>Type</th><th>Week</th><th>Topic</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="matTableBody"><tr><td colspan="6" class="loading">Loading…</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ── ASSIGNMENTS ── -->
+  <div id="tab-assignments" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="section-title" style="margin:0">Assignments</div>
+      <button class="btn btn-primary" onclick="openAddAssignment()">+ Add Assignment</button>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Title</th><th>Week</th><th>Deadline</th><th>Max Score</th><th>Status</th><th>Submissions</th><th>Actions</th></tr></thead>
+      <tbody id="asgnTableBody"><tr><td colspan="7" class="loading">Loading…</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ── FLASHCARDS ── -->
+  <div id="tab-flashcards" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="section-title" style="margin:0">Flashcard Sets</div>
+      <button class="btn btn-primary" onclick="openAddFlashcardSet()">+ New Set</button>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Title</th><th>Week</th><th>Topic</th><th>Cards</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="flashTableBody"><tr><td colspan="6" class="loading">Loading…</td></tr></tbody></table>
+    </div>
+    <!-- Card editor panel -->
+    <div id="cardEditor" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div class="section-title" id="cardEditorTitle" style="margin:0">Cards</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="openAddCard()">+ Add Card</button>
+          <button class="btn btn-ghost" onclick="closeCardEditor()">← Back to Sets</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>#</th><th>Question</th><th>Answer</th><th>Actions</th></tr></thead>
+        <tbody id="cardTableBody"><tr><td colspan="4" class="loading">Loading…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ATTENDANCE ── -->
+  <div id="tab-attendance" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="section-title" style="margin:0">Attendance</div>
+      <button class="btn btn-primary" onclick="openTakeAttendance()">+ Take Attendance</button>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Date</th><th>Week</th><th>Day</th><th>Present</th><th>Absent</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="attTableBody"><tr><td colspan="7" class="loading">Loading…</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ── CURRICULUM ── -->
+  <div id="tab-curriculum" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="section-title" style="margin:0">Curriculum Plan</div>
+      <button class="btn btn-primary" onclick="openAddCurriculum()">+ Add Entry</button>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:16px">
+      <select id="cur-week-filter" style="max-width:140px" onchange="loadCurriculum()">
+        <option value="">All Weeks</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Week</th><th>Day</th><th>Topic</th><th>Objectives</th><th>Actions</th></tr></thead>
+      <tbody id="curTableBody"><tr><td colspan="5" class="loading">Loading…</td></tr></tbody></table>
+    </div>
+  </div>
+</main>
+
+<!-- ── MATERIAL MODAL ── -->
+<div class="modal-overlay" id="matModal">
+  <div class="modal">
+    <div class="modal-header"><h3 id="matModalTitle">Add Material</h3><button class="modal-close" onclick="closeModal('matModal')">✕</button></div>
+    <input type="hidden" id="mat-edit-id">
+    <div class="error-msg" id="matErr"></div>
+    <div class="form-group"><label>Title *</label><input id="mat-title" placeholder="e.g. Introduction to HTML"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Type *</label>
+        <select id="mat-type">
+          <option value="">Select type</option>
+          <option value="pdf">PDF</option><option value="image">Image</option>
+          <option value="url">URL / Article</option><option value="video">Video</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Week *</label><input id="mat-week" type="number" min="1" max="16" placeholder="1"></div>
+    </div>
+    <div class="form-group"><label>Topic</label><input id="mat-topic" placeholder="e.g. HTML Basics"></div>
+    <div class="form-group"><label>File URL (Cloudinary / PDF link)</label><input id="mat-fileurl" placeholder="https://…"></div>
+    <div class="form-group"><label>External Link URL</label><input id="mat-linkurl" placeholder="https://…"></div>
+    <div class="form-group"><label>Description</label><textarea id="mat-desc" rows="2"></textarea></div>
+    <div class="form-group">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="mat-published" style="width:auto;margin:0"> Publish immediately
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('matModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveMatBtn" onclick="saveMaterial()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ASSIGNMENT MODAL ── -->
+<div class="modal-overlay" id="asgnModal">
+  <div class="modal">
+    <div class="modal-header"><h3 id="asgnModalTitle">Add Assignment</h3><button class="modal-close" onclick="closeModal('asgnModal')">✕</button></div>
+    <input type="hidden" id="asgn-edit-id">
+    <div class="error-msg" id="asgnErr"></div>
+    <div class="form-group"><label>Title *</label><input id="asgn-title" placeholder="Assignment title"></div>
+    <div class="form-group"><label>Description *</label><textarea id="asgn-desc" rows="3" placeholder="Describe the task…"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Week *</label><input id="asgn-week" type="number" min="1" max="16"></div>
+      <div class="form-group"><label>Max Score</label><input id="asgn-score" type="number" value="100"></div>
+    </div>
+    <div class="form-group"><label>Topic</label><input id="asgn-topic" placeholder="e.g. CSS Layouts"></div>
+    <div class="form-group"><label>Deadline *</label><input id="asgn-deadline" type="datetime-local"></div>
+    <div class="form-group">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="asgn-published" style="width:auto;margin:0"> Publish immediately
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('asgnModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveAsgnBtn" onclick="saveAssignment()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── FLASHCARD SET MODAL ── -->
+<div class="modal-overlay" id="flashSetModal">
+  <div class="modal">
+    <div class="modal-header"><h3 id="flashSetModalTitle">New Flashcard Set</h3><button class="modal-close" onclick="closeModal('flashSetModal')">✕</button></div>
+    <input type="hidden" id="fset-edit-id">
+    <div class="form-group"><label>Title *</label><input id="fset-title" placeholder="e.g. HTML Basics Quiz"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Week *</label><input id="fset-week" type="number" min="1"></div>
+      <div class="form-group"><label>Topic</label><input id="fset-topic" placeholder="e.g. Semantics"></div>
+    </div>
+    <div class="form-group">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="fset-published" style="width:auto;margin:0"> Publish immediately
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('flashSetModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveFSetBtn" onclick="saveFlashcardSet()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── FLASHCARD CARD MODAL ── -->
+<div class="modal-overlay" id="cardModal">
+  <div class="modal">
+    <div class="modal-header"><h3 id="cardModalTitle">Add Card</h3><button class="modal-close" onclick="closeModal('cardModal')">✕</button></div>
+    <input type="hidden" id="card-edit-id">
+    <div class="form-group"><label>Question *</label><textarea id="card-question" rows="2"></textarea></div>
+    <div class="form-group"><label>Correct Answer *</label><input id="card-answer" placeholder="The correct answer"></div>
+    <div class="form-group"><label>Options (comma-separated, optional — makes it MCQ)</label><input id="card-options" placeholder="Option A, Option B, Option C, Option D"></div>
+    <div class="form-group"><label>Explanation</label><textarea id="card-explanation" rows="2" placeholder="Explain why this is correct…"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Topic</label><input id="card-topic"></div>
+      <div class="form-group"><label>Order (position)</label><input id="card-order" type="number" value="0"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('cardModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveCardBtn" onclick="saveCard()">Save Card</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CURRICULUM MODAL ── -->
+<div class="modal-overlay" id="curModal">
+  <div class="modal">
+    <div class="modal-header"><h3 id="curModalTitle">Add Curriculum Entry</h3><button class="modal-close" onclick="closeModal('curModal')">✕</button></div>
+    <input type="hidden" id="cur-edit-id">
+    <div class="form-row">
+      <div class="form-group"><label>Week *</label><input id="cur-week" type="number" min="1"></div>
+      <div class="form-group"><label>Day *</label>
+        <select id="cur-day"><option value="">Select day</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label>Topic *</label><input id="cur-topic" placeholder="e.g. Introduction to CSS"></div>
+    <div class="form-group"><label>Sub-topics (one per line)</label><textarea id="cur-subtopics" rows="3" placeholder="Selectors&#10;Properties&#10;Box model"></textarea></div>
+    <div class="form-group"><label>Objectives</label><textarea id="cur-objectives" rows="2"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('curModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveCurBtn" onclick="saveCurriculum()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TOKEN_KEY = 'gl_lecturer_token';
+const LEC_KEY   = 'gl_lecturer';
+const token = localStorage.getItem(TOKEN_KEY);
+if (!token) window.location.href = 'lecturer-login.html';
+const lec = JSON.parse(localStorage.getItem(LEC_KEY) || '{}');
+
+document.getElementById('lecNameNav').textContent = lec.fullName || 'Lecturer';
+document.getElementById('pageTitle').textContent = 'Welcome, ' + (lec.fullName ? lec.fullName.split(' ')[0] : 'Lecturer');
+
+function logout() { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(LEC_KEY); window.location.href = 'lecturer-login.html'; }
+
+const ALL_TABS = ['overview','materials','assignments','flashcards','attendance','curriculum'];
+let loaded = {};
+
+function switchTab(tab) {
+  ALL_TABS.forEach(t => { document.getElementById('tab-' + t).style.display = t === tab ? '' : 'none'; });
+  document.querySelectorAll('.tab').forEach((btn, i) => btn.classList.toggle('active', ALL_TABS[i] === tab));
+  if (!loaded[tab]) { loaded[tab] = true; LOADERS[tab]?.(); }
+}
+
+const LOADERS = {
+  overview:    loadOverview,
+  materials:   loadMaterials,
+  assignments: loadAssignments,
+  flashcards:  loadFlashcards,
+  attendance:  loadAttendance,
+  curriculum:  loadCurriculum,
+};
+
+// ── Helpers ─────────────────────────────────────────────────
+function authHeaders() { return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }; }
+async function api(url, opts = {}) {
+  const res = await fetch(url, { headers: authHeaders(), ...opts });
+  if (res.status === 401) { logout(); return null; }
+  return res.json().catch(() => null);
+}
+function fmtDate(d) { if (!d) return '—'; return new Date(d).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }); }
+function fmtDT(d) { if (!d) return '—'; return new Date(d).toLocaleString('en-NG', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── WEEK FILTER SELECTS ─────────────────────────────────────
+function populateWeekFilter(selId) {
+  const sel = document.getElementById(selId);
+  sel.innerHTML = '<option value="">All Weeks</option>';
+  for (let i = 1; i <= 16; i++) sel.innerHTML += `<option value="${i}">Week ${i}</option>`;
+}
+
+// ── OVERVIEW ────────────────────────────────────────────────
+let activeBatch = null;
+
+async function loadOverview() {
+  const [batchRes, matsRes, asgnRes, flashRes] = await Promise.all([
+    api('/api/batches/active'),
+    api('/api/materials'),
+    api('/api/assignments'),
+    api('/api/flashcards/sets'),
+  ]);
+  activeBatch = batchRes?._id ? batchRes : null;
+  document.getElementById('pageSubtitle').textContent = activeBatch ? `Active Batch: ${activeBatch.name}` : 'No active batch set';
+  document.getElementById('ov-mats').textContent  = Array.isArray(matsRes)  ? matsRes.length  : (matsRes?.length  || 0);
+  document.getElementById('ov-asgn').textContent  = Array.isArray(asgnRes)  ? asgnRes.length  : (asgnRes?.length  || 0);
+  document.getElementById('ov-flash').textContent = Array.isArray(flashRes) ? flashRes.length : (flashRes?.length || 0);
+  const batchEl = document.getElementById('ov-batch');
+  batchEl.innerHTML = activeBatch
+    ? `<strong>${activeBatch.name}</strong> — ${activeBatch.track || 'All Tracks'} — ${activeBatch.totalWeeks} weeks
+       <span style="margin-left:16px;font-size:12px;color:var(--muted)">${activeBatch.startDate ? fmtDate(activeBatch.startDate) : ''} → ${activeBatch.endDate ? fmtDate(activeBatch.endDate) : 'TBD'}</span>`
+    : '<span style="color:var(--muted)">No active batch. Contact admin to set one.</span>';
+}
+
+// ── MATERIALS ────────────────────────────────────────────────
+let allMaterials = [];
+
+async function loadMaterials() {
+  populateWeekFilter('mat-week-filter');
+  document.getElementById('mat-week-filter').onchange = loadMaterials;
+  const week = document.getElementById('mat-week-filter').value;
+  let url = '/api/materials';
+  if (week) url += '?week=' + week;
+  const data = await api(url);
+  allMaterials = Array.isArray(data) ? data : [];
+  const tbody = document.getElementById('matTableBody');
+  if (!allMaterials.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">No materials yet.</td></tr>'; return; }
+  tbody.innerHTML = allMaterials.map(m => `<tr>
+    <td style="font-weight:600">${m.title}</td>
+    <td><span style="background:rgba(30,75,255,0.12);color:#6a9fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${m.type.toUpperCase()}</span></td>
+    <td>Week ${m.week}</td>
+    <td style="color:var(--muted)">${m.topic || '—'}</td>
+    <td>${m.published ? '<span class="badge-pub">Published</span>' : '<span class="badge-draft">Draft</span>'}</td>
+    <td style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openEditMaterial('${m._id}')">Edit</button>
+      <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="togglePublish('${m._id}',${m.published},'mat')">${m.published ? 'Unpublish' : 'Publish'}</button>
+      <button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="deleteMaterial('${m._id}')">Del</button>
+    </td>
+  </tr>`).join('');
+}
+
+function openAddMaterial() {
+  document.getElementById('matModalTitle').textContent = 'Add Material';
+  document.getElementById('mat-edit-id').value = '';
+  ['mat-title','mat-week','mat-topic','mat-fileurl','mat-linkurl','mat-desc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('mat-type').value = '';
+  document.getElementById('mat-published').checked = false;
+  document.getElementById('matErr').style.display = 'none';
+  openModal('matModal');
+}
+
+function openEditMaterial(id) {
+  const m = allMaterials.find(x => x._id === id);
+  if (!m) return;
+  document.getElementById('matModalTitle').textContent = 'Edit Material';
+  document.getElementById('mat-edit-id').value     = id;
+  document.getElementById('mat-title').value       = m.title || '';
+  document.getElementById('mat-type').value        = m.type || '';
+  document.getElementById('mat-week').value        = m.week || '';
+  document.getElementById('mat-topic').value       = m.topic || '';
+  document.getElementById('mat-fileurl').value     = m.fileUrl || '';
+  document.getElementById('mat-linkurl').value     = m.linkUrl || '';
+  document.getElementById('mat-desc').value        = m.description || '';
+  document.getElementById('mat-published').checked = !!m.published;
+  document.getElementById('matErr').style.display  = 'none';
+  openModal('matModal');
+}
+
+async function saveMaterial() {
+  const editId = document.getElementById('mat-edit-id').value;
+  const body = {
+    title:       document.getElementById('mat-title').value.trim(),
+    type:        document.getElementById('mat-type').value,
+    week:        Number(document.getElementById('mat-week').value),
+    topic:       document.getElementById('mat-topic').value.trim(),
+    fileUrl:     document.getElementById('mat-fileurl').value.trim(),
+    linkUrl:     document.getElementById('mat-linkurl').value.trim(),
+    description: document.getElementById('mat-desc').value.trim(),
+    published:   document.getElementById('mat-published').checked,
+    batch:       activeBatch?._id,
+    lecturer:    lec._id,
+  };
+  if (!body.title || !body.type || !body.week) { const e=document.getElementById('matErr'); e.textContent='Title, type and week are required.'; e.style.display='block'; return; }
+  const btn = document.getElementById('saveMatBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const res = editId
+    ? await api(`/api/materials/${editId}`, { method: 'PATCH', body: JSON.stringify(body) })
+    : await api('/api/materials', { method: 'POST', body: JSON.stringify(body) });
+  btn.disabled = false; btn.textContent = 'Save';
+  if (!res) return;
+  closeModal('matModal'); loadMaterials();
+}
+
+async function deleteMaterial(id) {
+  if (!confirm('Delete this material?')) return;
+  await api(`/api/materials/${id}`, { method: 'DELETE' });
+  loadMaterials();
+}
+
+async function togglePublish(id, current, type) {
+  const url = type === 'mat' ? `/api/materials/${id}` : type === 'asgn' ? `/api/assignments/${id}` : `/api/flashcards/sets/${id}`;
+  await api(url, { method: 'PATCH', body: JSON.stringify({ published: !current }) });
+  if (type === 'mat') loadMaterials();
+  else if (type === 'asgn') loadAssignments();
+  else loadFlashcards();
+}
+
+// ── ASSIGNMENTS ──────────────────────────────────────────────
+let allAssignments = [];
+
+async function loadAssignments() {
+  const data = await api('/api/assignments');
+  allAssignments = Array.isArray(data) ? data : [];
+  const tbody = document.getElementById('asgnTableBody');
+  if (!allAssignments.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No assignments yet.</td></tr>'; return; }
+  tbody.innerHTML = allAssignments.map(a => {
+    const isPast = new Date(a.deadline) < new Date();
+    return `<tr>
+      <td style="font-weight:600">${a.title}</td>
+      <td>Week ${a.week}</td>
+      <td>${fmtDT(a.deadline)} ${isPast ? '<span style="color:var(--red);font-size:11px">(Closed)</span>' : ''}</td>
+      <td>${a.maxScore}</td>
+      <td>${a.published ? '<span class="badge-pub">Published</span>' : '<span class="badge-draft">Draft</span>'}</td>
+      <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="viewSubmissions('${a._id}','${a.title.replace(/'/g,'')}')">View</button></td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openEditAssignment('${a._id}')">Edit</button>
+        <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="togglePublish('${a._id}',${a.published},'asgn')">${a.published ? 'Unpublish' : 'Publish'}</button>
+        <button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="deleteAssignment('${a._id}')">Del</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openAddAssignment() {
+  document.getElementById('asgnModalTitle').textContent = 'Add Assignment';
+  document.getElementById('asgn-edit-id').value = '';
+  ['asgn-title','asgn-desc','asgn-week','asgn-topic'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('asgn-score').value = '100';
+  document.getElementById('asgn-deadline').value = '';
+  document.getElementById('asgn-published').checked = false;
+  openModal('asgnModal');
+}
+
+function openEditAssignment(id) {
+  const a = allAssignments.find(x => x._id === id);
+  if (!a) return;
+  document.getElementById('asgnModalTitle').textContent = 'Edit Assignment';
+  document.getElementById('asgn-edit-id').value    = id;
+  document.getElementById('asgn-title').value      = a.title || '';
+  document.getElementById('asgn-desc').value       = a.description || '';
+  document.getElementById('asgn-week').value       = a.week || '';
+  document.getElementById('asgn-topic').value      = a.topic || '';
+  document.getElementById('asgn-score').value      = a.maxScore || 100;
+  document.getElementById('asgn-deadline').value   = a.deadline ? new Date(a.deadline).toISOString().slice(0,16) : '';
+  document.getElementById('asgn-published').checked = !!a.published;
+  openModal('asgnModal');
+}
+
+async function saveAssignment() {
+  const editId = document.getElementById('asgn-edit-id').value;
+  const body = {
+    title:       document.getElementById('asgn-title').value.trim(),
+    description: document.getElementById('asgn-desc').value.trim(),
+    week:        Number(document.getElementById('asgn-week').value),
+    topic:       document.getElementById('asgn-topic').value.trim(),
+    maxScore:    Number(document.getElementById('asgn-score').value) || 100,
+    deadline:    document.getElementById('asgn-deadline').value,
+    published:   document.getElementById('asgn-published').checked,
+    batch:       activeBatch?._id,
+    lecturer:    lec._id,
+  };
+  if (!body.title || !body.description || !body.week || !body.deadline) { alert('Please fill all required fields.'); return; }
+  const btn = document.getElementById('saveAsgnBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const res = editId
+    ? await api(`/api/assignments/${editId}`, { method: 'PATCH', body: JSON.stringify(body) })
+    : await api('/api/assignments', { method: 'POST', body: JSON.stringify(body) });
+  btn.disabled = false; btn.textContent = 'Save';
+  if (!res) return;
+  closeModal('asgnModal'); loadAssignments();
+}
+
+async function deleteAssignment(id) {
+  if (!confirm('Delete this assignment?')) return;
+  await api(`/api/assignments/${id}`, { method: 'DELETE' });
+  loadAssignments();
+}
+
+async function viewSubmissions(id, title) {
+  const subs = await api(`/api/assignments/${id}/submissions`);
+  if (!subs) return;
+  const content = subs.length === 0
+    ? '<div class="empty">No submissions yet.</div>'
+    : `<div class="table-wrap"><table><thead><tr><th>Student</th><th>Submitted</th><th>Late?</th><th>Score</th><th>Action</th></tr></thead><tbody>` +
+      subs.map(s => `<tr>
+        <td>${s.student?.fullName || '—'}</td>
+        <td>${fmtDT(s.submittedAt)}</td>
+        <td>${s.isLate ? '<span style="color:var(--red);font-size:12px">Late</span>' : '—'}</td>
+        <td>${s.score !== null ? s.score : '<span style="color:var(--muted)">Unscored</span>'}</td>
+        <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px"
+          onclick="scoreSubmission('${s._id}','${id}')">Score</button></td>
+      </tr>`).join('') + '</tbody></table></div>';
+  alert(`Submissions for "${title}"\n\n${subs.length} submission(s). Open dev console for details.`);
+  console.table(subs.map(s => ({ student: s.student?.fullName, submitted: s.submittedAt, late: s.isLate, score: s.score })));
+}
+
+async function scoreSubmission(subId, asgnId) {
+  const score = prompt('Enter score (0–100):');
+  if (score === null) return;
+  const feedback = prompt('Feedback (optional):') || '';
+  await api(`/api/assignments/${asgnId}/submissions/${subId}`, {
+    method: 'PATCH', body: JSON.stringify({ score: Number(score), feedback })
+  });
+  alert('Score saved!');
+}
+
+// ── FLASHCARDS ───────────────────────────────────────────────
+let allFlashSets = [];
+let activeSetId  = null;
+let allCards     = [];
+
+async function loadFlashcards() {
+  const data = await api('/api/flashcards/sets');
+  allFlashSets = Array.isArray(data) ? data : [];
+  document.getElementById('cardEditor').style.display = 'none';
+  const tbody = document.getElementById('flashTableBody');
+  if (!allFlashSets.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">No sets yet.</td></tr>'; return; }
+  tbody.innerHTML = allFlashSets.map(s => `<tr>
+    <td style="font-weight:600">${s.title}</td>
+    <td>Week ${s.week}</td>
+    <td style="color:var(--muted)">${s.topic || '—'}</td>
+    <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openCardEditor('${s._id}','${s.title.replace(/'/g,'')}')">Edit Cards</button></td>
+    <td>${s.published ? '<span class="badge-pub">Published</span>' : '<span class="badge-draft">Draft</span>'}</td>
+    <td style="display:flex;gap:6px">
+      <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openEditFlashSet('${s._id}')">Edit</button>
+      <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="togglePublish('${s._id}',${s.published},'flash')">${s.published ? 'Unpublish' : 'Publish'}</button>
+      <button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="deleteFlashSet('${s._id}')">Del</button>
+    </td>
+  </tr>`).join('');
+}
+
+function openAddFlashcardSet() {
+  document.getElementById('flashSetModalTitle').textContent = 'New Flashcard Set';
+  document.getElementById('fset-edit-id').value = '';
+  ['fset-title','fset-week','fset-topic'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fset-published').checked = false;
+  openModal('flashSetModal');
+}
+
+function openEditFlashSet(id) {
+  const s = allFlashSets.find(x => x._id === id);
+  if (!s) return;
+  document.getElementById('flashSetModalTitle').textContent = 'Edit Set';
+  document.getElementById('fset-edit-id').value  = id;
+  document.getElementById('fset-title').value    = s.title || '';
+  document.getElementById('fset-week').value     = s.week || '';
+  document.getElementById('fset-topic').value    = s.topic || '';
+  document.getElementById('fset-published').checked = !!s.published;
+  openModal('flashSetModal');
+}
+
+async function saveFlashcardSet() {
+  const editId = document.getElementById('fset-edit-id').value;
+  const body = {
+    title:     document.getElementById('fset-title').value.trim(),
+    week:      Number(document.getElementById('fset-week').value),
+    topic:     document.getElementById('fset-topic').value.trim(),
+    published: document.getElementById('fset-published').checked,
+    batch:     activeBatch?._id,
+    lecturer:  lec._id,
+  };
+  if (!body.title || !body.week) { alert('Title and week are required.'); return; }
+  const btn = document.getElementById('saveFSetBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const res = editId
+    ? await api(`/api/flashcards/sets/${editId}`, { method: 'PATCH', body: JSON.stringify(body) })
+    : await api('/api/flashcards/sets', { method: 'POST', body: JSON.stringify(body) });
+  btn.disabled = false; btn.textContent = 'Save';
+  if (!res) return;
+  closeModal('flashSetModal'); loadFlashcards();
+}
+
+async function deleteFlashSet(id) {
+  if (!confirm('Delete this flashcard set and all its cards?')) return;
+  await api(`/api/flashcards/sets/${id}`, { method: 'DELETE' });
+  loadFlashcards();
+}
+
+async function openCardEditor(setId, title) {
+  activeSetId = setId;
+  document.getElementById('cardEditorTitle').textContent = `Cards — ${title}`;
+  document.getElementById('cardEditor').style.display = '';
+  document.getElementById('flashTableBody').closest('.table-wrap').style.display = 'none';
+  await loadCards();
+}
+
+function closeCardEditor() {
+  document.getElementById('cardEditor').style.display = 'none';
+  document.getElementById('flashTableBody').closest('.table-wrap').style.display = '';
+  activeSetId = null;
+}
+
+async function loadCards() {
+  const data = await api(`/api/flashcards/sets/${activeSetId}/cards`);
+  allCards = Array.isArray(data) ? data : [];
+  const tbody = document.getElementById('cardTableBody');
+  if (!allCards.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty">No cards yet. Add one!</td></tr>'; return; }
+  tbody.innerHTML = allCards.map((c, i) => `<tr>
+    <td style="color:var(--muted)">${i + 1}</td>
+    <td>${c.question}</td>
+    <td style="color:var(--muted)">${c.correctAnswer}</td>
+    <td style="display:flex;gap:6px">
+      <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openEditCard('${c._id}')">Edit</button>
+      <button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="deleteCard('${c._id}')">Del</button>
+    </td>
+  </tr>`).join('');
+}
+
+function openAddCard() {
+  document.getElementById('cardModalTitle').textContent = 'Add Card';
+  document.getElementById('card-edit-id').value = '';
+  ['card-question','card-answer','card-options','card-explanation','card-topic'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('card-order').value = allCards.length;
+  openModal('cardModal');
+}
+
+function openEditCard(id) {
+  const c = allCards.find(x => x._id === id);
+  if (!c) return;
+  document.getElementById('cardModalTitle').textContent = 'Edit Card';
+  document.getElementById('card-edit-id').value       = id;
+  document.getElementById('card-question').value      = c.question || '';
+  document.getElementById('card-answer').value        = c.correctAnswer || '';
+  document.getElementById('card-options').value       = (c.options || []).join(', ');
+  document.getElementById('card-explanation').value   = c.explanation || '';
+  document.getElementById('card-topic').value         = c.topic || '';
+  document.getElementById('card-order').value         = c.order ?? 0;
+  openModal('cardModal');
+}
+
+async function saveCard() {
+  const editId = document.getElementById('card-edit-id').value;
+  const optStr = document.getElementById('card-options').value.trim();
+  const body = {
+    question:      document.getElementById('card-question').value.trim(),
+    correctAnswer: document.getElementById('card-answer').value.trim(),
+    options:       optStr ? optStr.split(',').map(s => s.trim()).filter(Boolean) : [],
+    explanation:   document.getElementById('card-explanation').value.trim(),
+    topic:         document.getElementById('card-topic').value.trim(),
+    order:         Number(document.getElementById('card-order').value) || 0,
+  };
+  if (!body.question || !body.correctAnswer) { alert('Question and answer are required.'); return; }
+  const btn = document.getElementById('saveCardBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const res = editId
+    ? await api(`/api/flashcards/cards/${editId}`, { method: 'PATCH', body: JSON.stringify(body) })
+    : await api(`/api/flashcards/sets/${activeSetId}/cards`, { method: 'POST', body: JSON.stringify(body) });
+  btn.disabled = false; btn.textContent = 'Save Card';
+  if (!res) return;
+  closeModal('cardModal'); loadCards();
+}
+
+async function deleteCard(id) {
+  if (!confirm('Delete this card?')) return;
+  await api(`/api/flashcards/cards/${id}`, { method: 'DELETE' });
+  loadCards();
+}
+
+// ── ATTENDANCE ───────────────────────────────────────────────
+let allAttendance = [];
+
+async function loadAttendance() {
+  const batchId = activeBatch?._id;
+  const url = batchId ? `/api/attendance?batch=${batchId}` : '/api/attendance';
+  const data = await api(url);
+  allAttendance = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
+  const tbody = document.getElementById('attTableBody');
+  if (!allAttendance.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No sessions yet.</td></tr>'; return; }
+  tbody.innerHTML = allAttendance.map(s => `<tr>
+    <td>${fmtDate(s.classDate)}</td>
+    <td>Week ${s.week}</td>
+    <td>${s.day}</td>
+    <td style="color:var(--green)">${s.presentStudents?.length || 0}</td>
+    <td style="color:var(--red)">${s.absentStudents?.length || 0}</td>
+    <td>${s.isOpen ? '<span style="color:var(--green);font-weight:600">Open</span>' : '<span style="color:var(--muted)">Closed</span>'}</td>
+    <td style="display:flex;gap:6px;flex-wrap:wrap">
+      ${s.isOpen
+        ? `<button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--red)" onclick="closeSession('${s._id}')">Close Window</button>`
+        : `<button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--green)" onclick="openSession('${s._id}')">Open Window</button>`}
+    </td>
+  </tr>`).join('');
+}
+
+async function openTakeAttendance() {
+  if (!activeBatch) { alert('No active batch. Contact admin.'); return; }
+  const week = prompt('Week number?');
+  const day  = prompt('Day? (Tuesday / Wednesday / Thursday)');
+  const date = prompt('Class date? (YYYY-MM-DD)', new Date().toISOString().slice(0,10));
+  const topic = prompt('Topic? (optional)', '');
+  if (!week || !day || !date) return;
+  const res = await api('/api/attendance', {
+    method: 'POST',
+    body: JSON.stringify({ batchId: activeBatch._id, week: Number(week), day, classDate: date, topic, presentStudentIds: [] })
+  });
+  if (res?.success) { alert('Session created! Open the window to let students self-mark.'); loadAttendance(); }
+  else alert('Failed: ' + (res?.error || 'Unknown error'));
+}
+
+async function openSession(id) {
+  await api(`/api/attendance/${id}/open`, { method: 'PATCH' });
+  loadAttendance();
+}
+
+async function closeSession(id) {
+  await api(`/api/attendance/${id}/close`, { method: 'PATCH' });
+  loadAttendance();
+}
+
+// ── CURRICULUM ───────────────────────────────────────────────
+let allCurriculum = [];
+
+async function loadCurriculum() {
+  populateWeekFilter('cur-week-filter');
+  document.getElementById('cur-week-filter').onchange = loadCurriculum;
+  const week = document.getElementById('cur-week-filter').value;
+  const batchId = activeBatch?._id;
+  let url = '/api/curriculum';
+  const params = [];
+  if (batchId) params.push('batch=' + batchId);
+  if (week) params.push('week=' + week);
+  if (params.length) url += '?' + params.join('&');
+  const data = await api(url);
+  allCurriculum = Array.isArray(data) ? data : [];
+  const tbody = document.getElementById('curTableBody');
+  if (!allCurriculum.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No entries yet.</td></tr>'; return; }
+  tbody.innerHTML = allCurriculum.map(c => `<tr>
+    <td>Week ${c.week}</td>
+    <td>${c.day}</td>
+    <td style="font-weight:600">${c.topic}</td>
+    <td style="color:var(--muted);font-size:13px">${c.objectives || '—'}</td>
+    <td style="display:flex;gap:6px">
+      <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openEditCurriculum('${c._id}')">Edit</button>
+      <button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="deleteCurriculum('${c._id}')">Del</button>
+    </td>
+  </tr>`).join('');
+}
+
+function openAddCurriculum() {
+  document.getElementById('curModalTitle').textContent = 'Add Curriculum Entry';
+  document.getElementById('cur-edit-id').value = '';
+  ['cur-week','cur-topic','cur-subtopics','cur-objectives'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('cur-day').value = '';
+  openModal('curModal');
+}
+
+function openEditCurriculum(id) {
+  const c = allCurriculum.find(x => x._id === id);
+  if (!c) return;
+  document.getElementById('curModalTitle').textContent = 'Edit Entry';
+  document.getElementById('cur-edit-id').value    = id;
+  document.getElementById('cur-week').value       = c.week || '';
+  document.getElementById('cur-day').value        = c.day || '';
+  document.getElementById('cur-topic').value      = c.topic || '';
+  document.getElementById('cur-subtopics').value  = (c.subtopics || []).join('\n');
+  document.getElementById('cur-objectives').value = c.objectives || '';
+  openModal('curModal');
+}
+
+async function saveCurriculum() {
+  const editId = document.getElementById('cur-edit-id').value;
+  const body = {
+    batch:      activeBatch?._id,
+    week:       Number(document.getElementById('cur-week').value),
+    day:        document.getElementById('cur-day').value,
+    topic:      document.getElementById('cur-topic').value.trim(),
+    subtopics:  document.getElementById('cur-subtopics').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    objectives: document.getElementById('cur-objectives').value.trim(),
+  };
+  if (!body.week || !body.day || !body.topic) { alert('Week, day and topic are required.'); return; }
+  const btn = document.getElementById('saveCurBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const res = editId
+    ? await api(`/api/curriculum/${editId}`, { method: 'PATCH', body: JSON.stringify(body) })
+    : await api('/api/curriculum', { method: 'POST', body: JSON.stringify(body) });
+  btn.disabled = false; btn.textContent = 'Save';
+  if (!res) return;
+  closeModal('curModal'); loadCurriculum();
+}
+
+async function deleteCurriculum(id) {
+  if (!confirm('Delete this entry?')) return;
+  await api(`/api/curriculum/${id}`, { method: 'DELETE' });
+  loadCurriculum();
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+loaded['overview'] = true;
+loadOverview();
+</script>
+</body>
+</html>

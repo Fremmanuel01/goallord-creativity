@@ -126,8 +126,11 @@
 
   <div class="tabs">
     <button class="tab active" onclick="switchTab('overview')">Overview</button>
-    <button class="tab" onclick="switchTab('attendance')">My Attendance</button>
-    <button class="tab" onclick="switchTab('payments')">My Payments</button>
+    <button class="tab" onclick="switchTab('attendance')">Attendance</button>
+    <button class="tab" onclick="switchTab('payments')">Payments</button>
+    <button class="tab" onclick="switchTab('materials')">Materials</button>
+    <button class="tab" onclick="switchTab('assignments')">Assignments</button>
+    <button class="tab" onclick="switchTab('flashcards')">Flashcards</button>
   </div>
 
   <!-- ── OVERVIEW TAB ── -->
@@ -202,8 +205,8 @@
         <thead>
           <tr>
             <th>Date</th>
-            <th>Cohort</th>
-            <th>Track</th>
+            <th>Batch</th>
+            <th>Week / Day</th>
             <th>Status</th>
             <th>Notes</th>
           </tr>
@@ -212,6 +215,42 @@
           <tr><td colspan="5" class="empty">Loading…</td></tr>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- ── MATERIALS TAB ── -->
+  <div id="tab-materials" style="display:none;">
+    <div class="section-title">Study Materials</div>
+    <div id="materialsContent">
+      <div class="loading">Loading materials…</div>
+    </div>
+  </div>
+
+  <!-- ── ASSIGNMENTS TAB ── -->
+  <div id="tab-assignments" style="display:none;">
+    <div class="section-title">Assignments</div>
+    <div id="assignmentsContent">
+      <div class="loading">Loading assignments…</div>
+    </div>
+  </div>
+
+  <!-- ── FLASHCARDS TAB ── -->
+  <div id="tab-flashcards" style="display:none;">
+    <div class="section-title">Flashcard Sets</div>
+    <div id="flashcardsContent">
+      <div class="loading">Loading flashcards…</div>
+    </div>
+    <!-- Active flashcard quiz -->
+    <div id="flashcardQuiz" style="display:none;">
+      <div id="quizHeader" style="display:flex;align-items:center;gap:16px;margin-bottom:24px">
+        <button onclick="closeQuiz()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:7px;cursor:pointer;font-size:13px">← Back</button>
+        <div>
+          <div id="quizTitle" style="font-weight:700;font-size:16px"></div>
+          <div id="quizProgress" style="font-size:13px;color:var(--muted)"></div>
+        </div>
+      </div>
+      <div id="quizCard" class="table-wrap" style="padding:32px;text-align:center;max-width:600px;margin:0 auto"></div>
+      <div id="quizResult" style="display:none;text-align:center;padding:32px"></div>
     </div>
   </div>
 
@@ -236,13 +275,13 @@
       <table>
         <thead>
           <tr>
-            <th>Month</th>
+            <th>Category</th>
             <th>Amount Due</th>
             <th>Amount Paid</th>
             <th>Status</th>
             <th>Method</th>
             <th>Reference</th>
-            <th>Paid On</th>
+            <th>Date</th>
           </tr>
         </thead>
         <tbody id="payTableBody">
@@ -264,6 +303,12 @@
   let studentData = null;
   let attendData = null;
   let payData = null;
+  let materialsLoaded   = false;
+  let assignmentsLoaded = false;
+  let flashcardsLoaded  = false;
+
+  // Active flashcard quiz state
+  let quizCards = [], quizIdx = 0, quizResponses = [], quizSetId = null;
 
   // ── Logout ──────────────────────────────────────────────────
   function logout() {
@@ -273,14 +318,18 @@
   }
 
   // ── Tab switching ────────────────────────────────────────────
+  const ALL_TABS = ['overview','attendance','payments','materials','assignments','flashcards'];
+
   function switchTab(tab) {
-    ['overview','attendance','payments'].forEach(t => {
+    ALL_TABS.forEach(t => {
       document.getElementById('tab-' + t).style.display = t === tab ? '' : 'none';
     });
     document.querySelectorAll('.tab').forEach((btn, i) => {
-      const tabs = ['overview','attendance','payments'];
-      btn.classList.toggle('active', tabs[i] === tab);
+      btn.classList.toggle('active', ALL_TABS[i] === tab);
     });
+    if (tab === 'materials'   && !materialsLoaded)   loadMaterials();
+    if (tab === 'assignments' && !assignmentsLoaded) loadAssignments();
+    if (tab === 'flashcards'  && !flashcardsLoaded)  loadFlashcards();
   }
 
   // ── Format helpers ───────────────────────────────────────────
@@ -387,8 +436,8 @@
       attBody.innerHTML = history.map(r =>
         '<tr>' +
         '<td>' + fmtDate(r.classDate) + '</td>' +
-        '<td>' + (r.cohort || '—') + '</td>' +
-        '<td>' + (r.track || '—') + '</td>' +
+        '<td>' + (r.batch ? (r.batch.name || '—') : '—') + '</td>' +
+        '<td>Week ' + (r.week || '?') + ' · ' + (r.day || '') + '</td>' +
         '<td>' + (r.present ? '<span class="badge badge-present">Present</span>' : '<span class="badge badge-absent">Absent</span>') + '</td>' +
         '<td style="color:var(--muted);font-size:13px;">' + (r.notes || '') + '</td>' +
         '</tr>'
@@ -405,23 +454,178 @@
     if (payHistory.length === 0) {
       payBody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">₦</div>No payment records yet.</div></td></tr>';
     } else {
-      payBody.innerHTML = payHistory.map(p => {
-        const statusClass = p.status === 'Paid' ? 'paid' : p.status === 'Partial' ? 'partial' : 'unpaid';
-        return '<tr>' +
-          '<td style="font-weight:600">' + fmtMonth(p.month) + '</td>' +
-          '<td>' + fmt(p.amountDue) + '</td>' +
-          '<td>' + fmt(p.amountPaid) + '</td>' +
-          '<td><span class="badge badge-' + statusClass + '">' + p.status + '</span></td>' +
-          '<td style="color:var(--muted)">' + (p.method || '—') + '</td>' +
-          '<td style="color:var(--muted);font-size:13px;">' + (p.reference || '—') + '</td>' +
-          '<td style="color:var(--muted)">' + (p.paidAt ? fmtDate(p.paidAt) : '—') + '</td>' +
-          '</tr>';
-      }).join('');
+      const catLabel = { application_fee: 'Application Fee', tuition_month_1: 'Tuition Month 1', tuition_month_2: 'Tuition Month 2', tuition_month_3: 'Tuition Month 3', full_tuition_payment: 'Full Tuition' };
+      const statusClass = s => ({ paid: 'paid', fully_paid: 'paid', partially_paid: 'partial', overdue: 'unpaid', pending: 'unpaid', failed: 'unpaid' }[s] || 'unpaid');
+      payBody.innerHTML = payHistory.map(p =>
+        '<tr>' +
+        '<td style="font-weight:600">' + (catLabel[p.category] || p.category || '—') + '</td>' +
+        '<td>' + fmt(p.amountDue) + '</td>' +
+        '<td>' + fmt(p.amountPaid) + '</td>' +
+        '<td><span class="badge badge-' + statusClass(p.status) + '">' + p.status + '</span></td>' +
+        '<td style="color:var(--muted)">' + (p.method || '—') + '</td>' +
+        '<td style="color:var(--muted);font-size:13px;">' + (p.reference || '—') + '</td>' +
+        '<td style="color:var(--muted)">' + (p.paidAt ? fmtDate(p.paidAt) : (p.dueDate ? 'Due ' + fmtDate(p.dueDate) : '—')) + '</td>' +
+        '</tr>'
+      ).join('');
     }
 
     // Show overview
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('overviewContent').style.display = '';
+  }
+
+  // ── Materials ────────────────────────────────────────────────
+  async function loadMaterials() {
+    materialsLoaded = true;
+    const cont = document.getElementById('materialsContent');
+    cont.innerHTML = '<div class="loading">Loading…</div>';
+    try {
+      const res = await fetch('/api/materials?published=true', { headers: { 'Authorization': 'Bearer ' + token } });
+      const data = await res.json();
+      const items = Array.isArray(data) ? data : (data.data || []);
+      if (!items.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">📚</div>No materials published yet.</div>'; return; }
+      // Group by week
+      const byWeek = {};
+      items.forEach(m => { if (!byWeek[m.week]) byWeek[m.week] = []; byWeek[m.week].push(m); });
+      cont.innerHTML = Object.keys(byWeek).sort((a,b)=>a-b).map(week => `
+        <div style="margin-bottom:24px">
+          <div style="font-weight:700;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Week ${week}</div>
+          <div class="table-wrap">
+            <table><thead><tr><th>Title</th><th>Type</th><th>Topic</th><th>Link</th></tr></thead>
+            <tbody>${byWeek[week].map(m => `<tr>
+              <td style="font-weight:600">${m.title}</td>
+              <td><span style="background:rgba(30,75,255,0.12);color:#6a9fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${m.type.toUpperCase()}</span></td>
+              <td style="color:var(--muted)">${m.topic || '—'}</td>
+              <td>${(m.fileUrl || m.linkUrl) ? `<a href="${m.fileUrl || m.linkUrl}" target="_blank" style="color:var(--orange);font-size:13px">Open ↗</a>` : '—'}</td>
+            </tr>`).join('')}</tbody></table>
+          </div>
+        </div>`).join('');
+    } catch { cont.innerHTML = '<div class="empty">Failed to load materials.</div>'; }
+  }
+
+  // ── Assignments ──────────────────────────────────────────────
+  async function loadAssignments() {
+    assignmentsLoaded = true;
+    const cont = document.getElementById('assignmentsContent');
+    cont.innerHTML = '<div class="loading">Loading…</div>';
+    try {
+      const res = await fetch('/api/assignments?published=true', { headers: { 'Authorization': 'Bearer ' + token } });
+      const data = await res.json();
+      const items = Array.isArray(data) ? data : (data.data || []);
+      if (!items.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">📝</div>No assignments yet.</div>'; return; }
+      cont.innerHTML = '<div class="table-wrap"><table><thead><tr><th>Title</th><th>Week</th><th>Deadline</th><th>Max Score</th><th>Status</th></tr></thead><tbody>' +
+        items.map(a => {
+          const isPast = new Date(a.deadline) < new Date();
+          return `<tr>
+            <td style="font-weight:600">${a.title}</td>
+            <td>Week ${a.week}</td>
+            <td>${fmtDate(a.deadline)} ${isPast ? '<span style="color:var(--red);font-size:11px">(Closed)</span>' : ''}</td>
+            <td>${a.maxScore}</td>
+            <td><span style="font-size:12px;color:var(--muted)">View on portal</span></td>
+          </tr>`;
+        }).join('') + '</tbody></table></div>';
+    } catch { cont.innerHTML = '<div class="empty">Failed to load assignments.</div>'; }
+  }
+
+  // ── Flashcards ───────────────────────────────────────────────
+  async function loadFlashcards() {
+    flashcardsLoaded = true;
+    const cont = document.getElementById('flashcardsContent');
+    cont.innerHTML = '<div class="loading">Loading…</div>';
+    try {
+      const res = await fetch('/api/flashcards/sets?published=true', { headers: { 'Authorization': 'Bearer ' + token } });
+      const data = await res.json();
+      const sets = Array.isArray(data) ? data : (data.data || []);
+      if (!sets.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">🃏</div>No flashcard sets yet.</div>'; return; }
+      cont.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">' +
+        sets.map(s => `
+          <div class="table-wrap" style="padding:20px;cursor:pointer" onclick="startQuiz('${s._id}','${s.title.replace(/'/g,'')}')">
+            <div style="font-weight:700;margin-bottom:6px">${s.title}</div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Week ${s.week} · ${s.topic || 'General'}</div>
+            <button style="background:var(--blue);color:#fff;border:none;padding:7px 16px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer">Start Quiz →</button>
+          </div>`).join('') + '</div>';
+    } catch { cont.innerHTML = '<div class="empty">Failed to load flashcards.</div>'; }
+  }
+
+  async function startQuiz(setId, title) {
+    document.getElementById('flashcardsContent').style.display = 'none';
+    document.getElementById('flashcardQuiz').style.display = '';
+    document.getElementById('quizTitle').textContent = title;
+    document.getElementById('quizResult').style.display = 'none';
+    quizSetId = setId; quizIdx = 0; quizResponses = [];
+
+    const res = await fetch('/api/flashcards/sets/' + setId + '/cards', { headers: { 'Authorization': 'Bearer ' + token } });
+    quizCards = await res.json();
+    if (!quizCards.length) { document.getElementById('quizCard').innerHTML = '<div class="empty">No cards in this set.</div>'; return; }
+    showCard();
+  }
+
+  function showCard() {
+    const card = quizCards[quizIdx];
+    document.getElementById('quizProgress').textContent = `Card ${quizIdx + 1} of ${quizCards.length}`;
+    const hasOptions = card.options && card.options.length > 0;
+    document.getElementById('quizCard').innerHTML = `
+      <div style="font-size:18px;font-weight:700;margin-bottom:28px;line-height:1.5">${card.question}</div>
+      ${hasOptions
+        ? `<div style="display:flex;flex-direction:column;gap:10px;text-align:left;max-width:400px;margin:0 auto">
+            ${card.options.map((opt,i) => `<button onclick="answerCard(this,'${opt.replace(/'/g,"\\'")}','${card.correctAnswer.replace(/'/g,"\\'")}','${card._id}')"
+              style="width:100%;text-align:left;padding:12px 16px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;cursor:pointer">${opt}</button>`).join('')}
+          </div>`
+        : `<div style="display:flex;gap:10px;max-width:400px;margin:0 auto;flex-direction:column">
+            <input id="openAnswer" style="padding:12px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;width:100%" placeholder="Type your answer…">
+            <button onclick="submitOpenAnswer('${card.correctAnswer.replace(/'/g,"\\'")}','${card._id}')"
+              style="background:var(--blue);color:#fff;border:none;padding:11px 24px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">Submit</button>
+          </div>`}
+    `;
+  }
+
+  function answerCard(btn, chosen, correct, cardId) {
+    const isCorrect = chosen === correct;
+    btn.style.background = isCorrect ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.15)';
+    btn.style.borderColor = isCorrect ? 'var(--green)' : 'var(--red)';
+    document.querySelectorAll('#quizCard button').forEach(b => b.disabled = true);
+    quizResponses.push({ flashcard: cardId, answer: chosen, isCorrect });
+    setTimeout(nextCard, 1200);
+  }
+
+  function submitOpenAnswer(correct, cardId) {
+    const val = document.getElementById('openAnswer').value.trim();
+    if (!val) return;
+    const isCorrect = val.toLowerCase() === correct.toLowerCase();
+    quizResponses.push({ flashcard: cardId, answer: val, isCorrect });
+    nextCard();
+  }
+
+  function nextCard() {
+    quizIdx++;
+    if (quizIdx < quizCards.length) { showCard(); return; }
+    // All done — submit and show result
+    submitQuiz();
+  }
+
+  async function submitQuiz() {
+    const correct = quizResponses.filter(r => r.isCorrect).length;
+    const total = quizResponses.length;
+    document.getElementById('quizCard').style.display = 'none';
+    const res = document.getElementById('quizResult');
+    res.style.display = '';
+    res.innerHTML = `
+      <div style="font-size:48px;margin-bottom:16px">${correct === total ? '🎉' : correct >= total/2 ? '👍' : '📚'}</div>
+      <div style="font-size:28px;font-weight:800;margin-bottom:8px">${correct} / ${total}</div>
+      <div style="color:var(--muted);margin-bottom:24px">You got ${Math.round(correct/total*100)}% correct</div>
+      <button onclick="closeQuiz()" style="background:var(--blue);color:#fff;border:none;padding:11px 24px;border-radius:8px;font-weight:600;cursor:pointer">Back to Sets</button>`;
+    try {
+      await fetch('/api/flashcards/sets/' + quizSetId + '/respond', {
+        method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ responses: quizResponses })
+      });
+    } catch {}
+  }
+
+  function closeQuiz() {
+    document.getElementById('flashcardQuiz').style.display = 'none';
+    document.getElementById('flashcardsContent').style.display = '';
+    document.getElementById('quizCard').style.display = '';
   }
 
   loadAll();
