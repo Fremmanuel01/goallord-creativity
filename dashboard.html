@@ -1358,10 +1358,10 @@
         <div class="stat-card">
           <div class="stat-info">
             <div class="stat-label">Total Applicants</div>
-            <div class="stat-value">47</div>
-            <div class="stat-trend up">
+            <div class="stat-value" id="stat-total-applicants">—</div>
+            <div class="stat-trend up" id="stat-pending-trend">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
-              +12% vs last month
+              <span id="stat-pending-count">—</span> pending review
             </div>
           </div>
           <div class="stat-icon orange">
@@ -1375,10 +1375,10 @@
         <div class="stat-card">
           <div class="stat-info">
             <div class="stat-label">Active Clients</div>
-            <div class="stat-value">12</div>
+            <div class="stat-value" id="stat-total-clients">—</div>
             <div class="stat-trend up">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
-              +3 new this month
+              Total registered
             </div>
           </div>
           <div class="stat-icon blue">
@@ -1391,11 +1391,11 @@
 
         <div class="stat-card">
           <div class="stat-info">
-            <div class="stat-label">Revenue (Month)</div>
-            <div class="stat-value">€3,240</div>
+            <div class="stat-label">Active Students</div>
+            <div class="stat-value" id="stat-total-students">—</div>
             <div class="stat-trend up">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
-              +18% vs last month
+              Currently enrolled
             </div>
           </div>
           <div class="stat-icon green">
@@ -1408,11 +1408,11 @@
 
         <div class="stat-card">
           <div class="stat-info">
-            <div class="stat-label">Pending Reviews</div>
-            <div class="stat-value">8</div>
+            <div class="stat-label">Accepted Students</div>
+            <div class="stat-value" id="stat-accepted-applicants">—</div>
             <div class="stat-trend neutral">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-              Needs action
+              From applicants
             </div>
           </div>
           <div class="stat-icon yellow">
@@ -2734,7 +2734,7 @@ document.querySelectorAll('.tab-btn[data-ordertab]').forEach(btn => {
 // ─── OVERVIEW RECENT TABLES ──────────────────────────────
 function renderOverviewApplicants() {
   const tbody = document.querySelector('#recentApplicantsTable tbody');
-  const recent = [...APPLICANTS].slice(-5).reverse();
+  const recent = [...APPLICANTS].slice(0, 5);
   tbody.innerHTML = recent.map(a => {
     const st = getStatus(a.id);
     return `<tr onclick="navigate('applicants')">
@@ -2835,7 +2835,7 @@ function initCharts() {
 
   // Doughnut
   const doCtx = document.getElementById('donutChart').getContext('2d');
-  new Chart(doCtx, {
+  window._donutChart = new Chart(doCtx, {
     type: 'doughnut',
     data: {
       labels: ['Web Design', 'WordPress', 'Digital Marketing'],
@@ -2984,6 +2984,8 @@ async function loadApplicantsFromAPI() {
     date:       new Date(a.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
   }));
   if (typeof renderApplicants === 'function') renderApplicants(window.APPLICANTS);
+  renderOverviewApplicants();
+  if (window._donutChart) updateDonutChart();
 }
 
 async function loadClientsFromAPI() {
@@ -3002,19 +3004,33 @@ async function loadClientsFromAPI() {
 }
 
 async function loadOverviewStats() {
-  const [applicants, clients, orders] = await Promise.all([
+  const [applicants, pending, accepted, clients, students] = await Promise.all([
     apiFetch('/api/applicants?limit=1'),
+    apiFetch('/api/applicants?status=Pending&limit=1'),
+    apiFetch('/api/applicants?status=Accepted&limit=1'),
     apiFetch('/api/clients?limit=1'),
-    apiFetch('/api/orders?limit=1')
+    apiFetch('/api/students?limit=1')
   ]);
-  if (applicants) {
-    const el = document.querySelector('#page-overview .stat-grid .stat-card:first-child .stat-number');
-    if (el) el.textContent = applicants.total || '—';
+
+  if (applicants) document.getElementById('stat-total-applicants').textContent = applicants.total ?? '—';
+  if (pending)    document.getElementById('stat-pending-count').textContent    = pending.total ?? '—';
+  if (accepted)   document.getElementById('stat-accepted-applicants').textContent = accepted.total ?? '—';
+  if (clients)    document.getElementById('stat-total-clients').textContent    = clients.total ?? '—';
+  if (students)   document.getElementById('stat-total-students').textContent   = students.total ?? '—';
+
+  // Update donut chart with real track distribution
+  if (window.APPLICANTS && window.APPLICANTS.length && window._donutChart) {
+    updateDonutChart();
   }
-  if (clients) {
-    const el = document.querySelectorAll('#page-overview .stat-grid .stat-card')[1]?.querySelector('.stat-number');
-    if (el) el.textContent = clients.total || '—';
-  }
+}
+
+function updateDonutChart() {
+  const tracks = ['Web Design', 'WordPress', 'Digital Marketing', 'Brand Identity', 'Other'];
+  const counts = tracks.map(t => window.APPLICANTS.filter(a => a.track === t).length);
+  const nonZero = tracks.map((t,i) => ({ label: t, count: counts[i] })).filter(x => x.count > 0);
+  window._donutChart.data.labels   = nonZero.map(x => x.label);
+  window._donutChart.data.datasets[0].data = nonZero.map(x => x.count);
+  window._donutChart.update();
 }
 
 // ── CMS: Website Content ──────────────────────────────────────
