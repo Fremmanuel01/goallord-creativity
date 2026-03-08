@@ -1,17 +1,22 @@
 const mongoose = require('mongoose');
 
 const attendanceSchema = new mongoose.Schema({
-  cohort:          { type: String, required: true },
+  batch:           { type: mongoose.Schema.Types.ObjectId, ref: 'Batch', required: true },
+  week:            { type: Number, required: true },
+  day:             { type: String, enum: ['Tuesday', 'Wednesday', 'Thursday'], required: true },
   classDate:       { type: Date, required: true },
-  track:           { type: String },
+  topic:           { type: String, default: '' },
+  sessionOpenedAt: { type: Date },
+  sessionClosedAt: { type: Date },
+  isOpen:          { type: Boolean, default: false },
+  takenBy:         { type: mongoose.Schema.Types.ObjectId, ref: 'Lecturer' },
   presentStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
   absentStudents:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
-  takenBy:         { type: String, default: 'Admin' },
   notes:           { type: String, default: '' },
   createdAt:       { type: Date, default: Date.now }
 });
 
-attendanceSchema.index({ cohort: 1, classDate: 1 }, { unique: true });
+attendanceSchema.index({ batch: 1, week: 1, day: 1 }, { unique: true });
 attendanceSchema.index({ presentStudents: 1 });
 attendanceSchema.index({ absentStudents: 1 });
 
