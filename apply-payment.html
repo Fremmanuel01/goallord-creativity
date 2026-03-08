@@ -3,173 +3,201 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Complete Your Application — Goallord Creativity Academy</title>
+<title>Complete Enrolment — Goallord Creativity Academy</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --orange: #D66A1F; --blue: #1E4BFF;
-    --bg: #0F1115; --card: #171A21; --border: #2A2F3A;
-    --text: #F4F6FA; --muted: #A0A6B3; --green: #22c55e;
-  }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 16px 80px; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --orange: #D66A1F; --blue: #1E4BFF; --green: #22c55e;
+  --bg: #0F1115; --card: #171A21; --border: #2A2F3A;
+  --text: #F4F6FA; --muted: #A0A6B3;
+}
 
-  .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 44px; }
-  .logo-mark { width: 44px; height: 44px; background: var(--orange); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; color: #fff; }
-  .logo-text { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.2; }
-  .logo-sub { font-size: 11px; color: var(--muted); font-weight: 400; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; padding: 32px 16px 80px;
+}
 
-  .container { width: 100%; max-width: 540px; }
+/* ── Logo ── */
+.logo { display: flex; align-items: center; gap: 12px; margin-bottom: 36px; align-self: flex-start; max-width: 580px; width: 100%; }
+.logo-mark { width: 40px; height: 40px; background: var(--orange); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; color: #fff; flex-shrink: 0; }
+.logo-text { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.25; }
+.logo-sub { font-size: 11px; color: var(--muted); }
 
-  /* Steps */
-  .steps { display: flex; align-items: center; justify-content: center; margin-bottom: 36px; }
-  .step-node { display: flex; align-items: center; gap: 8px; }
-  .step-circle { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 2px solid var(--border); color: var(--muted); background: var(--card); transition: all .25s; flex-shrink: 0; }
-  .step-circle.active { border-color: var(--orange); color: var(--orange); background: rgba(214,106,31,.1); }
-  .step-circle.done { border-color: var(--green); color: #fff; background: var(--green); }
-  .step-label { font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap; }
-  .step-label.active { color: var(--orange); font-weight: 600; }
-  .step-label.done { color: var(--green); }
-  .step-line { width: 44px; height: 2px; background: var(--border); margin: 0 8px; flex-shrink: 0; transition: background .25s; }
-  .step-line.done { background: var(--green); }
+/* ── Main layout ── */
+.page { width: 100%; max-width: 580px; display: flex; flex-direction: column; gap: 16px; }
 
-  /* Applicant card */
-  .applicant-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
-  .applicant-avatar { width: 42px; height: 42px; border-radius: 50%; background: rgba(214,106,31,.15); border: 2px solid var(--orange); display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; color: var(--orange); flex-shrink: 0; }
-  .applicant-name { font-size: 15px; font-weight: 700; }
-  .applicant-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+/* ── Applicant strip ── */
+.applicant-strip {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 20px;
+  display: flex; align-items: center; gap: 14px;
+}
+.avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: rgba(214,106,31,.15); border: 2px solid var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 800; color: var(--orange); flex-shrink: 0;
+}
+.applicant-name { font-size: 15px; font-weight: 700; }
+.applicant-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
-  /* Section */
-  .section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 26px; margin-bottom: 16px; }
-  .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 18px; }
+/* ── Section card ── */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+.card-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); margin-bottom: 16px; }
 
-  /* Plan cards */
-  .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-  .plan-card { background: var(--bg); border: 2px solid var(--border); border-radius: 10px; padding: 18px 14px; cursor: pointer; transition: all .2s; text-align: center; position: relative; }
-  .plan-card:hover { border-color: var(--muted); }
-  .plan-card.selected { border-color: var(--orange); background: rgba(214,106,31,.07); }
-  .plan-card.selected::after { content:'✓'; position:absolute; top:9px; right:11px; width:18px; height:18px; background:var(--orange); color:#fff; border-radius:50%; font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center; }
-  .plan-icon { font-size: 26px; margin-bottom: 8px; }
-  .plan-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
-  .plan-price { font-size: 20px; font-weight: 800; color: var(--orange); }
-  .plan-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+/* ── Plan cards ── */
+.plans { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.plan {
+  background: var(--bg); border: 2px solid var(--border);
+  border-radius: 10px; padding: 18px 14px; cursor: pointer;
+  transition: border-color .18s, background .18s;
+  text-align: center; position: relative; user-select: none;
+}
+.plan:hover { border-color: rgba(214,106,31,.5); }
+.plan.active { border-color: var(--orange); background: rgba(214,106,31,.07); }
+.plan.active::after {
+  content: '✓'; position: absolute; top: 10px; right: 12px;
+  width: 20px; height: 20px; background: var(--orange); color: #fff;
+  border-radius: 50%; font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+.plan-icon { font-size: 28px; margin-bottom: 8px; }
+.plan-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.plan-amount { font-size: 22px; font-weight: 800; color: var(--orange); margin: 4px 0; }
+.plan-note { font-size: 11px; color: var(--muted); }
 
-  /* Plan breakdown box — appears after plan selected */
-  .plan-breakdown { display: none; margin-top: 4px; margin-bottom: 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-  .plan-breakdown.show { display: block; }
-  .pb-header { padding: 12px 16px; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); }
-  .pb-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .pb-row:last-child { border-bottom: none; }
-  .pb-row.total { background: rgba(214,106,31,.06); font-weight: 700; font-size: 14px; }
-  .pb-label { color: var(--muted); }
-  .pb-label strong { display: block; color: var(--text); font-weight: 600; }
-  .pb-label small { color: var(--muted); font-size: 11px; }
-  .pb-amount { font-weight: 700; color: var(--text); white-space: nowrap; }
-  .pb-amount.orange { color: var(--orange); }
-  .pb-amount.green  { color: var(--green); }
-  .pb-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; letter-spacing: .3px; }
-  .pb-badge.due-now  { background: rgba(214,106,31,.15); color: var(--orange); }
-  .pb-badge.upcoming { background: rgba(160,166,179,.12); color: var(--muted); }
+/* ── Payment schedule ── */
+.schedule { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 16px; display: none; }
+.schedule.show { display: block; }
+.sch-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 12px; }
+.sch-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid rgba(42,47,58,.7); gap: 12px; }
+.sch-row:last-child { border-bottom: none; }
+.sch-row.total { padding-top: 12px; border-top: 1px solid var(--border); border-bottom: none; }
+.sch-label { font-size: 13px; color: var(--text); }
+.sch-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.sch-amount { font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; }
+.sch-amount.paid-now { color: var(--green); }
+.sch-amount.total-amt { color: var(--orange); font-size: 16px; }
+.badge {
+  display: inline-block; font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .4px;
+  padding: 2px 6px; border-radius: 4px; vertical-align: middle; margin-left: 5px;
+}
+.badge-now      { background: rgba(34,197,94,.15); color: var(--green); }
+.badge-soon     { background: rgba(214,106,31,.12); color: var(--orange); }
+.badge-later    { background: rgba(160,166,179,.1); color: var(--muted); }
+.badge-dashboard { background: rgba(30,75,255,.12); color: #93c5fd; }
 
-  /* Payment summary on step 2 */
-  .pay-summary { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
-  .ps-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .ps-row:last-child { border-bottom: none; }
-  .ps-row.highlight { background: rgba(214,106,31,.06); }
-  .ps-label { color: var(--muted); }
-  .ps-amount { font-weight: 700; color: var(--text); }
-  .ps-amount.orange { color: var(--orange); }
+/* ── Divider ── */
+.divider { height: 1px; background: var(--border); }
 
-  /* Buttons */
-  .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; letter-spacing: .3px; transition: opacity .15s, background .15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .btn:disabled { opacity: .5; cursor: not-allowed; }
-  .btn-orange { background: var(--orange); color: #fff; }
-  .btn-orange:not(:disabled):hover { background: #c05a12; }
-  .btn-blue   { background: var(--blue); color: #fff; }
-  .btn-blue:not(:disabled):hover { opacity: .88; }
-  .btn-ghost  { background: transparent; color: var(--muted); border: 1px solid var(--border); font-size: 14px; padding: 12px; }
-  .btn-ghost:not(:disabled):hover { border-color: var(--muted); color: var(--text); }
-  .btn + .btn { margin-top: 10px; }
+/* ── Buttons ── */
+.btn {
+  width: 100%; padding: 15px; border: none; border-radius: 9px;
+  font-size: 15px; font-weight: 700; cursor: pointer; letter-spacing: .3px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: opacity .15s, background .15s;
+}
+.btn:disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
+.btn-primary  { background: var(--orange); color: #fff; }
+.btn-primary:not(:disabled):hover { background: #bf5b12; }
+.btn-secondary { background: transparent; color: var(--muted); border: 1px solid var(--border); font-size: 14px; padding: 12px; }
+.btn-secondary:not(:disabled):hover { border-color: var(--muted); color: var(--text); }
+.btn-blue { background: var(--blue); color: #fff; }
+.btn-blue:not(:disabled):hover { opacity: .88; }
+.btn + .btn { margin-top: 10px; }
 
-  /* Spinner */
-  .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* ── Input ── */
+.field label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 6px; }
+.field input {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px; color: var(--text); font-size: 14px;
+  outline: none; transition: border-color .18s;
+}
+.field input:focus { border-color: var(--orange); }
 
-  /* Input */
-  .field { margin-bottom: 14px; }
-  .field label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 6px; }
-  .field input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 11px 13px; color: var(--text); font-size: 14px; outline: none; transition: border-color .2s; }
-  .field input:focus { border-color: var(--orange); }
+/* ── Bank panel ── */
+.bank-panel { display: none; padding-top: 16px; }
+.bank-panel.show { display: block; }
+.bank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.bank-tile { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+.bank-tile-title { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; margin-bottom: 8px; }
+.bank-tile-row { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.bank-tile-row b { color: var(--text); font-weight: 600; }
+.bank-tile-row .num { font-family: monospace; font-size: 14px; color: var(--orange); letter-spacing: 1px; }
 
-  /* Bank */
-  .bank-panel { display: none; margin-top: 14px; }
-  .bank-panel.open { display: block; }
-  .bank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-  .bank-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 13px; }
-  .bank-card-title { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; margin-bottom: 7px; }
-  .bank-row { font-size: 12px; color: var(--muted); padding: 2px 0; }
-  .bank-row span { color: var(--text); font-weight: 600; }
-  .acct-num { font-family: monospace; font-size: 13px !important; letter-spacing: 1px; color: var(--orange) !important; }
+/* ── Alerts ── */
+.error-box {
+  background: rgba(239,68,68,.09); border: 1px solid rgba(239,68,68,.3);
+  color: #fca5a5; border-radius: 8px; padding: 12px 14px; font-size: 13px;
+  line-height: 1.6; display: none; margin-bottom: 14px;
+}
 
-  /* Alerts */
-  .alert { padding: 11px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; line-height: 1.5; }
-  .alert-error   { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3); color: #fca5a5; }
+/* ── Spinner ── */
+.spin { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: rot .65s linear infinite; flex-shrink: 0; }
+@keyframes rot { to { transform: rotate(360deg); } }
 
-  /* Or divider */
-  .or-divider { display: flex; align-items: center; gap: 10px; margin: 14px 0; }
-  .or-divider::before, .or-divider::after { content:''; flex:1; height:1px; background: var(--border); }
-  .or-divider span { font-size: 11px; color: var(--muted); }
+/* ── Result overlays ── */
+.overlay {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,.88); align-items: center; justify-content: center;
+  padding: 24px;
+}
+.overlay.show { display: flex; }
+.result-box {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 40px 36px; max-width: 440px; width: 100%; text-align: center;
+}
+.result-icon { font-size: 52px; margin-bottom: 20px; display: block; }
+.result-title { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
+.result-body { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
+.result-email { color: var(--orange); font-weight: 600; }
 
-  /* Result screens */
-  .result-screen { display: none; text-align: center; padding: 20px 0; }
-  .result-icon { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; margin: 0 auto 24px; }
-  .result-icon.green { background: rgba(34,197,94,.12); border: 3px solid var(--green); }
-  .result-icon.blue  { background: rgba(30,75,255,.1); border: 3px solid var(--blue); }
-  .result-title { font-size: 26px; font-weight: 800; margin-bottom: 10px; }
-  .result-title.green { color: var(--green); }
-  .result-title.blue  { color: #93c5fd; }
-  .result-sub { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
-  .result-email { color: var(--orange); font-weight: 600; }
-  .btn-login-link { display: inline-block; background: var(--orange); color: #fff; text-decoration: none; padding: 13px 36px; border-radius: 8px; font-size: 14px; font-weight: 700; }
+/* ── Receipt (white paper) ── */
+.receipt-box {
+  background: #fff; color: #111;
+  border-radius: 10px; padding: 32px; max-width: 460px; width: 100%;
+  font-family: 'Segoe UI', sans-serif; max-height: 90vh; overflow-y: auto;
+}
+.rh { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #D66A1F; padding-bottom: 14px; margin-bottom: 18px; }
+.rh-brand { font-size: 14px; font-weight: 800; color: #111; }
+.rh-brand small { display: block; font-size: 11px; color: #666; font-weight: 400; margin-top: 2px; line-height: 1.5; }
+.rh-title { font-size: 18px; font-weight: 800; color: #D66A1F; letter-spacing: 2px; }
+.rm { display: flex; gap: 24px; margin-bottom: 18px; }
+.rm-item label { display: block; font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
+.rm-item strong { font-size: 13px; color: #111; }
+.rb { background: #f8f8f8; border-radius: 6px; padding: 12px 14px; margin-bottom: 18px; }
+.rb label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: .5px; }
+.rb .rb-name { font-size: 14px; font-weight: 700; color: #111; margin-top: 4px; }
+.rb .rb-email { font-size: 12px; color: #555; }
+.rt { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
+.rt th { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: #888; background: #f0f0f0; padding: 7px 10px; text-align: left; }
+.rt td { padding: 10px; font-size: 13px; color: #333; border-bottom: 1px solid #eee; }
+.rt .rt-total td { font-weight: 800; font-size: 15px; color: #111; border-top: 2px solid #111; border-bottom: none; }
+.rp { display: flex; gap: 20px; margin-bottom: 18px; flex-wrap: wrap; }
+.rp > div label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: .5px; }
+.rp > div strong { display: block; font-size: 13px; color: #111; margin-top: 3px; word-break: break-all; }
+.rf { border-top: 1px solid #eee; padding-top: 12px; text-align: center; font-size: 12px; color: #888; line-height: 1.6; }
+.rf strong { color: #D66A1F; }
+.receipt-btns { display: flex; gap: 10px; margin-top: 18px; }
+.receipt-btns button { flex: 1; padding: 11px; border: none; border-radius: 7px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.rb-print { background: #D66A1F; color: #fff; }
+.rb-login { background: #1E4BFF; color: #fff; }
 
-  /* Receipt overlay */
-  #receiptOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 999; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
-  #receiptOverlay.show { display: flex; }
-  #rcptDoc { background: #fff; color: #111; width: 100%; max-width: 480px; border-radius: 10px; padding: 32px; max-height: 92vh; overflow-y: auto; font-family: 'Segoe UI', sans-serif; }
-  .rcpt-hdr { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #D66A1F; padding-bottom: 14px; margin-bottom: 18px; }
-  .rcpt-brand-name { font-size: 15px; font-weight: 800; color: #111; }
-  .rcpt-brand-addr { font-size: 11px; color: #666; margin-top: 2px; line-height: 1.5; }
-  .rcpt-word { font-size: 20px; font-weight: 800; color: #D66A1F; letter-spacing: 2px; }
-  .rcpt-meta { display: flex; gap: 24px; margin-bottom: 18px; }
-  .rcpt-meta-item label { display: block; font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
-  .rcpt-meta-item strong { font-size: 13px; color: #111; }
-  .rcpt-bill-box { background: #f8f8f8; border-radius: 6px; padding: 12px 14px; margin-bottom: 18px; }
-  .rcpt-bill-box label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: .5px; }
-  .rcpt-bill-box .name { font-size: 14px; font-weight: 700; color: #111; margin-top: 4px; }
-  .rcpt-bill-box .email { font-size: 12px; color: #555; }
-  .rcpt-table { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
-  .rcpt-table th { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: #888; background: #f0f0f0; padding: 8px 10px; text-align: left; }
-  .rcpt-table td { padding: 10px; font-size: 13px; color: #333; border-bottom: 1px solid #eee; }
-  .rcpt-table .tot td { font-weight: 800; font-size: 15px; color: #111; border-top: 2px solid #111; border-bottom: none; }
-  .rcpt-pay-row { display: flex; gap: 24px; margin-bottom: 18px; }
-  .rcpt-pay-row > div label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: .5px; }
-  .rcpt-pay-row > div strong { display: block; font-size: 13px; color: #111; margin-top: 3px; word-break: break-all; }
-  .rcpt-foot { border-top: 1px solid #eee; padding-top: 12px; text-align: center; font-size: 12px; color: #888; line-height: 1.6; }
-  .rcpt-foot strong { color: #D66A1F; }
-  .rcpt-actions { display: flex; gap: 10px; margin-top: 18px; }
-  .rcpt-actions button { flex: 1; padding: 11px; border: none; border-radius: 7px; font-size: 13px; font-weight: 700; cursor: pointer; }
-  .rcpt-btn-print { background: #D66A1F; color: #fff; }
-  .rcpt-btn-login { background: #1E4BFF; color: #fff; }
-  @media print {
-    body > *:not(#receiptOverlay) { display: none !important; }
-    #receiptOverlay { display: block !important; position: static; background: none; padding: 0; }
-    #rcptDoc { box-shadow: none; border-radius: 0; max-height: none; }
-    .rcpt-actions { display: none !important; }
-  }
-  @media (max-width: 480px) {
-    .plan-grid, .bank-grid { grid-template-columns: 1fr; }
-    .step-label { display: none; }
-    .step-line { width: 24px; }
-  }
+@media print {
+  body > *:not(#receiptOverlay) { display: none !important; }
+  #receiptOverlay { display: flex !important; position: static; background: none; padding: 0; }
+  .receipt-box { max-height: none; box-shadow: none; border-radius: 0; }
+  .receipt-btns { display: none !important; }
+}
+
+@media (max-width: 480px) {
+  .plans { grid-template-columns: 1fr; }
+  .bank-grid { grid-template-columns: 1fr; }
+  .rm { flex-wrap: wrap; gap: 12px; }
+}
 </style>
 </head>
 <body>
@@ -178,635 +206,485 @@
   <div class="logo-mark">GL</div>
   <div>
     <div class="logo-text">Goallord Creativity Academy</div>
-    <div class="logo-sub">Application Portal</div>
+    <div class="logo-sub">Complete Your Enrolment</div>
   </div>
 </div>
 
-<div class="container" id="mainContainer">
+<div class="page" id="enrollPage">
 
-  <!-- Step bar -->
-  <div class="steps" id="stepsBar">
-    <div class="step-node">
-      <div class="step-circle active" id="sc1">1</div>
-      <div class="step-label active" id="sl1">Choose Plan</div>
-    </div>
-    <div class="step-line" id="line1"></div>
-    <div class="step-node">
-      <div class="step-circle" id="sc2">2</div>
-      <div class="step-label" id="sl2">Application Fee</div>
-    </div>
-    <div class="step-line" id="line2"></div>
-    <div class="step-node">
-      <div class="step-circle" id="sc3">3</div>
-      <div class="step-label" id="sl3">Done</div>
-    </div>
-  </div>
-
-  <!-- Applicant card -->
-  <div class="applicant-card" id="applicantCard" style="display:none;">
-    <div class="applicant-avatar" id="applicantInitial">?</div>
+  <!-- Applicant -->
+  <div class="applicant-strip" id="applicantStrip" style="display:none;">
+    <div class="avatar" id="applicantInitial">?</div>
     <div>
       <div class="applicant-name" id="applicantName">Loading…</div>
       <div class="applicant-meta" id="applicantMeta"></div>
     </div>
   </div>
 
-  <!-- ── STEP 1: Choose Plan ──────────────────────────────── -->
-  <div id="step1">
-    <div class="section">
-      <div class="section-title">Step 1 — Choose Your Tuition Plan</div>
-      <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:18px;">
-        Select how you'd like to pay your tuition. Your plan will be attached to your student account.
-      </p>
-
-      <div class="plan-grid">
-        <div class="plan-card" id="plan-full" onclick="selectPlan('full')">
-          <div class="plan-icon">💳</div>
-          <div class="plan-name">Full Payment</div>
-          <div class="plan-price" id="fullPriceDisplay">₦150,000</div>
-          <div class="plan-sub">One-time · Best value</div>
-        </div>
-        <div class="plan-card" id="plan-monthly" onclick="selectPlan('monthly')">
-          <div class="plan-icon">📅</div>
-          <div class="plan-name">Monthly Plan</div>
-          <div class="plan-price" id="monthlyPriceDisplay">₦60,000</div>
-          <div class="plan-sub">× 3 months · Easy payments</div>
-        </div>
+  <!-- Choose plan -->
+  <div class="card">
+    <div class="card-label">Choose Your Tuition Plan</div>
+    <div class="plans">
+      <div class="plan" id="planFull" onclick="choosePlan('full')">
+        <div class="plan-icon">💳</div>
+        <div class="plan-name">Full Payment</div>
+        <div class="plan-amount" id="displayFull">₦150,000</div>
+        <div class="plan-note">One-time · Best value</div>
       </div>
-
-      <!-- Cost breakdown — shown after plan selected -->
-      <div class="plan-breakdown" id="planBreakdown"></div>
-
-      <div id="step1Error" class="alert alert-error" style="display:none;"></div>
-      <button class="btn btn-orange" id="continueBtn" onclick="goToPayment()" disabled>
-        Continue to Payment →
-      </button>
+      <div class="plan" id="planMonthly" onclick="choosePlan('monthly')">
+        <div class="plan-icon">📅</div>
+        <div class="plan-name">Monthly Plan</div>
+        <div class="plan-amount" id="displayMonthly">₦60,000</div>
+        <div class="plan-note">× 3 months · Pay in instalments</div>
+      </div>
     </div>
+
+    <!-- Dynamic payment schedule -->
+    <div class="schedule" id="schedule"></div>
   </div>
 
-  <!-- ── STEP 2: Pay Application Fee ─────────────────────── -->
-  <div id="step2" style="display:none;">
-    <div class="section">
-      <div class="section-title">Step 2 — Pay Application Fee</div>
+  <!-- Payment -->
+  <div class="card" id="payCard">
+    <div class="card-label">Application Fee — Pay to Confirm Enrolment</div>
 
-      <!-- Payment summary -->
-      <div class="pay-summary" id="paySummary"></div>
+    <div class="error-box" id="mainError"></div>
 
-      <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:18px;">
-        Pay the <strong style="color:var(--text);">₦<span id="feeDisplayInline">20,000</span></strong> application fee to complete enrolment. Your login details will be emailed to you immediately after payment.
-      </p>
-
-      <div id="step2Error" class="alert alert-error" style="display:none;"></div>
-
-      <button class="btn btn-orange" id="paystackBtn" onclick="startPaystack()">
-        Pay ₦<span id="payBtnAmt">20,000</span> — Card or Bank (Paystack)
-      </button>
-
-      <div class="or-divider"><span>OR</span></div>
-
-      <button class="btn btn-ghost" id="bankToggleBtn" onclick="toggleBank()">
-        Pay via Bank Transfer ▼
-      </button>
-
-      <div class="bank-panel" id="bankPanel">
-        <p style="font-size:13px;color:var(--muted);margin:14px 0 12px;line-height:1.5;">
-          Transfer <strong style="color:var(--orange);">₦<span id="bankAmt">20,000</span></strong> to any account below, then enter your reference:
-        </p>
-        <div class="bank-grid">
-          <div class="bank-card">
-            <div class="bank-card-title">Account 1</div>
-            <div class="bank-row">Bank: <span id="b1-name">—</span></div>
-            <div class="bank-row">Acct: <span class="acct-num" id="b1-num">—</span></div>
-            <div class="bank-row">Name: <span id="b1-acct">—</span></div>
-          </div>
-          <div class="bank-card">
-            <div class="bank-card-title">Account 2</div>
-            <div class="bank-row">Bank: <span id="b2-name">—</span></div>
-            <div class="bank-row">Acct: <span class="acct-num" id="b2-num">—</span></div>
-            <div class="bank-row">Name: <span id="b2-acct">—</span></div>
-          </div>
-        </div>
-        <div class="field">
-          <label>Transfer Reference / Teller Number *</label>
-          <input type="text" id="bankRef" placeholder="e.g. TRF202603150001">
-        </div>
-        <div id="bankError" class="alert alert-error" style="display:none;"></div>
-        <button class="btn btn-blue" id="bankSubmitBtn" onclick="submitBank()">
-          Submit Reference →
-        </button>
-      </div>
-
-      <button class="btn btn-ghost" style="margin-top:14px;" onclick="backToStep1()">← Back</button>
-    </div>
-  </div>
-
-  <!-- ── SUCCESS ──────────────────────────────────────────── -->
-  <div id="successScreen" class="result-screen">
-    <div class="result-icon green">🎉</div>
-    <div class="result-title green">You're In!</div>
-    <p class="result-sub">
-      Your application is complete and your student account has been created.<br><br>
-      Login details have been sent to<br>
-      <span class="result-email" id="successEmail"></span>
+    <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px;">
+      A one-time <strong style="color:var(--text);">₦<span id="feeLabel">20,000</span></strong> application fee is required to activate your account. Your login credentials will be emailed to you instantly after payment.
     </p>
-    <a href="/student-login.html" class="btn-login-link">Go to Student Login →</a>
-  </div>
 
-  <!-- ── BANK PENDING ─────────────────────────────────────── -->
-  <div id="bankPendingScreen" class="result-screen">
-    <div class="result-icon blue">⏳</div>
-    <div class="result-title blue">Reference Submitted!</div>
-    <p class="result-sub">
-      Your transfer reference has been recorded. Admin will confirm your payment within <strong style="color:var(--text);">24 hours</strong> and your login details will be sent to<br>
-      <span class="result-email" id="pendingEmail"></span>
-    </p>
-    <a href="/academy.html" style="display:inline-block;background:var(--card);color:var(--muted);text-decoration:none;padding:12px 28px;border-radius:8px;font-size:14px;border:1px solid var(--border);">
-      Back to Academy
-    </a>
-  </div>
+    <!-- Paystack button -->
+    <button class="btn btn-primary" id="paystackBtn" onclick="payWithPaystack()">
+      Pay ₦<span id="feeBtnLabel">20,000</span> — Card or Bank (Paystack)
+    </button>
 
-</div><!-- /container -->
+    <!-- Bank transfer -->
+    <button class="btn btn-secondary" id="bankToggle" onclick="toggleBank()" style="margin-top:10px;">
+      Pay via Bank Transfer ▼
+    </button>
 
-<!-- ── RECEIPT ──────────────────────────────────────────────── -->
-<div id="receiptOverlay">
-  <div id="rcptDoc">
-    <div class="rcpt-hdr">
-      <div>
-        <div class="rcpt-brand-name">Goallord Creativity Academy</div>
-        <div class="rcpt-brand-addr">Onitsha, Anambra State, Nigeria<br>hello@goallordcreativity.com</div>
+    <div class="bank-panel" id="bankPanel">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5;">
+        Transfer <strong style="color:var(--orange);">₦<span id="bankFeeLabel">20,000</span></strong> to either account, then submit your reference below.
+      </p>
+      <div class="bank-grid">
+        <div class="bank-tile">
+          <div class="bank-tile-title">Account 1</div>
+          <div class="bank-tile-row">Bank: <b id="b1name">—</b></div>
+          <div class="bank-tile-row">No: <b class="num" id="b1num">—</b></div>
+          <div class="bank-tile-row">Name: <b id="b1acct">—</b></div>
+        </div>
+        <div class="bank-tile">
+          <div class="bank-tile-title">Account 2</div>
+          <div class="bank-tile-row">Bank: <b id="b2name">—</b></div>
+          <div class="bank-tile-row">No: <b class="num" id="b2num">—</b></div>
+          <div class="bank-tile-row">Name: <b id="b2acct">—</b></div>
+        </div>
       </div>
-      <div class="rcpt-word">RECEIPT</div>
+      <div class="field" style="margin-bottom:10px;">
+        <label>Transfer Reference / Teller No.</label>
+        <input type="text" id="bankRef" placeholder="e.g. TRF202603150001">
+      </div>
+      <div class="error-box" id="bankError"></div>
+      <button class="btn btn-blue" id="bankSubmitBtn" onclick="submitBankTransfer()">
+        Submit Reference →
+      </button>
     </div>
-    <div class="rcpt-meta">
-      <div class="rcpt-meta-item"><label>Receipt No.</label><strong id="rcptNumber">—</strong></div>
-      <div class="rcpt-meta-item"><label>Date</label><strong id="rcptDate">—</strong></div>
+  </div>
+
+</div><!-- /page -->
+
+
+<!-- ── RECEIPT OVERLAY ─────────────────────────────────────────── -->
+<div class="overlay" id="receiptOverlay">
+  <div class="receipt-box">
+    <div class="rh">
+      <div class="rh-brand">
+        Goallord Creativity Academy
+        <small>Onitsha, Anambra State · hello@goallordcreativity.com</small>
+      </div>
+      <div class="rh-title">RECEIPT</div>
     </div>
-    <div class="rcpt-bill-box">
+    <div class="rm">
+      <div class="rm-item"><label>Receipt No.</label><strong id="rNumber">—</strong></div>
+      <div class="rm-item"><label>Date</label><strong id="rDate">—</strong></div>
+    </div>
+    <div class="rb">
       <label>Bill To</label>
-      <div class="name" id="rcptName">—</div>
-      <div class="email" id="rcptEmail">—</div>
+      <div class="rb-name" id="rName">—</div>
+      <div class="rb-email" id="rEmail">—</div>
     </div>
-    <table class="rcpt-table">
+    <table class="rt">
       <thead><tr><th>Description</th><th style="text-align:right;">Amount</th></tr></thead>
-      <tbody>
-        <tr><td>Application Fee — Goallord Creativity Academy</td><td style="text-align:right;" id="rcptAmt">—</td></tr>
-      </tbody>
+      <tbody id="rItems"></tbody>
       <tfoot>
-        <tr class="tot"><td>Total Paid</td><td style="text-align:right;" id="rcptTotal">—</td></tr>
+        <tr class="rt-total"><td>Total Paid</td><td style="text-align:right;" id="rTotal">—</td></tr>
       </tfoot>
     </table>
-    <div class="rcpt-pay-row">
-      <div><label>Payment Method</label><strong id="rcptMethod">Paystack</strong></div>
-      <div><label>Transaction Reference</label><strong id="rcptRef">—</strong></div>
+    <div class="rp">
+      <div><label>Method</label><strong id="rMethod">—</strong></div>
+      <div><label>Reference</label><strong id="rRef">—</strong></div>
     </div>
-    <div class="rcpt-foot">
+    <div class="rf">
       Thank you for your payment — <strong>Goallord Creativity Academy</strong><br>
-      Your student account has been created. Check your email for login details.
+      Your student account is now active. Check your email for login details.
     </div>
-    <div class="rcpt-actions">
-      <button class="rcpt-btn-print" onclick="window.print()">🖨 Print / Save PDF</button>
-      <button class="rcpt-btn-login" onclick="window.location.href='/student-login.html'">Go to Student Login →</button>
+    <div class="receipt-btns">
+      <button class="rb-print" onclick="window.print()">🖨 Print / PDF</button>
+      <button class="rb-login" onclick="location.href='/student-login.html'">Go to Student Login →</button>
     </div>
+  </div>
+</div>
+
+<!-- ── BANK PENDING OVERLAY ──────────────────────────────────────── -->
+<div class="overlay" id="pendingOverlay">
+  <div class="result-box">
+    <span class="result-icon">⏳</span>
+    <div class="result-title" style="color:#93c5fd;">Reference Submitted</div>
+    <div class="result-body">
+      Your transfer reference has been recorded.<br>Admin will confirm your payment within <strong style="color:var(--text);">24 hours</strong><br>and your login details will be sent to<br>
+      <span class="result-email" id="pendingEmail">—</span>
+    </div>
+    <a href="/academy.html" style="display:inline-block;padding:12px 28px;border-radius:8px;border:1px solid var(--border);color:var(--muted);font-size:14px;text-decoration:none;">Back to Academy</a>
   </div>
 </div>
 
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
-  // ── State ──────────────────────────────────────────────────────
-  const applicantId = new URLSearchParams(location.search).get('id');
-  let cfg           = {};
-  let fees          = { application: 20000, fullTuition: 150000, monthlyTuition: 60000 };
-  let applicantEmail = '';
-  let applicantName  = '';
-  let selectedPlan   = null;
-  let paystackRef    = null;
-  let psTimer        = null; // safety timeout handle
+// ── State ───────────────────────────────────────────────────────
+const AID = new URLSearchParams(location.search).get('id');
+let fees = { application: 20000, fullTuition: 150000, monthlyTuition: 60000 };
+let pubKey = '';
+let email  = '';
+let name   = '';
+let plan   = null; // 'full' | 'monthly'
+let psRef  = null; // set when Paystack callback fires
+let psTimer = null;
 
-  const fmt = n => Number(n).toLocaleString('en-NG');
+const fmt  = n => Number(n).toLocaleString('en-NG');
+const fmtN = n => Number(n).toLocaleString('en-NG', { minimumFractionDigits: 2 });
+const addM = (d, m) => { const x = new Date(d); x.setMonth(x.getMonth() + m); return x; };
+const fmtD = d => d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
 
-  // ── Helpers: dates ─────────────────────────────────────────────
-  function addMonths(date, n) {
-    const d = new Date(date);
-    d.setMonth(d.getMonth() + n);
-    return d;
+// ── Boot ────────────────────────────────────────────────────────
+(async () => {
+  if (!AID) { crash('Invalid enrolment link. Please check your verification email.'); return; }
+
+  try {
+    const [cr, ar] = await Promise.all([
+      fetch('/api/config/public'),
+      fetch('/api/applicants/' + AID + '/payment-info')
+    ]);
+
+    if (!cr.ok) throw new Error('config');
+    const cfg = await cr.json();
+
+    pubKey = cfg.paystackPublicKey || '';
+    fees   = cfg.fees || fees;
+
+    const b1 = cfg.bank || {}, b2 = cfg.bank2 || {};
+    setText('b1name', b1.name        || '—');
+    setText('b1num',  b1.number      || '—');
+    setText('b1acct', b1.accountName || '—');
+    setText('b2name', b2.name        || '—');
+    setText('b2num',  b2.number      || '—');
+    setText('b2acct', b2.accountName || '—');
+
+    const appFmt = fmt(fees.application || 20000);
+    setText('displayFull',    '₦' + fmt(fees.fullTuition    || 150000));
+    setText('displayMonthly', '₦' + fmt(fees.monthlyTuition || 60000));
+    setText('feeLabel',    appFmt);
+    setText('feeBtnLabel', appFmt);
+    setText('bankFeeLabel', appFmt);
+
+    if (!ar.ok) {
+      const e = await ar.json().catch(() => ({}));
+      crash(e.error || 'Could not load your application. Please use the link from your verification email.');
+      return;
+    }
+    const app = await ar.json();
+    email = app.email;
+    name  = app.fullName;
+
+    setText('applicantName',    app.fullName);
+    setText('applicantMeta',    (app.track || 'Academy') + ' Programme · ' + app.email);
+    setText('applicantInitial', app.fullName.charAt(0).toUpperCase());
+    show('applicantStrip', 'flex');
+
+    if (app.applicationFeePaid) {
+      crash('Your application fee has already been paid. Please check your email for login details, or contact admin for help.');
+    }
+  } catch (e) {
+    crash('Could not load enrolment page. Please refresh or contact admin.');
   }
-  function fmtDate(d) {
-    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+})();
+
+// ── Plan selection ───────────────────────────────────────────────
+function choosePlan(p) {
+  plan = p;
+  document.getElementById('planFull').classList.toggle('active', p === 'full');
+  document.getElementById('planMonthly').classList.toggle('active', p === 'monthly');
+  renderSchedule(p);
+}
+
+function renderSchedule(p) {
+  const full    = fees.fullTuition    || 150000;
+  const monthly = fees.monthlyTuition || 60000;
+  const appFee  = fees.application    || 20000;
+  const today   = new Date();
+
+  let html = '<div class="sch-title">Your Full Payment Schedule</div>';
+
+  // Application fee row
+  html += row(
+    'Application Fee <span class="badge badge-now">Paying today</span>',
+    'One-time · confirms your enrolment',
+    '₦' + fmt(appFee), 'paid-now'
+  );
+
+  if (p === 'full') {
+    html += row(
+      'Tuition — Full Payment <span class="badge badge-dashboard">via Dashboard</span>',
+      'Due within 1 week of enrolment',
+      '₦' + fmt(full), ''
+    );
+    html += totalRow('₦' + fmt(appFee + full));
+  } else {
+    const d0 = addM(today, 0), d1 = addM(today, 1), d2 = addM(today, 2);
+    html += row(
+      '1st Instalment <span class="badge badge-soon">Due on enrolment</span>',
+      fmtD(d0),
+      '₦' + fmt(monthly), ''
+    );
+    html += row(
+      '2nd Instalment <span class="badge badge-later">Upcoming</span>',
+      fmtD(d1),
+      '₦' + fmt(monthly), ''
+    );
+    html += row(
+      '3rd Instalment <span class="badge badge-later">Upcoming</span>',
+      fmtD(d2),
+      '₦' + fmt(monthly), ''
+    );
+    html += totalRow('₦' + fmt(appFee + monthly * 3));
   }
 
-  // ── Init ──────────────────────────────────────────────────────
-  (async function init() {
-    if (!applicantId) { showError('Invalid link. Please use the link from your verification email.'); return; }
-    try {
-      const [cfgRes, appRes] = await Promise.all([
-        fetch('/api/config/public'),
-        fetch('/api/applicants/' + applicantId + '/payment-info')
-      ]);
+  html += '<p style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5;">Tuition payments are managed from your student dashboard after enrolment.</p>';
 
-      if (!cfgRes.ok) throw new Error('Config failed');
-      cfg  = await cfgRes.json();
-      fees = cfg.fees || fees;
+  const el = document.getElementById('schedule');
+  el.innerHTML = html;
+  el.classList.add('show');
+}
 
-      // Bank details
-      const b1 = cfg.bank || {}, b2 = cfg.bank2 || {};
-      document.getElementById('b1-name').textContent = b1.name        || '—';
-      document.getElementById('b1-num').textContent  = b1.number      || '—';
-      document.getElementById('b1-acct').textContent = b1.accountName || '—';
-      document.getElementById('b2-name').textContent = b2.name        || '—';
-      document.getElementById('b2-num').textContent  = b2.number      || '—';
-      document.getElementById('b2-acct').textContent = b2.accountName || '—';
+function row(label, sub, amount, amtClass) {
+  return `<div class="sch-row">
+    <div><div class="sch-label">${label}</div><div class="sch-sub">${sub}</div></div>
+    <div class="sch-amount ${amtClass}">${amount}</div>
+  </div>`;
+}
+function totalRow(total) {
+  return `<div class="sch-row total">
+    <div class="sch-label" style="font-weight:700;color:var(--text);font-size:14px;">Total Cost</div>
+    <div class="sch-amount total-amt">${total}</div>
+  </div>`;
+}
 
-      // Amount labels
-      document.getElementById('fullPriceDisplay').textContent    = '₦' + fmt(fees.fullTuition    || 150000);
-      document.getElementById('monthlyPriceDisplay').textContent = '₦' + fmt(fees.monthlyTuition || 60000);
-      const appFee = fmt(fees.application || 20000);
-      document.getElementById('feeDisplayInline').textContent = appFee;
-      document.getElementById('payBtnAmt').textContent        = appFee;
-      document.getElementById('bankAmt').textContent          = appFee;
+// ── Paystack ────────────────────────────────────────────────────
+function payWithPaystack() {
+  const errEl = document.getElementById('mainError');
+  errEl.style.display = 'none';
 
-      if (!appRes.ok) {
-        const e = await appRes.json().catch(() => ({}));
-        showError(e.error || 'Could not load your application. Please use the link from your verification email.');
-        return;
+  if (!plan) {
+    errEl.textContent   = 'Please select a tuition plan above before paying.';
+    errEl.style.display = 'block';
+    document.getElementById('planFull').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  if (typeof PaystackPop === 'undefined') {
+    errEl.innerHTML     = 'Paystack failed to load. <a href="" onclick="location.reload();return false;" style="color:var(--orange);">Refresh page</a> or use Bank Transfer below.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!pubKey) {
+    errEl.textContent   = 'Payment gateway not configured. Please use bank transfer or contact admin.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const appFee = fees.application || 20000;
+  const ref    = 'APPFEE-' + AID + '-' + Date.now();
+  const btn    = document.getElementById('paystackBtn');
+
+  let handler;
+  try {
+    handler = PaystackPop.setup({
+      key:      pubKey,
+      email:    email,
+      amount:   appFee * 100,
+      currency: 'NGN',
+      ref:      ref,
+      metadata: { applicantId: AID, plan: plan },
+
+      callback: function(response) {
+        clearTimeout(psTimer);
+        psRef = response.reference || ref;
+        spinBtn(btn, 'Activating your account…');
+        createAccount(psRef);
+      },
+
+      onClose: function() {
+        clearTimeout(psTimer);
+        if (!psRef) resetBtn(btn, 'Pay ₦' + fmt(appFee) + ' — Card or Bank (Paystack)');
       }
-      const app = await appRes.json();
-      applicantEmail = app.email;
-      applicantName  = app.fullName;
-
-      document.getElementById('applicantCard').style.display  = 'flex';
-      document.getElementById('applicantName').textContent    = app.fullName;
-      document.getElementById('applicantMeta').textContent    = (app.track || 'Academy') + ' Programme · ' + app.email;
-      document.getElementById('applicantInitial').textContent = app.fullName.charAt(0).toUpperCase();
-
-      if (app.applicationFeePaid) {
-        showError('Your application fee has already been paid. Please check your email for login details, or contact admin for help.');
-      }
-    } catch (e) {
-      showError('Could not load page. Please refresh or contact admin.');
-    }
-  })();
-
-  function showError(msg) {
-    document.getElementById('mainContainer').innerHTML =
-      '<div style="background:var(--card);border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:36px;text-align:center;max-width:480px;margin:0 auto;">' +
-      '<div style="font-size:38px;margin-bottom:14px;">⚠️</div>' +
-      '<h2 style="color:#fca5a5;font-size:17px;margin-bottom:10px;">Something went wrong</h2>' +
-      '<p style="color:var(--muted);font-size:13px;line-height:1.6;">' + msg + '</p>' +
-      '<a href="/apply.html" style="display:inline-block;margin-top:18px;color:var(--orange);font-size:13px;">← Back to Apply</a></div>';
+    });
+  } catch (e) {
+    errEl.textContent   = 'Could not initialise payment: ' + e.message + '. Please use bank transfer.';
+    errEl.style.display = 'block';
+    return;
   }
 
-  // ── Step indicator ─────────────────────────────────────────────
-  function setStep(n) {
-    for (let i = 1; i <= 3; i++) {
-      document.getElementById('sc' + i).className = i < n ? 'step-circle done' : (i === n ? 'step-circle active' : 'step-circle');
-      document.getElementById('sl' + i).className = i < n ? 'step-label done'  : (i === n ? 'step-label active'  : 'step-label');
-    }
-    for (let i = 1; i <= 2; i++) {
-      document.getElementById('line' + i).className = 'step-line' + (i < n ? ' done' : '');
-    }
-  }
+  spinBtn(btn, 'Opening payment…');
 
-  // ── Plan breakdown builder ─────────────────────────────────────
-  function buildBreakdown(plan) {
-    const today     = new Date();
-    const appFee    = fees.application    || 20000;
-    const fullFee   = fees.fullTuition    || 150000;
-    const monthly   = fees.monthlyTuition || 60000;
-    const totalTuition = plan === 'full' ? fullFee : monthly * 3;
-
-    let rows = '';
-
-    if (plan === 'full') {
-      rows = `
-        <div class="pb-row">
-          <div class="pb-label">
-            <strong>Full Tuition Payment</strong>
-            <small>Due from your dashboard after enrolment</small>
-          </div>
-          <div class="pb-amount orange">₦${fmt(fullFee)}</div>
-        </div>
-        <div class="pb-row total">
-          <div class="pb-label" style="color:var(--text);">Total Tuition</div>
-          <div class="pb-amount orange">₦${fmt(fullFee)}</div>
-        </div>`;
-    } else {
-      const d1 = addMonths(today, 0); // first month — now / when enrolled
-      const d2 = addMonths(today, 1);
-      const d3 = addMonths(today, 2);
-      rows = `
-        <div class="pb-row">
-          <div class="pb-label">
-            <strong>1st Installment <span class="pb-badge due-now">Due now</span></strong>
-            <small>Upon enrolment · ${fmtDate(d1)}</small>
-          </div>
-          <div class="pb-amount orange">₦${fmt(monthly)}</div>
-        </div>
-        <div class="pb-row">
-          <div class="pb-label">
-            <strong>2nd Installment <span class="pb-badge upcoming">Upcoming</span></strong>
-            <small>Due ${fmtDate(d2)}</small>
-          </div>
-          <div class="pb-amount">₦${fmt(monthly)}</div>
-        </div>
-        <div class="pb-row">
-          <div class="pb-label">
-            <strong>3rd Installment <span class="pb-badge upcoming">Upcoming</span></strong>
-            <small>Due ${fmtDate(d3)}</small>
-          </div>
-          <div class="pb-amount">₦${fmt(monthly)}</div>
-        </div>
-        <div class="pb-row total">
-          <div class="pb-label" style="color:var(--text);">Total Tuition</div>
-          <div class="pb-amount orange">₦${fmt(monthly * 3)}</div>
-        </div>`;
-    }
-
-    return `
-      <div class="pb-header">Payment Breakdown — ${plan === 'full' ? 'Full Payment' : 'Monthly Installments'}</div>
-      <div class="pb-row" style="background:rgba(34,197,94,.04);">
-        <div class="pb-label">
-          <strong>Application Fee <span class="pb-badge due-now">Paying now</span></strong>
-          <small>One-time · Non-refundable</small>
-        </div>
-        <div class="pb-amount green">₦${fmt(appFee)}</div>
-      </div>
-      ${rows}`;
-  }
-
-  // ── Step 2 summary builder ──────────────────────────────────────
-  function buildPaySummary(plan) {
-    const appFee  = fees.application    || 20000;
-    const fullFee = fees.fullTuition    || 150000;
-    const monthly = fees.monthlyTuition || 60000;
-    const today   = new Date();
-
-    if (plan === 'full') {
-      return `
-        <div class="ps-row highlight">
-          <div class="ps-label">Application Fee <em style="font-size:11px;color:var(--orange);">(paying today)</em></div>
-          <div class="ps-amount orange">₦${fmt(appFee)}</div>
-        </div>
-        <div class="ps-row">
-          <div class="ps-label">Tuition · Full Payment</div>
-          <div class="ps-amount">₦${fmt(fullFee)}</div>
-        </div>
-        <div class="ps-row" style="font-size:12px;color:var(--muted);">
-          <div>Tuition due from your student dashboard</div>
-          <div></div>
-        </div>`;
-    } else {
-      const d1 = fmtDate(addMonths(today, 0));
-      const d2 = fmtDate(addMonths(today, 1));
-      const d3 = fmtDate(addMonths(today, 2));
-      return `
-        <div class="ps-row highlight">
-          <div class="ps-label">Application Fee <em style="font-size:11px;color:var(--orange);">(paying today)</em></div>
-          <div class="ps-amount orange">₦${fmt(appFee)}</div>
-        </div>
-        <div class="ps-row">
-          <div class="ps-label">1st Tuition — due ${d1}</div>
-          <div class="ps-amount">₦${fmt(monthly)}</div>
-        </div>
-        <div class="ps-row">
-          <div class="ps-label">2nd Tuition — due ${d2}</div>
-          <div class="ps-amount">₦${fmt(monthly)}</div>
-        </div>
-        <div class="ps-row">
-          <div class="ps-label">3rd Tuition — due ${d3}</div>
-          <div class="ps-amount">₦${fmt(monthly)}</div>
-        </div>
-        <div class="ps-row" style="font-size:12px;color:var(--muted);">
-          <div>Tuition payments managed from your student dashboard</div>
-          <div></div>
-        </div>`;
-    }
-  }
-
-  // ── Plan selection ─────────────────────────────────────────────
-  function selectPlan(plan) {
-    selectedPlan = plan;
-    document.getElementById('plan-full').classList.toggle('selected', plan === 'full');
-    document.getElementById('plan-monthly').classList.toggle('selected', plan === 'monthly');
-    document.getElementById('continueBtn').disabled = false;
-    document.getElementById('step1Error').style.display = 'none';
-
-    // Show breakdown
-    const bd = document.getElementById('planBreakdown');
-    bd.innerHTML = buildBreakdown(plan);
-    bd.classList.add('show');
-  }
-
-  function goToPayment() {
-    if (!selectedPlan) {
-      const e = document.getElementById('step1Error');
-      e.textContent = 'Please choose a tuition plan to continue.';
-      e.style.display = 'block';
-      return;
-    }
-    // Populate step 2 summary
-    document.getElementById('paySummary').innerHTML = buildPaySummary(selectedPlan);
-
-    document.getElementById('step1').style.display = 'none';
-    document.getElementById('step2').style.display = 'block';
-    setStep(2);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function backToStep1() {
-    document.getElementById('step2').style.display = 'none';
-    document.getElementById('step1').style.display = 'block';
-    setStep(1);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  // ── Paystack ──────────────────────────────────────────────────
-  function startPaystack() {
-    const errEl = document.getElementById('step2Error');
-    const btn   = document.getElementById('paystackBtn');
-    errEl.style.display = 'none';
-
-    if (typeof PaystackPop === 'undefined') {
-      errEl.innerHTML = 'Payment gateway failed to load. Please <a href="" onclick="location.reload();return false;" style="color:var(--orange);">refresh the page</a> or use Bank Transfer below.';
+  // Safety: re-enable after 45s if popup never fires
+  psTimer = setTimeout(() => {
+    if (!psRef) {
+      resetBtn(btn, 'Pay ₦' + fmt(appFee) + ' — Card or Bank (Paystack)');
+      errEl.textContent   = 'Payment window timed out or was closed. Please try again or use bank transfer.';
       errEl.style.display = 'block';
-      return;
     }
-    if (!cfg.paystackPublicKey) {
-      errEl.textContent = 'Card payment is not configured. Please use bank transfer or contact admin.';
+  }, 45000);
+
+  try { handler.openIframe(); }
+  catch (e) {
+    clearTimeout(psTimer);
+    resetBtn(btn, 'Pay ₦' + fmt(appFee) + ' — Card or Bank (Paystack)');
+    errEl.textContent   = 'Could not open payment. Please use bank transfer.';
+    errEl.style.display = 'block';
+  }
+}
+
+async function createAccount(reference) {
+  const errEl = document.getElementById('mainError');
+  errEl.style.display = 'none';
+  const btn = document.getElementById('paystackBtn');
+
+  try {
+    const res  = await fetch('/api/applicants/' + AID + '/pay-application', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ reference, paymentPlan: plan })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      errEl.innerHTML    = (data.error || 'Account activation failed.') +
+        '<br><small>Keep this reference safe: <strong style="color:var(--orange);">' + reference + '</strong> — contact admin if needed.</small>';
       errEl.style.display = 'block';
-      return;
-    }
-    if (!applicantEmail) {
-      errEl.textContent = 'Could not load your email. Please refresh.';
-      errEl.style.display = 'block';
+      psRef = null;
+      resetBtn(btn, 'Retry Payment');
       return;
     }
 
-    const appFee = fees.application || 20000;
-    const ref    = 'APPFEE-' + applicantId + '-' + Date.now();
+    showReceipt(data.receipt, reference);
 
-    let handler;
-    try {
-      handler = PaystackPop.setup({
-        key:      cfg.paystackPublicKey,
-        email:    applicantEmail,
-        amount:   appFee * 100,
-        currency: 'NGN',
-        ref:      ref,
-        metadata: { applicantId: applicantId, type: 'application_fee', plan: selectedPlan },
+  } catch {
+    errEl.innerHTML    = 'Network error. Your payment may have gone through.' +
+      '<br><small>Reference: <strong style="color:var(--orange);">' + reference + '</strong> — please contact admin.</small>';
+    errEl.style.display = 'block';
+    psRef = null;
+    resetBtn(btn, 'Retry');
+  }
+}
 
-        // 'callback' is the correct success event in Paystack inline v1
-        callback: function(response) {
-          clearTimeout(psTimer);
-          paystackRef = response.reference || ref;
-          btn.disabled    = true;
-          btn.innerHTML   = '<span class="spinner"></span> Creating your account…';
-          activateAccount(paystackRef);
-        },
+// ── Bank transfer ────────────────────────────────────────────────
+function toggleBank() {
+  const panel = document.getElementById('bankPanel');
+  const btn   = document.getElementById('bankToggle');
+  const open  = panel.classList.toggle('show');
+  btn.textContent = open ? 'Pay via Bank Transfer ▲' : 'Pay via Bank Transfer ▼';
+}
 
-        onClose: function() {
-          clearTimeout(psTimer);
-          // Only reset if payment was NOT completed
-          if (!paystackRef) {
-            resetPayBtn();
-          }
-        }
-      });
-    } catch (e) {
-      errEl.textContent   = 'Payment setup error: ' + e.message + '. Please use bank transfer.';
+async function submitBankTransfer() {
+  const errEl = document.getElementById('bankError');
+  const ref   = document.getElementById('bankRef').value.trim();
+  errEl.style.display = 'none';
+
+  if (!plan) {
+    document.getElementById('mainError').textContent = 'Please select a tuition plan above first.';
+    document.getElementById('mainError').style.display = 'block';
+    document.getElementById('planFull').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  if (!ref) {
+    errEl.textContent = 'Please enter your transfer reference number.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('bankSubmitBtn');
+  spinBtn(btn, 'Submitting…');
+
+  try {
+    const res  = await fetch('/api/applicants/' + AID + '/bank-transfer-fee', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ reference: ref, paymentPlan: plan })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      errEl.textContent   = data.error || 'Submission failed. Please try again.';
       errEl.style.display = 'block';
+      resetBtn(btn, 'Submit Reference →');
       return;
     }
 
-    // Disable button and show spinner
-    btn.disabled    = true;
-    btn.innerHTML   = '<span class="spinner"></span> Opening payment…';
+    setText('pendingEmail', email);
+    document.getElementById('pendingOverlay').classList.add('show');
 
-    // Safety net: re-enable after 30s if nothing happens (popup blocked, etc.)
-    psTimer = setTimeout(function() {
-      if (!paystackRef) {
-        resetPayBtn();
-        errEl.textContent   = 'Payment window timed out. Please try again or use Bank Transfer.';
-        errEl.style.display = 'block';
-      }
-    }, 30000);
-
-    try {
-      handler.openIframe();
-    } catch (e) {
-      clearTimeout(psTimer);
-      resetPayBtn();
-      errEl.textContent   = 'Could not open payment window. Please use bank transfer.';
-      errEl.style.display = 'block';
-    }
+  } catch {
+    errEl.textContent   = 'Network error. Please try again.';
+    errEl.style.display = 'block';
+    resetBtn(btn, 'Submit Reference →');
   }
+}
 
-  function resetPayBtn() {
-    const btn = document.getElementById('paystackBtn');
-    btn.disabled    = false;
-    btn.textContent = 'Pay ₦' + fmt(fees.application || 20000) + ' — Card or Bank (Paystack)';
-  }
+// ── Receipt ──────────────────────────────────────────────────────
+function showReceipt(receipt, fallbackRef) {
+  const r      = receipt || {};
+  const appFee = fees.application || 20000;
+  const dateStr = r.receiptIssuedAt
+    ? new Date(r.receiptIssuedAt).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })
+    : fmtD(new Date());
 
-  async function activateAccount(reference) {
-    const errEl = document.getElementById('step2Error');
-    errEl.style.display = 'none';
+  setText('rNumber', r.receiptNumber || '—');
+  setText('rDate',   dateStr);
+  setText('rName',   r.name  || name);
+  setText('rEmail',  r.email || email);
 
-    try {
-      const res  = await fetch('/api/applicants/' + applicantId + '/pay-application', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ reference: reference, paymentPlan: selectedPlan })
-      });
-      const data = await res.json();
+  document.getElementById('rItems').innerHTML =
+    '<tr><td>Application Fee — Goallord Creativity Academy</td><td style="text-align:right;">₦' + fmtN(r.amount || appFee) + '</td></tr>';
+  setText('rTotal',  '₦' + fmtN(r.amount || appFee));
+  setText('rMethod', 'Paystack (Card / Bank)');
+  setText('rRef',    r.reference || fallbackRef || '—');
 
-      if (!res.ok) {
-        errEl.innerHTML    = (data.error || 'Could not activate account.') +
-          ' <br><small>Your payment reference: <strong style="color:var(--orange);">' + reference + '</strong> — keep this safe and contact admin if needed.</small>';
-        errEl.style.display = 'block';
-        resetPayBtn();
-        return;
-      }
+  document.getElementById('receiptOverlay').classList.add('show');
+}
 
-      showReceipt(data.receipt, reference);
+// ── Utils ────────────────────────────────────────────────────────
+function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+function show(id, d='block') { const el = document.getElementById(id); if (el) el.style.display = d; }
+function spinBtn(btn, msg) { btn.disabled = true; btn.innerHTML = '<span class="spin"></span>' + msg; }
+function resetBtn(btn, msg) { btn.disabled = false; btn.textContent = msg; }
 
-    } catch (e) {
-      errEl.innerHTML    = 'Network error while activating account.' +
-        ' <br><small>Your payment reference: <strong style="color:var(--orange);">' + reference + '</strong> — please contact admin.</small>';
-      errEl.style.display = 'block';
-      resetPayBtn();
-    }
-  }
-
-  // ── Bank transfer ─────────────────────────────────────────────
-  function toggleBank() {
-    const panel = document.getElementById('bankPanel');
-    const btn   = document.getElementById('bankToggleBtn');
-    const open  = panel.classList.toggle('open');
-    btn.textContent = open ? 'Pay via Bank Transfer ▲' : 'Pay via Bank Transfer ▼';
-  }
-
-  async function submitBank() {
-    const ref   = document.getElementById('bankRef').value.trim();
-    const errEl = document.getElementById('bankError');
-    errEl.style.display = 'none';
-    if (!ref) { errEl.textContent = 'Please enter your transfer reference.'; errEl.style.display = 'block'; return; }
-
-    const btn = document.getElementById('bankSubmitBtn');
-    btn.disabled  = true;
-    btn.innerHTML = '<span class="spinner"></span> Submitting…';
-
-    try {
-      const res  = await fetch('/api/applicants/' + applicantId + '/bank-transfer-fee', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ reference: ref, paymentPlan: selectedPlan })
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        errEl.textContent  = data.error || 'Submission failed. Please try again.';
-        errEl.style.display = 'block';
-        btn.disabled = false;
-        btn.textContent = 'Submit Reference →';
-        return;
-      }
-      document.getElementById('stepsBar').style.display      = 'none';
-      document.getElementById('applicantCard').style.display = 'none';
-      document.getElementById('step2').style.display         = 'none';
-      document.getElementById('bankPendingScreen').style.display = 'block';
-      document.getElementById('pendingEmail').textContent    = applicantEmail;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch {
-      errEl.textContent   = 'Network error. Please try again.';
-      errEl.style.display = 'block';
-      btn.disabled = false;
-      btn.textContent = 'Submit Reference →';
-    }
-  }
-
-  // ── Receipt ───────────────────────────────────────────────────
-  function showReceipt(receipt, fallbackRef) {
-    const r       = receipt || {};
-    const fmtAmt  = n => Number(n).toLocaleString('en-NG', { minimumFractionDigits: 2 });
-    const dateStr = r.receiptIssuedAt
-      ? new Date(r.receiptIssuedAt).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })
-      : fmtDate(new Date());
-
-    document.getElementById('rcptNumber').textContent = r.receiptNumber || '—';
-    document.getElementById('rcptDate').textContent   = dateStr;
-    document.getElementById('rcptName').textContent   = r.name  || applicantName;
-    document.getElementById('rcptEmail').textContent  = r.email || applicantEmail;
-    const amtStr = '₦' + fmtAmt(r.amount || fees.application || 20000);
-    document.getElementById('rcptAmt').textContent   = amtStr;
-    document.getElementById('rcptTotal').textContent = amtStr;
-    document.getElementById('rcptMethod').textContent = 'Paystack (Card / Bank)';
-    document.getElementById('rcptRef').textContent    = r.reference || fallbackRef || '—';
-
-    document.getElementById('stepsBar').style.display      = 'none';
-    document.getElementById('applicantCard').style.display = 'none';
-    document.getElementById('step1').style.display         = 'none';
-    document.getElementById('step2').style.display         = 'none';
-    document.getElementById('receiptOverlay').classList.add('show');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+function crash(msg) {
+  document.getElementById('enrollPage').innerHTML =
+    '<div style="background:var(--card);border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:40px;text-align:center;">' +
+    '<div style="font-size:40px;margin-bottom:14px;">⚠️</div>' +
+    '<h2 style="color:#fca5a5;font-size:17px;margin-bottom:10px;">Something went wrong</h2>' +
+    '<p style="color:var(--muted);font-size:13px;line-height:1.6;max-width:360px;margin:0 auto;">' + msg + '</p>' +
+    '<a href="/apply.html" style="display:inline-block;margin-top:20px;color:var(--orange);font-size:13px;">← Back to Apply</a></div>';
+}
 </script>
 </body>
 </html>
