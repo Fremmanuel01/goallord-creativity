@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const Student = require('../models/Student');
 const { requireAuth } = require('../middleware/auth');
 const { requireStudent } = require('../middleware/studentAuth');
+const { requireLecturer } = require('../middleware/lecturerAuth');
 
 const router = express.Router();
 
@@ -46,14 +47,15 @@ router.get('/me', requireStudent, async (req, res) => {
   }
 });
 
-// ── GET /api/students — admin: list all ────────────────────────
-router.get('/', requireAuth, async (req, res) => {
+// ── GET /api/students — admin or lecturer: list (lecturer restricted to batch filter) ──
+router.get('/', requireLecturer, async (req, res) => {
   try {
-    const { cohort, track, status, search, page = 1, limit = 100 } = req.query;
+    const { cohort, track, status, batch, search, page = 1, limit = 100 } = req.query;
     const filter = {};
     if (cohort) filter.cohort = cohort;
     if (track)  filter.track  = track;
     if (status) filter.status = status;
+    if (batch)  filter.batch  = batch;
     if (search) {
       const re = new RegExp(search, 'i');
       filter.$or = [{ fullName: re }, { email: re }, { phone: re }];
