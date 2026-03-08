@@ -17,6 +17,8 @@ const applicantSchema = new mongoose.Schema({
   emailVerified:       { type: Boolean, default: false },
   emailVerifyToken:    { type: String },
   emailVerifyExpires:  { type: Date },
+  applicationFeePaid:  { type: Boolean, default: false },
+  applicationFeeRef:   { type: String, default: '' },
   createdAt:           { type: Date, default: Date.now }
 });
 

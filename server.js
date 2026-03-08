@@ -15,16 +15,24 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
 // ─── API ROUTES ───────────────────────────────────────────────
-app.use('/api/auth',       require('./routes/auth'));
-app.use('/api/applicants', require('./routes/applicants'));
-app.use('/api/clients',    require('./routes/clients'));
-app.use('/api/products',   require('./routes/products'));
-app.use('/api/orders',     require('./routes/orders'));
-app.use('/api/content',    require('./routes/content'));
-app.use('/api/upload',     require('./routes/upload'));
-app.use('/api/students',   require('./routes/students'));
-app.use('/api/attendance', require('./routes/attendance'));
-app.use('/api/payments',   require('./routes/payments'));
+app.use('/api/auth',          require('./routes/auth'));
+app.use('/api/applicants',    require('./routes/applicants'));
+app.use('/api/clients',       require('./routes/clients'));
+app.use('/api/products',      require('./routes/products'));
+app.use('/api/orders',        require('./routes/orders'));
+app.use('/api/content',       require('./routes/content'));
+app.use('/api/upload',        require('./routes/upload'));
+app.use('/api/students',      require('./routes/students'));
+app.use('/api/attendance',    require('./routes/attendance'));
+app.use('/api/payments',      require('./routes/payments'));
+// Academy portal
+app.use('/api/batches',       require('./routes/batches'));
+app.use('/api/lecturers',     require('./routes/lecturers'));
+app.use('/api/materials',     require('./routes/materials'));
+app.use('/api/assignments',   require('./routes/assignments'));
+app.use('/api/flashcards',    require('./routes/flashcards'));
+app.use('/api/curriculum',    require('./routes/curriculum'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 // ─── FALLBACK: serve index.html for any unmatched GET ─────────
 app.get('*', (req, res) => {
