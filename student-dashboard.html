@@ -213,29 +213,50 @@
         </div>
       </div>
 
-      <div class="section-title">My Profile</div>
-      <div class="table-wrap" style="margin-bottom:28px;">
-        <!-- Profile photo header -->
-        <div style="display:flex;align-items:center;gap:18px;padding:20px;border-bottom:1px solid var(--border)">
-          <div style="width:72px;height:72px;border-radius:50%;background:rgba(214,106,31,0.1);border:2px solid rgba(214,106,31,0.35);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#D66A1F;flex-shrink:0;position:relative;cursor:pointer" onclick="switchTab('profile')" title="Edit profile photo">
+      <!-- ── Profile Hero Card ── -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:28px;">
+        <!-- Banner gradient -->
+        <div style="height:80px;background:linear-gradient(135deg,rgba(30,75,255,0.35) 0%,rgba(214,106,31,0.35) 100%);position:relative;">
+          <!-- Edit profile link top-right -->
+          <button onclick="switchTab('profile')" style="position:absolute;top:12px;right:14px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:5px 13px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;backdrop-filter:blur(4px);">✏️ Edit Profile</button>
+        </div>
+        <!-- Avatar + info row -->
+        <div style="padding:0 24px 24px;display:flex;align-items:flex-end;gap:20px;margin-top:-44px;flex-wrap:wrap;">
+          <!-- Avatar circle -->
+          <div onclick="switchTab('profile')" title="Upload photo" style="width:88px;height:88px;border-radius:50%;background:rgba(214,106,31,0.15);border:3px solid var(--card);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;color:#D66A1F;flex-shrink:0;position:relative;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.4)">
             <img id="ovAvatarImg" src="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;border-radius:50%;z-index:1">
-            <span id="ovAvatarInitials">—</span>
+            <span id="ovAvatarInitials" style="position:relative;z-index:0">—</span>
           </div>
-          <div>
-            <div style="font-size:16px;font-weight:700;margin-bottom:4px" id="ovProfileName">—</div>
-            <div style="font-size:13px;color:var(--muted)" id="ovProfileSub">—</div>
-            <div style="margin-top:8px">
-              <button onclick="switchTab('profile')" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Edit Profile</button>
+          <!-- Name/track/status info -->
+          <div style="padding-top:20px;flex:1;min-width:0;">
+            <div style="font-size:20px;font-weight:800;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="ovProfileName">—</div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:10px" id="ovProfileSub">—</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <span id="ovStatusBadge" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(34,197,94,0.15);color:#22c55e">Active</span>
+              <span id="ovTrackBadge" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(30,75,255,0.15);color:#6a9fff">—</span>
+              <span id="ovCohortBadge" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(214,106,31,0.12);color:#D66A1F">—</span>
             </div>
           </div>
         </div>
-        <table>
-          <tr><td style="color:var(--muted);width:40%">Full Name</td><td id="prof-name">—</td></tr>
-          <tr><td style="color:var(--muted)">Email</td><td id="prof-email">—</td></tr>
-          <tr><td style="color:var(--muted)">Track</td><td id="prof-track">—</td></tr>
-          <tr><td style="color:var(--muted)">Cohort</td><td id="prof-cohort">—</td></tr>
-          <tr><td style="color:var(--muted)">Status</td><td id="prof-status">—</td></tr>
-        </table>
+        <!-- Info grid -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0;border-top:1px solid var(--border)">
+          <div style="padding:14px 24px;border-right:1px solid var(--border)">
+            <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Email</div>
+            <div style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="prof-email">—</div>
+          </div>
+          <div style="padding:14px 24px;border-right:1px solid var(--border)">
+            <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Full Name</div>
+            <div style="font-size:13px" id="prof-name">—</div>
+          </div>
+          <div style="padding:14px 24px;border-right:1px solid var(--border)">
+            <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Track</div>
+            <div style="font-size:13px" id="prof-track">—</div>
+          </div>
+          <div style="padding:14px 24px;">
+            <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Status</div>
+            <div style="font-size:13px" id="prof-status">—</div>
+          </div>
+        </div>
       </div>
 
       <div class="section-title">Recent Attendance (Last 5)</div>
@@ -586,10 +607,15 @@
       document.getElementById('navAvatarInitials').style.display = '';
     }
 
-    // ── Overview profile header
+    // ── Overview profile hero
     document.getElementById('ovAvatarInitials').textContent = initials;
     document.getElementById('ovProfileName').textContent = s.fullName || '—';
-    document.getElementById('ovProfileSub').textContent = (s.track || '—') + ' · Cohort ' + (s.cohort || '—');
+    document.getElementById('ovProfileSub').textContent = s.email || '—';
+    document.getElementById('ovStatusBadge').textContent = s.status || 'Active';
+    document.getElementById('ovStatusBadge').style.background = s.status === 'Active' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.12)';
+    document.getElementById('ovStatusBadge').style.color = s.status === 'Active' ? '#22c55e' : '#ef4444';
+    document.getElementById('ovTrackBadge').textContent = s.track || '—';
+    document.getElementById('ovCohortBadge').textContent = 'Cohort ' + (s.cohort || '—');
     if (s.profilePicture) {
       document.getElementById('ovAvatarImg').src = s.profilePicture;
       document.getElementById('ovAvatarImg').style.display = 'block';
@@ -601,11 +627,10 @@
     document.getElementById('pageTitle').textContent = 'Welcome, ' + (s.fullName ? s.fullName.split(' ')[0] : 'Student');
     document.getElementById('pageSubtitle').textContent = s.track + ' · Cohort ' + s.cohort;
 
-    // ── Profile
+    // ── Profile info grid (in hero card)
     document.getElementById('prof-name').textContent = s.fullName || '—';
     document.getElementById('prof-email').textContent = s.email || '—';
     document.getElementById('prof-track').textContent = s.track || '—';
-    document.getElementById('prof-cohort').textContent = s.cohort || '—';
     document.getElementById('prof-status').innerHTML = '<span class="badge badge-' + (s.status === 'Active' ? 'present' : 'absent') + '">' + s.status + '</span>';
 
     // ── Attendance stats

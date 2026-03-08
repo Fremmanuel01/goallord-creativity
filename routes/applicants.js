@@ -13,7 +13,7 @@ const router = express.Router();
 // POST /api/applicants/upload-photo — public (applicant uploads profile photo before submission)
 router.post('/upload-photo', async (req, res) => {
   try {
-    const cloudinary = require('cloudinary');
+    const cloudinary = require('cloudinary').v2;
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
       api_key:    process.env.CLOUDINARY_API_KEY,
