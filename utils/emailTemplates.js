@@ -153,4 +153,78 @@ function acceptanceEmail({ fullName, track, duration, email, password, loginUrl 
 </html>`;
 }
 
-module.exports = { verificationEmail, acceptanceEmail };
+function adminNewApplicationEmail({ fullName, email, phone, track, dashboardUrl }) {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>New Application</title></head>
+<body style="margin:0;padding:0;background:#0F1115;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0F1115;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#171A21;border-radius:12px;border:1px solid #2A2F3A;overflow:hidden;max-width:600px;width:100%;">
+        <tr><td style="background:#1E4BFF;padding:24px 40px;">
+          <h1 style="margin:0;color:#ffffff;font-size:18px;font-weight:700;letter-spacing:2px;">NEW APPLICATION RECEIVED</h1>
+        </td></tr>
+        <tr><td style="padding:32px 40px;">
+          <p style="color:#A0A6B3;font-size:15px;line-height:1.6;margin:0 0 24px;">A new student has applied to Goallord Creativity Academy.</p>
+          <table width="100%" style="background:#0F1115;border-radius:8px;border:1px solid #2A2F3A;">
+            <tr><td style="padding:20px 24px;">
+              <table width="100%">
+                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;width:120px;">Name:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;font-weight:600;">${fullName}</td></tr>
+                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Email:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;">${email}</td></tr>
+                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Phone:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;">${phone || '—'}</td></tr>
+                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Track:</td><td style="padding:6px 0;color:#D66A1F;font-size:14px;font-weight:600;">${track || 'Not selected'}</td></tr>
+              </table>
+            </td></tr>
+          </table>
+          <div style="text-align:center;margin:32px 0 0;">
+            <a href="${dashboardUrl}" style="display:inline-block;background:#1E4BFF;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:6px;font-size:13px;font-weight:700;letter-spacing:1px;">VIEW IN DASHBOARD</a>
+          </div>
+        </td></tr>
+        <tr><td style="padding:20px 40px;border-top:1px solid #2A2F3A;text-align:center;">
+          <p style="color:#A0A6B3;font-size:12px;margin:0;">Goallord Creativity Limited &bull; Onitsha, Nigeria</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+function adminAcceptanceNotificationEmail({ fullName, email, track, studentId, dashboardUrl }) {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Applicant Accepted</title></head>
+<body style="margin:0;padding:0;background:#0F1115;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0F1115;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#171A21;border-radius:12px;border:1px solid #2A2F3A;overflow:hidden;max-width:600px;width:100%;">
+        <tr><td style="background:#D66A1F;padding:24px 40px;">
+          <h1 style="margin:0;color:#ffffff;font-size:18px;font-weight:700;letter-spacing:2px;">APPLICANT ACCEPTED</h1>
+        </td></tr>
+        <tr><td style="padding:32px 40px;">
+          <p style="color:#A0A6B3;font-size:15px;line-height:1.6;margin:0 0 24px;">A student account has been created and an acceptance email with login credentials has been sent to the applicant.</p>
+          <table width="100%" style="background:#0F1115;border-radius:8px;border:1px solid #2A2F3A;">
+            <tr><td style="padding:20px 24px;">
+              <table width="100%">
+                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;width:120px;">Name:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;font-weight:600;">${fullName}</td></tr>
+                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Email:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;">${email}</td></tr>
+                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Track:</td><td style="padding:6px 0;color:#D66A1F;font-size:14px;font-weight:600;">${track}</td></tr>
+                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Student ID:</td><td style="padding:6px 0;color:#F4F6FA;font-size:13px;font-family:monospace;">${studentId}</td></tr>
+              </table>
+            </td></tr>
+          </table>
+          <div style="text-align:center;margin:32px 0 0;">
+            <a href="${dashboardUrl}" style="display:inline-block;background:#D66A1F;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:6px;font-size:13px;font-weight:700;letter-spacing:1px;">VIEW IN DASHBOARD</a>
+          </div>
+        </td></tr>
+        <tr><td style="padding:20px 40px;border-top:1px solid #2A2F3A;text-align:center;">
+          <p style="color:#A0A6B3;font-size:12px;margin:0;">Goallord Creativity Limited &bull; Onitsha, Nigeria</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail };
