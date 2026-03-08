@@ -138,27 +138,32 @@ h2{color:#D66A1F;margin:0 0 16px}p{color:#A0A6B3;margin:0 0 24px}a{color:#D66A1F
 });
 
 // ── Helper: create student account from applicant ─────────────
-async function createStudentFromApplicant(applicant, paymentPlan) {
+// opts.reference    – payment reference string
+// opts.method       – 'Paystack' | 'Bank Transfer'
+// opts.tuitionPaid  – true = mark tuition as paid in same transaction
+async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
   const plainPassword = generatePassword();
   const hashed        = await bcrypt.hash(plainPassword, 12);
   const cohort        = new Date().toLocaleString('en-GB', { month: 'long', year: 'numeric' });
   const activeBatch   = await Batch.findOne({ isActive: true }).select('_id');
+  const method        = opts.method    || (applicant.applicationFeeRef ? 'Bank Transfer' : 'Paystack');
+  const reference     = opts.reference || applicant.applicationFeeRef || '';
 
   const student = await Student.create({
-    fullName:          applicant.fullName,
-    email:             applicant.email,
-    password:          hashed,
-    phone:             applicant.phone || '',
-    track:             applicant.track || 'Other',
+    fullName:           applicant.fullName,
+    email:              applicant.email,
+    password:           hashed,
+    phone:              applicant.phone || '',
+    track:              applicant.track || 'Other',
     cohort,
-    batch:             activeBatch ? activeBatch._id : undefined,
-    status:            'Active',
-    applicantRef:      applicant._id,
+    batch:              activeBatch ? activeBatch._id : undefined,
+    status:             'Active',
+    applicantRef:       applicant._id,
     applicationFeePaid: true,
-    paymentPlan:       paymentPlan === 'full' ? 'full_upfront' : 'monthly'
+    paymentPlan:        paymentPlan === 'full' ? 'full_upfront' : 'monthly'
   });
 
-  // Create application fee payment record (already paid)
+  // Application fee — always paid
   const appFee = Number(process.env.APPLICATION_FEE) || 20000;
   await Payment.create({
     student:    student._id,
@@ -166,30 +171,40 @@ async function createStudentFromApplicant(applicant, paymentPlan) {
     category:   'application_fee',
     amountDue:  appFee,
     amountPaid: appFee,
-    method:     applicant.applicationFeeRef ? 'Bank Transfer' : 'Paystack',
-    reference:  applicant.applicationFeeRef || '',
+    method, reference,
     recordedBy: 'System',
     paidAt:     new Date()
   });
 
-  // Create tuition payment records
+  // Tuition payment records
   const fullFee    = Number(process.env.FULL_TUITION_FEE)    || 150000;
   const monthlyFee = Number(process.env.MONTHLY_TUITION_FEE) || 60000;
   const now = new Date();
 
   if (paymentPlan === 'full') {
+    // Full tuition — paid upfront in same transaction
     await Payment.create({
       student: student._id, batch: activeBatch ? activeBatch._id : undefined,
-      category: 'full_tuition_payment', amountDue: fullFee, amountPaid: 0,
-      dueDate: new Date(now.getFullYear(), now.getMonth() + 1, 1),
+      category: 'full_tuition_payment', amountDue: fullFee,
+      amountPaid: opts.tuitionPaid ? fullFee : 0,
+      method:    opts.tuitionPaid ? method : '',
+      reference: opts.tuitionPaid ? reference : '',
+      paidAt:    opts.tuitionPaid ? new Date() : undefined,
+      dueDate:   new Date(now.getFullYear(), now.getMonth() + 1, 1),
       recordedBy: 'System'
     });
   } else {
+    // Monthly — 1st instalment paid now, 2nd and 3rd pending
     for (let i = 1; i <= 3; i++) {
+      const isFirst = i === 1;
       await Payment.create({
         student: student._id, batch: activeBatch ? activeBatch._id : undefined,
-        category: `tuition_month_${i}`, amountDue: monthlyFee, amountPaid: 0,
-        dueDate: new Date(now.getFullYear(), now.getMonth() + i, 1),
+        category: `tuition_month_${i}`, amountDue: monthlyFee,
+        amountPaid: (opts.tuitionPaid && isFirst) ? monthlyFee : 0,
+        method:    (opts.tuitionPaid && isFirst) ? method : '',
+        reference: (opts.tuitionPaid && isFirst) ? reference : '',
+        paidAt:    (opts.tuitionPaid && isFirst) ? new Date() : undefined,
+        dueDate:   new Date(now.getFullYear(), now.getMonth() + i, 1),
         recordedBy: 'System'
       });
     }
@@ -262,9 +277,15 @@ router.post('/:id/pay-application', async (req, res) => {
     if (!psData.data || psData.data.status !== 'success')
       return res.status(400).json({ error: 'Payment verification failed. Please try again.' });
 
-    const appFee = Number(process.env.APPLICATION_FEE) || 20000;
-    if (psData.data.amount / 100 < appFee)
-      return res.status(400).json({ error: `Amount paid (₦${psData.data.amount / 100}) is less than application fee (₦${appFee})` });
+    const appFee     = Number(process.env.APPLICATION_FEE)    || 20000;
+    const fullFee    = Number(process.env.FULL_TUITION_FEE)   || 150000;
+    const monthlyFee = Number(process.env.MONTHLY_TUITION_FEE)|| 60000;
+    const tuitionNow = paymentPlan === 'full' ? fullFee : monthlyFee;
+    const totalExpected = appFee + tuitionNow;
+    const amountPaid    = psData.data.amount / 100;
+
+    if (amountPaid < totalExpected)
+      return res.status(400).json({ error: `Amount paid (₦${amountPaid.toLocaleString()}) is less than required total (₦${totalExpected.toLocaleString()})` });
 
     // Mark fee paid
     applicant.applicationFeePaid = true;
@@ -272,10 +293,12 @@ router.post('/:id/pay-application', async (req, res) => {
     applicant.status             = 'Accepted';
     await applicant.save();
 
-    // Create student account
-    const student = await createStudentFromApplicant(applicant, paymentPlan);
+    // Create student account — tuition also marked paid in same transaction
+    const student = await createStudentFromApplicant(applicant, paymentPlan, {
+      tuitionPaid: true, reference, method: 'Paystack'
+    });
 
-    // Fetch app fee payment for receipt data
+    // Fetch app fee payment for receipt number
     const appFeePayment = await Payment.findOne({ student: student._id, category: 'application_fee' });
 
     res.json({
@@ -284,9 +307,12 @@ router.post('/:id/pay-application', async (req, res) => {
       receipt: {
         receiptNumber:   appFeePayment ? appFeePayment.receiptNumber   : '',
         receiptIssuedAt: appFeePayment ? appFeePayment.receiptIssuedAt : new Date(),
-        name:      applicant.fullName,
-        email:     applicant.email,
-        amount:    appFee,
+        name:         applicant.fullName,
+        email:        applicant.email,
+        appFee,
+        tuitionAmount: tuitionNow,
+        tuitionLabel:  paymentPlan === 'full' ? 'Full Tuition Payment' : 'Tuition — 1st Instalment',
+        totalAmount:   amountPaid,
         reference
       }
     });
@@ -334,7 +360,12 @@ router.post('/:id/confirm-fee', requireAuth, async (req, res) => {
     const existing = await Student.findOne({ email: applicant.email });
     if (existing) return res.status(400).json({ error: 'Student account already exists for this email' });
 
-    const student = await createStudentFromApplicant(applicant, paymentPlan);
+    // Bank transfer covers full amount (app fee + tuition) — mark both as paid
+    const student = await createStudentFromApplicant(applicant, paymentPlan, {
+      tuitionPaid: true,
+      reference:   applicant.applicationFeeRef,
+      method:      'Bank Transfer'
+    });
     res.json({ success: true, studentId: student._id });
   } catch (err) {
     console.error('confirm-fee error:', err);

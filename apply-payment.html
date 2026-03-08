@@ -254,8 +254,8 @@ body {
     </p>
 
     <!-- Paystack button -->
-    <button class="btn btn-primary" id="paystackBtn" onclick="payWithPaystack()">
-      Pay ₦<span id="feeBtnLabel">20,000</span> — Card or Bank (Paystack)
+    <button class="btn btn-primary" id="paystackBtn" onclick="payWithPaystack()" disabled>
+      ← Select a plan above to continue
     </button>
 
     <!-- Bank transfer -->
@@ -390,12 +390,9 @@ const fmtD = d => d.toLocaleDateString('en-GB', { day:'numeric', month:'short', 
     setText('b2num',  b2.number      || '—');
     setText('b2acct', b2.accountName || '—');
 
-    const appFmt = fmt(fees.application || 20000);
     setText('displayFull',    '₦' + fmt(fees.fullTuition    || 150000));
     setText('displayMonthly', '₦' + fmt(fees.monthlyTuition || 60000));
-    setText('feeLabel',    appFmt);
-    setText('feeBtnLabel', appFmt);
-    setText('bankFeeLabel', appFmt);
+    // Payment button labels updated when plan is chosen
 
     if (!ar.ok) {
       const e = await ar.json().catch(() => ({}));
@@ -425,6 +422,19 @@ function choosePlan(p) {
   document.getElementById('planFull').classList.toggle('active', p === 'full');
   document.getElementById('planMonthly').classList.toggle('active', p === 'monthly');
   renderSchedule(p);
+
+  // Update payment button to show combined amount
+  const appFee  = fees.application    || 20000;
+  const full    = fees.fullTuition    || 150000;
+  const monthly = fees.monthlyTuition || 60000;
+  const total   = p === 'full' ? appFee + full : appFee + monthly;
+  const bankTotal = total;
+
+  setText('paystackBtn', 'Pay ₦' + fmt(total) + ' Now — Card or Bank (Paystack)');
+  document.getElementById('paystackBtn').disabled = false;
+  setText('feeLabel',    fmt(appFee));
+  setText('feeBtnLabel', fmt(total));
+  setText('bankFeeLabel', fmt(bankTotal));
 }
 
 function renderSchedule(p) {
@@ -433,43 +443,46 @@ function renderSchedule(p) {
   const appFee  = fees.application    || 20000;
   const today   = new Date();
 
-  let html = '<div class="sch-title">Your Full Payment Schedule</div>';
-
-  // Application fee row
-  html += row(
-    'Application Fee <span class="badge badge-now">Paying today</span>',
-    'One-time · confirms your enrolment',
-    '₦' + fmt(appFee), 'paid-now'
-  );
+  let html = '<div class="sch-title">Complete Payment Breakdown</div>';
 
   if (p === 'full') {
+    const total = appFee + full;
     html += row(
-      'Tuition — Full Payment <span class="badge badge-dashboard">via Dashboard</span>',
-      'Due within 1 week of enrolment',
-      '₦' + fmt(full), ''
+      'Application Fee <span class="badge badge-now">Included</span>',
+      'One-time enrolment fee',
+      '₦' + fmt(appFee), 'paid-now'
     );
-    html += totalRow('₦' + fmt(appFee + full));
-  } else {
-    const d0 = addM(today, 0), d1 = addM(today, 1), d2 = addM(today, 2);
     html += row(
-      '1st Instalment <span class="badge badge-soon">Due on enrolment</span>',
-      fmtD(d0),
-      '₦' + fmt(monthly), ''
+      'Full Tuition <span class="badge badge-now">Included</span>',
+      'Entire course · paid in full today',
+      '₦' + fmt(full), 'paid-now'
+    );
+    html += totalRow('₦' + fmt(total), 'Pay once, nothing more due');
+  } else {
+    const d1 = addM(today, 1), d2 = addM(today, 2);
+    const firstTotal = appFee + monthly;
+    html += row(
+      'Application Fee <span class="badge badge-now">Included</span>',
+      'One-time enrolment fee',
+      '₦' + fmt(appFee), 'paid-now'
+    );
+    html += row(
+      '1st Tuition Instalment <span class="badge badge-now">Included</span>',
+      'First month of tuition · paid today',
+      '₦' + fmt(monthly), 'paid-now'
     );
     html += row(
       '2nd Instalment <span class="badge badge-later">Upcoming</span>',
-      fmtD(d1),
+      'Due ' + fmtD(d1) + ' · from your dashboard',
       '₦' + fmt(monthly), ''
     );
     html += row(
       '3rd Instalment <span class="badge badge-later">Upcoming</span>',
-      fmtD(d2),
+      'Due ' + fmtD(d2) + ' · from your dashboard',
       '₦' + fmt(monthly), ''
     );
-    html += totalRow('₦' + fmt(appFee + monthly * 3));
+    html += totalRow('₦' + fmt(firstTotal), 'Due today — remaining via dashboard');
   }
-
-  html += '<p style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5;">Tuition payments are managed from your student dashboard after enrolment.</p>';
 
   const el = document.getElementById('schedule');
   el.innerHTML = html;
@@ -482,9 +495,9 @@ function row(label, sub, amount, amtClass) {
     <div class="sch-amount ${amtClass}">${amount}</div>
   </div>`;
 }
-function totalRow(total) {
+function totalRow(total, sub) {
   return `<div class="sch-row total">
-    <div class="sch-label" style="font-weight:700;color:var(--text);font-size:14px;">Total Cost</div>
+    <div><div class="sch-label" style="font-weight:700;color:var(--text);font-size:14px;">Due Today</div>${sub ? '<div class="sch-sub">' + sub + '</div>' : ''}</div>
     <div class="sch-amount total-amt">${total}</div>
   </div>`;
 }
@@ -511,8 +524,10 @@ function payWithPaystack() {
     return;
   }
 
-  const appFee = fees.application || 20000;
-  const ref    = 'APPFEE-' + AID + '-' + Date.now();
+  const appFee     = fees.application    || 20000;
+  const tuitionNow = plan === 'full' ? (fees.fullTuition || 150000) : (fees.monthlyTuition || 60000);
+  const totalCharge = appFee + tuitionNow;
+  const ref    = 'ENROL-' + AID + '-' + Date.now();
   const btn    = document.getElementById('paystackBtn');
 
   let handler;
@@ -520,7 +535,7 @@ function payWithPaystack() {
     handler = PaystackPop.setup({
       key:      pubKey,
       email:    email,
-      amount:   appFee * 100,
+      amount:   totalCharge * 100,
       currency: 'NGN',
       ref:      ref,
       metadata: { applicantId: AID, plan: plan },
@@ -534,7 +549,7 @@ function payWithPaystack() {
 
       onClose: function() {
         clearTimeout(psTimer);
-        if (!psRef) resetBtn(btn, 'Pay ₦' + fmt(appFee) + ' — Card or Bank (Paystack)');
+        if (!psRef) resetBtn(btn, 'Pay ₦' + fmt(totalCharge) + ' Now — Card or Bank (Paystack)');
       }
     });
   } catch (e) {
@@ -548,7 +563,7 @@ function payWithPaystack() {
   // Safety: re-enable after 45s if popup never fires
   psTimer = setTimeout(() => {
     if (!psRef) {
-      resetBtn(btn, 'Pay ₦' + fmt(appFee) + ' — Card or Bank (Paystack)');
+      resetBtn(btn, 'Pay ₦' + fmt(totalCharge) + ' Now — Card or Bank (Paystack)');
       errEl.textContent   = 'Payment window timed out or was closed. Please try again or use bank transfer.';
       errEl.style.display = 'block';
     }
@@ -578,21 +593,22 @@ async function createAccount(reference) {
 
     if (!res.ok) {
       errEl.innerHTML    = (data.error || 'Account activation failed.') +
-        '<br><small>Keep this reference safe: <strong style="color:var(--orange);">' + reference + '</strong> — contact admin if needed.</small>';
+        '<br><small>Your payment reference: <strong style="color:var(--orange);">' + reference + '</strong> — contact admin if needed.</small>';
       errEl.style.display = 'block';
       psRef = null;
-      resetBtn(btn, 'Retry Payment');
+      resetBtn(btn, 'Retry →');
       return;
     }
 
+    // Show receipt automatically — no extra click needed
     showReceipt(data.receipt, reference);
 
   } catch {
     errEl.innerHTML    = 'Network error. Your payment may have gone through.' +
-      '<br><small>Reference: <strong style="color:var(--orange);">' + reference + '</strong> — please contact admin.</small>';
+      '<br><small>Reference: <strong style="color:var(--orange);">' + reference + '</strong> — contact admin.</small>';
     errEl.style.display = 'block';
     psRef = null;
-    resetBtn(btn, 'Retry');
+    resetBtn(btn, 'Retry →');
   }
 }
 
@@ -651,8 +667,12 @@ async function submitBankTransfer() {
 
 // ── Receipt ──────────────────────────────────────────────────────
 function showReceipt(receipt, fallbackRef) {
-  const r      = receipt || {};
-  const appFee = fees.application || 20000;
+  const r       = receipt || {};
+  const appFee  = r.appFee       || fees.application    || 20000;
+  const tuition = r.tuitionAmount|| (plan === 'full' ? (fees.fullTuition || 150000) : (fees.monthlyTuition || 60000));
+  const total   = r.totalAmount  || (appFee + tuition);
+  const tuLabel = r.tuitionLabel || (plan === 'full' ? 'Full Tuition Payment' : 'Tuition — 1st Instalment');
+
   const dateStr = r.receiptIssuedAt
     ? new Date(r.receiptIssuedAt).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })
     : fmtD(new Date());
@@ -662,9 +682,12 @@ function showReceipt(receipt, fallbackRef) {
   setText('rName',   r.name  || name);
   setText('rEmail',  r.email || email);
 
+  // Two line items
   document.getElementById('rItems').innerHTML =
-    '<tr><td>Application Fee — Goallord Creativity Academy</td><td style="text-align:right;">₦' + fmtN(r.amount || appFee) + '</td></tr>';
-  setText('rTotal',  '₦' + fmtN(r.amount || appFee));
+    '<tr><td>Application Fee</td><td style="text-align:right;">₦' + fmtN(appFee) + '</td></tr>' +
+    '<tr><td>' + tuLabel + '</td><td style="text-align:right;">₦' + fmtN(tuition) + '</td></tr>';
+
+  setText('rTotal',  '₦' + fmtN(total));
   setText('rMethod', 'Paystack (Card / Bank)');
   setText('rRef',    r.reference || fallbackRef || '—');
 
