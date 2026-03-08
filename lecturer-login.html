@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecturer Portal — Goallord Academy</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --orange: #D66A1F; --blue: #1E4BFF;
+    --bg: #0F1115; --card: #171A21; --border: #2A2F3A;
+    --text: #F4F6FA; --muted: #A0A6B3;
+  }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+  .brand-panel {
+    flex: 0 0 55%; background: linear-gradient(135deg, #0a0c10 0%, #0F1115 40%, #040d1a 100%);
+    display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+    padding: 60px 72px; position: relative; overflow: hidden;
+  }
+  .brand-panel::before {
+    content: ''; position: absolute; top: -200px; left: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(214,106,31,0.16) 0%, transparent 70%); pointer-events: none;
+  }
+  .brand-logo { display: flex; align-items: center; gap: 14px; margin-bottom: 64px; position: relative; z-index: 1; }
+  .brand-logo .logo-mark { width: 48px; height: 48px; background: var(--orange); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; color: #fff; }
+  .brand-logo .logo-name { font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.2; }
+  .brand-logo .logo-name span { display: block; font-size: 11px; font-weight: 400; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .brand-headline { position: relative; z-index: 1; }
+  .brand-headline h1 { font-size: clamp(30px, 3.5vw, 48px); font-weight: 800; line-height: 1.1; margin-bottom: 20px; }
+  .brand-headline h1 em { font-style: normal; background: linear-gradient(90deg, #D66A1F, #f0872a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .brand-headline p { font-size: 16px; color: var(--muted); line-height: 1.7; max-width: 400px; margin-bottom: 48px; }
+  .features { display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 1; }
+  .feature-item { display: flex; align-items: center; gap: 12px; }
+  .feature-icon { width: 36px; height: 36px; background: rgba(214,106,31,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--orange); font-size: 16px; flex-shrink: 0; }
+  .feature-text { font-size: 14px; color: var(--muted); }
+  .login-panel { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 48px; }
+  .login-box { width: 100%; max-width: 400px; }
+  .login-box h2 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+  .login-box .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 40px; }
+  .form-group { margin-bottom: 20px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+  .form-group input { width: 100%; padding: 13px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 15px; outline: none; transition: border-color 0.2s; }
+  .form-group input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(214,106,31,0.15); }
+  .form-group input::placeholder { color: #4a5060; }
+  .btn-login { width: 100%; padding: 15px; background: var(--orange); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.2s; }
+  .btn-login:hover { opacity: 0.9; }
+  .btn-login:disabled { opacity: 0.5; cursor: not-allowed; }
+  .error-msg { background: rgba(220,60,60,0.12); border: 1px solid rgba(220,60,60,0.3); border-radius: 8px; padding: 12px 16px; color: #ff7070; font-size: 13px; margin-bottom: 20px; display: none; }
+  .back-link { text-align: center; margin-top: 28px; font-size: 13px; color: var(--muted); }
+  .back-link a { color: var(--orange); text-decoration: none; font-weight: 600; }
+  @media (max-width: 768px) { body { flex-direction: column; } .brand-panel { flex: none; padding: 40px 28px 32px; } .login-panel { padding: 32px 24px; } }
+</style>
+</head>
+<body>
+
+<div class="brand-panel">
+  <div class="brand-logo">
+    <div class="logo-mark">GL</div>
+    <div class="logo-name">
+      Goallord Academy
+      <span>Lecturer Portal</span>
+    </div>
+  </div>
+  <div class="brand-headline">
+    <h1>Teach.<br><em>Inspire.</em></h1>
+    <p>Manage your materials, assignments, flashcards, and student attendance — all in one place.</p>
+  </div>
+  <div class="features">
+    <div class="feature-item">
+      <div class="feature-icon">📚</div>
+      <div class="feature-text">Upload and publish study materials</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">📝</div>
+      <div class="feature-text">Create and grade assignments</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">🃏</div>
+      <div class="feature-text">Build interactive flashcard quizzes</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">✅</div>
+      <div class="feature-text">Take attendance and track progress</div>
+    </div>
+  </div>
+</div>
+
+<div class="login-panel">
+  <div class="login-box">
+    <h2>Lecturer Sign In</h2>
+    <p class="subtitle">Sign in with your lecturer credentials.</p>
+    <div class="error-msg" id="errorMsg"></div>
+    <form onsubmit="doLogin(event)">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="emailInput" placeholder="your@email.com" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="passwordInput" placeholder="Your password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn-login" id="loginBtn">Sign In</button>
+    </form>
+    <div class="back-link"><a href="index.html">← Back to website</a></div>
+  </div>
+</div>
+
+<script>
+  const TOKEN_KEY = 'gl_lecturer_token';
+  const LEC_KEY   = 'gl_lecturer';
+
+  if (localStorage.getItem(TOKEN_KEY)) window.location.href = 'lecturer-dashboard.html';
+
+  async function doLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    const err = document.getElementById('errorMsg');
+    err.style.display = 'none';
+    btn.disabled = true; btn.textContent = 'Signing in…';
+
+    try {
+      const res = await fetch('/api/lecturers/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email:    document.getElementById('emailInput').value.trim(),
+          password: document.getElementById('passwordInput').value
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) { err.textContent = data.error || 'Login failed.'; err.style.display = 'block'; }
+      else {
+        localStorage.setItem(TOKEN_KEY, data.token);
+        localStorage.setItem(LEC_KEY, JSON.stringify(data.lecturer));
+        window.location.href = 'lecturer-dashboard.html';
+      }
+    } catch {
+      err.textContent = 'Network error. Please try again.';
+      err.style.display = 'block';
+    }
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+</script>
+</body>
+</html>
