@@ -5,7 +5,7 @@ const Applicant = require('../models/Applicant');
 const Student   = require('../models/Student');
 const { requireAuth } = require('../middleware/auth');
 const { sendMail }    = require('../utils/mailer');
-const { verificationEmail, acceptanceEmail } = require('../utils/emailTemplates');
+const { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail } = require('../utils/emailTemplates');
 
 const router = express.Router();
 
@@ -49,7 +49,24 @@ router.post('/', async (req, res) => {
       });
     } catch (mailErr) {
       console.error('Verification email failed:', mailErr.message);
-      // Don't block the applicant — log but continue
+    }
+
+    // Notify admin of new application
+    const host = process.env.HOST || `${req.protocol}://${req.get('host')}`;
+    try {
+      await sendMail({
+        to:      process.env.EMAIL_FROM,
+        subject: `New application: ${applicant.fullName} — ${applicant.track || 'No track'}`,
+        html:    adminNewApplicationEmail({
+          fullName:     applicant.fullName,
+          email:        applicant.email,
+          phone:        applicant.phone,
+          track:        applicant.track,
+          dashboardUrl: `${host}/dashboard.html`
+        })
+      });
+    } catch (mailErr) {
+      console.error('Admin notification failed:', mailErr.message);
     }
 
     res.status(201).json({ success: true, id: applicant._id, emailSent: true });
@@ -176,6 +193,23 @@ router.patch('/:id', requireAuth, async (req, res) => {
           });
         } catch (mailErr) {
           console.error('Acceptance email failed:', mailErr.message);
+        }
+
+        // Notify admin of acceptance
+        try {
+          await sendMail({
+            to:      process.env.EMAIL_FROM,
+            subject: `Accepted: ${doc.fullName} — ${doc.track || 'Other'}`,
+            html:    adminAcceptanceNotificationEmail({
+              fullName:     doc.fullName,
+              email:        doc.email,
+              track:        doc.track || 'Other',
+              studentId:    student._id.toString(),
+              dashboardUrl: `${host}/dashboard.html`
+            })
+          });
+        } catch (mailErr) {
+          console.error('Admin acceptance notification failed:', mailErr.message);
         }
 
         return res.json({ ...doc.toObject(), studentCreated: true, studentId: student._id });
