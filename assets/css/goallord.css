@@ -703,11 +703,16 @@ body {
     border: 1px solid rgba(214,106,31,0.25);
     border-left: 4px solid var(--gl-orange);
     border-radius: 20px;
-    padding: 56px 60px 48px;
-    margin: 40px auto 56px;
-    max-width: 900px;
+    padding: 44px 52px 36px;
+    margin: 32px auto 0;
+    max-width: 800px;
     overflow: hidden;
     box-shadow: 0 4px 60px rgba(214,106,31,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.gl-tes-hero.is-fading {
+    opacity: 0;
+    transform: translateY(10px);
 }
 .gl-tes-qmark {
     font-family: Georgia, 'Times New Roman', serif;
@@ -820,6 +825,60 @@ body {
     display: flex;
     flex-direction: column;
     gap: 2px;
+}
+
+/* ── Avatar selector row ── */
+.gl-tes-avatars {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    margin-top: 28px;
+    overflow-x: auto;
+    padding: 8px 0 4px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.gl-tes-avatars::-webkit-scrollbar { display: none; }
+
+.gl-tes-av-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    border-radius: 50%;
+    outline: none;
+    position: relative;
+}
+.gl-tes-av-btn::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    transition: border-color 0.3s ease;
+    pointer-events: none;
+}
+.gl-tes-av-btn.is-active::after {
+    border-color: var(--gl-orange);
+}
+.gl-tes-avatar--md,
+.gl-tes-avatar--md img { width: 52px; height: 52px; }
+
+.gl-tes-av-btn .gl-tes-avatar {
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.25s ease,
+                box-shadow 0.25s ease;
+    opacity: 0.45;
+    border-color: transparent;
+}
+.gl-tes-av-btn:hover .gl-tes-avatar,
+.gl-tes-av-btn.is-active .gl-tes-avatar {
+    opacity: 1;
+    transform: scale(1.18);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    border-color: var(--gl-orange);
 }
 
 /* ── Stats band ── */

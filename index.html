@@ -2034,21 +2034,15 @@
 
 
         <!-- Stats & Testimonials -->
-        <section class="section-testimonial flat-spacing tf-btn-swiper-main">
+        <section class="section-testimonial flat-spacing">
 
             <div class="container">
                 <h6 class="mini-title text-caption text-white-64 text-center">
                     TRUSTED BY FOUNDERS &amp; BUSINESSES
                 </h6>
 
-                <!-- Section heading -->
-                <div class="gl-tes-heading">
-                    <h2 class="gl-tes-title">What Our Clients Say</h2>
-                    <p class="gl-tes-subtitle">Real results. Real people. Here's what they tell us.</p>
-                </div>
-
-                <!-- Featured Hero Quote -->
-                <div class="gl-tes-hero">
+                <!-- Featured Quote Card -->
+                <div class="gl-tes-hero" id="glTesHero">
                     <span class="gl-tes-qmark" aria-hidden="true">&#10077;</span>
                     <div class="gl-tes-hero-badge">&#9733; Featured Review</div>
                     <blockquote class="gl-tes-hero-text" id="glTesFeaturedText">
@@ -2066,119 +2060,38 @@
                     </div>
                 </div>
 
-                <!-- More reviews label -->
-                <p class="gl-tes-more-label">More from our clients</p>
-            </div>
-
-            <!-- Testimonial Carousel -->
-            <div dir="ltr" class="swiper tf-swiper swiper-testimonial" data-preview="2.59" data-tablet="2.2" data-mobile-sm="1.5" data-mobile="1.2"
-                data-loop="true" data-center="true" data-space-lg="40" data-space-md="30" data-space="15" data-init="1">
-                <div class="swiper-wrapper">
-                    <!-- Testimonial 2 -->
-                    <div class="swiper-slide">
-                        <div class="gl-tes-card">
-                            <div class="gl-tes-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                            <p class="gl-tes-text">"Our Shopify store was beautifully designed and set up perfectly. Sales went up 40% in the first month. Goallord delivered exactly what they promised — on time and on budget."</p>
-                            <div class="gl-tes-author">
-                                <div class="gl-tes-avatar gl-tes-avatar--sm">
-                                    <img loading="lazy" width="44" height="44" src="assets/images/section/tes-2.jpg" alt="Ngozi Adeleke">
-                                </div>
-                                <div>
-                                    <strong class="gl-tes-name">Ngozi Adeleke</strong>
-                                    <span class="gl-tes-role">Founder, StyleHaus Lagos</span>
-                                </div>
-                            </div>
+                <!-- Avatar Selector Row -->
+                <div class="gl-tes-avatars" role="tablist" aria-label="Select a testimonial" id="glTesAvatars">
+                    <button class="gl-tes-av-btn is-active" data-idx="0" role="tab" aria-selected="true" title="Chukwuemeka Obi">
+                        <div class="gl-tes-avatar gl-tes-avatar--md">
+                            <img loading="lazy" width="52" height="52" src="assets/images/section/tes-1.jpg" alt="Chukwuemeka Obi">
                         </div>
-                    </div>
-                    <!-- Testimonial 3 -->
-                    <div class="swiper-slide">
-                        <div class="gl-tes-card">
-                            <div class="gl-tes-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                            <p class="gl-tes-text">"They built our web app MVP in 6 weeks. Clean code, great UX, and the team was easy to work with throughout. We've since signed them on for maintenance and ongoing development."</p>
-                            <div class="gl-tes-author">
-                                <div class="gl-tes-avatar gl-tes-avatar--sm">
-                                    <img loading="lazy" width="44" height="44" src="assets/images/section/tes-3.jpg" alt="Daniel Eze">
-                                </div>
-                                <div>
-                                    <strong class="gl-tes-name">Daniel Eze</strong>
-                                    <span class="gl-tes-role">Director, TechBridge Fintech, Enugu</span>
-                                </div>
-                            </div>
+                    </button>
+                    <button class="gl-tes-av-btn" data-idx="1" role="tab" aria-selected="false" title="Ngozi Adeleke">
+                        <div class="gl-tes-avatar gl-tes-avatar--md">
+                            <img loading="lazy" width="52" height="52" src="assets/images/section/tes-2.jpg" alt="Ngozi Adeleke">
                         </div>
-                    </div>
-                    <!-- Testimonial 4 -->
-                    <div class="swiper-slide">
-                        <div class="gl-tes-card">
-                            <div class="gl-tes-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                            <p class="gl-tes-text">"The school website Goallord built for us is outstanding. Parents love it, registration went fully online, and we look credible. Worth every naira — highly recommended."</p>
-                            <div class="gl-tes-author">
-                                <div class="gl-tes-avatar gl-tes-avatar--sm">
-                                    <img loading="lazy" width="44" height="44" src="assets/images/section/tes-2.jpg" alt="Amaka Nwosu">
-                                </div>
-                                <div>
-                                    <strong class="gl-tes-name">Amaka Nwosu</strong>
-                                    <span class="gl-tes-role">Principal, Starlight Academy, Awka</span>
-                                </div>
-                            </div>
+                    </button>
+                    <button class="gl-tes-av-btn" data-idx="2" role="tab" aria-selected="false" title="Daniel Eze">
+                        <div class="gl-tes-avatar gl-tes-avatar--md">
+                            <img loading="lazy" width="52" height="52" src="assets/images/section/tes-3.jpg" alt="Daniel Eze">
                         </div>
-                    </div>
-                    <!-- Testimonial 5 -->
-                    <div class="swiper-slide">
-                        <div class="gl-tes-card">
-                            <div class="gl-tes-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                            <p class="gl-tes-text">"Our Google ranking jumped from page 5 to page 1 for key search terms in Abuja. The SEO work and new website design from Goallord have been a game-changer for our workshop."</p>
-                            <div class="gl-tes-author">
-                                <div class="gl-tes-avatar gl-tes-avatar--sm">
-                                    <img loading="lazy" width="44" height="44" src="assets/images/section/tes-1.jpg" alt="Seun Balogun">
-                                </div>
-                                <div>
-                                    <strong class="gl-tes-name">Seun Balogun</strong>
-                                    <span class="gl-tes-role">Founder, QuickFix Auto, Abuja</span>
-                                </div>
-                            </div>
+                    </button>
+                    <button class="gl-tes-av-btn" data-idx="3" role="tab" aria-selected="false" title="Amaka Nwosu">
+                        <div class="gl-tes-avatar gl-tes-avatar--md">
+                            <img loading="lazy" width="52" height="52" src="assets/images/section/tes-2.jpg" alt="Amaka Nwosu">
                         </div>
-                    </div>
-                    <!-- Testimonial 6 -->
-                    <div class="swiper-slide">
-                        <div class="gl-tes-card">
-                            <div class="gl-tes-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                            <p class="gl-tes-text">"Goallord built our patient portal and booking system from scratch. It's been running flawlessly since launch. The team has deep technical knowledge and excellent communication."</p>
-                            <div class="gl-tes-author">
-                                <div class="gl-tes-avatar gl-tes-avatar--sm">
-                                    <img loading="lazy" width="44" height="44" src="assets/images/section/tes-3.jpg" alt="Ifeoma Chime">
-                                </div>
-                                <div>
-                                    <strong class="gl-tes-name">Ifeoma Chime</strong>
-                                    <span class="gl-tes-role">MD, Chime Medical Centre, Onitsha</span>
-                                </div>
-                            </div>
+                    </button>
+                    <button class="gl-tes-av-btn" data-idx="4" role="tab" aria-selected="false" title="Seun Balogun">
+                        <div class="gl-tes-avatar gl-tes-avatar--md">
+                            <img loading="lazy" width="52" height="52" src="assets/images/section/tes-1.jpg" alt="Seun Balogun">
                         </div>
-                    </div>
-                    <!-- Testimonial 1 (carousel repeat) -->
-                    <div class="swiper-slide">
-                        <div class="gl-tes-card">
-                            <div class="gl-tes-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                            <p class="gl-tes-text">"Goallord transformed our outdated website into a lead-generating machine. Within 3 months of launch, our online enquiries tripled."</p>
-                            <div class="gl-tes-author">
-                                <div class="gl-tes-avatar gl-tes-avatar--sm">
-                                    <img loading="lazy" width="44" height="44" src="assets/images/section/tes-1.jpg" alt="Chukwuemeka Obi">
-                                </div>
-                                <div>
-                                    <strong class="gl-tes-name">Chukwuemeka Obi</strong>
-                                    <span class="gl-tes-role">CEO, Obi Agro Supplies, Onitsha</span>
-                                </div>
-                            </div>
+                    </button>
+                    <button class="gl-tes-av-btn" data-idx="5" role="tab" aria-selected="false" title="Ifeoma Chime">
+                        <div class="gl-tes-avatar gl-tes-avatar--md">
+                            <img loading="lazy" width="52" height="52" src="assets/images/section/tes-3.jpg" alt="Ifeoma Chime">
                         </div>
-                    </div>
-                </div>
-                <div class="group-btn-slider">
-                    <div class="nav-prev-swiper lh-1">
-                        <i class="icon icon-arrow-caret-left fs-8"></i>
-                    </div>
-                    <div class="sw-dot-default tf-sw-pagination"></div>
-                    <div class="nav-next-swiper lh-1">
-                        <i class="icon icon-arrow-caret-right fs-8"></i>
-                    </div>
+                    </button>
                 </div>
             </div>
 
@@ -2745,84 +2658,81 @@
       .catch(function(){});
 
     // ── TESTIMONIALS ─────────────────────────────────────────
-    fetch('/api/content/testimonials')
-      .then(function(r){ return r.json(); })
-      .then(function(res){
-        var items = res && res.data && res.data.items;
-        if (!items || !items.length) return;
+    (function () {
+      var testimonials = [
+        { name: 'Chukwuemeka Obi',  role: 'CEO, Obi Agro Supplies, Onitsha',       image: 'assets/images/section/tes-1.jpg', text: 'Goallord transformed our outdated website into a lead-generating machine. Within 3 months of launch, our online enquiries tripled. The team was professional, fast, and genuinely understood our business.' },
+        { name: 'Ngozi Adeleke',    role: 'Founder, StyleHaus Lagos',               image: 'assets/images/section/tes-2.jpg', text: 'Our Shopify store was beautifully designed and set up perfectly. Sales went up 40% in the first month. Goallord delivered exactly what they promised — on time and on budget.' },
+        { name: 'Daniel Eze',       role: 'Director, TechBridge Fintech, Enugu',    image: 'assets/images/section/tes-3.jpg', text: 'They built our web app MVP in 6 weeks. Clean code, great UX, and the team was easy to work with throughout. We\'ve since signed them on for maintenance and ongoing development.' },
+        { name: 'Amaka Nwosu',      role: 'Principal, Starlight Academy, Awka',     image: 'assets/images/section/tes-2.jpg', text: 'The school website Goallord built for us is outstanding. Parents love it, registration went fully online, and we look credible. Worth every naira — highly recommended.' },
+        { name: 'Seun Balogun',     role: 'Founder, QuickFix Auto, Abuja',          image: 'assets/images/section/tes-1.jpg', text: 'Our Google ranking jumped from page 5 to page 1 for key search terms in Abuja. The SEO work and new website design from Goallord have been a game-changer for our workshop.' },
+        { name: 'Ifeoma Chime',     role: 'MD, Chime Medical Centre, Onitsha',      image: 'assets/images/section/tes-3.jpg', text: 'Goallord built our patient portal and booking system from scratch. It\'s been running flawlessly since launch. The team has deep technical knowledge and excellent communication.' }
+      ];
 
-        // First item → update hero quote
-        var hero = items[0];
-        if (hero) {
-          var featuredText = document.getElementById('glTesFeaturedText');
-          var featuredName = document.getElementById('glTesFeaturedName');
-          var featuredRole = document.getElementById('glTesFeaturedRole');
-          var featuredAvatar = document.getElementById('glTesFeaturedAvatar');
-          if (featuredText) featuredText.textContent = '\u201c' + (hero.text||'') + '\u201d';
-          if (featuredName) featuredName.textContent = hero.name || '';
-          if (featuredRole) featuredRole.textContent = hero.role || '';
-          if (featuredAvatar && hero.image) {
-            featuredAvatar.innerHTML = '<img loading="lazy" width="56" height="56" src="' + hero.image + '" alt="' + (hero.name||'') + '">';
-          }
-        }
+      var hero       = document.getElementById('glTesHero');
+      var txtEl      = document.getElementById('glTesFeaturedText');
+      var nameEl     = document.getElementById('glTesFeaturedName');
+      var roleEl     = document.getElementById('glTesFeaturedRole');
+      var avatarEl   = document.getElementById('glTesFeaturedAvatar');
+      var avContainer = document.getElementById('glTesAvatars');
+      if (!hero || !avContainer) return;
 
-        // Remaining items → carousel
-        var carouselItems = items.slice(1);
-        if (!carouselItems.length) return;
+      var fadeTimer = null;
 
-        var wrapper = document.querySelector('.swiper-testimonial .swiper-wrapper');
-        if (!wrapper) return;
+      function setActive(idx) {
+        var t = testimonials[idx];
+        if (!t) return;
 
-        var starsHTML = '<div class="gl-tes-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>';
-
-        wrapper.innerHTML = carouselItems.map(function(t){
-          var avatarHTML = t.image
-            ? '<img loading="lazy" width="44" height="44" src="' + t.image + '" alt="' + (t.name||'') + '">'
-            : '<div style="width:44px;height:44px;border-radius:50%;background:var(--gl-orange,#D66A1F);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:18px">' + ((t.name||'?')[0]) + '</div>';
-          return '<div class="swiper-slide">' +
-            '<div class="gl-tes-card">' +
-              starsHTML +
-              '<p class="gl-tes-text">\u201c' + (t.text||'') + '\u201d</p>' +
-              '<div class="gl-tes-author">' +
-                '<div class="gl-tes-avatar gl-tes-avatar--sm">' + avatarHTML + '</div>' +
-                '<div>' +
-                  '<strong class="gl-tes-name">' + (t.name||'') + '</strong>' +
-                  '<span class="gl-tes-role">' + (t.role||'') + '</span>' +
-                '</div>' +
-              '</div>' +
-            '</div>' +
-          '</div>';
-        }).join('');
-
-        // Reinit swiper
-        var swiperEl = document.querySelector('.swiper-testimonial');
-        if (swiperEl && swiperEl.swiper) {
-          swiperEl.swiper.destroy(true, true);
-        }
-        new Swiper('.swiper-testimonial', {
-          loop: true,
-          centeredSlides: true,
-          slidesPerView: 2.59,
-          spaceBetween: 40,
-          autoplay: {
-            delay: 3500,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true
-          },
-          speed: 700,
-          breakpoints: {
-            0:   { slidesPerView: 1.2, spaceBetween: 15 },
-            576: { slidesPerView: 1.5, spaceBetween: 15 },
-            768: { slidesPerView: 2.2, spaceBetween: 30 },
-            992: { slidesPerView: 2.59, spaceBetween: 40 }
-          },
-          navigation: {
-            nextEl: '.section-testimonial .nav-next-swiper',
-            prevEl: '.section-testimonial .nav-prev-swiper'
-          }
+        // Mark avatar active immediately
+        avContainer.querySelectorAll('.gl-tes-av-btn').forEach(function (btn, i) {
+          var on = i === idx;
+          btn.classList.toggle('is-active', on);
+          btn.setAttribute('aria-selected', on ? 'true' : 'false');
         });
-      })
-      .catch(function(){});
+
+        // Fade card out, swap content, fade in
+        clearTimeout(fadeTimer);
+        hero.classList.add('is-fading');
+        fadeTimer = setTimeout(function () {
+          txtEl.textContent  = '\u201c' + t.text + '\u201d';
+          nameEl.textContent = t.name;
+          roleEl.textContent = t.role;
+          avatarEl.innerHTML = t.image
+            ? '<img loading="lazy" width="56" height="56" src="' + t.image + '" alt="' + t.name + '">'
+            : '<div style="width:56px;height:56px;border-radius:50%;background:var(--gl-orange,#D66A1F);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:22px">' + (t.name[0]) + '</div>';
+          hero.classList.remove('is-fading');
+        }, 220);
+      }
+
+      function bindAvatars() {
+        avContainer.querySelectorAll('.gl-tes-av-btn').forEach(function (btn, i) {
+          btn.addEventListener('mouseenter', function () { setActive(i); });
+          btn.addEventListener('click',      function () { setActive(i); });
+        });
+      }
+      bindAvatars();
+
+      // API override: rebuilds avatars with server data
+      fetch('/api/content/testimonials')
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          var items = res && res.data && res.data.items;
+          if (!items || !items.length) return;
+          testimonials = items;
+
+          avContainer.innerHTML = items.map(function (t, i) {
+            var img = t.image
+              ? '<img loading="lazy" width="52" height="52" src="' + t.image + '" alt="' + (t.name||'') + '">'
+              : '<div style="width:52px;height:52px;border-radius:50%;background:var(--gl-orange,#D66A1F);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:20px">' + ((t.name||'?')[0]) + '</div>';
+            return '<button class="gl-tes-av-btn' + (i === 0 ? ' is-active' : '') + '" data-idx="' + i + '" role="tab" aria-selected="' + (i === 0 ? 'true' : 'false') + '" title="' + (t.name||'') + '">'
+              + '<div class="gl-tes-avatar gl-tes-avatar--md">' + img + '</div>'
+              + '</button>';
+          }).join('');
+
+          bindAvatars();
+          setActive(0);
+        })
+        .catch(function () {});
+    }());
     </script>
 
     <!-- Selected Work — Drum Wheel + Slick Image Panel -->
