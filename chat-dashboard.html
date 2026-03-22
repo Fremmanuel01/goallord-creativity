@@ -288,6 +288,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
     var allConvos  = [];
     var activeConvo = null;
     var currentFilter = 'all';
+    var audioCtx   = null; // shared AudioContext, unlocked on first user click
 
     // ── Login ────────────────────────────────────────────────────
     document.getElementById('loginBtn').addEventListener('click', doLogin);
@@ -300,6 +301,15 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
         var pass  = document.getElementById('loginPassword').value;
         var errEl = document.getElementById('loginError');
         errEl.style.display = 'none';
+
+        // Request notification permission & unlock AudioContext HERE — direct user gesture
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        } catch(e) {}
 
         fetch('/api/auth/login', {
             method: 'POST',
@@ -330,7 +340,6 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
         document.getElementById('agentBadge').textContent = agentName || 'Online';
         connectSocket();
         loadConversations();
-        requestNotifPermission();
     }
 
     // ── Auto-login if token exists ───────────────────────────────
@@ -350,9 +359,8 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
         socket.emit('agent:join', { token });
 
         socket.on('new:conversation', function(data) {
+            // visitor:message fires simultaneously for the first message and handles toast/beep
             loadConversations();
-            showToast('New conversation', data.preview, data.sessionId);
-            playBeep();
         });
 
         socket.on('visitor:message', function(data) {
@@ -600,12 +608,6 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
     }
 
     // ── Notification ─────────────────────────────────────────────
-    function requestNotifPermission() {
-        if ('Notification' in window && Notification.permission === 'default') {
-            Notification.requestPermission();
-        }
-    }
-
     function showToast(title, body, sessionId) {
         // Browser notification
         if (Notification.permission === 'granted') {
@@ -624,15 +626,16 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 
     function playBeep() {
         try {
-            var ctx = new (window.AudioContext || window.webkitAudioContext)();
-            var osc = ctx.createOscillator();
-            var gain = ctx.createGain();
-            osc.connect(gain); gain.connect(ctx.destination);
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            var osc  = audioCtx.createOscillator();
+            var gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
             osc.frequency.value = 880;
-            gain.gain.setValueAtTime(0.15, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-            osc.start(ctx.currentTime);
-            osc.stop(ctx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.3);
         } catch(e) {}
     }
 
