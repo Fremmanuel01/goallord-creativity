@@ -641,9 +641,188 @@ body {
 }
 
 /* ── 13. TESTIMONIALS ───────────────────────────────────────── */
-.section-testimonial .testimonial-v01 {
-    background-color: var(--gl-card) !important;
-    border: 1px solid var(--gl-border) !important;
+
+/* ── Hero featured quote ── */
+.gl-tes-hero {
+    position: relative;
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(214,106,31,0.04) 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-top: 2px solid var(--gl-orange);
+    border-radius: 20px;
+    padding: 52px 56px 44px;
+    margin: 40px auto 52px;
+    max-width: 860px;
+    overflow: hidden;
+}
+.gl-tes-qmark {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 140px;
+    line-height: 1;
+    color: var(--gl-orange);
+    opacity: 0.18;
+    position: absolute;
+    top: 4px;
+    left: 36px;
+    pointer-events: none;
+    user-select: none;
+    display: block;
+}
+.gl-tes-hero-text {
+    position: relative;
+    z-index: 1;
+    font-size: 1.25rem;
+    line-height: 1.8;
+    color: var(--gl-text);
+    font-weight: 400;
+    font-style: normal;
+    border: none;
+    padding: 0;
+    margin: 0 0 32px;
+}
+.gl-tes-hero-footer {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.gl-tes-author-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+/* ── Avatar circle ── */
+.gl-tes-avatar {
+    flex-shrink: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(214,106,31,0.35);
+}
+.gl-tes-avatar img {
+    display: block;
+    object-fit: cover;
+    border-radius: 50%;
+}
+.gl-tes-avatar--lg,
+.gl-tes-avatar--lg img { width: 56px; height: 56px; }
+.gl-tes-avatar--sm,
+.gl-tes-avatar--sm img { width: 44px; height: 44px; }
+
+/* ── Stars ── */
+.gl-tes-stars {
+    color: #FBBF24;
+    font-size: 0.8125rem;
+    letter-spacing: 3px;
+    line-height: 1;
+    margin-bottom: 3px;
+}
+
+/* ── Name / Role ── */
+.gl-tes-name {
+    display: block;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--gl-text);
+}
+.gl-tes-role {
+    font-size: 0.8125rem;
+    color: var(--gl-muted);
+}
+
+/* ── Carousel card ── */
+.gl-tes-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 28px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    height: 100%;
+    transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+.gl-tes-card:hover {
+    border-color: rgba(214,106,31,0.38);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(214,106,31,0.09);
+}
+.gl-tes-text {
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    color: rgba(244,246,250,0.82);
+    flex: 1;
+    margin: 0;
+}
+.gl-tes-author {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+}
+.gl-tes-author > div:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* ── Stats band ── */
+.gl-stats-band {
+    margin-top: 72px;
+    padding: 52px 0 0;
+    border-top: 1px solid var(--gl-border);
+}
+.gl-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+.gl-stat {
+    text-align: center;
+    padding: 0 24px 48px;
+    position: relative;
+}
+.gl-stat + .gl-stat::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1px;
+    height: 70%;
+    background: var(--gl-border);
+}
+.gl-stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gl-muted);
+    margin-bottom: 10px;
+}
+.gl-stat-label span { color: var(--gl-orange); }
+.gl-stat-num {
+    font-size: clamp(2.75rem, 6vw, 4.5rem);
+    font-weight: 700;
+    color: var(--gl-text);
+    line-height: 1;
+    margin-bottom: 10px;
+}
+.gl-stat-sub {
+    font-size: 0.8125rem;
+    color: var(--gl-muted);
+    line-height: 1.6;
+}
+
+/* ── Mobile ── */
+@media (max-width: 767px) {
+    .gl-tes-hero {
+        padding: 36px 24px 28px;
+        margin: 24px 0 36px;
+    }
+    .gl-tes-qmark { font-size: 90px; top: 4px; left: 16px; }
+    .gl-tes-hero-text { font-size: 1.0625rem; }
+    .gl-stats-grid { grid-template-columns: 1fr; }
+    .gl-stat + .gl-stat::before { display: none; }
+    .gl-stat { padding: 0 0 36px; }
+    .gl-stats-band { margin-top: 48px; padding-top: 40px; }
 }
 
 /* ── 14. FAQ ─────────────────────────────────────────────────── */
