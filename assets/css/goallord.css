@@ -2161,10 +2161,46 @@ canvas.cursor-trail {
     color: #fff;
     border-bottom-right-radius: 4px;
 }
+/* Agent (human) bubble — warm teal to distinguish from AI */
+.gl-chat-msg--agent .gl-chat-bubble {
+    background: rgba(32,178,170,0.15);
+    border: 1px solid rgba(32,178,170,0.25);
+    border-bottom-left-radius: 4px;
+    color: #e8f8f7;
+}
+.gl-chat-msg--agent { align-self: flex-start; align-items: flex-start; }
+/* Agent name badge above bubble */
+.gl-chat-agent-name {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: rgba(32,178,170,0.9);
+    padding: 0 4px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
 .gl-chat-time {
     font-size: 10px;
     color: rgba(255,255,255,0.25);
     padding: 0 4px;
+}
+/* System announcement (handover notice) */
+.gl-chat-notice {
+    align-self: center;
+    max-width: 90%;
+    text-align: center;
+    animation: gl-msg-in 0.3s ease both;
+}
+.gl-chat-notice-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.5);
+    font-style: italic;
 }
 
 /* Typing indicator */

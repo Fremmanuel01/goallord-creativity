@@ -3271,8 +3271,14 @@
 
         // Mode changed (AI handed back or taken over)
         socket.on('mode:changed', function(data) {
+            var prevMode = mode;
             mode = data.mode;
-            updateModeIndicator();
+            updateModeIndicator(data.agentName);
+            if (data.mode === 'human' && prevMode !== 'human') {
+                addNotice('🤝 You\'ve been connected with ' + (data.agentName || 'a support agent') + ' from the Goallord team');
+            } else if (data.mode === 'ai' && prevMode === 'human') {
+                addNotice('🤖 GoallordAI has resumed this conversation');
+            }
         });
 
         // Conversation closed by agent
@@ -3282,10 +3288,16 @@
             sendBtn.disabled = true;
         });
 
-        function updateModeIndicator() {
+        function updateModeIndicator(agentName) {
             var sub = panel.querySelector('.gl-chat-header-sub');
             if (sub) {
-                sub.textContent = mode === 'human' ? 'Live Agent · Online' : 'Powered by GoallordAI · Online';
+                if (mode === 'human' && agentName) {
+                    sub.textContent = agentName + ' · Support Specialist · Online';
+                } else if (mode === 'human') {
+                    sub.textContent = 'Support Specialist · Online';
+                } else {
+                    sub.textContent = 'Powered by GoallordAI · Online';
+                }
             }
         }
 
@@ -3313,16 +3325,33 @@
         function addMsg(role, text, agentName) {
             var div    = document.createElement('div');
             var isUser = role === 'user';
-            div.className = 'gl-chat-msg gl-chat-msg--' + (isUser ? 'user' : 'ai');
+            var isAgent = role === 'agent';
+            div.className = 'gl-chat-msg gl-chat-msg--' + (isUser ? 'user' : isAgent ? 'agent' : 'ai');
+
+            // Agent name badge
+            if (isAgent && agentName) {
+                var nameTag = document.createElement('span');
+                nameTag.className = 'gl-chat-agent-name';
+                nameTag.textContent = agentName + ' · Support Specialist';
+                div.appendChild(nameTag);
+            }
+
             var bubble = document.createElement('div');
             bubble.className = 'gl-chat-bubble';
             bubble.textContent = text;
             var meta = document.createElement('span');
             meta.className = 'gl-chat-time';
-            var label = isUser ? '' : (role === 'agent' && agentName ? agentName + ' · ' : '');
-            meta.textContent = label + timeStr();
+            meta.textContent = timeStr();
             div.appendChild(bubble);
             div.appendChild(meta);
+            msgArea.appendChild(div);
+            scrollBottom();
+        }
+
+        function addNotice(text) {
+            var div = document.createElement('div');
+            div.className = 'gl-chat-notice';
+            div.innerHTML = '<span class="gl-chat-notice-inner">' + text + '</span>';
             msgArea.appendChild(div);
             scrollBottom();
         }

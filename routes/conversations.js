@@ -76,7 +76,7 @@ router.patch('/:sessionId/mode', requireAuth, async (req, res) => {
 
     const io = req.app.get('io');
     if (io) io.to('agents').emit('mode:changed', { sessionId: req.params.sessionId, mode, agentName: req.user.name });
-    if (io) io.to(req.params.sessionId).emit('mode:changed', { mode });
+    if (io) io.to(req.params.sessionId).emit('mode:changed', { mode, agentName: req.user.name });
 
     res.json({ ok: true, mode });
   } catch (err) {
