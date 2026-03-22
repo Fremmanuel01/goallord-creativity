@@ -44,15 +44,338 @@
     <link rel="shortcut icon" href="assets/images/logo/favicon.svg">
     <link rel="apple-touch-icon-precomposed" href="assets/images/logo/favicon.svg">
 
+    <!-- Spline 3D viewer -->
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.12.70/build/spline-viewer.js"></script>
+
     <style>
-        /* Hero refactor: brand name now full-width below both cols */
-        .gl-hero-r.section-hero-v1 { align-items: flex-end; }
+        /* ── Hero layout ───────────────────────────────────────── */
+        .gl-hero-r.section-hero-v1 {
+            align-items: center;
+            min-height: 80vh !important;
+            padding-top: 140px;
+            padding-bottom: 48px;
+            overflow: hidden;
+        }
         .gl-hero-r .content-wrap { width: 100%; }
-        /* Remove template's large margin-bottom that was only needed
-           when GOALLORD lived inside col-left */
-        .gl-hero-r .tf-list.vertical { margin-bottom: 0 !important; }
-        .gl-hero-top-row { margin-bottom: 0; }
-        .gl-hero-brand { line-height: 0.88; overflow: hidden; }
+
+        /* Hero headline */
+        .gl-hero-headline {
+            font-size: clamp(52px, 7vw, 100px);
+            font-weight: 700;
+            line-height: 0.92;
+            letter-spacing: -0.04em;
+            color: #fff;
+            margin: 16px 0 20px;
+        }
+        .gl-hero-headline span { color: var(--primary); }
+
+        /* Eyebrow */
+        .gl-hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+        }
+        .gl-hero-eyebrow .br-dot { flex-shrink: 0; }
+
+        /* Description */
+        .gl-hero-desc {
+            font-size: 16px;
+            line-height: 1.7;
+            color: rgba(255,255,255,0.6);
+            max-width: 380px;
+            margin-bottom: 32px;
+        }
+
+        /* Trust line */
+        .gl-hero-trust {
+            margin-top: 20px;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.35);
+        }
+        .gl-hero-trust strong {
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+        }
+
+        /* Spline hero background */
+        .spline-hero-wrapper {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+            transform: translateX(18%);
+        }
+        .spline-hero-wrapper spline-viewer {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .spline-hero-fallback {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: #0a0a0a;
+            z-index: 0;
+        }
+        /* Faded GOALLORD behind the robot */
+        .gl-hero-brand-bg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1;
+            pointer-events: none;
+            line-height: 0.88;
+            overflow: hidden;
+        }
+        /* Make overlays and content sit above the robot */
+        .section-hero-v1 .video-overlay,
+        .section-hero-v1 .video-overlay-2,
+        .section-hero-v1 .gl-hero-dark-overlay { z-index: 3; }
+        .section-hero-v1 .content-wrap { position: relative; z-index: 4; }
+        /* Prevent Spline from injecting overflow:hidden on body */
+        html, body { overflow-x: hidden !important; }
+        body { overflow-y: auto !important; }
+
+        /* ── Hero divider line ───────────────────────────────────── */
+        .gl-hero-divider {
+            width: 48px;
+            height: 1px;
+            background: linear-gradient(to right, var(--primary), transparent);
+            margin: 20px 0;
+        }
+
+        /* ── Hero stats bar ──────────────────────────────────────── */
+        .gl-hero-stats {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .gl-hero-stat {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+        .gl-hero-stat-num {
+            font-size: clamp(22px, 3vw, 32px);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: #fff;
+            line-height: 1;
+        }
+        .gl-hero-stat-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.8px;
+            color: rgba(255,255,255,0.65);
+            line-height: 1.4;
+            text-transform: uppercase;
+        }
+        .gl-hero-stat-divider {
+            width: 1px;
+            height: 32px;
+            background: rgba(255,255,255,0.2);
+            margin: 0 20px;
+            flex-shrink: 0;
+        }
+        .gl-hero-stats {
+            border-top-color: rgba(255,255,255,0.15);
+        }
+
+        /* ── Hero → Marquee smooth transition ───────────────────── */
+        .section-hero-v1 .overlay {
+            height: 340px !important;
+            background: linear-gradient(180deg,
+                transparent 0%,
+                rgba(15,17,21,0.4) 40%,
+                rgba(15,17,21,0.85) 70%,
+                #0F1115 100%
+            ) !important;
+            z-index: 3 !important;
+        }
+        .section-hero-v1 .content-wrap { position: relative; z-index: 6 !important; }
+        .gl-marquee-section {
+            background: #0F1115 !important;
+        }
+
+        /* ── Client Marquee ─────────────────────────────────────── */
+        .gl-marquee-section {
+            height: 20vh;
+            min-height: 100px;
+            max-height: 160px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            overflow: hidden;
+            position: relative;
+        }
+        .gl-marquee-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 2.5px;
+            color: rgba(255,255,255,0.22);
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+        .gl-marquee-track-wrap {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+        /* Fade edges */
+        .gl-marquee-track-wrap::before,
+        .gl-marquee-track-wrap::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 120px;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .gl-marquee-track-wrap::before {
+            left: 0;
+            background: linear-gradient(to right, #05060f 0%, transparent 100%);
+        }
+        .gl-marquee-track-wrap::after {
+            right: 0;
+            background: linear-gradient(to left, #05060f 0%, transparent 100%);
+        }
+        .gl-marquee-track {
+            display: flex;
+            align-items: center;
+            gap: 56px;
+            width: max-content;
+            animation: gl-marquee-scroll 28s linear infinite;
+        }
+        .gl-marquee-track:hover { animation-play-state: paused; }
+        .gl-marquee-item {
+            flex-shrink: 0;
+            opacity: 0.35;
+            transition: opacity 0.3s ease;
+            filter: brightness(0) invert(1);
+        }
+        .gl-marquee-item:hover { opacity: 0.75; }
+        .gl-marquee-item img {
+            height: 28px;
+            width: auto;
+            display: block;
+        }
+        @keyframes gl-marquee-scroll {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* ── Mobile optimisation ────────────────────────────────── */
+        @media (max-width: 767px) {
+            .gl-hero-r.section-hero-v1 {
+                min-height: 80vh !important;
+                padding-top: 160px;
+                padding-bottom: 40px;
+                align-items: center;
+            }
+            /* Tighter stats on mobile */
+            .gl-hero-stats { margin-top: 20px; padding-top: 18px; }
+            .gl-hero-stat-num { font-size: 22px; }
+            .gl-hero-stat-label { font-size: 9px; }
+            .gl-hero-stat-divider { margin: 0 14px; }
+            /* Consistent side padding so text never touches screen edge */
+            .gl-hero-r .content-wrap .container {
+                padding-left: 24px !important;
+                padding-right: 24px !important;
+            }
+            /* Eyebrow — readable on mobile */
+            .gl-hero-eyebrow { font-size: 12px; }
+            /* Headline */
+            .gl-hero-headline {
+                font-size: clamp(36px, 9.5vw, 52px);
+                margin: 12px 0 14px;
+            }
+            /* Description — capped to 2 lines */
+            .gl-hero-desc {
+                font-size: 14px;
+                line-height: 1.6;
+                margin-bottom: 24px;
+                max-width: 100%;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+            /* Full-width primary CTA, secondary sits beside it */
+            .gl-hero-r .tf-btn.style-fill {
+                flex: 1;
+                justify-content: center;
+                min-width: 0;
+            }
+            /* Trust line — brighter on mobile */
+            .gl-hero-trust {
+                color: rgba(255,255,255,0.6);
+                font-size: 12px;
+            }
+            .gl-hero-trust strong { color: rgba(255,255,255,0.85); }
+            /* Keep robot visible on mobile */
+            .spline-hero-wrapper { transform: translateX(5%); }
+            /* Full width on mobile */
+            .gl-hero-r .col-md-7 { width: 100%; }
+            /* Dark overlay covering full hero behind all content */
+            .gl-hero-r.section-hero-v1::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                z-index: 3;
+                pointer-events: none;
+                background:
+                    linear-gradient(to bottom, transparent 0%, transparent 25%, rgba(5,6,7,0.88) 60%, rgba(5,6,7,0.95) 100%),
+                    linear-gradient(to right, rgba(5,6,7,0.88) 0%, rgba(5,6,7,0.4) 65%, transparent 100%);
+            }
+            /* Content must sit above the overlay */
+            .gl-hero-r.section-hero-v1 .content-wrap { z-index: 5 !important; }
+            /* Scroll chevron */
+            .gl-scroll-hint { display: flex !important; }
+        }
+
+        /* Scroll hint — hidden on desktop, shown on mobile */
+        .gl-scroll-hint {
+            display: none;
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 5;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            animation: gl-bounce 2s ease-in-out infinite;
+        }
+        .gl-scroll-hint span {
+            display: block;
+            width: 20px;
+            height: 20px;
+            border-right: 2px solid rgba(255,255,255,0.4);
+            border-bottom: 2px solid rgba(255,255,255,0.4);
+            transform: rotate(45deg);
+            animation: gl-chevron-fade 2s ease-in-out infinite;
+        }
+        .gl-scroll-hint span:nth-child(2) { animation-delay: 0.2s; margin-top: -14px; }
+        @keyframes gl-chevron-fade {
+            0%, 100% { opacity: 0.2; }
+            50%       { opacity: 0.8; }
+        }
     </style>
     <!-- FAQ Schema -->
     <script type="application/ld+json">
@@ -141,7 +464,7 @@
                     <div class="row align-items-center">
                         <div class="col-6 col-md-2">
                             <a href="index.html" class="logo-site">
-                                <img src="assets/images/logo/goallord-logo.png" alt="Goallord Creativity Limited" style="height:38px;width:auto;display:block;">
+                                <img src="assets/images/logo/goallord-logo.png" alt="Goallord Creativity Limited" style="height:52px;width:auto;display:block;">
                             </a>
                         </div>
                         <div class="col-6 d-none d-md-block col-md-5">
@@ -184,60 +507,119 @@
         <!-- Hero Banner -->
         <div class="section-hero-v1 gl-hero-r">
             <div class="overlay"></div>
-            <div class="bg-video">
-                <video muted autoplay loop playsinline preload="auto">
-                    <source src="assets/images/video/wave-abstract.mp4" type="video/mp4">
-                </video>
-                <div class="video-overlay"></div>
-                <div class="video-overlay-2"></div>
-                <div class="gl-hero-dark-overlay"></div>
+            <!-- Faded GOALLORD behind the robot -->
+            <div class="gl-hero-brand-bg">
+                <svg viewBox="0 0 1293 269" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="hero-wm" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1293" y2="0">
+                            <stop offset="0%"   stop-color="white" stop-opacity="0.02"/>
+                            <stop offset="28%"  stop-color="white" stop-opacity="0.06"/>
+                            <stop offset="50%"  stop-color="#D66A1F" stop-opacity="0.18"/>
+                            <stop offset="72%"  stop-color="white" stop-opacity="0.06"/>
+                            <stop offset="100%" stop-color="white" stop-opacity="0.02"/>
+                        </linearGradient>
+                    </defs>
+                    <text x="50%" y="72%" dominant-baseline="middle" text-anchor="middle"
+                        font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Helvetica, Arial, sans-serif"
+                        font-size="200" font-weight="800" letter-spacing="-8"
+                        fill="url(#hero-wm)">GOALLORD</text>
+                </svg>
+            </div>
+
+            <!-- Spline 3D background -->
+            <div class="spline-hero-fallback" id="spline-hero-fallback"></div>
+            <div class="spline-hero-wrapper" id="spline-hero-wrapper">
+                <spline-viewer
+                    url="https://prod.spline.design/qeHbScAZweHZr9-F/scene.splinecode"
+                    events-target="global"
+                    background="transparent">
+                </spline-viewer>
+            </div>
+            <div class="video-overlay"></div>
+            <div class="video-overlay-2"></div>
+            <div class="gl-hero-dark-overlay"></div>
+            <!-- Mobile scroll hint -->
+            <div class="gl-scroll-hint" aria-hidden="true">
+                <span></span>
+                <span></span>
             </div>
             <div class="content-wrap">
                 <div class="container">
-                    <!-- Top info row: service tags left, cta right -->
-                    <div class="row align-items-start gl-hero-top-row">
-                        <div class="col-md-7">
-                            <ul class="tf-list vertical text-caption fw-medium">
-                                <li><a href="#serviceScroll" class="link effectFade fadeUp">WEB DESIGN</a></li>
-                                <li><a href="#serviceScroll" class="link effectFade fadeUp">WEB DEVELOPMENT</a></li>
-                                <li><a href="#serviceScroll" class="link effectFade fadeUp">DIGITAL MARKETING</a></li>
-                            </ul>
-                        </div>
-                        <div class="col-md-5">
-                            <div class="d-flex justify-content-between align-items-center text-caption fw-medium effectFade" style="margin-bottom:20px;">
-                                <p class="title text-has-dot mb-0"><span class="br-dot"></span>ONITSHA, NIGERIA</p>
-                                <span>© 2025</span>
-                            </div>
-                            <p class="desc text-white-64 effectFade fadeRight" style="font-size:15px;line-height:1.7;margin-bottom:24px;max-width:340px;">
-                                Websites, visuals, and digital strategies for bold Nigerian businesses.
+                    <div class="row">
+                        <!-- Left: copy & CTAs -->
+                        <div class="col-md-7 col-lg-6">
+                            <p class="gl-hero-eyebrow effectFade fadeUp">
+                                <span class="br-dot"></span>
+                                Web Agency — Onitsha, Nigeria
                             </p>
-                            <div class="effectFade fadeRight" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                            <h1 class="gl-hero-headline effectFade fadeUp">
+                                We Build<br>Brands That<br><span>Get Noticed.</span>
+                            </h1>
+                            <div class="gl-hero-divider effectFade fadeUp"></div>
+                            <p class="gl-hero-desc effectFade fadeUp">
+                                Websites, visuals, and digital strategies for bold Nigerian businesses ready to grow.
+                            </p>
+                            <div class="effectFade fadeUp" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
                                 <a href="#contactScroll" class="tf-btn style-fill"><span class="text-caption fw-medium">START A PROJECT</span></a>
                                 <a href="#workScroll" class="tf-btn style-troke"><span class="text-caption fw-medium">VIEW PORTFOLIO</span></a>
-                                <a href="apply.html" style="display:inline-flex;align-items:center;gap:6px;padding:11px 18px;background:rgba(214,106,31,0.08);border:1px solid rgba(214,106,31,0.25);border-radius:50px;text-decoration:none;flex-shrink:0;white-space:nowrap;transition:border-color 0.2s,background 0.2s;">
-                                    <span style="font-size:11px;color:#D66A1F;font-weight:700;letter-spacing:1px;text-transform:uppercase;">🎓 Join Our Academy →</span>
-                                </a>
                             </div>
-                            <p class="text-caption text-white-64 effectFade" style="margin-top:16px;">50+ projects delivered &nbsp;·&nbsp; 98% client satisfaction</p>
+                            <!-- Stats bar -->
+                            <div class="gl-hero-stats effectFade">
+                                <div class="gl-hero-stat">
+                                    <span class="gl-hero-stat-num">50+</span>
+                                    <span class="gl-hero-stat-label">Projects<br>Delivered</span>
+                                </div>
+                                <div class="gl-hero-stat-divider"></div>
+                                <div class="gl-hero-stat">
+                                    <span class="gl-hero-stat-num">98%</span>
+                                    <span class="gl-hero-stat-label">Client<br>Satisfaction</span>
+                                </div>
+                                <div class="gl-hero-stat-divider"></div>
+                                <div class="gl-hero-stat">
+                                    <span class="gl-hero-stat-num">5+</span>
+                                    <span class="gl-hero-stat-label">Years<br>Experience</span>
+                                </div>
+                            </div>
                         </div>
+                        <!-- Right: robot fills this space via the Spline background -->
+                        <div class="col-md-5 col-lg-6"></div>
                     </div>
-                    <!-- Full-width brand name — sits below both columns, no overlap -->
-                    <div class="davies-large gl-hero-brand" style="margin-top:clamp(24px,4vw,60px);">
-                        <div class="effectFade fadeRotateX">GOALLORD<span class="text-primary">_</span></div>
-                    </div>
-                    <!-- Tagline -->
-                    <p class="gl-hero-tagline">
-                        <span class="word">We</span>
-                        <span class="word">Build</span>
-                        <span class="word">Brands</span>
-                        <span class="word">That</span>
-                        <span class="word">Get</span>
-                        <span class="word">Noticed.</span>
-                    </p>
                 </div>
             </div>
         </div>
         <!-- /Hero Banner -->
+
+        <!-- Client Marquee -->
+        <div class="gl-marquee-section">
+            <div class="gl-marquee-label">TRUSTED BY</div>
+            <div class="gl-marquee-track-wrap">
+                <div class="gl-marquee-track">
+                    <!-- Set 1 -->
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-1.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-2.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-3.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-4.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-5.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-6.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-7.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-8.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-9.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-10.svg" alt="Client"></div>
+                    <!-- Set 2 — duplicate for seamless loop -->
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-1.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-2.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-3.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-4.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-5.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-6.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-7.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-8.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-9.svg" alt="Client"></div>
+                    <div class="gl-marquee-item"><img src="assets/images/brand/brand-10.svg" alt="Client"></div>
+                </div>
+            </div>
+        </div>
+        <!-- /Client Marquee -->
 
         <!-- Selected Work -->
         <div class="section-selected-work flat-spacing pb-0" id="workScroll">
@@ -247,18 +629,18 @@
             <div class="content-wrap-1 wrap-list-btn">
                 <div class="container">
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-5">
                             <div class="col-left mb-md-0">
                                 <p class="mini-title text-caption text-white-64 effectFade fadeUp">SELECTED WORKS</p>
-                                <div class="position-relative effectFade fadeUp no-div">
-                                    <div class="slick-nav"></div>
-                                    <div class="image-award">
-                                        <img loading="lazy" width="80" height="80" src="assets/images/item/award.svg" alt="Award">
+                                <div class="gl-drum-outer effectFade fadeUp">
+                                    <div class="gl-drum-scene">
+                                        <div id="glDrumTrack"></div>
                                     </div>
+                                    <div class="gl-drum-focus-strip"></div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-8">
+                        <div class="col-md-7">
                             <div class="col-right">
                                 <div class="slick-for"></div>
                             </div>
@@ -281,10 +663,11 @@
                                     NEXT <i class="icon icon-arrow-long-right"></i>
                                 </div>
                             </div>
+                            <span class="gl-slide-counter">01 / 06</span>
                         </div>
                         <div class="col-6 col-md-4">
                             <div class="col-right">
-                                <p class="text-display-2 letter-space--3 fw-semibold">20<span class="text-primary">25</span></p>
+                                <p class="text-display-2 letter-space--3 fw-semibold gl-portfolio-label">PORTFOLIO</p>
                             </div>
                         </div>
                     </div>
@@ -1641,7 +2024,7 @@
                 <div class="offcanvas-content_wrapin">
                     <div class="canvas_head">
                         <a href="index.html" class="logo-site">
-                            <img src="assets/images/logo/goallord-logo.png" alt="Goallord Creativity Limited" style="height:38px;width:auto;display:block;">
+                            <img src="assets/images/logo/goallord-logo.png" alt="Goallord Creativity Limited" style="height:52px;width:auto;display:block;">
                         </a>
                         <div class="btn-mobile-menu close-mb-menu text-caption link">
                             <i class="icon icon-close"></i>
@@ -1752,6 +2135,115 @@
     <script src="assets/js/gsapAnimation.js"></script>
     <script src="assets/js/main.js"></script>
 
+    <!-- Nav: transparent at top, hides on scroll, reappears on pause -->
+    <script>
+    (function() {
+        var header = document.querySelector('.tf-header');
+        if (!header) return;
+        var scrollTimer = null;
+        var lastY = 0;
+
+        function onScroll() {
+            var currentY = window.scrollY;
+
+            if (currentY <= 80) {
+                // At top — always show, fully transparent
+                header.classList.remove('header-sticky', 'header-hidden');
+                return;
+            }
+
+            // Hide immediately while scrolling
+            header.classList.add('header-hidden');
+
+            // Clear previous pause timer
+            clearTimeout(scrollTimer);
+
+            // Show again after 300ms pause
+            scrollTimer = setTimeout(function() {
+                header.classList.remove('header-hidden');
+                header.classList.add('header-sticky');
+            }, 300);
+
+            lastY = currentY;
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    })();
+    </script>
+
+    <!-- Hero stats counter — fires after preloader is removed -->
+    <script>
+    (function () {
+        function countUp(el, target, suffix, duration) {
+            var start = 0;
+            var startTime = null;
+            function step(timestamp) {
+                if (!startTime) startTime = timestamp;
+                var progress = Math.min((timestamp - startTime) / duration, 1);
+                // Ease out cubic
+                var eased = 1 - Math.pow(1 - progress, 3);
+                el.textContent = Math.floor(eased * target) + suffix;
+                if (progress < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        function animateStats() {
+            var stats = [
+                { selector: '.gl-hero-stat:nth-child(1) .gl-hero-stat-num', target: 50, suffix: '+' },
+                { selector: '.gl-hero-stat:nth-child(3) .gl-hero-stat-num', target: 98, suffix: '%' },
+                { selector: '.gl-hero-stat:nth-child(5) .gl-hero-stat-num', target: 5,  suffix: '+' }
+            ];
+            stats.forEach(function (s, i) {
+                var el = document.querySelector(s.selector);
+                if (!el) return;
+                el.textContent = '0' + s.suffix;
+                // Stagger each stat by 150ms
+                setTimeout(function () {
+                    countUp(el, s.target, s.suffix, 1200);
+                }, i * 150);
+            });
+        }
+
+        // Watch for preloader removal
+        var preloader = document.querySelector('.preloader');
+        if (!preloader) {
+            // No preloader — run immediately
+            animateStats();
+            return;
+        }
+        var observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (m) {
+                m.removedNodes.forEach(function (node) {
+                    if (node === preloader || (node.classList && node.classList.contains('preloader'))) {
+                        observer.disconnect();
+                        // Small delay so page paint settles first
+                        setTimeout(animateStats, 300);
+                    }
+                });
+            });
+        });
+        observer.observe(document.body, { childList: true });
+    })();
+    </script>
+
+    <!-- Spline: skip on mobile/low-end, show fallback on timeout -->
+    <script>
+    (function() {
+        var wrapper = document.getElementById('spline-hero-wrapper');
+        var fallback = document.getElementById('spline-hero-fallback');
+        var canvas = document.createElement('canvas');
+        var gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+        var noWebGL = !gl;
+
+        if (noWebGL) {
+            wrapper.style.display = 'none';
+            fallback.style.display = 'block';
+        }
+    })();
+    </script>
+
     <!-- ── API: Hero + Testimonials ──────────────────────────── -->
     <script>
     // ── HERO ─────────────────────────────────────────────────
@@ -1851,47 +2343,206 @@
       .catch(function(){});
     </script>
 
-    <!-- Selected Work Slick Slider — API Connected -->
+    <!-- Selected Work — Drum Wheel + Slick Image Panel -->
     <script>
     var DEFAULT_WORK_IMGS = [
       'assets/images/section/work-1.jpg','assets/images/section/work-2.jpg',
       'assets/images/section/work-3.jpg','assets/images/section/work-4.jpg',
       'assets/images/section/work-5.jpg','assets/images/section/work-6.jpg'
     ];
+    var DEFAULT_WORK_ITEMS = [
+      {title:'Holy Rosary Hospital', category:'Healthcare', image:DEFAULT_WORK_IMGS[0]},
+      {title:'Graye Farms',          category:'Agriculture', image:DEFAULT_WORK_IMGS[1]},
+      {title:'ShareUniv Platform',   category:'Education',   image:DEFAULT_WORK_IMGS[2]},
+      {title:'Onitsha Unity Store',  category:'E-Commerce',  image:DEFAULT_WORK_IMGS[3]},
+      {title:'Caemco Industries',    category:'Corporate',   image:DEFAULT_WORK_IMGS[4]},
+      {title:'Lekwa Properties',     category:'Real Estate', image:DEFAULT_WORK_IMGS[5]}
+    ];
+
+    function padNum(n) { return (n < 10 ? '0' : '') + n; }
+
+    /* ── Drum Wheel Engine ───────────────────────────────────── */
+    var GL_DRUM = {
+      ANGLE:   28,    /* degrees between items on the cylinder */
+      RADIUS:  185,   /* cylinder radius in px                  */
+      ITEM_H:  80,    /* item height (must match CSS top:-40px) */
+      current: 0,     /* current rotation (float during anim)   */
+      items:   [],
+      total:   0,
+      animFrame: null,
+      autoTimer: null,
+
+      init: function(items) {
+        this.items = items;
+        this.total = items.length;
+        var track = document.getElementById('glDrumTrack');
+        if (!track) return;
+        track.innerHTML = '';
+        var self = this;
+        items.forEach(function(item, i) {
+          var el  = document.createElement('div');
+          el.className = 'gl-drum-item';
+          var cat = ((item.category||'').split(',')[0]||'').trim().toUpperCase();
+          el.innerHTML = '<span class="gl-drum-cat">' + cat + '</span>'
+                       + '<p class="gl-drum-title">' + (item.title||'') + '</p>';
+          el.addEventListener('click', function(idx) {
+            return function() {
+              var cur  = Math.round(self.current);
+              var diff = idx - cur;
+              diff = diff - Math.round(diff / self.total) * self.total;
+              self.goTo(cur + diff);
+            };
+          }(i));
+          track.appendChild(el);
+        });
+        this.render(0);
+        this.autoStart();
+
+        /* ── Scroll & Touch interaction ── */
+        var outer     = document.querySelector('.gl-drum-outer');
+        var wheelLock = false;
+        var touchY0   = 0;
+
+        if (outer) {
+          /* Mouse wheel — one tick = one step */
+          outer.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            if (wheelLock) return;
+            wheelLock = true;
+            setTimeout(function() { wheelLock = false; }, 750);
+            if (e.deltaY > 0) self.next();
+            else               self.prev();
+          }, { passive: false });
+
+          /* Touch swipe */
+          outer.addEventListener('touchstart', function(e) {
+            touchY0 = e.touches[0].clientY;
+          }, { passive: true });
+
+          outer.addEventListener('touchend', function(e) {
+            var dy = touchY0 - e.changedTouches[0].clientY;
+            if (Math.abs(dy) > 25) {
+              if (dy > 0) self.next();
+              else        self.prev();
+            }
+          }, { passive: true });
+
+          /* Pause auto-advance on hover, resume on leave */
+          outer.addEventListener('mouseenter', function() { clearTimeout(self.autoTimer); });
+          outer.addEventListener('mouseleave', function() { self.autoStart(); });
+        }
+      },
+
+      render: function(pos) {
+        var self  = this;
+        var els   = document.querySelectorAll('.gl-drum-item');
+        var total = this.total;
+        var activeIdx = ((Math.round(pos) % total) + total) % total;
+        els.forEach(function(el, i) {
+          /* shortest circular path — wraps items around the loop */
+          var raw    = i - pos;
+          var offset = raw - Math.round(raw / total) * total;
+          var angle    = offset * self.ANGLE;
+          var absAngle = Math.abs(angle);
+          var opacity  = absAngle >= 90 ? 0 : Math.pow(Math.cos(angle * Math.PI / 180), 2);
+          el.style.transform = 'rotateX(' + angle + 'deg) translateZ(' + self.RADIUS + 'px)';
+          el.style.opacity   = opacity;
+          el.classList.toggle('is-active', i === activeIdx);
+        });
+        /* counter */
+        var cnt = document.querySelector('.gl-slide-counter');
+        if (cnt) cnt.textContent = padNum(activeIdx + 1) + ' / ' + padNum(total);
+        /* tags */
+        $('.work-tag li').removeClass('active').eq(activeIdx).addClass('active');
+      },
+
+      goTo: function(target, dur) {
+        var self = this;
+        var start = self.current, end = target;
+        dur = dur || 800;
+        var t0 = null;
+        clearTimeout(self.autoTimer);
+        cancelAnimationFrame(self.animFrame);
+        /* sync image slider */
+        var sf = $('.slick-for');
+        if (sf.length && sf.hasClass('slick-initialized')) {
+          sf.slick('slickGoTo', ((target % self.total) + self.total) % self.total);
+        }
+        function step(ts) {
+          if (!t0) t0 = ts;
+          var t    = Math.min(1, (ts - t0) / dur);
+          var ease = 1 - Math.pow(1 - t, 3);
+          self.current = start + (end - start) * ease;
+          self.render(self.current);
+          if (t < 1) { self.animFrame = requestAnimationFrame(step); }
+          else       { self.current = end; self.render(end); self.autoStart(); }
+        }
+        self.animFrame = requestAnimationFrame(step);
+      },
+
+      next: function() { this.goTo(Math.round(this.current) + 1, 900); },
+      prev: function() { this.goTo(Math.round(this.current) - 1, 900); },
+
+      autoStart: function() {
+        var self = this;
+        clearTimeout(self.autoTimer);
+        self.autoTimer = setTimeout(function() { self.next(); }, 4000);
+      }
+    };
+
+    /* ── Portfolio Initialiser ───────────────────────────────── */
     function initPortfolioSlider(items) {
       if (!items || !items.length) return;
-      var nav = '', imgs = '', tags = '';
-      [items, items].forEach(function(set) {
-        set.forEach(function(item, i) {
-          var img = item.image || DEFAULT_WORK_IMGS[i % DEFAULT_WORK_IMGS.length];
-          var t   = (item.category || '').split(',').map(function(c) {
-            return '<a href="portfolio.html" class="tf-btn style-2">' + c.trim().toUpperCase() + '</a>';
-          }).join('');
-          nav  += '<div><p class="text-slide text-display-2 fw-semibold">' + (item.title||'') + '</p></div>';
-          imgs += '<div><div class="image"><img src="' + img + '" alt="' + (item.title||'') + '"></div></div>';
-          tags += '<li><div class="group-btn">' + t + '</div></li>';
-        });
-      });
-      $('.slick-nav').html(nav);
+
+      /* Build image slides */
+      var imgs = items.map(function(item, i) {
+        var img = item.image || DEFAULT_WORK_IMGS[i % DEFAULT_WORK_IMGS.length];
+        return '<div><div class="image gl-work-slide">'
+             +   '<img src="' + img + '" alt="' + (item.title||'') + '">'
+             +   '<a href="portfolio.html" class="gl-work-cta">View Case Study'
+             +   ' <i class="icon icon-arrow-long-right"></i></a>'
+             + '</div></div>';
+      }).join('');
+
+      /* Build category tags */
+      var tags = items.map(function(item) {
+        var t = (item.category||'').split(',').map(function(c) {
+          return '<a href="portfolio.html" class="tf-btn style-2">' + c.trim().toUpperCase() + '</a>';
+        }).join('');
+        return '<li><div class="group-btn">' + t + '</div></li>';
+      }).join('');
+
       $('.slick-for').html(imgs);
       $('.work-tag').html(tags);
       $('.work-tag li:first-child').addClass('active');
-      $('.slick-for').slick({ slidesToShow:1, slidesToScroll:1, arrows:true, prevArrow:$('.section-selected-work .nav-prev-swiper'), nextArrow:$('.section-selected-work .nav-next-swiper'), fade:true, cssEase:'cubic-bezier(0.7,0,0.3,1)', speed:600, asNavFor:'.slick-nav', infinite:true });
-      $('.slick-nav').slick({ slidesToShow:3, slidesToScroll:1, asNavFor:'.slick-for', focusOnSelect:true, arrows:false, infinite:true, centerMode:true });
-      var total = items.length;
-      $('.slick-for').on('afterChange', function(e, slick, cur) {
-        $('.work-tag li').removeClass('active').eq(cur % total).addClass('active');
+      $('.gl-slide-counter').text(padNum(1) + ' / ' + padNum(items.length));
+
+      /* Image slider — controlled only by drum, no arrows */
+      $('.slick-for').slick({
+        slidesToShow: 1, slidesToScroll: 1,
+        arrows: false, fade: true,
+        cssEase: 'cubic-bezier(0.7,0,0.3,1)', speed: 700,
+        infinite: true, swipe: false, draggable: false
       });
+
+      /* Drum wheel */
+      GL_DRUM.init(items);
+
+      /* PREV / NEXT buttons wire-up */
+      $(document).off('click.drum')
+        .on('click.drum', '.section-selected-work .nav-prev-swiper', function() { GL_DRUM.prev(); })
+        .on('click.drum', '.section-selected-work .nav-next-swiper', function() { GL_DRUM.next(); });
     }
+
+    /* ── Load ────────────────────────────────────────────────── */
     $(window).on('load', function() {
       fetch('/api/content/portfolio')
-        .then(function(r){ return r.json(); })
-        .then(function(d){
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
           var items = d && d.data && d.data.items ? d.data.items : null;
-          if (items && items.length) initPortfolioSlider(items);
-          else { $('.work-tag li:first-child').addClass('active'); $('.slick-for').slick({slidesToShow:1,fade:true,asNavFor:'.slick-nav',arrows:true,prevArrow:$('.section-selected-work .nav-prev-swiper'),nextArrow:$('.section-selected-work .nav-next-swiper'),infinite:true}); $('.slick-nav').slick({slidesToShow:3,asNavFor:'.slick-for',focusOnSelect:true,arrows:false,infinite:true,centerMode:true}); }
+          initPortfolioSlider(items && items.length ? items : DEFAULT_WORK_ITEMS);
         })
-        .catch(function(){ $('.slick-for').slick({slidesToShow:1,fade:true,arrows:true,infinite:true}); });
+        .catch(function() { initPortfolioSlider(DEFAULT_WORK_ITEMS); });
     });
     </script>
 
