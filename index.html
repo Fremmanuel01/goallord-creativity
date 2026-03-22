@@ -508,13 +508,8 @@
                                 </ul>
                             </div>
                         </div>
-                        <div class="col-3 col-md-2 d-none d-sm-block">
-                            <div class="header-contact">
-                                <a href="mailto:hello@goallordcreativity.com" class="link text-caption" style="white-space:nowrap;font-size:10px">HELLO@GOALLORDCREATIVITY.COM</a>
-                                <p class="text-caption" style="font-size:10px;margin-top:2px">
-                                    WAT <span class="clock"></span>
-                                </p>
-                            </div>
+                        <div class="col-md-2 d-none d-md-flex align-items-center">
+                            <p class="text-caption" style="font-size:10px;margin:0;color:rgba(255,255,255,0.35)">WAT <span class="clock"></span></p>
                         </div>
                         <div class="col-6 col-sm-3 col-md-3 d-flex justify-content-end align-items-center gap-2">
                             <a href="student-login.html" class="tf-btn style-outline d-none d-lg-inline-flex text-caption fw-medium" style="border-color:rgba(30,75,255,0.4);color:#6a9fff;white-space:nowrap;padding:10px 16px;flex-shrink:0">
@@ -523,7 +518,7 @@
                             <a href="login.html" class="tf-btn style-outline d-none d-lg-inline-flex text-caption fw-medium" style="border-color:rgba(214,106,31,0.4);color:var(--primary);white-space:nowrap;padding:10px 16px;flex-shrink:0">
                                 ADMIN
                             </a>
-                            <a href="#contactScroll" class="tf-btn style-fill d-none d-md-inline-flex text-caption fw-medium gl-nav-cta" style="white-space:nowrap;padding:10px 18px;flex-shrink:0">
+                            <a href="#contactScroll" class="tf-btn style-fill d-none d-xl-inline-flex text-caption fw-medium gl-nav-cta" style="white-space:nowrap;padding:8px 14px;flex-shrink:0;font-size:10px;">
                                 START A PROJECT
                             </a>
                             <button type="button" class="btn-mobile-menu open-mb-menu text-caption text-white link" style="white-space:nowrap;gap:6px;flex-shrink:0">
@@ -3143,14 +3138,61 @@
     <!-- Custom Cursor -->
     <div class="gl-cursor" id="glCursor" aria-hidden="true"></div>
 
-    <!-- WhatsApp Floating Button -->
-    <a href="https://wa.me/2348000000000?text=Hi%2C%20I%27d%20like%20to%20discuss%20a%20project%20with%20Goallord%20Creativity"
-       class="gl-whatsapp-btn" target="_blank" rel="noopener noreferrer" aria-label="Chat with us on WhatsApp">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="26" height="26" aria-hidden="true">
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    <!-- Goallord AI Chat Widget -->
+    <div class="gl-chat-fab" id="glChatFab" role="button" aria-label="Chat with GoallordAI" tabindex="0">
+        <div class="gl-chat-fab-ring"></div>
+        <svg width="24" height="24" viewBox="0 0 34 41" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M9.21094 0.400391C15.9908 0.392629 21.8983 0.597548 27.1426 5.65918C35.1922 13.4293 35.2468 26.7035 27.5312 34.7549C22.0053 40.1145 16.6295 40.3989 9.48535 40.4004L0.75 40.3945L0.751953 0.407227L9.21094 0.400391ZM21.5244 6.83496C16.6613 3.86011 10.4273 4.54391 4.91113 4.55664L17.2607 22.3262C19.5017 25.5466 21.7744 28.9254 24.0615 32.0889C24.847 31.468 25.7087 30.3488 26.2646 29.5088C28.7144 25.5207 29.444 20.7119 28.2871 16.1777C27.305 12.2252 25.0035 8.9637 21.5244 6.83496Z" fill="#fff"/>
         </svg>
-        <span class="gl-whatsapp-tooltip">Chat with us</span>
-    </a>
+        <span class="gl-chat-fab-label">Ask AI</span>
+    </div>
+
+    <div class="gl-chat-panel" id="glChatPanel" role="dialog" aria-label="GoallordAI Chat" aria-hidden="true">
+        <!-- Header -->
+        <div class="gl-chat-header">
+            <div class="gl-chat-header-left">
+                <div class="gl-chat-avatar">
+                    <svg width="18" height="22" viewBox="0 0 34 41" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M9.21094 0.400391C15.9908 0.392629 21.8983 0.597548 27.1426 5.65918C35.1922 13.4293 35.2468 26.7035 27.5312 34.7549C22.0053 40.1145 16.6295 40.3989 9.48535 40.4004L0.75 40.3945L0.751953 0.407227L9.21094 0.400391ZM21.5244 6.83496C16.6613 3.86011 10.4273 4.54391 4.91113 4.55664L17.2607 22.3262C19.5017 25.5466 21.7744 28.9254 24.0615 32.0889C24.847 31.468 25.7087 30.3488 26.2646 29.5088C28.7144 25.5207 29.444 20.7119 28.2871 16.1777C27.305 12.2252 25.0035 8.9637 21.5244 6.83496Z" fill="#D66A1F"/>
+                    </svg>
+                    <span class="gl-chat-online-dot"></span>
+                </div>
+                <div>
+                    <p class="gl-chat-header-name">GoallordAI</p>
+                    <p class="gl-chat-header-sub">Powered by Gemini · Online</p>
+                </div>
+            </div>
+            <button class="gl-chat-close" id="glChatClose" aria-label="Close chat">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+
+        <!-- Messages -->
+        <div class="gl-chat-messages" id="glChatMessages">
+            <div class="gl-chat-msg gl-chat-msg--ai">
+                <div class="gl-chat-bubble">
+                    Hi there! 👋 I'm GoallordAI — ask me anything about our services, pricing, or how to get started.
+                </div>
+                <span class="gl-chat-time">Just now</span>
+            </div>
+            <!-- Quick replies -->
+            <div class="gl-chat-quick-replies" id="glChatQuickReplies">
+                <button class="gl-chat-qr" data-q="What services do you offer?">What services do you offer?</button>
+                <button class="gl-chat-qr" data-q="What's your pricing?">What's your pricing?</button>
+                <button class="gl-chat-qr" data-q="How long does a project take?">How long does a project take?</button>
+                <button class="gl-chat-qr" data-q="Do you work with international clients?">Do you work internationally?</button>
+            </div>
+        </div>
+
+        <!-- Input -->
+        <div class="gl-chat-input-wrap">
+            <input class="gl-chat-input" id="glChatInput" type="text" placeholder="Ask anything about Goallord…" autocomplete="off" maxlength="500">
+            <button class="gl-chat-send" id="glChatSend" aria-label="Send message">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+        </div>
+        <p class="gl-chat-footer">GoallordAI can make mistakes. Verify important info.</p>
+    </div>
 
     <!-- Custom Cursor JS -->
     <script>
@@ -3187,6 +3229,125 @@
             rafId = requestAnimationFrame(loop);
         }
         loop();
+    })();
+    </script>
+
+    <!-- GoallordAI Chat Logic -->
+    <script>
+    (function() {
+        var fab      = document.getElementById('glChatFab');
+        var panel    = document.getElementById('glChatPanel');
+        var closeBtn = document.getElementById('glChatClose');
+        var messages = document.getElementById('glChatMessages');
+        var input    = document.getElementById('glChatInput');
+        var sendBtn  = document.getElementById('glChatSend');
+        var quickR   = document.getElementById('glChatQuickReplies');
+        var history  = []; // {role, content}
+        var isOpen   = false;
+        var isLoading = false;
+
+        function toggleChat() {
+            isOpen = !isOpen;
+            panel.classList.toggle('is-open', isOpen);
+            fab.classList.toggle('is-open', isOpen);
+            panel.setAttribute('aria-hidden', !isOpen);
+            if (isOpen) { setTimeout(function() { input.focus(); }, 320); }
+        }
+
+        fab.addEventListener('click', toggleChat);
+        fab.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') toggleChat(); });
+        closeBtn.addEventListener('click', toggleChat);
+
+        function timeStr() {
+            var d = new Date();
+            return d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0');
+        }
+
+        function scrollBottom() {
+            setTimeout(function() { messages.scrollTop = messages.scrollHeight; }, 50);
+        }
+
+        function addMsg(role, text) {
+            var div  = document.createElement('div');
+            div.className = 'gl-chat-msg gl-chat-msg--' + (role === 'user' ? 'user' : 'ai');
+            var bubble = document.createElement('div');
+            bubble.className = 'gl-chat-bubble';
+            bubble.textContent = text;
+            var time = document.createElement('span');
+            time.className = 'gl-chat-time';
+            time.textContent = timeStr();
+            div.appendChild(bubble);
+            div.appendChild(time);
+            messages.appendChild(div);
+            scrollBottom();
+            return div;
+        }
+
+        function showTyping() {
+            var wrap = document.createElement('div');
+            wrap.className = 'gl-chat-msg gl-chat-msg--ai';
+            wrap.id = 'glTyping';
+            wrap.innerHTML = '<div class="gl-chat-typing"><span></span><span></span><span></span></div>';
+            messages.appendChild(wrap);
+            scrollBottom();
+        }
+
+        function hideTyping() {
+            var t = document.getElementById('glTyping');
+            if (t) t.remove();
+        }
+
+        function setLoading(state) {
+            isLoading = state;
+            sendBtn.disabled = state;
+            input.disabled   = state;
+        }
+
+        function sendMessage(text) {
+            text = text.trim();
+            if (!text || isLoading) return;
+
+            // Hide quick replies on first real message
+            if (quickR) { quickR.style.display = 'none'; }
+
+            addMsg('user', text);
+            history.push({ role: 'user', content: text });
+            input.value = '';
+            setLoading(true);
+            showTyping();
+
+            fetch('/api/chat', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ messages: history })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                hideTyping();
+                var reply = d.reply || 'Sorry, something went wrong. Please try again.';
+                addMsg('ai', reply);
+                history.push({ role: 'assistant', content: reply });
+                setLoading(false);
+            })
+            .catch(function() {
+                hideTyping();
+                addMsg('ai', 'I\'m having trouble connecting right now. Please email us at hello@goallordcreativity.com');
+                setLoading(false);
+            });
+        }
+
+        sendBtn.addEventListener('click', function() { sendMessage(input.value); });
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input.value); }
+        });
+
+        // Quick reply buttons
+        if (quickR) {
+            quickR.addEventListener('click', function(e) {
+                var btn = e.target.closest('.gl-chat-qr');
+                if (btn) sendMessage(btn.dataset.q);
+            });
+        }
     })();
     </script>
 

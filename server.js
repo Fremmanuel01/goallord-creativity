@@ -55,6 +55,7 @@ app.use('/api/assignments',   require('./routes/assignments'));
 app.use('/api/flashcards',    require('./routes/flashcards'));
 app.use('/api/curriculum',    require('./routes/curriculum'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/chat',          require('./routes/chat'));
 
 // ─── FALLBACK: serve index.html for any unmatched GET ─────────
 app.get('*', (req, res) => {
