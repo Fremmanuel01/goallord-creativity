@@ -30,44 +30,40 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'Invalid messages payload' });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return res.status(500).json({ error: 'Chat service not configured' });
   }
 
-  // Build Gemini contents array — prepend system turn
-  const contents = [
-    { role: 'user',  parts: [{ text: SYSTEM_PROMPT }] },
-    { role: 'model', parts: [{ text: 'Understood! I\'m GoallordAI, ready to help visitors learn about Goallord Creativity Limited. How can I assist you today?' }] },
-    ...messages.map(m => ({
-      role:  m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }]
-    }))
-  ];
-
   const body = JSON.stringify({
-    contents,
-    generationConfig: {
-      temperature:     0.7,
-      maxOutputTokens: 300,
-      topP:            0.9
-    }
+    model:      'claude-sonnet-4-5',
+    max_tokens: 400,
+    system:     SYSTEM_PROMPT,
+    messages:   messages.map(m => ({
+      role:    m.role === 'assistant' ? 'assistant' : 'user',
+      content: m.content
+    }))
   });
 
   const options = {
-    hostname: 'generativelanguage.googleapis.com',
-    path:     `/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    hostname: 'api.anthropic.com',
+    path:     '/v1/messages',
     method:   'POST',
-    headers:  { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+    headers:  {
+      'Content-Type':      'application/json',
+      'Content-Length':    Buffer.byteLength(body),
+      'x-api-key':         apiKey,
+      'anthropic-version': '2023-06-01'
+    }
   };
 
-  const geminiReq = https.request(options, geminiRes => {
+  const claudeReq = https.request(options, claudeRes => {
     let data = '';
-    geminiRes.on('data', chunk => { data += chunk; });
-    geminiRes.on('end', () => {
+    claudeRes.on('data', chunk => { data += chunk; });
+    claudeRes.on('end', () => {
       try {
         const parsed = JSON.parse(data);
-        const text   = parsed?.candidates?.[0]?.content?.parts?.[0]?.text;
+        const text   = parsed?.content?.[0]?.text;
         if (!text) return res.status(502).json({ error: 'Empty response from AI' });
         res.json({ reply: text });
       } catch (e) {
@@ -76,13 +72,13 @@ router.post('/', async (req, res) => {
     });
   });
 
-  geminiReq.on('error', err => {
-    console.error('Gemini request error:', err);
+  claudeReq.on('error', err => {
+    console.error('Claude request error:', err);
     res.status(502).json({ error: 'AI service unavailable' });
   });
 
-  geminiReq.write(body);
-  geminiReq.end();
+  claudeReq.write(body);
+  claudeReq.end();
 });
 
 module.exports = router;
