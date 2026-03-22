@@ -1,6 +1,7 @@
-const express = require('express');
-const https   = require('https');
-const router  = express.Router();
+const express  = require('express');
+const https    = require('https');
+const router   = express.Router();
+const Conversation = require('../models/Conversation');
 
 const SYSTEM_PROMPT = `You are GoallordAI, the official AI assistant for Goallord Creativity Limited — a full-service web design and development agency based in Onitsha, Anambra State, Nigeria.
 
@@ -23,62 +24,112 @@ Rules:
 - If asked something outside your knowledge, say you'll connect them with the team
 - Respond in the same language the user writes in`;
 
-router.post('/', async (req, res) => {
-  const { messages } = req.body;
-
-  if (!messages || !Array.isArray(messages)) {
-    return res.status(400).json({ error: 'Invalid messages payload' });
-  }
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: 'Chat service not configured' });
-  }
-
-  const body = JSON.stringify({
-    model:      'claude-sonnet-4-5',
-    max_tokens: 400,
-    system:     SYSTEM_PROMPT,
-    messages:   messages.map(m => ({
-      role:    m.role === 'assistant' ? 'assistant' : 'user',
-      content: m.content
-    }))
-  });
-
-  const options = {
-    hostname: 'api.anthropic.com',
-    path:     '/v1/messages',
-    method:   'POST',
-    headers:  {
-      'Content-Type':      'application/json',
-      'Content-Length':    Buffer.byteLength(body),
-      'x-api-key':         apiKey,
-      'anthropic-version': '2023-06-01'
-    }
-  };
-
-  const claudeReq = https.request(options, claudeRes => {
-    let data = '';
-    claudeRes.on('data', chunk => { data += chunk; });
-    claudeRes.on('end', () => {
-      try {
-        const parsed = JSON.parse(data);
-        const text   = parsed?.content?.[0]?.text;
-        if (!text) return res.status(502).json({ error: 'Empty response from AI' });
-        res.json({ reply: text });
-      } catch (e) {
-        res.status(502).json({ error: 'Failed to parse AI response' });
-      }
+function callClaude(messages) {
+  return new Promise((resolve, reject) => {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const body = JSON.stringify({
+      model:      'claude-sonnet-4-5',
+      max_tokens: 400,
+      system:     SYSTEM_PROMPT,
+      messages:   messages.map(m => ({
+        role:    m.role === 'assistant' || m.role === 'agent' ? 'assistant' : 'user',
+        content: m.content
+      }))
     });
-  });
 
-  claudeReq.on('error', err => {
-    console.error('Claude request error:', err);
-    res.status(502).json({ error: 'AI service unavailable' });
-  });
+    const options = {
+      hostname: 'api.anthropic.com',
+      path:     '/v1/messages',
+      method:   'POST',
+      headers:  {
+        'Content-Type':      'application/json',
+        'Content-Length':    Buffer.byteLength(body),
+        'x-api-key':         apiKey,
+        'anthropic-version': '2023-06-01'
+      }
+    };
 
-  claudeReq.write(body);
-  claudeReq.end();
+    const req = https.request(options, res => {
+      let data = '';
+      res.on('data', c => { data += c; });
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          const text   = parsed?.content?.[0]?.text;
+          if (!text) return reject(new Error('Empty response'));
+          resolve(text);
+        } catch (e) { reject(e); }
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
+// POST /api/chat  — visitor sends a message
+router.post('/', async (req, res) => {
+  const { messages, sessionId, visitorPage } = req.body;
+  if (!messages || !Array.isArray(messages) || !sessionId) {
+    return res.status(400).json({ error: 'Invalid payload' });
+  }
+
+  const io = req.app.get('io');
+
+  try {
+    // Upsert conversation
+    let convo = await Conversation.findOne({ sessionId });
+    if (!convo) {
+      convo = new Conversation({ sessionId, visitorPage: visitorPage || '/', messages: [] });
+    }
+
+    // Save latest user message
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg?.role === 'user') {
+      convo.messages.push({ role: 'user', content: lastMsg.content });
+      convo.unreadByAgent += 1;
+    }
+
+    // If a human agent has taken over — don't call AI, just save & notify dashboard
+    if (convo.mode === 'human') {
+      await convo.save();
+      if (io) io.to('agents').emit('visitor:message', {
+        sessionId,
+        message: { role: 'user', content: lastMsg.content, timestamp: new Date() }
+      });
+      return res.json({ reply: null, mode: 'human' });
+    }
+
+    // AI mode — call Claude
+    const reply = await callClaude(messages);
+    convo.messages.push({ role: 'assistant', content: reply });
+    await convo.save();
+
+    // Notify dashboard in real-time
+    if (io) {
+      io.to('agents').emit('visitor:message', {
+        sessionId,
+        message: { role: 'user', content: lastMsg.content, timestamp: new Date() }
+      });
+      io.to('agents').emit('ai:reply', {
+        sessionId,
+        message: { role: 'assistant', content: reply, timestamp: new Date() }
+      });
+      // New conversation notification
+      if (convo.messages.length <= 2) {
+        io.to('agents').emit('new:conversation', {
+          sessionId,
+          preview: lastMsg.content,
+          timestamp: new Date()
+        });
+      }
+    }
+
+    res.json({ reply, mode: 'ai' });
+  } catch (err) {
+    console.error('Chat error:', err.message);
+    res.status(500).json({ error: 'AI service error' });
+  }
 });
 
 module.exports = router;

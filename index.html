@@ -3232,19 +3232,62 @@
     })();
     </script>
 
+    <!-- Socket.io client -->
+    <script src="/socket.io/socket.io.js"></script>
+
     <!-- GoallordAI Chat Logic -->
     <script>
     (function() {
         var fab      = document.getElementById('glChatFab');
         var panel    = document.getElementById('glChatPanel');
         var closeBtn = document.getElementById('glChatClose');
-        var messages = document.getElementById('glChatMessages');
+        var msgArea  = document.getElementById('glChatMessages');
         var input    = document.getElementById('glChatInput');
         var sendBtn  = document.getElementById('glChatSend');
         var quickR   = document.getElementById('glChatQuickReplies');
-        var history  = []; // {role, content}
+        var history  = [];
         var isOpen   = false;
         var isLoading = false;
+        var mode     = 'ai'; // 'ai' or 'human'
+
+        // Session ID — persists across page reloads
+        var sessionId = localStorage.getItem('gl_chat_session');
+        if (!sessionId) {
+            sessionId = 'v_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+            localStorage.setItem('gl_chat_session', sessionId);
+        }
+
+        // Socket.io — join visitor room for real-time agent replies
+        var socket = io();
+        socket.emit('visitor:join', { sessionId: sessionId });
+
+        // Agent replied
+        socket.on('agent:reply', function(data) {
+            hideTyping();
+            setLoading(false);
+            addMsg('agent', data.content, data.agentName);
+            history.push({ role: 'assistant', content: data.content });
+        });
+
+        // Mode changed (AI handed back or taken over)
+        socket.on('mode:changed', function(data) {
+            mode = data.mode;
+            updateModeIndicator();
+        });
+
+        // Conversation closed by agent
+        socket.on('conversation:closed', function() {
+            addMsg('ai', 'This conversation has been closed. Thank you for chatting with us!');
+            input.disabled = true;
+            sendBtn.disabled = true;
+        });
+
+        function updateModeIndicator() {
+            var sub = panel.querySelector('.gl-chat-header-sub');
+            if (sub) {
+                sub.textContent = mode === 'human' ? 'Live Agent · Online' : 'Powered by GoallordAI · Online';
+            }
+        }
 
         function toggleChat() {
             isOpen = !isOpen;
@@ -3264,31 +3307,33 @@
         }
 
         function scrollBottom() {
-            setTimeout(function() { messages.scrollTop = messages.scrollHeight; }, 50);
+            setTimeout(function() { msgArea.scrollTop = msgArea.scrollHeight; }, 50);
         }
 
-        function addMsg(role, text) {
-            var div  = document.createElement('div');
-            div.className = 'gl-chat-msg gl-chat-msg--' + (role === 'user' ? 'user' : 'ai');
+        function addMsg(role, text, agentName) {
+            var div    = document.createElement('div');
+            var isUser = role === 'user';
+            div.className = 'gl-chat-msg gl-chat-msg--' + (isUser ? 'user' : 'ai');
             var bubble = document.createElement('div');
             bubble.className = 'gl-chat-bubble';
             bubble.textContent = text;
-            var time = document.createElement('span');
-            time.className = 'gl-chat-time';
-            time.textContent = timeStr();
+            var meta = document.createElement('span');
+            meta.className = 'gl-chat-time';
+            var label = isUser ? '' : (role === 'agent' && agentName ? agentName + ' · ' : '');
+            meta.textContent = label + timeStr();
             div.appendChild(bubble);
-            div.appendChild(time);
-            messages.appendChild(div);
+            div.appendChild(meta);
+            msgArea.appendChild(div);
             scrollBottom();
-            return div;
         }
 
         function showTyping() {
+            if (document.getElementById('glTyping')) return;
             var wrap = document.createElement('div');
             wrap.className = 'gl-chat-msg gl-chat-msg--ai';
             wrap.id = 'glTyping';
             wrap.innerHTML = '<div class="gl-chat-typing"><span></span><span></span><span></span></div>';
-            messages.appendChild(wrap);
+            msgArea.appendChild(wrap);
             scrollBottom();
         }
 
@@ -3306,8 +3351,6 @@
         function sendMessage(text) {
             text = text.trim();
             if (!text || isLoading) return;
-
-            // Hide quick replies on first real message
             if (quickR) { quickR.style.display = 'none'; }
 
             addMsg('user', text);
@@ -3319,10 +3362,16 @@
             fetch('/api/chat', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ messages: history })
+                body:    JSON.stringify({ messages: history, sessionId: sessionId, visitorPage: window.location.pathname })
             })
             .then(function(r) { return r.json(); })
             .then(function(d) {
+                // Human mode — wait for agent reply via socket
+                if (d.mode === 'human') {
+                    mode = 'human';
+                    updateModeIndicator();
+                    return; // typing stays until agent replies
+                }
                 hideTyping();
                 var reply = d.reply || 'Sorry, something went wrong. Please try again.';
                 addMsg('ai', reply);
@@ -3331,7 +3380,7 @@
             })
             .catch(function() {
                 hideTyping();
-                addMsg('ai', 'I\'m having trouble connecting right now. Please email us at hello@goallordcreativity.com');
+                addMsg('ai', 'I\'m having trouble connecting. Please email us at hello@goallordcreativity.com');
                 setLoading(false);
             });
         }
@@ -3340,8 +3389,6 @@
         input.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input.value); }
         });
-
-        // Quick reply buttons
         if (quickR) {
             quickR.addEventListener('click', function(e) {
                 var btn = e.target.closest('.gl-chat-qr');

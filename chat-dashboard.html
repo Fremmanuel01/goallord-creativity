@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GoallordAI — Live Chat Dashboard</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg:       #0d0f14;
+    --surface:  #13151c;
+    --card:     #181b24;
+    --border:   rgba(255,255,255,0.07);
+    --orange:   #D66A1F;
+    --orange-l: rgba(214,106,31,0.12);
+    --text:     #f0f2f7;
+    --muted:    rgba(255,255,255,0.4);
+    --green:    #22c55e;
+    --blue:     #3b82f6;
+    --red:      #ef4444;
+}
+
+html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
+
+/* ── Login Screen ── */
+#loginScreen {
+    display: flex; align-items: center; justify-content: center; height: 100vh;
+    background: radial-gradient(ellipse at 60% 40%, rgba(214,106,31,0.08) 0%, transparent 60%);
+}
+.login-box {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    padding: 48px 40px; width: 360px; text-align: center;
+}
+.login-logo { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 28px; }
+.login-logo svg { flex-shrink: 0; }
+.login-logo-text { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+.login-logo-text span { color: var(--orange); }
+.login-box h2 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.login-box p { font-size: 12px; color: var(--muted); margin-bottom: 28px; }
+.login-field { text-align: left; margin-bottom: 14px; }
+.login-field label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+.login-field input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; padding: 11px 14px; font-size: 14px; color: var(--text); outline: none; transition: border-color 0.2s; }
+.login-field input:focus { border-color: rgba(214,106,31,0.5); }
+.login-btn { width: 100%; background: var(--orange); border: none; border-radius: 10px; padding: 13px; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; margin-top: 6px; letter-spacing: 0.3px; transition: opacity 0.2s; }
+.login-btn:hover { opacity: 0.88; }
+.login-error { font-size: 12px; color: var(--red); margin-top: 10px; display: none; }
+
+/* ── App Layout ── */
+#app { display: none; height: 100vh; }
+.app-layout { display: grid; grid-template-columns: 300px 1fr; height: 100vh; }
+
+/* ── Sidebar ── */
+.sidebar {
+    background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow: hidden;
+}
+.sidebar-header {
+    padding: 18px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.sidebar-brand { display: flex; align-items: center; gap: 8px; }
+.sidebar-brand-name { font-size: 13px; font-weight: 800; letter-spacing: -0.3px; }
+.sidebar-brand-name span { color: var(--orange); }
+.agent-badge { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.25); color: var(--green); font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; display: flex; align-items: center; gap: 4px; }
+.agent-badge::before { content: ''; width: 6px; height: 6px; background: var(--green); border-radius: 50%; flex-shrink: 0; }
+
+.sidebar-filters { padding: 10px 12px; display: flex; gap: 6px; flex-shrink: 0; }
+.filter-btn { flex: 1; background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; font-size: 10px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; text-transform: uppercase; }
+.filter-btn.active { background: var(--orange-l); border-color: rgba(214,106,31,0.3); color: var(--orange); }
+
+.conv-list { flex: 1; overflow-y: auto; }
+.conv-list::-webkit-scrollbar { width: 3px; }
+.conv-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+
+.conv-item {
+    padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer;
+    transition: background 0.15s; position: relative;
+}
+.conv-item:hover { background: rgba(255,255,255,0.03); }
+.conv-item.active { background: var(--orange-l); border-left: 2px solid var(--orange); }
+.conv-item-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.conv-session { font-size: 11px; font-weight: 700; color: var(--text); letter-spacing: 0.3px; }
+.conv-time { font-size: 10px; color: var(--muted); }
+.conv-preview { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+.conv-badges { display: flex; align-items: center; gap: 5px; margin-top: 6px; }
+.badge { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; letter-spacing: 0.5px; text-transform: uppercase; }
+.badge-ai     { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.25); }
+.badge-human  { background: rgba(34,197,94,0.15);  color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
+.badge-closed { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+.unread-dot { position: absolute; top: 14px; right: 14px; width: 8px; height: 8px; background: var(--orange); border-radius: 50%; }
+
+.sidebar-empty { padding: 48px 20px; text-align: center; color: var(--muted); font-size: 13px; }
+
+/* ── Main Chat Area ── */
+.chat-main { display: flex; flex-direction: column; overflow: hidden; }
+
+/* Empty state */
+.chat-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+.chat-empty svg { opacity: 0.15; }
+.chat-empty p { font-size: 14px; color: var(--muted); }
+
+/* Chat header */
+.chat-header {
+    padding: 14px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface);
+}
+.chat-header-left { display: flex; align-items: center; gap: 12px; }
+.chat-header-session { font-size: 13px; font-weight: 700; }
+.chat-header-meta { font-size: 11px; color: var(--muted); }
+.chat-header-actions { display: flex; align-items: center; gap: 8px; }
+.action-btn {
+    padding: 7px 14px; border-radius: 8px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.3px; cursor: pointer; border: none; transition: all 0.2s;
+    text-transform: uppercase;
+}
+.action-btn-takeover { background: var(--orange); color: #fff; }
+.action-btn-takeover:hover { opacity: 0.88; }
+.action-btn-handback { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+.action-btn-handback:hover { background: rgba(59,130,246,0.25); }
+.action-btn-close { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+.action-btn-close:hover { background: rgba(239,68,68,0.22); }
+
+/* Messages */
+.chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+
+.msg { display: flex; flex-direction: column; max-width: 70%; animation: fadeUp 0.2s ease both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.msg-user      { align-self: flex-end; align-items: flex-end; }
+.msg-assistant { align-self: flex-start; align-items: flex-start; }
+.msg-agent     { align-self: flex-end; align-items: flex-end; }
+
+.msg-bubble { padding: 10px 14px; border-radius: 14px; font-size: 13.5px; line-height: 1.6; word-break: break-word; }
+.msg-user .msg-bubble      { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.08); border-bottom-right-radius: 4px; }
+.msg-assistant .msg-bubble { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.2); border-bottom-left-radius: 4px; color: #c8d8ff; }
+.msg-agent .msg-bubble     { background: var(--orange); color: #fff; border-bottom-right-radius: 4px; }
+.msg-meta { font-size: 10px; color: var(--muted); padding: 0 4px; margin-top: 3px; }
+.msg-label { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 2px 7px; border-radius: 20px; margin-bottom: 4px; }
+.msg-label-ai    { background: rgba(59,130,246,0.15); color: var(--blue); }
+.msg-label-agent { background: rgba(214,106,31,0.15); color: var(--orange); }
+
+/* Mode banner */
+.mode-banner { padding: 8px 20px; font-size: 11px; font-weight: 600; text-align: center; letter-spacing: 0.3px; flex-shrink: 0; }
+.mode-banner-ai    { background: rgba(59,130,246,0.08); color: var(--blue); border-bottom: 1px solid rgba(59,130,246,0.15); }
+.mode-banner-human { background: rgba(34,197,94,0.08); color: var(--green); border-bottom: 1px solid rgba(34,197,94,0.15); }
+
+/* Reply input */
+.reply-area { padding: 14px 16px; border-top: 1px solid var(--border); flex-shrink: 0; background: var(--surface); }
+.reply-area.disabled { opacity: 0.4; pointer-events: none; }
+.reply-input-row { display: flex; gap: 8px; }
+.reply-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; padding: 11px 14px; font-size: 13px; color: var(--text); outline: none; resize: none; transition: border-color 0.2s; font-family: inherit; }
+.reply-input:focus { border-color: rgba(214,106,31,0.5); }
+.reply-send { width: 42px; height: 42px; background: var(--orange); border: none; border-radius: 10px; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: opacity 0.2s; align-self: flex-end; }
+.reply-send:hover { opacity: 0.88; }
+.reply-hint { font-size: 10px; color: var(--muted); margin-top: 6px; }
+
+/* Notification toast */
+.notif-toast {
+    position: fixed; top: 16px; right: 16px; z-index: 9999;
+    background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--orange);
+    border-radius: 12px; padding: 14px 16px; min-width: 260px; max-width: 320px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    animation: toast-in 0.3s ease both;
+    cursor: pointer;
+}
+@keyframes toast-in { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.notif-toast-title { font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+.notif-toast-body  { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Stats bar */
+.stats-bar {
+    display: flex; gap: 16px; padding: 10px 16px; border-bottom: 1px solid var(--border);
+    flex-shrink: 0; background: var(--surface);
+}
+.stat-chip { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+.stat-chip strong { color: var(--text); }
+.stat-chip .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+@media (max-width: 768px) {
+    .app-layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="loginScreen">
+    <div class="login-box">
+        <div class="login-logo">
+            <svg width="22" height="26" viewBox="0 0 34 41" fill="none">
+                <path d="M9.21094 0.400391C15.9908 0.392629 21.8983 0.597548 27.1426 5.65918C35.1922 13.4293 35.2468 26.7035 27.5312 34.7549C22.0053 40.1145 16.6295 40.3989 9.48535 40.4004L0.75 40.3945L0.751953 0.407227L9.21094 0.400391ZM21.5244 6.83496C16.6613 3.86011 10.4273 4.54391 4.91113 4.55664L17.2607 22.3262C19.5017 25.5466 21.7744 28.9254 24.0615 32.0889C24.847 31.468 25.7087 30.3488 26.2646 29.5088C28.7144 25.5207 29.444 20.7119 28.2871 16.1777C27.305 12.2252 25.0035 8.9637 21.5244 6.83496Z" fill="#D66A1F"/>
+            </svg>
+            <div class="login-logo-text">GOAL<span>LORD</span></div>
+        </div>
+        <h2>Chat Dashboard</h2>
+        <p>Sign in to manage live conversations</p>
+        <div class="login-field">
+            <label>Email</label>
+            <input type="email" id="loginEmail" placeholder="admin@goallordcreativity.com" autocomplete="email">
+        </div>
+        <div class="login-field">
+            <label>Password</label>
+            <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="login-btn" id="loginBtn">Sign In</button>
+        <p class="login-error" id="loginError"></p>
+    </div>
+</div>
+
+<!-- App -->
+<div id="app">
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <svg width="16" height="20" viewBox="0 0 34 41" fill="none">
+                        <path d="M9.21094 0.400391C15.9908 0.392629 21.8983 0.597548 27.1426 5.65918C35.1922 13.4293 35.2468 26.7035 27.5312 34.7549C22.0053 40.1145 16.6295 40.3989 9.48535 40.4004L0.75 40.3945L0.751953 0.407227L9.21094 0.400391ZM21.5244 6.83496C16.6613 3.86011 10.4273 4.54391 4.91113 4.55664L17.2607 22.3262C19.5017 25.5466 21.7744 28.9254 24.0615 32.0889C24.847 31.468 25.7087 30.3488 26.2646 29.5088C28.7144 25.5207 29.444 20.7119 28.2871 16.1777C27.305 12.2252 25.0035 8.9637 21.5244 6.83496Z" fill="#D66A1F"/>
+                    </svg>
+                    <span class="sidebar-brand-name">GOAL<span>LORD</span> AI</span>
+                </div>
+                <div class="agent-badge" id="agentBadge">Online</div>
+            </div>
+            <div class="stats-bar">
+                <div class="stat-chip"><div class="dot" style="background:#D66A1F"></div> Active: <strong id="statActive">0</strong></div>
+                <div class="stat-chip"><div class="dot" style="background:#22c55e"></div> Human: <strong id="statHuman">0</strong></div>
+                <div class="stat-chip"><div class="dot" style="background:rgba(255,255,255,0.2)"></div> Total: <strong id="statTotal">0</strong></div>
+            </div>
+            <div class="sidebar-filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="active">Active</button>
+                <button class="filter-btn" data-filter="human">Human</button>
+                <button class="filter-btn" data-filter="closed">Closed</button>
+            </div>
+            <div class="conv-list" id="convList">
+                <div class="sidebar-empty">No conversations yet</div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="chat-main" id="chatMain">
+            <div class="chat-empty" id="chatEmpty">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <p>Select a conversation to view</p>
+            </div>
+            <div id="chatView" style="display:none; flex-direction:column; height:100%;">
+                <div class="chat-header">
+                    <div class="chat-header-left">
+                        <div>
+                            <div class="chat-header-session" id="viewSessionId">—</div>
+                            <div class="chat-header-meta" id="viewMeta">—</div>
+                        </div>
+                    </div>
+                    <div class="chat-header-actions">
+                        <button class="action-btn action-btn-takeover" id="btnTakeover">Take Over</button>
+                        <button class="action-btn action-btn-handback" id="btnHandback" style="display:none">Hand Back to AI</button>
+                        <button class="action-btn action-btn-close" id="btnClose">Close</button>
+                    </div>
+                </div>
+                <div id="modeBanner" class="mode-banner mode-banner-ai">🤖 GoallordAI is handling this conversation</div>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="reply-area disabled" id="replyArea">
+                    <div class="reply-input-row">
+                        <textarea class="reply-input" id="replyInput" rows="1" placeholder="Type your reply… (only visible in human mode)"></textarea>
+                        <button class="reply-send" id="replySend">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        </button>
+                    </div>
+                    <p class="reply-hint" id="replyHint">Take over the conversation to reply directly to the visitor.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+(function() {
+    var token      = localStorage.getItem('gl_admin_token');
+    var agentName  = '';
+    var socket     = null;
+    var allConvos  = [];
+    var activeConvo = null;
+    var currentFilter = 'all';
+
+    // ── Login ────────────────────────────────────────────────────
+    document.getElementById('loginBtn').addEventListener('click', doLogin);
+    document.getElementById('loginPassword').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') doLogin();
+    });
+
+    function doLogin() {
+        var email = document.getElementById('loginEmail').value.trim();
+        var pass  = document.getElementById('loginPassword').value;
+        var errEl = document.getElementById('loginError');
+        errEl.style.display = 'none';
+
+        fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password: pass })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.token) {
+                localStorage.setItem('gl_admin_token', d.token);
+                token = d.token;
+                agentName = d.user.name;
+                initApp();
+            } else {
+                errEl.textContent = d.error || 'Login failed';
+                errEl.style.display = 'block';
+            }
+        })
+        .catch(() => {
+            errEl.textContent = 'Connection error';
+            errEl.style.display = 'block';
+        });
+    }
+
+    function initApp() {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        document.getElementById('agentBadge').textContent = agentName || 'Online';
+        connectSocket();
+        loadConversations();
+        requestNotifPermission();
+    }
+
+    // ── Auto-login if token exists ───────────────────────────────
+    if (token) {
+        fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => r.json())
+        .then(d => {
+            if (d.user) { agentName = d.user.name; initApp(); }
+            else { localStorage.removeItem('gl_admin_token'); }
+        })
+        .catch(() => {});
+    }
+
+    // ── Socket ───────────────────────────────────────────────────
+    function connectSocket() {
+        socket = io();
+        socket.emit('agent:join', { token });
+
+        socket.on('new:conversation', function(data) {
+            loadConversations();
+            showToast('New conversation', data.preview, data.sessionId);
+            playBeep();
+        });
+
+        socket.on('visitor:message', function(data) {
+            // Update conversation in list
+            var c = allConvos.find(c => c.sessionId === data.sessionId);
+            if (c) {
+                c.messages = c.messages || [];
+                c.messages.push(data.message);
+                c.unreadByAgent = (c.unreadByAgent || 0) + 1;
+                c.updatedAt = new Date();
+                renderConvList();
+                if (activeConvo && activeConvo.sessionId === data.sessionId) {
+                    appendMsg(data.message);
+                    markRead(data.sessionId);
+                } else {
+                    showToast('New message', data.message.content, data.sessionId);
+                    playBeep();
+                }
+            } else {
+                loadConversations();
+            }
+        });
+
+        socket.on('ai:reply', function(data) {
+            var c = allConvos.find(c => c.sessionId === data.sessionId);
+            if (c) {
+                c.messages = c.messages || [];
+                c.messages.push(data.message);
+                renderConvList();
+                if (activeConvo && activeConvo.sessionId === data.sessionId) {
+                    appendMsg(data.message);
+                }
+            }
+        });
+
+        socket.on('mode:changed', function(data) {
+            var c = allConvos.find(c => c.sessionId === data.sessionId);
+            if (c) {
+                c.mode = data.mode;
+                renderConvList();
+                if (activeConvo && activeConvo.sessionId === data.sessionId) {
+                    activeConvo.mode = data.mode;
+                    updateModeUI();
+                }
+            }
+        });
+    }
+
+    // ── Load Conversations ───────────────────────────────────────
+    function loadConversations() {
+        fetch('/api/conversations', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => r.json())
+        .then(d => {
+            allConvos = d.conversations || [];
+            renderConvList();
+            updateStats();
+        });
+    }
+
+    function updateStats() {
+        var active = allConvos.filter(c => c.status === 'active').length;
+        var human  = allConvos.filter(c => c.mode === 'human').length;
+        document.getElementById('statActive').textContent = active;
+        document.getElementById('statHuman').textContent  = human;
+        document.getElementById('statTotal').textContent  = allConvos.length;
+    }
+
+    // ── Render Conversation List ─────────────────────────────────
+    function renderConvList() {
+        var list = document.getElementById('convList');
+        var filtered = allConvos.filter(function(c) {
+            if (currentFilter === 'all')    return true;
+            if (currentFilter === 'active') return c.status === 'active';
+            if (currentFilter === 'human')  return c.mode === 'human';
+            if (currentFilter === 'closed') return c.status === 'closed';
+            return true;
+        });
+
+        if (!filtered.length) {
+            list.innerHTML = '<div class="sidebar-empty">No conversations</div>';
+            return;
+        }
+
+        list.innerHTML = filtered.map(function(c) {
+            var last    = c.messages && c.messages.length ? c.messages[c.messages.length - 1] : null;
+            var preview = last ? last.content.slice(0, 60) : 'No messages yet';
+            var time    = c.updatedAt ? relTime(new Date(c.updatedAt)) : '';
+            var isActive = activeConvo && activeConvo.sessionId === c.sessionId;
+            var badge   = c.status === 'closed' ? '<span class="badge badge-closed">Closed</span>'
+                        : c.mode === 'human'    ? '<span class="badge badge-human">Live</span>'
+                                                 : '<span class="badge badge-ai">AI</span>';
+            var unread  = c.unreadByAgent > 0 ? '<div class="unread-dot"></div>' : '';
+            return '<div class="conv-item' + (isActive ? ' active' : '') + '" data-sid="' + c.sessionId + '">'
+                 + '<div class="conv-item-top"><span class="conv-session">' + shortId(c.sessionId) + '</span><span class="conv-time">' + time + '</span></div>'
+                 + '<div class="conv-preview">' + escHtml(preview) + '</div>'
+                 + '<div class="conv-badges">' + badge + '</div>'
+                 + unread
+                 + '</div>';
+        }).join('');
+
+        list.querySelectorAll('.conv-item').forEach(function(el) {
+            el.addEventListener('click', function() {
+                openConversation(el.dataset.sid);
+            });
+        });
+
+        updateStats();
+    }
+
+    // ── Open Conversation ────────────────────────────────────────
+    function openConversation(sessionId) {
+        var c = allConvos.find(c => c.sessionId === sessionId);
+        if (!c) return;
+        activeConvo = c;
+
+        document.getElementById('chatEmpty').style.display = 'none';
+        var chatView = document.getElementById('chatView');
+        chatView.style.display = 'flex';
+
+        document.getElementById('viewSessionId').textContent = shortId(sessionId);
+        document.getElementById('viewMeta').textContent = 'Page: ' + (c.visitorPage || '/') + ' · ' + (c.messages ? c.messages.length : 0) + ' messages';
+
+        // Render messages
+        var msgArea = document.getElementById('chatMessages');
+        msgArea.innerHTML = '';
+        (c.messages || []).forEach(appendMsg);
+        msgArea.scrollTop = msgArea.scrollHeight;
+
+        updateModeUI();
+        markRead(sessionId);
+        renderConvList();
+    }
+
+    function appendMsg(msg) {
+        var msgArea = document.getElementById('chatMessages');
+        if (!msgArea) return;
+        var div = document.createElement('div');
+        var roleClass = msg.role === 'user' ? 'msg-user' : msg.role === 'agent' ? 'msg-agent' : 'msg-assistant';
+        div.className = 'msg ' + roleClass;
+
+        var label = '';
+        if (msg.role === 'assistant') label = '<span class="msg-label msg-label-ai">GoallordAI</span>';
+        if (msg.role === 'agent')     label = '<span class="msg-label msg-label-agent">' + (msg.agentName || 'Agent') + '</span>';
+
+        var time = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '';
+        div.innerHTML = label + '<div class="msg-bubble">' + escHtml(msg.content) + '</div><div class="msg-meta">' + time + '</div>';
+        msgArea.appendChild(div);
+        msgArea.scrollTop = msgArea.scrollHeight;
+    }
+
+    function updateModeUI() {
+        if (!activeConvo) return;
+        var isHuman  = activeConvo.mode === 'human';
+        var isClosed = activeConvo.status === 'closed';
+
+        var banner = document.getElementById('modeBanner');
+        banner.className = 'mode-banner ' + (isHuman ? 'mode-banner-human' : 'mode-banner-ai');
+        banner.textContent = isHuman ? '👤 You are handling this conversation' : '🤖 GoallordAI is handling this conversation';
+
+        document.getElementById('btnTakeover').style.display  = isHuman || isClosed ? 'none' : '';
+        document.getElementById('btnHandback').style.display  = isHuman && !isClosed  ? '' : 'none';
+        document.getElementById('btnClose').style.display     = isClosed ? 'none' : '';
+
+        var replyArea = document.getElementById('replyArea');
+        replyArea.classList.toggle('disabled', !isHuman || isClosed);
+        document.getElementById('replyHint').textContent = isHuman
+            ? 'Press Enter or click send to reply to the visitor.'
+            : 'Take over the conversation to reply directly to the visitor.';
+    }
+
+    // ── Actions ──────────────────────────────────────────────────
+    document.getElementById('btnTakeover').addEventListener('click', function() {
+        if (!activeConvo) return;
+        patchMode(activeConvo.sessionId, 'human');
+    });
+    document.getElementById('btnHandback').addEventListener('click', function() {
+        if (!activeConvo) return;
+        patchMode(activeConvo.sessionId, 'ai');
+    });
+    document.getElementById('btnClose').addEventListener('click', function() {
+        if (!activeConvo) return;
+        if (!confirm('Close this conversation?')) return;
+        fetch('/api/conversations/' + activeConvo.sessionId + '/close', {
+            method: 'PATCH', headers: { Authorization: 'Bearer ' + token }
+        }).then(() => { activeConvo.status = 'closed'; updateModeUI(); renderConvList(); });
+    });
+
+    function patchMode(sessionId, mode) {
+        fetch('/api/conversations/' + sessionId + '/mode', {
+            method: 'PATCH',
+            headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode })
+        }).then(r => r.json()).then(function() {
+            if (activeConvo && activeConvo.sessionId === sessionId) {
+                activeConvo.mode = mode;
+                updateModeUI();
+            }
+            var c = allConvos.find(c => c.sessionId === sessionId);
+            if (c) { c.mode = mode; renderConvList(); }
+        });
+    }
+
+    // ── Reply ────────────────────────────────────────────────────
+    document.getElementById('replySend').addEventListener('click', sendReply);
+    document.getElementById('replyInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); }
+    });
+
+    function sendReply() {
+        if (!activeConvo || activeConvo.mode !== 'human') return;
+        var input   = document.getElementById('replyInput');
+        var content = input.value.trim();
+        if (!content) return;
+        input.value = '';
+
+        fetch('/api/conversations/' + activeConvo.sessionId + '/reply', {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content })
+        }).then(r => r.json()).then(function(d) {
+            if (d.message) {
+                activeConvo.messages = activeConvo.messages || [];
+                activeConvo.messages.push(d.message);
+            }
+        });
+    }
+
+    // ── Filters ──────────────────────────────────────────────────
+    document.querySelectorAll('.filter-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.filter;
+            renderConvList();
+        });
+    });
+
+    // ── Mark read ────────────────────────────────────────────────
+    function markRead(sessionId) {
+        fetch('/api/conversations/' + sessionId + '/read', {
+            method: 'PATCH', headers: { Authorization: 'Bearer ' + token }
+        });
+        var c = allConvos.find(c => c.sessionId === sessionId);
+        if (c) { c.unreadByAgent = 0; renderConvList(); }
+    }
+
+    // ── Notification ─────────────────────────────────────────────
+    function requestNotifPermission() {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }
+
+    function showToast(title, body, sessionId) {
+        // Browser notification
+        if (Notification.permission === 'granted') {
+            var n = new Notification('GoallordAI — ' + title, { body: body, icon: '/assets/images/logo/favicon.svg' });
+            n.onclick = function() { openConversation(sessionId); window.focus(); };
+            setTimeout(function() { n.close(); }, 5000);
+        }
+        // In-app toast
+        var toast = document.createElement('div');
+        toast.className = 'notif-toast';
+        toast.innerHTML = '<div class="notif-toast-title">💬 ' + title + '</div><div class="notif-toast-body">' + escHtml(body) + '</div>';
+        toast.addEventListener('click', function() { openConversation(sessionId); toast.remove(); });
+        document.body.appendChild(toast);
+        setTimeout(function() { if (toast.parentNode) toast.remove(); }, 5000);
+    }
+
+    function playBeep() {
+        try {
+            var ctx = new (window.AudioContext || window.webkitAudioContext)();
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.frequency.value = 880;
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.3);
+        } catch(e) {}
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────
+    function shortId(sid) { return sid ? sid.slice(0, 14) + '…' : '—'; }
+    function escHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    function relTime(date) {
+        var diff = Math.floor((Date.now() - date) / 1000);
+        if (diff < 60)   return 'just now';
+        if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+        if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+        return date.toLocaleDateString();
+    }
+
+    // ── Auto-refresh every 30s ───────────────────────────────────
+    setInterval(loadConversations, 30000);
+})();
+</script>
+</body>
+</html>

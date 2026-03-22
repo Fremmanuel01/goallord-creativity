@@ -1,10 +1,18 @@
 require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const path = require('path');
+const express    = require('express');
+const mongoose   = require('mongoose');
+const cors       = require('cors');
+const path       = require('path');
+const http       = require('http');
+const { Server } = require('socket.io');
+const jwt        = require('jsonwebtoken');
 
-const app = express();
+const app        = express();
+const httpServer = http.createServer(app);
+const io         = new Server(httpServer, { cors: { origin: '*' } });
+
+// ─── Share io with routes ──────────────────────────────────────
+app.set('io', io);
 
 // ─── MIDDLEWARE ───────────────────────────────────────────────
 app.use(cors());
@@ -47,7 +55,6 @@ app.use('/api/upload',        require('./routes/upload'));
 app.use('/api/students',      require('./routes/students'));
 app.use('/api/attendance',    require('./routes/attendance'));
 app.use('/api/payments',      require('./routes/payments'));
-// Academy portal
 app.use('/api/batches',       require('./routes/batches'));
 app.use('/api/lecturers',     require('./routes/lecturers'));
 app.use('/api/materials',     require('./routes/materials'));
@@ -56,6 +63,35 @@ app.use('/api/flashcards',    require('./routes/flashcards'));
 app.use('/api/curriculum',    require('./routes/curriculum'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/chat',          require('./routes/chat'));
+app.use('/api/conversations', require('./routes/conversations'));
+
+// ─── SOCKET.IO ────────────────────────────────────────────────
+io.on('connection', socket => {
+
+  // Agents authenticate and join the 'agents' room
+  socket.on('agent:join', ({ token }) => {
+    try {
+      const user = jwt.verify(token, process.env.JWT_SECRET);
+      socket.user = user;
+      socket.join('agents');
+      socket.emit('agent:joined', { name: user.name });
+      io.to('agents').emit('agent:online', { name: user.name, id: user.id });
+    } catch {
+      socket.emit('error', { message: 'Invalid token' });
+    }
+  });
+
+  // Visitor joins their own session room
+  socket.on('visitor:join', ({ sessionId }) => {
+    socket.join(sessionId);
+  });
+
+  socket.on('disconnect', () => {
+    if (socket.user) {
+      io.to('agents').emit('agent:offline', { name: socket.user.name, id: socket.user.id });
+    }
+  });
+});
 
 // ─── FALLBACK: serve index.html for any unmatched GET ─────────
 app.get('*', (req, res) => {
@@ -69,7 +105,7 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(async () => {
     console.log('MongoDB connected');
     await seedAll();
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
   .catch(err => {
     console.error('MongoDB connection error:', err.message);
