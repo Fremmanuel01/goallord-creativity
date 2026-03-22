@@ -1,0 +1,25 @@
+{
+  "name": "GoallordAI Chat",
+  "short_name": "GoallordAI",
+  "description": "Live chat management dashboard for Goallord team",
+  "start_url": "/chat-dashboard.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0d0f14",
+  "theme_color": "#D66A1F",
+  "icons": [
+    {
+      "src": "/assets/images/logo/goallord_icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/images/logo/goallord-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
