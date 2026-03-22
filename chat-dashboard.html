@@ -179,6 +179,59 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .stat-chip strong { color: var(--text); }
 .stat-chip .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 
+/* ── Team Panel ── */
+.team-panel { display: none; flex-direction: column; height: 100%; padding: 28px; overflow-y: auto; }
+.team-panel.active { display: flex; }
+.team-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-shrink: 0; }
+.team-panel-title { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; }
+.team-add-btn { background: var(--orange); border: none; border-radius: 10px; padding: 9px 18px; font-size: 12px; font-weight: 700; color: #fff; cursor: pointer; letter-spacing: 0.3px; transition: opacity 0.2s; }
+.team-add-btn:hover { opacity: 0.88; }
+.agent-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; flex-shrink: 0;
+}
+.agent-avatar {
+    width: 40px; height: 40px; border-radius: 50%; background: var(--orange-l);
+    border: 1px solid rgba(214,106,31,0.3); display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800; color: var(--orange); flex-shrink: 0; letter-spacing: -0.5px;
+}
+.agent-info { flex: 1; min-width: 0; }
+.agent-name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.agent-name { font-size: 13px; font-weight: 700; }
+.agent-role-badge { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; letter-spacing: 0.5px; text-transform: uppercase; }
+.role-admin { background: rgba(214,106,31,0.15); color: var(--orange); border: 1px solid rgba(214,106,31,0.3); }
+.role-agent { background: rgba(59,130,246,0.12); color: var(--blue); border: 1px solid rgba(59,130,246,0.25); }
+.agent-email { font-size: 11px; color: var(--muted); }
+.agent-online-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.15); flex-shrink: 0; }
+.agent-online-dot.online { background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,0.5); }
+.agent-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.agent-edit-btn { background: transparent; border: 1px solid var(--border); border-radius: 7px; padding: 5px 10px; font-size: 10px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+.agent-edit-btn:hover { border-color: var(--orange); color: var(--orange); }
+.agent-del-btn { background: transparent; border: 1px solid rgba(239,68,68,0.2); border-radius: 7px; padding: 5px 10px; font-size: 10px; font-weight: 600; color: var(--red); cursor: pointer; transition: all 0.2s; opacity: 0.6; }
+.agent-del-btn:hover { opacity: 1; background: rgba(239,68,68,0.08); }
+
+/* Agent form modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 32px 28px; width: 380px; max-width: 95vw; }
+.modal-title { font-size: 15px; font-weight: 800; margin-bottom: 20px; }
+.modal-field { margin-bottom: 14px; }
+.modal-field label { display: block; font-size: 10px; font-weight: 700; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+.modal-field input, .modal-field select { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; padding: 10px 13px; font-size: 13px; color: var(--text); outline: none; transition: border-color 0.2s; font-family: inherit; }
+.modal-field input:focus, .modal-field select:focus { border-color: rgba(214,106,31,0.5); }
+.modal-field select option { background: var(--card); }
+.modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+.modal-save { flex: 1; background: var(--orange); border: none; border-radius: 10px; padding: 11px; font-size: 12px; font-weight: 700; color: #fff; cursor: pointer; transition: opacity 0.2s; }
+.modal-save:hover { opacity: 0.88; }
+.modal-cancel { background: transparent; border: 1px solid var(--border); border-radius: 10px; padding: 11px 18px; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+.modal-cancel:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+.modal-error { font-size: 11px; color: var(--red); margin-top: 8px; display: none; }
+
+/* Nav tabs in sidebar */
+.sidebar-nav { display: flex; padding: 0 8px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.sidebar-tab { flex: 1; padding: 10px 6px; font-size: 11px; font-weight: 600; color: var(--muted); background: transparent; border: none; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; letter-spacing: 0.3px; }
+.sidebar-tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+
 @media (max-width: 768px) {
     .app-layout { grid-template-columns: 1fr; }
     .sidebar { display: none; }
@@ -225,6 +278,11 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
                 </div>
                 <div class="agent-badge" id="agentBadge">Online</div>
             </div>
+            <div class="sidebar-nav">
+                <button class="sidebar-tab active" id="tabChats">💬 Chats</button>
+                <button class="sidebar-tab" id="tabTeam">👥 Team</button>
+            </div>
+            <div id="chatsPane">
             <div class="stats-bar">
                 <div class="stat-chip"><div class="dot" style="background:#D66A1F"></div> Active: <strong id="statActive">0</strong></div>
                 <div class="stat-chip"><div class="dot" style="background:#22c55e"></div> Human: <strong id="statHuman">0</strong></div>
@@ -238,6 +296,14 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
             </div>
             <div class="conv-list" id="convList">
                 <div class="sidebar-empty">No conversations yet</div>
+            </div>
+            </div><!-- /chatsPane -->
+            <div id="teamPane" style="display:none; flex:1; overflow-y:auto; padding:12px;">
+                <div style="padding:8px 4px 10px; display:flex; align-items:center; justify-content:space-between;">
+                    <span style="font-size:11px; font-weight:700; color:var(--muted); letter-spacing:0.5px; text-transform:uppercase;">Team Members</span>
+                    <button class="team-add-btn" id="sideAddAgentBtn" style="padding:6px 12px; font-size:10px;">+ Add</button>
+                </div>
+                <div id="sideAgentList"><div style="font-size:12px;color:var(--muted);text-align:center;padding:24px 0;">Loading…</div></div>
             </div>
         </aside>
 
@@ -279,6 +345,37 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
     </div>
 </div>
 
+<!-- Agent Modal -->
+<div class="modal-overlay" id="agentModal">
+    <div class="modal-box">
+        <div class="modal-title" id="modalTitle">Add Team Member</div>
+        <div class="modal-field">
+            <label>Full Name</label>
+            <input type="text" id="modalName" placeholder="e.g. Chidi Okonkwo" autocomplete="off">
+        </div>
+        <div class="modal-field">
+            <label>Email Address</label>
+            <input type="email" id="modalEmail" placeholder="chidi@goallordcreativity.com" autocomplete="off">
+        </div>
+        <div class="modal-field">
+            <label>Password <span id="modalPassHint" style="font-weight:400;text-transform:none;color:var(--muted)">(leave blank to keep current)</span></label>
+            <input type="password" id="modalPassword" placeholder="Min. 6 characters">
+        </div>
+        <div class="modal-field">
+            <label>Role</label>
+            <select id="modalRole">
+                <option value="agent">Agent — can chat with visitors</option>
+                <option value="admin">Admin — full access + manage team</option>
+            </select>
+        </div>
+        <p class="modal-error" id="modalError"></p>
+        <div class="modal-actions">
+            <button class="modal-cancel" id="modalCancel">Cancel</button>
+            <button class="modal-save" id="modalSave">Save Member</button>
+        </div>
+    </div>
+</div>
+
 <script src="/socket.io/socket.io.js"></script>
 <script>
 (function() {
@@ -288,7 +385,10 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
     var allConvos  = [];
     var activeConvo = null;
     var currentFilter = 'all';
-    var audioCtx   = null; // shared AudioContext, unlocked on first user click
+    var audioCtx    = null; // shared AudioContext, unlocked on first user click
+    var onlineAgents = new Set(); // agent IDs currently online
+    var editingAgentId = null;    // id being edited in modal (null = create mode)
+    var currentUserRole = 'agent';
 
     // ── Login ────────────────────────────────────────────────────
     document.getElementById('loginBtn').addEventListener('click', doLogin);
@@ -322,6 +422,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
                 localStorage.setItem('gl_admin_token', d.token);
                 token = d.token;
                 agentName = d.user.name;
+                currentUserRole = d.user.role || 'agent';
                 initApp();
             } else {
                 errEl.textContent = d.error || 'Login failed';
@@ -347,7 +448,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
         fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } })
         .then(r => r.json())
         .then(d => {
-            if (d.user) { agentName = d.user.name; initApp(); }
+            if (d.user) { agentName = d.user.name; currentUserRole = d.user.role || 'agent'; initApp(); }
             else { localStorage.removeItem('gl_admin_token'); }
         })
         .catch(() => {});
@@ -407,7 +508,32 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
                 }
             }
         });
+
+        // Track online agents for the Team panel
+        socket.on('agent:online', function(data) {
+            if (data.id) onlineAgents.add(data.id);
+            renderSideAgentList();
+        });
+        socket.on('agent:offline', function(data) {
+            if (data.id) onlineAgents.delete(data.id);
+            renderSideAgentList();
+        });
     }
+
+    // ── Tab switching ────────────────────────────────────────────
+    document.getElementById('tabChats').addEventListener('click', function() {
+        document.getElementById('tabChats').classList.add('active');
+        document.getElementById('tabTeam').classList.remove('active');
+        document.getElementById('chatsPane').style.display = '';
+        document.getElementById('teamPane').style.display = 'none';
+    });
+    document.getElementById('tabTeam').addEventListener('click', function() {
+        document.getElementById('tabTeam').classList.add('active');
+        document.getElementById('tabChats').classList.remove('active');
+        document.getElementById('chatsPane').style.display = 'none';
+        document.getElementById('teamPane').style.display = '';
+        loadAgents();
+    });
 
     // ── Load Conversations ───────────────────────────────────────
     function loadConversations() {
@@ -650,6 +776,149 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
         if (diff < 3600) return Math.floor(diff/60) + 'm ago';
         if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
         return date.toLocaleDateString();
+    }
+
+    // ── Team Management ──────────────────────────────────────────
+    var allAgents = [];
+
+    function loadAgents() {
+        fetch('/api/agents', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => r.json())
+        .then(d => {
+            allAgents = d.agents || [];
+            renderSideAgentList();
+        });
+    }
+
+    function renderSideAgentList() {
+        var list = document.getElementById('sideAgentList');
+        if (!list) return;
+        if (!allAgents.length) {
+            list.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:24px 0;">No team members yet</div>';
+            return;
+        }
+        list.innerHTML = allAgents.map(function(a) {
+            var initials = a.name.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
+            var isOnline = onlineAgents.has(a._id || a.id);
+            var roleCls  = a.role === 'admin' ? 'role-admin' : 'role-agent';
+            var canEdit  = currentUserRole === 'admin';
+            var isSelf   = (a._id || a.id) === (getCurrentUserId());
+            return '<div class="agent-card">'
+                + '<div class="agent-avatar">' + initials + '</div>'
+                + '<div class="agent-info">'
+                +   '<div class="agent-name-row">'
+                +     '<span class="agent-name">' + escHtml(a.name) + '</span>'
+                +     '<span class="agent-role-badge ' + roleCls + '">' + a.role + '</span>'
+                +   '</div>'
+                +   '<div class="agent-email">' + escHtml(a.email) + '</div>'
+                + '</div>'
+                + '<div class="agent-online-dot' + (isOnline ? ' online' : '') + '" title="' + (isOnline ? 'Online' : 'Offline') + '"></div>'
+                + (canEdit
+                    ? '<div class="agent-actions">'
+                    +   '<button class="agent-edit-btn" data-id="' + (a._id||a.id) + '" data-name="' + escHtml(a.name) + '" data-email="' + escHtml(a.email) + '" data-role="' + a.role + '">Edit</button>'
+                    +   (!isSelf ? '<button class="agent-del-btn" data-id="' + (a._id||a.id) + '" data-name="' + escHtml(a.name) + '">Remove</button>' : '')
+                    + '</div>'
+                    : '')
+                + '</div>';
+        }).join('');
+
+        // Edit button
+        list.querySelectorAll('.agent-edit-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                editingAgentId = btn.dataset.id;
+                openModal('Edit Member', btn.dataset.name, btn.dataset.email, btn.dataset.role, true);
+            });
+        });
+        // Delete button
+        list.querySelectorAll('.agent-del-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                if (!confirm('Remove ' + btn.dataset.name + ' from the team?')) return;
+                deleteAgent(btn.dataset.id);
+            });
+        });
+    }
+
+    function getCurrentUserId() {
+        // Decode id from JWT token
+        try {
+            var payload = JSON.parse(atob(token.split('.')[1]));
+            return payload.id;
+        } catch(e) { return null; }
+    }
+
+    // Add button in team pane
+    document.getElementById('sideAddAgentBtn').addEventListener('click', function() {
+        if (currentUserRole !== 'admin') { alert('Only admins can add team members.'); return; }
+        editingAgentId = null;
+        openModal('Add Team Member', '', '', 'agent', false);
+    });
+
+    function openModal(title, name, email, role, editing) {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalName').value  = name;
+        document.getElementById('modalEmail').value = email;
+        document.getElementById('modalRole').value  = role;
+        document.getElementById('modalPassword').value = '';
+        document.getElementById('modalPassHint').style.display = editing ? '' : 'none';
+        document.getElementById('modalError').style.display = 'none';
+        document.getElementById('agentModal').classList.add('open');
+        setTimeout(function() { document.getElementById('modalName').focus(); }, 100);
+    }
+
+    document.getElementById('modalCancel').addEventListener('click', function() {
+        document.getElementById('agentModal').classList.remove('open');
+    });
+    document.getElementById('agentModal').addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('open');
+    });
+
+    document.getElementById('modalSave').addEventListener('click', saveAgent);
+
+    function saveAgent() {
+        var name     = document.getElementById('modalName').value.trim();
+        var email    = document.getElementById('modalEmail').value.trim();
+        var password = document.getElementById('modalPassword').value;
+        var role     = document.getElementById('modalRole').value;
+        var errEl    = document.getElementById('modalError');
+        errEl.style.display = 'none';
+
+        if (!name || !email) { errEl.textContent = 'Name and email are required.'; errEl.style.display = 'block'; return; }
+        if (!editingAgentId && !password) { errEl.textContent = 'Password is required for new members.'; errEl.style.display = 'block'; return; }
+        if (password && password.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.style.display = 'block'; return; }
+
+        var body = { name, email, role };
+        if (password) body.password = password;
+
+        var url    = editingAgentId ? '/api/agents/' + editingAgentId : '/api/agents';
+        var method = editingAgentId ? 'PATCH' : 'POST';
+
+        document.getElementById('modalSave').textContent = 'Saving…';
+        fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify(body)
+        })
+        .then(r => r.json())
+        .then(d => {
+            document.getElementById('modalSave').textContent = 'Save Member';
+            if (d.error) { errEl.textContent = d.error; errEl.style.display = 'block'; return; }
+            document.getElementById('agentModal').classList.remove('open');
+            loadAgents();
+        })
+        .catch(function() {
+            document.getElementById('modalSave').textContent = 'Save Member';
+            errEl.textContent = 'Connection error. Try again.';
+            errEl.style.display = 'block';
+        });
+    }
+
+    function deleteAgent(id) {
+        fetch('/api/agents/' + id, {
+            method: 'DELETE',
+            headers: { Authorization: 'Bearer ' + token }
+        })
+        .then(r => r.json())
+        .then(function() { loadAgents(); });
     }
 
     // ── Auto-refresh every 30s ───────────────────────────────────

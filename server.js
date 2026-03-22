@@ -64,6 +64,7 @@ app.use('/api/curriculum',    require('./routes/curriculum'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/chat',          require('./routes/chat'));
 app.use('/api/conversations', require('./routes/conversations'));
+app.use('/api/agents',        require('./routes/agents'));
 
 // ─── SOCKET.IO ────────────────────────────────────────────────
 io.on('connection', socket => {
