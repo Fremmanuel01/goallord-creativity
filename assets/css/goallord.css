@@ -976,6 +976,10 @@ body {
     fill: var(--gl-orange) !important;
 }
 
+/* ── Section gap: Process → Pricing ─────────────────────────── */
+.section-process { padding-bottom: 40px !important; }
+.section-pricing { padding-top: 40px !important; }
+
 /* ── 18. PROCESS TIMELINE ───────────────────────────────────── */
 .gl-process-wrapper {
     display: grid;
