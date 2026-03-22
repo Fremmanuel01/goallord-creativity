@@ -3277,6 +3277,9 @@
             if (data.mode === 'human' && prevMode !== 'human') {
                 addNotice('🤝 You\'ve been connected with ' + (data.agentName || 'a support agent') + ' from the Goallord team');
             } else if (data.mode === 'ai' && prevMode === 'human') {
+                // Clear any stuck typing/loading state so visitor can send messages again
+                hideTyping();
+                setLoading(false);
                 addNotice('🤖 GoallordAI has resumed this conversation');
             }
         });
