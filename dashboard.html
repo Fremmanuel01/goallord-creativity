@@ -2195,7 +2195,10 @@
     <div class="page" id="page-payments">
       <div class="section-header" style="margin-bottom:20px">
         <h2>Payments</h2>
-        <button class="btn btn-primary" onclick="openRecordPayment()">+ Record Payment</button>
+        <div style="display:flex;gap:8px;">
+          <button id="runOverdueBtn" class="btn btn-secondary" onclick="runOverdueCheck()">⟳ Run Overdue Check</button>
+          <button class="btn btn-primary" onclick="openRecordPayment()">+ Record Payment</button>
+        </div>
       </div>
       <!-- Summary cards -->
       <div id="payAdminSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px"></div>
@@ -4676,6 +4679,7 @@ function renderPayTable(rows) {
       <td style="padding:12px 14px;display:flex;gap:6px;flex-wrap:wrap;">
         <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick='openEditPayment(${editData})'>Edit</button>
         ${isBankPending ? `<button style="padding:5px 10px;font-size:12px;background:#1E4BFF;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick="confirmBankTransfer('${r._id}',${r.amountDue})">Confirm</button>` : ''}
+        ${(status === 'overdue' || status === 'pending') && !isPaid ? `<button style="padding:5px 10px;font-size:12px;background:rgba(214,106,31,0.15);color:#D66A1F;border:1px solid rgba(214,106,31,0.3);border-radius:6px;cursor:pointer;font-weight:600;" onclick="sendPaymentReminder('${r._id}')">Remind</button>` : ''}
         ${isPaid ? `<button style="padding:5px 10px;font-size:12px;background:#22c55e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick='openReceipt(${receiptData})'>Receipt</button>` : ''}
       </td>
     </tr>`;
@@ -5233,12 +5237,25 @@ async function confirmBankTransfer(id, amountDue) {
   if (!confirm('Confirm this bank transfer and mark as paid?')) return;
   const res = await apiFetch(`/api/payments/${id}`, { method: 'PATCH', body: JSON.stringify({ amountPaid: amountDue }) });
   if (!res) return;
-  // Reload payment row and open receipt
   const updated = await apiFetch(`/api/payments/${id}`);
-  if (updated) {
-    openReceipt(buildPaymentReceipt({ ...updated, _id: id }));
+  if (updated) openReceipt(buildPaymentReceipt({ ...updated, _id: id }));
+  loadPaymentsPage();
+}
+
+async function sendPaymentReminder(id) {
+  const res = await apiFetch(`/api/payments/${id}/remind`, { method: 'POST' });
+  if (res) showToast('Reminder email sent to student.', 'success');
+}
+
+async function runOverdueCheck() {
+  const btn = document.getElementById('runOverdueBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Checking…'; }
+  const res = await apiFetch('/api/payments/run-overdue-check', { method: 'POST' });
+  if (btn) { btn.disabled = false; btn.textContent = '⟳ Run Overdue Check'; }
+  if (res) {
+    showToast(`Done: ${res.markedOverdue} marked overdue, ${res.remindersSent} reminders sent.`, 'success');
+    loadPaymentsPage();
   }
-  loadPaymentsFromAPI();
 }
 </script>
 

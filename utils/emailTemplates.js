@@ -361,6 +361,39 @@ function receiptEmail({ receiptNumber, date, recipientName, recipientEmail, desc
 </html>`;
 }
 
+// ── Payment reminder ──────────────────────────────────────────
+function paymentReminderEmail({ fullName, category, amountDue, dueDate, isOverdue, loginUrl }) {
+  const label = { tuition_month_1:'Tuition — Month 1', tuition_month_2:'Tuition — Month 2', tuition_month_3:'Tuition — Month 3', full_tuition_payment:'Full Tuition Payment' }[category] || category;
+  const dueDateStr = new Date(dueDate).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+  const headerBg  = isOverdue ? '#ef4444' : '#D66A1F';
+  const subject   = isOverdue ? `OVERDUE: ${label} — Action Required` : `Reminder: ${label} due ${dueDateStr}`;
+  const headline  = isOverdue ? `⚠️ Payment Overdue` : `💳 Payment Reminder`;
+  const bodyText  = isOverdue
+    ? `Your <strong>${label}</strong> of <strong>₦${Number(amountDue).toLocaleString()}</strong> was due on <strong>${dueDateStr}</strong> and has not been received. Please log in and make your payment immediately to avoid suspension.`
+    : `Your <strong>${label}</strong> of <strong>₦${Number(amountDue).toLocaleString()}</strong> is due on <strong>${dueDateStr}</strong>. Please log in to your student portal to make your payment.`;
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0F1115;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#171A21;border-radius:12px;border:1px solid #2A2F3A;overflow:hidden;">
+      <tr><td style="background:${headerBg};padding:24px 32px;">
+        <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;">${headline}</h1>
+        <p style="margin:4px 0 0;color:rgba(255,255,255,0.8);font-size:13px;">Goallord Creativity Academy</p>
+      </td></tr>
+      <tr><td style="padding:32px;">
+        <p style="color:#F4F6FA;font-size:15px;margin:0 0 16px;">Hi <strong>${fullName}</strong>,</p>
+        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 24px;">${bodyText}</p>
+        <div style="text-align:center;margin:24px 0;">
+          <a href="${loginUrl}" style="display:inline-block;background:${headerBg};color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">Pay Now</a>
+        </div>
+        <hr style="border:none;border-top:1px solid #2A2F3A;margin:24px 0;">
+        <p style="color:#A0A6B3;font-size:12px;margin:0;">Questions? Email <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;">hello@goallordcreativity.com</a></p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
 // ── Contact form: admin notification ──────────────────────────
 function adminContactEmail({ name, email, service, budget, message, dashboardUrl }) {
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
@@ -439,4 +472,4 @@ function contactReplyEmail({ name, replyBody }) {
 </body></html>`;
 }
 
-module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail };
+module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail };

@@ -102,4 +102,20 @@ router.patch('/:sessionId/close', requireAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
+// PATCH reopen conversation
+router.patch('/:sessionId/reopen', requireAuth, async (req, res) => {
+  const convo = await Conversation.findOneAndUpdate(
+    { sessionId: req.params.sessionId },
+    { status: 'active', mode: 'ai' },
+    { new: true }
+  );
+  if (!convo) return res.status(404).json({ error: 'Not found' });
+  const io = req.app.get('io');
+  if (io) {
+    io.to('agents').emit('mode:changed', { sessionId: req.params.sessionId, mode: 'ai', status: 'active' });
+    io.to(req.params.sessionId).emit('mode:changed', { mode: 'ai', status: 'active' });
+  }
+  res.json({ ok: true });
+});
+
 module.exports = router;

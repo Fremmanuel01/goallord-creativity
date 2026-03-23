@@ -183,7 +183,8 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
     status:             'Active',
     applicantRef:       applicant._id,
     applicationFeePaid: true,
-    paymentPlan:        paymentPlan === 'full' ? 'full_upfront' : 'monthly'
+    paymentPlan:        paymentPlan === 'full' ? 'full_upfront' : 'monthly',
+    profilePicture:     applicant.profilePhoto || ''
   });
 
   // Application fee — always paid

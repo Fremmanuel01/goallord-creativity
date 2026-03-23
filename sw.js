@@ -1,4 +1,4 @@
-const CACHE = 'goallordai-v1';
+const CACHE = 'goallordai-v2';
 const SHELL = [
   '/chat-dashboard.html',
   '/assets/images/logo/goallord_icon.svg',

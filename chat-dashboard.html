@@ -128,6 +128,8 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .action-btn-handback:hover { background: rgba(59,130,246,0.25); }
 .action-btn-close { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
 .action-btn-close:hover { background: rgba(239,68,68,0.22); }
+.action-btn-reopen { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
+.action-btn-reopen:hover { background: rgba(34,197,94,0.22); }
 
 /* Messages */
 .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
@@ -310,8 +312,20 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
     /* Chat messages — more breathing room */
     .chat-messages { padding: 14px 12px; }
     .reply-area { padding: 10px 12px; }
-    .chat-header { padding: 10px 12px; }
-    .chat-header-actions { gap: 6px; }
+
+    /* Chat header: stack actions below session info on mobile */
+    .chat-header {
+        padding: 10px 12px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    .chat-header-left { display: flex; align-items: center; gap: 10px; }
+    .chat-header-actions {
+        display: flex; gap: 8px;
+        border-top: 1px solid var(--border); padding-top: 8px;
+    }
+    .chat-header-actions .action-btn { flex: 1; }
 
     /* Mode banner compact */
     .mode-banner { font-size: 10px; padding: 6px 12px; }
@@ -428,6 +442,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
                     <div class="chat-header-actions">
                         <button class="action-btn action-btn-takeover" id="btnTakeover">Take Over</button>
                         <button class="action-btn action-btn-handback" id="btnHandback" style="display:none">Hand Back to AI</button>
+                        <button class="action-btn action-btn-reopen" id="btnReopen" style="display:none">Reopen</button>
                         <button class="action-btn action-btn-close" id="btnClose">Close</button>
                     </div>
                 </div>
@@ -626,9 +641,11 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
             var c = allConvos.find(c => c.sessionId === data.sessionId);
             if (c) {
                 c.mode = data.mode;
+                if (data.status) c.status = data.status;
                 renderConvList();
                 if (activeConvo && activeConvo.sessionId === data.sessionId) {
                     activeConvo.mode = data.mode;
+                    if (data.status) activeConvo.status = data.status;
                     updateModeUI();
                 }
             }
@@ -818,6 +835,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 
         document.getElementById('btnTakeover').style.display  = isHuman || isClosed ? 'none' : '';
         document.getElementById('btnHandback').style.display  = isHuman && !isClosed  ? '' : 'none';
+        document.getElementById('btnReopen').style.display    = isClosed ? '' : 'none';
         document.getElementById('btnClose').style.display     = isClosed ? 'none' : '';
 
         var replyArea = document.getElementById('replyArea');
@@ -842,6 +860,12 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
         fetch('/api/conversations/' + activeConvo.sessionId + '/close', {
             method: 'PATCH', headers: { Authorization: 'Bearer ' + token }
         }).then(() => { activeConvo.status = 'closed'; updateModeUI(); renderConvList(); });
+    });
+    document.getElementById('btnReopen').addEventListener('click', function() {
+        if (!activeConvo) return;
+        fetch('/api/conversations/' + activeConvo.sessionId + '/reopen', {
+            method: 'PATCH', headers: { Authorization: 'Bearer ' + token }
+        }).then(() => { activeConvo.status = 'active'; activeConvo.mode = 'ai'; updateModeUI(); renderConvList(); });
     });
 
     function patchMode(sessionId, mode) {

@@ -5,7 +5,7 @@ const Student = require('../models/Student');
 const { requireAuth } = require('../middleware/auth');
 const { requireStudent } = require('../middleware/studentAuth');
 const { sendMail } = require('../utils/mailer');
-const { receiptEmail } = require('../utils/emailTemplates');
+const { receiptEmail, paymentReminderEmail } = require('../utils/emailTemplates');
 
 const router = express.Router();
 
@@ -240,4 +240,105 @@ router.post('/:id/email-receipt', requireAuth, async (req, res) => {
   }
 });
 
+// ── POST /api/payments/:id/remind — admin: send payment reminder ──
+router.post('/:id/remind', requireAuth, async (req, res) => {
+  try {
+    const payment = await Payment.findById(req.params.id).populate('student', 'fullName email');
+    if (!payment) return res.status(404).json({ error: 'Payment not found' });
+    if (!payment.student) return res.status(400).json({ error: 'No student linked' });
+
+    const loginUrl = (process.env.HOST || 'https://goallordcreativity.com') + '/student-login.html';
+    const isOverdue = payment.status === 'overdue' || (payment.dueDate && payment.dueDate < new Date());
+
+    await sendMail({
+      to:      payment.student.email,
+      subject: isOverdue
+        ? `OVERDUE: Payment required — Goallord Creativity Academy`
+        : `Payment reminder — Goallord Creativity Academy`,
+      html: paymentReminderEmail({
+        fullName:  payment.student.fullName,
+        category:  payment.category,
+        amountDue: payment.amountDue,
+        dueDate:   payment.dueDate || new Date(),
+        isOverdue,
+        loginUrl
+      })
+    });
+
+    payment.reminderSentAt = new Date();
+    await payment.save();
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/payments/run-overdue-check — admin: mark overdue + send reminders ──
+router.post('/run-overdue-check', requireAuth, async (req, res) => {
+  try {
+    const result = await runOverdueCheck();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Shared overdue check logic (called by scheduler and admin endpoint)
+async function runOverdueCheck() {
+  const now        = new Date();
+  const in3days    = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+  const loginUrl   = (process.env.HOST || 'https://goallordcreativity.com') + '/student-login.html';
+  let markedOverdue = 0, remindersSent = 0;
+
+  // 1. Mark pending payments past due date as overdue
+  const overduePayments = await Payment.find({
+    status: 'pending',
+    amountPaid: 0,
+    dueDate: { $lt: now }
+  }).populate('student', 'fullName email');
+
+  for (const p of overduePayments) {
+    p.status = 'overdue';
+    await p.save(); // triggers post-save to sync student.paymentStatus
+    markedOverdue++;
+
+    // Email student
+    if (p.student?.email) {
+      sendMail({
+        to:      p.student.email,
+        subject: `OVERDUE: Payment required — Goallord Creativity Academy`,
+        html:    paymentReminderEmail({ fullName: p.student.fullName, category: p.category, amountDue: p.amountDue, dueDate: p.dueDate, isOverdue: true, loginUrl })
+      }).catch(e => console.error('Overdue email failed:', e.message));
+    }
+  }
+
+  // 2. Send reminder emails for payments due in the next 3 days (not yet reminded today)
+  const upcomingPayments = await Payment.find({
+    status:      'pending',
+    amountPaid:  0,
+    dueDate:     { $gte: now, $lte: in3days },
+    $or: [
+      { reminderSentAt: { $exists: false } },
+      { reminderSentAt: { $lt: new Date(now - 24 * 60 * 60 * 1000) } } // not reminded in last 24h
+    ]
+  }).populate('student', 'fullName email');
+
+  for (const p of upcomingPayments) {
+    if (!p.student?.email) continue;
+    sendMail({
+      to:      p.student.email,
+      subject: `Reminder: Payment due soon — Goallord Creativity Academy`,
+      html:    paymentReminderEmail({ fullName: p.student.fullName, category: p.category, amountDue: p.amountDue, dueDate: p.dueDate, isOverdue: false, loginUrl })
+    }).catch(e => console.error('Reminder email failed:', e.message));
+    p.reminderSentAt = new Date();
+    await p.save();
+    remindersSent++;
+  }
+
+  console.log(`[Overdue Check] Marked overdue: ${markedOverdue}, Reminders sent: ${remindersSent}`);
+  return { markedOverdue, remindersSent };
+}
+
 module.exports = router;
+module.exports.runOverdueCheck = runOverdueCheck;
