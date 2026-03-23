@@ -207,8 +207,8 @@
       <button class="btn btn-primary" onclick="openTakeAttendance()">+ Take Attendance</button>
     </div>
     <div class="table-wrap">
-      <table><thead><tr><th>Date</th><th>Week</th><th>Day</th><th>Present</th><th>Absent</th><th>Status</th><th>Actions</th></tr></thead>
-      <tbody id="attTableBody"><tr><td colspan="7" class="loading">Loading…</td></tr></tbody></table>
+      <table><thead><tr><th>Date</th><th>Week</th><th>Day</th><th>Topic</th><th>Present</th><th>Absent</th><th>Window</th><th>Actions</th></tr></thead>
+      <tbody id="attTableBody"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody></table>
     </div>
   </div>
 
@@ -366,6 +366,65 @@
   </div>
 </div>
 
+<!-- ── TAKE ATTENDANCE MODAL ── -->
+<div class="modal-overlay" id="attModal">
+  <div class="modal">
+    <div class="modal-header"><h3>Take Attendance</h3><button class="modal-close" onclick="closeModal('attModal')">✕</button></div>
+    <div class="error-msg" id="attErr"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Week *</label><input id="att-week" type="number" min="1" max="16" placeholder="e.g. 3"></div>
+      <div class="form-group"><label>Day *</label>
+        <select id="att-day"><option value="">Select day</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Class Date *</label><input id="att-date" type="date"></div>
+      <div class="form-group"><label>Topic</label><input id="att-topic" placeholder="e.g. CSS Flexbox"></div>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Students can self-mark attendance once you open the window after creating the session.</p>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('attModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveAttBtn" onclick="saveAttendance()">Create Session</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SUBMISSIONS MODAL ── -->
+<div class="modal-overlay" id="subsModal">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <h3 id="subsModalTitle">Submissions</h3>
+      <button class="modal-close" onclick="closeModal('subsModal')">✕</button>
+    </div>
+    <div id="subsContent"><div class="loading">Loading…</div></div>
+  </div>
+</div>
+
+<!-- ── SCORE SUBMISSION MODAL ── -->
+<div class="modal-overlay" id="scoreModal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header"><h3>Score Submission</h3><button class="modal-close" onclick="closeModal('scoreModal')">✕</button></div>
+    <input type="hidden" id="score-sub-id">
+    <input type="hidden" id="score-asgn-id">
+    <div class="form-group" style="margin-bottom:14px">
+      <label>Student</label>
+      <div id="score-student-name" style="font-weight:600;font-size:15px;padding:8px 0;color:var(--text)">—</div>
+    </div>
+    <div class="form-group">
+      <label>Score (0–<span id="score-max">100</span>)</label>
+      <input id="score-value" type="number" min="0" placeholder="e.g. 85">
+    </div>
+    <div class="form-group">
+      <label>Feedback (optional)</label>
+      <textarea id="score-feedback" rows="3" placeholder="Well done on…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('scoreModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveScoreBtn" onclick="saveScore()">Save Score</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const TOKEN_KEY = 'gl_lecturer_token';
 const LEC_KEY   = 'gl_lecturer';
@@ -506,6 +565,7 @@ async function saveMaterial() {
     batch:       activeBatch?._id,
     lecturer:    lec._id,
   };
+  if (!body.batch) { const e=document.getElementById('matErr'); e.textContent='No active batch loaded. Please wait and try again.'; e.style.display='block'; return; }
   if (!body.title || !body.type || !body.week) { const e=document.getElementById('matErr'); e.textContent='Title, type and week are required.'; e.style.display='block'; return; }
   const btn = document.getElementById('saveMatBtn');
   btn.disabled = true; btn.textContent = 'Saving…';
@@ -595,6 +655,7 @@ async function saveAssignment() {
     batch:       activeBatch?._id,
     lecturer:    lec._id,
   };
+  if (!body.batch) { alert('No active batch loaded. Please wait and try again.'); return; }
   if (!body.title || !body.description || !body.week || !body.deadline) { alert('Please fill all required fields.'); return; }
   const btn = document.getElementById('saveAsgnBtn');
   btn.disabled = true; btn.textContent = 'Saving…';
@@ -612,32 +673,59 @@ async function deleteAssignment(id) {
   loadAssignments();
 }
 
+let currentSubsAsgnId = null;
+let currentSubsTitle  = null;
+
 async function viewSubmissions(id, title) {
+  currentSubsAsgnId = id;
+  currentSubsTitle  = title;
+  document.getElementById('subsModalTitle').textContent = `Submissions — ${title}`;
+  document.getElementById('subsContent').innerHTML = '<div class="loading">Loading…</div>';
+  openModal('subsModal');
   const subs = await api(`/api/assignments/${id}/submissions`);
-  if (!subs) return;
-  const content = subs.length === 0
-    ? '<div class="empty">No submissions yet.</div>'
-    : `<div class="table-wrap"><table><thead><tr><th>Student</th><th>Submitted</th><th>Late?</th><th>Score</th><th>Action</th></tr></thead><tbody>` +
-      subs.map(s => `<tr>
-        <td>${s.student?.fullName || '—'}</td>
-        <td>${fmtDT(s.submittedAt)}</td>
-        <td>${s.isLate ? '<span style="color:var(--red);font-size:12px">Late</span>' : '—'}</td>
-        <td>${s.score !== null ? s.score : '<span style="color:var(--muted)">Unscored</span>'}</td>
-        <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px"
-          onclick="scoreSubmission('${s._id}','${id}')">Score</button></td>
-      </tr>`).join('') + '</tbody></table></div>';
-  alert(`Submissions for "${title}"\n\n${subs.length} submission(s). Open dev console for details.`);
-  console.table(subs.map(s => ({ student: s.student?.fullName, submitted: s.submittedAt, late: s.isLate, score: s.score })));
+  if (!subs) { document.getElementById('subsContent').innerHTML = '<div class="empty">Failed to load.</div>'; return; }
+  if (!subs.length) { document.getElementById('subsContent').innerHTML = '<div class="empty">No submissions yet.</div>'; return; }
+  document.getElementById('subsContent').innerHTML =
+    `<div style="font-size:13px;color:var(--muted);margin-bottom:12px">${subs.length} submission(s)</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Student</th><th>Submitted</th><th>Late?</th><th>Score</th><th>Action</th></tr></thead>
+      <tbody>` +
+    subs.map(s => `<tr>
+      <td style="font-weight:600">${s.student?.fullName || '—'}</td>
+      <td style="font-size:13px;color:var(--muted)">${fmtDT(s.submittedAt)}</td>
+      <td>${s.isLate ? '<span style="color:var(--red);font-size:12px;font-weight:600">Late</span>' : '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${s.score !== undefined && s.score !== null ? `<span style="color:var(--green);font-weight:700">${s.score}</span>` : '<span style="color:var(--muted);font-size:12px">Unscored</span>'}</td>
+      <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px"
+        onclick="openScoreModal('${s._id}','${id}','${(s.student?.fullName||'Student').replace(/'/g,'')}',${s.score ?? 'null'})">Score</button></td>
+    </tr>`).join('') +
+    '</tbody></table></div>';
 }
 
-async function scoreSubmission(subId, asgnId) {
-  const score = prompt('Enter score (0–100):');
-  if (score === null) return;
-  const feedback = prompt('Feedback (optional):') || '';
-  await api(`/api/assignments/${asgnId}/submissions/${subId}`, {
+function openScoreModal(subId, asgnId, studentName, currentScore) {
+  document.getElementById('score-sub-id').value      = subId;
+  document.getElementById('score-asgn-id').value     = asgnId;
+  document.getElementById('score-student-name').textContent = studentName;
+  document.getElementById('score-value').value       = currentScore !== null ? currentScore : '';
+  document.getElementById('score-feedback').value    = '';
+  openModal('scoreModal');
+}
+
+async function saveScore() {
+  const subId    = document.getElementById('score-sub-id').value;
+  const asgnId   = document.getElementById('score-asgn-id').value;
+  const score    = document.getElementById('score-value').value;
+  const feedback = document.getElementById('score-feedback').value.trim();
+  if (score === '') { alert('Please enter a score.'); return; }
+  const btn = document.getElementById('saveScoreBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const res = await api(`/api/assignments/${asgnId}/submissions/${subId}`, {
     method: 'PATCH', body: JSON.stringify({ score: Number(score), feedback })
   });
-  alert('Score saved!');
+  btn.disabled = false; btn.textContent = 'Save Score';
+  if (!res) return;
+  closeModal('scoreModal');
+  // Refresh submissions view
+  if (currentSubsAsgnId) viewSubmissions(currentSubsAsgnId, currentSubsTitle);
 }
 
 // ── FLASHCARDS ───────────────────────────────────────────────
@@ -695,6 +783,7 @@ async function saveFlashcardSet() {
     batch:     activeBatch?._id,
     lecturer:  lec._id,
   };
+  if (!body.batch) { alert('No active batch loaded. Please wait and try again.'); return; }
   if (!body.title || !body.week) { alert('Title and week are required.'); return; }
   const btn = document.getElementById('saveFSetBtn');
   btn.disabled = true; btn.textContent = 'Saving…';
@@ -801,35 +890,52 @@ async function loadAttendance() {
   const data = await api(url);
   allAttendance = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
   const tbody = document.getElementById('attTableBody');
-  if (!allAttendance.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No sessions yet.</td></tr>'; return; }
+  if (!allAttendance.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">No sessions yet. Click "+ Take Attendance" to create one.</td></tr>'; return; }
   tbody.innerHTML = allAttendance.map(s => `<tr>
     <td>${fmtDate(s.classDate)}</td>
     <td>Week ${s.week}</td>
     <td>${s.day}</td>
-    <td style="color:var(--green)">${s.presentStudents?.length || 0}</td>
-    <td style="color:var(--red)">${s.absentStudents?.length || 0}</td>
-    <td>${s.isOpen ? '<span style="color:var(--green);font-weight:600">Open</span>' : '<span style="color:var(--muted)">Closed</span>'}</td>
+    <td style="color:var(--muted);font-size:13px">${s.topic || '—'}</td>
+    <td style="color:var(--green);font-weight:600">${s.presentStudents?.length || 0}</td>
+    <td style="color:var(--red);font-weight:600">${s.absentStudents?.length || 0}</td>
+    <td>${s.isOpen ? '<span style="color:var(--green);font-weight:600;font-size:12px">Open</span>' : '<span style="color:var(--muted);font-size:12px">Closed</span>'}</td>
     <td style="display:flex;gap:6px;flex-wrap:wrap">
       ${s.isOpen
-        ? `<button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--red)" onclick="closeSession('${s._id}')">Close Window</button>`
-        : `<button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--green)" onclick="openSession('${s._id}')">Open Window</button>`}
+        ? `<button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="closeSession('${s._id}')">Close Window</button>`
+        : `<button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--green);border-color:rgba(34,197,94,0.3)" onclick="openSession('${s._id}')">Open Window</button>`}
     </td>
   </tr>`).join('');
 }
 
-async function openTakeAttendance() {
-  if (!activeBatch) { alert('No active batch. Contact admin.'); return; }
-  const week = prompt('Week number?');
-  const day  = prompt('Day? (Tuesday / Wednesday / Thursday)');
-  const date = prompt('Class date? (YYYY-MM-DD)', new Date().toISOString().slice(0,10));
-  const topic = prompt('Topic? (optional)', '');
-  if (!week || !day || !date) return;
+function openTakeAttendance() {
+  if (!activeBatch) { alert('No active batch. Contact admin to set one.'); return; }
+  const errEl = document.getElementById('attErr');
+  errEl.style.display = 'none';
+  document.getElementById('att-week').value  = '';
+  document.getElementById('att-day').value   = '';
+  document.getElementById('att-date').value  = new Date().toISOString().slice(0,10);
+  document.getElementById('att-topic').value = '';
+  openModal('attModal');
+}
+
+async function saveAttendance() {
+  const week  = document.getElementById('att-week').value;
+  const day   = document.getElementById('att-day').value;
+  const date  = document.getElementById('att-date').value;
+  const topic = document.getElementById('att-topic').value.trim();
+  const errEl = document.getElementById('attErr');
+  if (!week || !day || !date) {
+    errEl.textContent = 'Week, day and date are required.'; errEl.style.display = 'block'; return;
+  }
+  const btn = document.getElementById('saveAttBtn');
+  btn.disabled = true; btn.textContent = 'Creating…';
   const res = await api('/api/attendance', {
     method: 'POST',
     body: JSON.stringify({ batchId: activeBatch._id, week: Number(week), day, classDate: date, topic, presentStudentIds: [] })
   });
-  if (res?.success) { alert('Session created! Open the window to let students self-mark.'); loadAttendance(); }
-  else alert('Failed: ' + (res?.error || 'Unknown error'));
+  btn.disabled = false; btn.textContent = 'Create Session';
+  if (res?.success) { closeModal('attModal'); loadAttendance(); }
+  else { errEl.textContent = res?.error || 'Failed to create session.'; errEl.style.display = 'block'; }
 }
 
 async function openSession(id) {
@@ -902,6 +1008,7 @@ async function saveCurriculum() {
     subtopics:  document.getElementById('cur-subtopics').value.split('\n').map(s=>s.trim()).filter(Boolean),
     objectives: document.getElementById('cur-objectives').value.trim(),
   };
+  if (!body.batch) { alert('No active batch loaded. Please wait and try again.'); return; }
   if (!body.week || !body.day || !body.topic) { alert('Week, day and topic are required.'); return; }
   const btn = document.getElementById('saveCurBtn');
   btn.disabled = true; btn.textContent = 'Saving…';
@@ -926,12 +1033,13 @@ async function loadStudents() {
   const tbody = document.getElementById('stuTableBody');
   tbody.innerHTML = '<tr><td colspan="5" class="loading">Loading…</td></tr>';
 
-  // Get active batch first
-  const batchData = await api('/api/batches/active');
+  // Reuse activeBatch if already loaded, otherwise fetch
+  const batchData = activeBatch || await api('/api/batches/active');
   if (!batchData || !batchData._id) {
     tbody.innerHTML = '<tr><td colspan="5" class="empty">No active batch found.</td></tr>';
     return;
   }
+  if (!activeBatch) activeBatch = batchData;
 
   const data = await api(`/api/students?batch=${batchData._id}&limit=200`);
   allBatchStudents = (data && data.data) ? data.data : [];
