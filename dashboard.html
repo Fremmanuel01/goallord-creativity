@@ -3273,16 +3273,14 @@ document.querySelectorAll('.tab-btn[data-ordertab]').forEach(btn => {
 // ─── OVERVIEW RECENT TABLES ──────────────────────────────
 function renderOverviewApplicants() {
   const tbody = document.querySelector('#recentApplicantsTable tbody');
-  const recent = [...APPLICANTS].slice(0, 5);
-  tbody.innerHTML = recent.map(a => {
-    const st = getStatus(a.id);
-    return `<tr onclick="navigate('applicants')">
-      <td style="font-weight:600">${a.name}</td>
-      <td class="muted">${a.track}</td>
-      <td>${badge(st)}</td>
-      <td class="muted">${a.date}</td>
-    </tr>`;
-  }).join('');
+  const source = window.APPLICANTS && window.APPLICANTS.length ? window.APPLICANTS : APPLICANTS;
+  const recent = [...source].slice(0, 5);
+  tbody.innerHTML = recent.map(a => `<tr onclick="navigate('applicants')">
+    <td style="font-weight:600">${a.name}</td>
+    <td class="muted">${a.track || '—'}</td>
+    <td>${badge(a.status)}</td>
+    <td class="muted">${a.date}</td>
+  </tr>`).join('');
 }
 
 function renderOverviewOrders() {
