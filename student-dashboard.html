@@ -181,6 +181,7 @@
     <button class="tab active" onclick="switchTab('overview')">Overview</button>
     <button class="tab" onclick="switchTab('attendance')">Attendance</button>
     <button class="tab" onclick="switchTab('payments')">Payments</button>
+    <button class="tab" onclick="switchTab('curriculum')">Curriculum</button>
     <button class="tab" onclick="switchTab('materials')">Materials</button>
     <button class="tab" onclick="switchTab('assignments')">Assignments</button>
     <button class="tab" onclick="switchTab('flashcards')">Flashcards</button>
@@ -313,6 +314,15 @@
         </tbody>
       </table>
     </div>
+  </div>
+
+  <!-- ── CURRICULUM TAB ── -->
+  <div id="tab-curriculum" style="display:none;">
+    <div class="page-header" style="margin-bottom:20px;">
+      <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">Course Curriculum</h2>
+      <p style="color:var(--muted);font-size:14px;">Weekly plan for your batch</p>
+    </div>
+    <div id="curriculumContent"><div class="loading">Loading curriculum…</div></div>
   </div>
 
   <!-- ── MATERIALS TAB ── -->
@@ -525,7 +535,8 @@
   }
 
   // ── Tab switching ────────────────────────────────────────────
-  const ALL_TABS = ['overview','attendance','payments','materials','assignments','flashcards','profile'];
+  const ALL_TABS = ['overview','attendance','payments','curriculum','materials','assignments','flashcards','profile'];
+  let curriculumLoaded = false;
 
   function switchTab(tab) {
     ALL_TABS.forEach(t => {
@@ -534,6 +545,7 @@
     document.querySelectorAll('.tab').forEach((btn, i) => {
       btn.classList.toggle('active', ALL_TABS[i] === tab);
     });
+    if (tab === 'curriculum'  && !curriculumLoaded)  loadCurriculumTab();
     if (tab === 'materials'   && !materialsLoaded)   loadMaterials();
     if (tab === 'assignments' && !assignmentsLoaded) loadAssignments();
     if (tab === 'flashcards'  && !flashcardsLoaded)  loadFlashcards();
@@ -791,6 +803,56 @@
         alert(data.error || 'Could not mark attendance.');
       }
     } catch { btn.disabled = false; btn.textContent = 'Mark Present'; }
+  }
+
+  // ── Curriculum ───────────────────────────────────────────────
+  const DAY_ORDER = { Tuesday: 1, Wednesday: 2, Thursday: 3 };
+  async function loadCurriculumTab() {
+    curriculumLoaded = true;
+    const cont = document.getElementById('curriculumContent');
+    cont.innerHTML = '<div class="loading">Loading curriculum…</div>';
+    try {
+      const res = await fetch('/api/curriculum/student', { headers: { 'Authorization': 'Bearer ' + token } });
+      const data = await res.json();
+      const items = Array.isArray(data) ? data : [];
+      if (!items.length) {
+        cont.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>No curriculum published yet.</div>';
+        return;
+      }
+      // Group by week
+      const byWeek = {};
+      items.forEach(e => { if (!byWeek[e.week]) byWeek[e.week] = []; byWeek[e.week].push(e); });
+      Object.values(byWeek).forEach(arr => arr.sort((a,b) => (DAY_ORDER[a.day]||9) - (DAY_ORDER[b.day]||9)));
+
+      cont.innerHTML = Object.keys(byWeek).sort((a,b)=>Number(a)-Number(b)).map(week => `
+        <div style="margin-bottom:28px">
+          <div style="font-weight:700;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+            <span style="background:rgba(30,75,255,0.15);color:#6a9fff;padding:3px 10px;border-radius:12px;font-size:11px">WEEK ${week}</span>
+          </div>
+          <div style="display:grid;gap:10px">
+            ${byWeek[week].map(e => `
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:${(e.subtopics?.length||e.objectives)?'10px':'0'}">
+                  <span style="background:rgba(214,106,31,0.12);color:var(--orange);padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700;flex-shrink:0">${e.day}</span>
+                  <span style="font-weight:700;font-size:14px">${e.topic}</span>
+                </div>
+                ${e.subtopics && e.subtopics.length ? `
+                  <div style="margin-top:8px">
+                    <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Sub-topics</div>
+                    <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px">
+                      ${e.subtopics.map(s => `<li style="font-size:13px;color:var(--muted)">${s}</li>`).join('')}
+                    </ul>
+                  </div>` : ''}
+                ${e.objectives ? `
+                  <div style="margin-top:8px;font-size:13px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px">
+                    <span style="font-weight:600;color:var(--text)">Objectives: </span>${e.objectives}
+                  </div>` : ''}
+              </div>`).join('')}
+          </div>
+        </div>`).join('');
+    } catch {
+      cont.innerHTML = '<div class="empty">Failed to load curriculum. Please try again.</div>';
+    }
   }
 
   // ── Materials ────────────────────────────────────────────────

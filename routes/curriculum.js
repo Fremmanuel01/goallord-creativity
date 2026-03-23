@@ -1,8 +1,23 @@
 const express         = require('express');
 const CurriculumEntry = require('../models/CurriculumEntry');
+const Student         = require('../models/Student');
 const { requireLecturer } = require('../middleware/lecturerAuth');
+const { requireStudentAuth } = require('../middleware/studentAuth');
 
 const router = express.Router();
+
+// GET /api/curriculum/student — student: curriculum for their batch
+router.get('/student', requireStudentAuth, async (req, res) => {
+  try {
+    const student = await Student.findById(req.user.id).select('batch');
+    if (!student || !student.batch) return res.json([]);
+    const docs = await CurriculumEntry.find({ batch: student.batch })
+      .sort({ week: 1, day: 1 });
+    res.json(docs);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // GET /api/curriculum?batch=&week=
 router.get('/', requireLecturer, async (req, res) => {

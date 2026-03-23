@@ -349,6 +349,7 @@
 <div class="modal-overlay" id="curModal">
   <div class="modal">
     <div class="modal-header"><h3 id="curModalTitle">Add Curriculum Entry</h3><button class="modal-close" onclick="closeModal('curModal')">✕</button></div>
+    <div class="error-msg" id="curErr"></div>
     <input type="hidden" id="cur-edit-id">
     <div class="form-row">
       <div class="form-group"><label>Week *</label><input id="cur-week" type="number" min="1"></div>
@@ -471,7 +472,7 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 // ── WEEK FILTER SELECTS ─────────────────────────────────────
 function populateWeekFilter(selId) {
   const sel = document.getElementById(selId);
-  sel.innerHTML = '<option value="">All Weeks</option>';
+  if (sel.options.length > 1) return; // already populated
   for (let i = 1; i <= 16; i++) sel.innerHTML += `<option value="${i}">Week ${i}</option>`;
 }
 
@@ -573,7 +574,7 @@ async function saveMaterial() {
     ? await api(`/api/materials/${editId}`, { method: 'PATCH', body: JSON.stringify(body) })
     : await api('/api/materials', { method: 'POST', body: JSON.stringify(body) });
   btn.disabled = false; btn.textContent = 'Save';
-  if (!res) return;
+  if (!res || res.error) { const e=document.getElementById('matErr'); e.textContent=res?.error||'Save failed.'; e.style.display='block'; return; }
   closeModal('matModal'); loadMaterials();
 }
 
@@ -663,7 +664,7 @@ async function saveAssignment() {
     ? await api(`/api/assignments/${editId}`, { method: 'PATCH', body: JSON.stringify(body) })
     : await api('/api/assignments', { method: 'POST', body: JSON.stringify(body) });
   btn.disabled = false; btn.textContent = 'Save';
-  if (!res) return;
+  if (!res || res.error) { alert(res?.error || 'Save failed.'); return; }
   closeModal('asgnModal'); loadAssignments();
 }
 
@@ -982,6 +983,7 @@ function openAddCurriculum() {
   document.getElementById('cur-edit-id').value = '';
   ['cur-week','cur-topic','cur-subtopics','cur-objectives'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('cur-day').value = '';
+  document.getElementById('curErr').style.display = 'none';
   openModal('curModal');
 }
 
@@ -1016,7 +1018,7 @@ async function saveCurriculum() {
     ? await api(`/api/curriculum/${editId}`, { method: 'PATCH', body: JSON.stringify(body) })
     : await api('/api/curriculum', { method: 'POST', body: JSON.stringify(body) });
   btn.disabled = false; btn.textContent = 'Save';
-  if (!res) return;
+  if (!res || res.error) { const e=document.getElementById('curErr'); e.textContent=res?.error||'Save failed. A curriculum entry for this batch, week and day may already exist.'; e.style.display='block'; return; }
   closeModal('curModal'); loadCurriculum();
 }
 
