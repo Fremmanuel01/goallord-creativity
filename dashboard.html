@@ -1355,6 +1355,14 @@
       <span>Clients</span>
     </div>
 
+    <div class="nav-item" data-page="contacts" title="Contacts">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <polyline points="22,6 12,13 2,6"/>
+      </svg>
+      <span>Contacts <span class="nav-badge" id="contactsNewBadge" style="display:none"></span></span>
+    </div>
+
     <div class="nav-label">Commerce</div>
 
     <div class="nav-item" data-page="store" title="Store">
@@ -1723,6 +1731,74 @@
           </thead>
           <tbody id="clientsBody"></tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         PAGE: CONTACTS
+    ══════════════════════════════════════════════════ -->
+    <div class="page" id="page-contacts">
+      <div class="section-header">
+        <h2>Contact Messages</h2>
+      </div>
+
+      <div class="filter-bar" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <input class="filter-input" type="text" placeholder="Search contacts…" id="contactSearch" style="flex:1;min-width:180px;">
+        <select id="contactStatusFilter" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--text);cursor:pointer;">
+          <option value="">All</option>
+          <option value="New">New</option>
+          <option value="Read">Read</option>
+          <option value="Replied">Replied</option>
+        </select>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="data-table" id="contactsTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Service</th>
+              <th>Budget</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="contactsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Contact View/Reply Modal -->
+    <div class="modal-overlay" id="contactModal">
+      <div class="modal-box" style="max-width:620px;width:100%;">
+        <div class="modal-header">
+          <h3 id="contactModalName">Contact</h3>
+          <button class="modal-close" onclick="closeModal('contactModal')">✕</button>
+        </div>
+        <div id="contactModalBody" style="margin-bottom:20px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+            <div><span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Email</span><p id="cmEmail" style="margin:4px 0 0;font-size:14px;"></p></div>
+            <div><span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Service</span><p id="cmService" style="margin:4px 0 0;font-size:14px;"></p></div>
+            <div><span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Budget</span><p id="cmBudget" style="margin:4px 0 0;font-size:14px;"></p></div>
+            <div><span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Date</span><p id="cmDate" style="margin:4px 0 0;font-size:14px;"></p></div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Message</span>
+            <p id="cmMessage" style="margin:8px 0 0;font-size:14px;line-height:1.6;background:var(--bg);padding:12px;border-radius:8px;border:1px solid var(--border);"></p>
+          </div>
+          <div id="cmReplies"></div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:16px;">
+          <label style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:8px;">Your Reply</label>
+          <textarea id="contactReplyBody" rows="4" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;color:var(--text);font-family:inherit;resize:vertical;outline:none;" placeholder="Type your reply…"></textarea>
+          <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end;">
+            <button class="btn btn-secondary" onclick="closeModal('contactModal')">Cancel</button>
+            <button class="btn btn-primary" id="sendContactReplyBtn" onclick="sendContactReply()">Send Reply</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -4046,7 +4122,141 @@ document.addEventListener('DOMContentLoaded', () => {
   loadClientsFromAPI();
   loadOrdersFromAPI();
   loadOverviewStats();
+  loadContacts();
 });
+
+// ═══════════════════════════════════════════════════════════
+//  CONTACTS
+// ═══════════════════════════════════════════════════════════
+let allContacts = [];
+let activeContactId = null;
+
+async function loadContacts() {
+  const res = await apiFetch('/api/contacts?limit=200');
+  if (!res) return;
+  allContacts = res.data || [];
+  renderContacts();
+  updateContactsBadge();
+}
+
+function updateContactsBadge() {
+  const newCount = allContacts.filter(c => c.status === 'New').length;
+  const badge = document.getElementById('contactsNewBadge');
+  if (!badge) return;
+  if (newCount > 0) { badge.textContent = newCount; badge.style.display = 'inline-block'; }
+  else { badge.style.display = 'none'; }
+}
+
+function renderContacts() {
+  const search  = (document.getElementById('contactSearch')?.value || '').toLowerCase();
+  const status  = document.getElementById('contactStatusFilter')?.value || '';
+  const tbody   = document.getElementById('contactsBody');
+  if (!tbody) return;
+
+  let rows = allContacts.filter(c => {
+    if (status && c.status !== status) return false;
+    if (search && !`${c.name} ${c.email} ${c.message}`.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px;">No contact messages yet.</td></tr>';
+    return;
+  }
+
+  const statusColor = { New: '#D66A1F', Read: '#3b82f6', Replied: '#22c55e' };
+
+  tbody.innerHTML = rows.map((c, i) => `
+    <tr style="${c.status === 'New' ? 'font-weight:600;' : ''}">
+      <td>${i + 1}</td>
+      <td>${escHtml(c.name)}</td>
+      <td><a href="mailto:${escHtml(c.email)}" style="color:var(--orange)">${escHtml(c.email)}</a></td>
+      <td>${escHtml(c.service || '—')}</td>
+      <td>${escHtml(c.budget || '—')}</td>
+      <td><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${statusColor[c.status]}22;color:${statusColor[c.status]};border:1px solid ${statusColor[c.status]}44;">${c.status}</span></td>
+      <td>${new Date(c.createdAt).toLocaleDateString()}</td>
+      <td>
+        <button class="btn btn-sm btn-primary" onclick="openContact('${c._id}')">View / Reply</button>
+        <button class="btn btn-sm" style="background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.25);margin-left:4px;" onclick="deleteContact('${c._id}')">Delete</button>
+      </td>
+    </tr>`).join('');
+}
+
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function openContact(id) {
+  const c = allContacts.find(x => x._id === id);
+  if (!c) return;
+  activeContactId = id;
+
+  document.getElementById('contactModalName').textContent = c.name;
+  document.getElementById('cmEmail').textContent   = c.email;
+  document.getElementById('cmService').textContent = c.service || '—';
+  document.getElementById('cmBudget').textContent  = c.budget  || '—';
+  document.getElementById('cmDate').textContent    = new Date(c.createdAt).toLocaleString();
+  document.getElementById('cmMessage').textContent = c.message || '(no message)';
+  document.getElementById('contactReplyBody').value = '';
+
+  // Show previous replies
+  const repliesEl = document.getElementById('cmReplies');
+  if (c.replies && c.replies.length) {
+    repliesEl.innerHTML = '<div style="margin-bottom:12px;"><span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Previous Replies</span>' +
+      c.replies.map(r => `<div style="margin-top:8px;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:10px 12px;">
+        <p style="margin:0;font-size:13px;line-height:1.6;">${escHtml(r.body)}</p>
+        <p style="margin:6px 0 0;font-size:11px;color:var(--text-muted);">${r.sentBy} · ${new Date(r.sentAt).toLocaleString()}</p>
+      </div>`).join('') + '</div>';
+  } else {
+    repliesEl.innerHTML = '';
+  }
+
+  openModal('contactModal');
+
+  // Mark as read
+  if (c.status === 'New') {
+    c.status = 'Read';
+    renderContacts();
+    updateContactsBadge();
+    apiFetch(`/api/contacts/${id}`, { method: 'PATCH', body: JSON.stringify({ status: 'Read' }) });
+  }
+}
+
+async function sendContactReply() {
+  const body = document.getElementById('contactReplyBody').value.trim();
+  if (!body) return alert('Please write a reply.');
+  const btn = document.getElementById('sendContactReplyBtn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+
+  const res = await apiFetch(`/api/contacts/${activeContactId}/reply`, {
+    method: 'POST', body: JSON.stringify({ body })
+  });
+
+  btn.disabled = false; btn.textContent = 'Send Reply';
+  if (!res) return;
+
+  // Update local state
+  const c = allContacts.find(x => x._id === activeContactId);
+  if (c) {
+    c.status = 'Replied';
+    c.replies = c.replies || [];
+    c.replies.push({ body, sentBy: 'Admin', sentAt: new Date() });
+  }
+  closeModal('contactModal');
+  renderContacts();
+  updateContactsBadge();
+}
+
+async function deleteContact(id) {
+  if (!confirm('Delete this contact message?')) return;
+  await apiFetch(`/api/contacts/${id}`, { method: 'DELETE' });
+  allContacts = allContacts.filter(c => c._id !== id);
+  renderContacts();
+  updateContactsBadge();
+}
+
+document.getElementById('contactSearch')?.addEventListener('input', renderContacts);
+document.getElementById('contactStatusFilter')?.addEventListener('change', renderContacts);
 
 // ═══════════════════════════════════════════════════════════
 //  ACADEMY — STUDENTS

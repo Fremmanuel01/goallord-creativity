@@ -65,6 +65,7 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/chat',          require('./routes/chat'));
 app.use('/api/conversations', require('./routes/conversations'));
 app.use('/api/agents',        require('./routes/agents'));
+app.use('/api/contacts',      require('./routes/contacts'));
 
 // ─── SOCKET.IO ────────────────────────────────────────────────
 io.on('connection', socket => {

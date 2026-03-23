@@ -2309,22 +2309,22 @@
             <div class="container">
                 <div class="row">
                     <div class="col-lg-8 mx-auto">
-                        <form class="form-cta">
+                        <form class="form-cta" id="contactForm" novalidate>
                             <div class="form-content">
                                 <div class="tf-grid-layout sm-col-2">
                                     <fieldset class="tf-field">
-                                        <input class="tf-input" type="text" placeholder required>
+                                        <input class="tf-input" type="text" name="name" id="contactName" placeholder required>
                                         <label class="tf-lable">Name <span class="text-primary">*</span></label>
                                     </fieldset>
                                     <fieldset class="tf-field">
-                                        <input class="tf-input" type="email" placeholder required>
+                                        <input class="tf-input" type="email" name="email" id="contactEmail" placeholder required>
                                         <label class="tf-lable">Email <span class="text-primary">*</span></label>
                                     </fieldset>
                                 </div>
                                 <div class="tf-grid-layout sm-col-2">
                                     <div class="nc-wrap">
                                         <p class="select-label fs-14 text-white-64 d-sm-none">Service needed <span class="text-primary">*</span></p>
-                                        <div class="nice-select">
+                                        <div class="nice-select" id="contactServiceSelect">
                                             <span class="current letter-space--1">Service Needed</span>
                                             <ul class="list">
                                                 <li class="option disabled">-- Select a service --</li>
@@ -2340,7 +2340,7 @@
                                     </div>
                                     <div class="nc-wrap">
                                         <p class="select-label fs-14 text-white-64 d-sm-none">Budget range <span class="text-primary">*</span></p>
-                                        <div class="nice-select">
+                                        <div class="nice-select" id="contactBudgetSelect">
                                             <span class="current letter-space--1">Budget in EUR</span>
                                             <ul class="list">
                                                 <li class="option disabled">-- Select your budget --</li>
@@ -2354,12 +2354,14 @@
                                     </div>
                                 </div>
                                 <fieldset class="tf-field">
-                                    <input class="tf-input" type="text" placeholder required>
+                                    <input class="tf-input" type="text" name="message" id="contactMessage" placeholder required>
                                     <label class="tf-lable">Tell us about your project</label>
                                 </fieldset>
                             </div>
+                            <div id="contactError" style="display:none;color:#ef4444;font-size:13px;margin-bottom:12px;"></div>
+                            <div id="contactSuccess" style="display:none;color:#22c55e;font-size:14px;font-weight:600;margin-bottom:12px;">✓ Message sent! We'll get back to you within 24–48 hours.</div>
                             <div class="form-action">
-                                <button type="submit" class="tf-btn style-fill">
+                                <button type="submit" class="tf-btn style-fill" id="contactSubmitBtn">
                                     <span class="text-caption">SEND MESSAGE</span>
                                 </button>
                                 <p class="text-body-1">
@@ -3446,6 +3448,61 @@
         revealEls.forEach(function(el, i) {
             el.dataset.revealDelay = (i % 4) * 80;
             obs.observe(el);
+        });
+    })();
+    </script>
+
+    <!-- Contact Form Submission -->
+    <script>
+    (function() {
+        var form = document.getElementById('contactForm');
+        if (!form) return;
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            var btn     = document.getElementById('contactSubmitBtn');
+            var errEl   = document.getElementById('contactError');
+            var succEl  = document.getElementById('contactSuccess');
+            errEl.style.display  = 'none';
+            succEl.style.display = 'none';
+
+            var name    = document.getElementById('contactName').value.trim();
+            var email   = document.getElementById('contactEmail').value.trim();
+            var message = document.getElementById('contactMessage').value.trim();
+            var service = (document.querySelector('#contactServiceSelect .current') || {}).textContent || '';
+            var budget  = (document.querySelector('#contactBudgetSelect .current') || {}).textContent || '';
+            if (service === 'Service Needed') service = '';
+            if (budget  === 'Budget in EUR')  budget  = '';
+
+            if (!name || !email) {
+                errEl.textContent = 'Please fill in your name and email.';
+                errEl.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.querySelector('.text-caption').textContent = 'Sending…';
+
+            try {
+                var res  = await fetch('/api/contacts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, service, budget, message })
+                });
+                var data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to send message.');
+                succEl.style.display = 'block';
+                form.reset();
+                // Reset nice-select displays
+                var selects = form.querySelectorAll('.nice-select .current');
+                if (selects[0]) selects[0].textContent = 'Service Needed';
+                if (selects[1]) selects[1].textContent = 'Budget in EUR';
+                form.querySelectorAll('.nice-select .option').forEach(function(o) { o.classList.remove('selected'); });
+            } catch (err) {
+                errEl.textContent = err.message;
+                errEl.style.display = 'block';
+                btn.disabled = false;
+                btn.querySelector('.text-caption').textContent = 'SEND MESSAGE';
+            }
         });
     })();
     </script>

@@ -361,4 +361,82 @@ function receiptEmail({ receiptNumber, date, recipientName, recipientEmail, desc
 </html>`;
 }
 
-module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail };
+// ── Contact form: admin notification ──────────────────────────
+function adminContactEmail({ name, email, service, budget, message, dashboardUrl }) {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0F1115;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#171A21;border-radius:12px;border:1px solid #2A2F3A;overflow:hidden;">
+      <tr><td style="background:#D66A1F;padding:24px 32px;">
+        <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;">📬 New Contact Message</h1>
+        <p style="margin:4px 0 0;color:rgba(255,255,255,0.75);font-size:13px;">Via the website contact form</p>
+      </td></tr>
+      <tr><td style="padding:32px;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="padding:8px 0;border-bottom:1px solid #2A2F3A;">
+            <span style="color:#A0A6B3;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">From</span>
+            <p style="margin:4px 0 0;color:#F4F6FA;font-size:15px;font-weight:600;">${name} &lt;${email}&gt;</p>
+          </td></tr>
+          ${service ? `<tr><td style="padding:8px 0;border-bottom:1px solid #2A2F3A;">
+            <span style="color:#A0A6B3;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Service Needed</span>
+            <p style="margin:4px 0 0;color:#F4F6FA;font-size:14px;">${service}</p>
+          </td></tr>` : ''}
+          ${budget ? `<tr><td style="padding:8px 0;border-bottom:1px solid #2A2F3A;">
+            <span style="color:#A0A6B3;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Budget</span>
+            <p style="margin:4px 0 0;color:#F4F6FA;font-size:14px;">${budget}</p>
+          </td></tr>` : ''}
+          <tr><td style="padding:16px 0 0;">
+            <span style="color:#A0A6B3;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Message</span>
+            <p style="margin:8px 0 0;color:#F4F6FA;font-size:14px;line-height:1.6;background:#0F1115;padding:14px;border-radius:8px;">${message}</p>
+          </td></tr>
+        </table>
+        <div style="margin-top:24px;text-align:center;">
+          <a href="${dashboardUrl}#contacts" style="display:inline-block;background:#D66A1F;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:700;font-size:13px;">Reply in Dashboard</a>
+        </div>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
+// ── Contact form: auto-reply to sender ────────────────────────
+function contactAutoReplyEmail({ name }) {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0F1115;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#171A21;border-radius:12px;border:1px solid #2A2F3A;overflow:hidden;">
+      <tr><td style="background:#D66A1F;padding:24px 32px;">
+        <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;">Thanks for reaching out, ${name}!</h1>
+      </td></tr>
+      <tr><td style="padding:32px;">
+        <p style="color:#F4F6FA;font-size:15px;line-height:1.7;margin:0 0 16px;">We've received your message and will get back to you within <strong>24–48 hours</strong>.</p>
+        <p style="color:#A0A6B3;font-size:13px;line-height:1.6;margin:0;">If your matter is urgent, email us directly at <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;">hello@goallordcreativity.com</a></p>
+        <hr style="border:none;border-top:1px solid #2A2F3A;margin:24px 0;">
+        <p style="color:#A0A6B3;font-size:12px;margin:0;">— Goallord Creativity Team</p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
+// ── Contact reply from admin ───────────────────────────────────
+function contactReplyEmail({ name, replyBody }) {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0F1115;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#171A21;border-radius:12px;border:1px solid #2A2F3A;overflow:hidden;">
+      <tr><td style="background:#D66A1F;padding:24px 32px;">
+        <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;">Reply from Goallord Creativity</h1>
+      </td></tr>
+      <tr><td style="padding:32px;">
+        <p style="color:#F4F6FA;font-size:15px;margin:0 0 8px;">Hi ${name},</p>
+        <div style="color:#F4F6FA;font-size:14px;line-height:1.7;background:#0F1115;padding:14px;border-radius:8px;margin:16px 0;">${replyBody.replace(/\n/g, '<br>')}</div>
+        <hr style="border:none;border-top:1px solid #2A2F3A;margin:24px 0;">
+        <p style="color:#A0A6B3;font-size:12px;margin:0;">— Goallord Creativity Team &nbsp;·&nbsp; <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;">hello@goallordcreativity.com</a></p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
+module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail };
