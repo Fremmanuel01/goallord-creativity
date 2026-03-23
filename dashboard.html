@@ -4324,6 +4324,7 @@ function filterStudents() {
       <td style="padding:12px 14px"><span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:${statusColors[s.status]+'22'};color:${statusColors[s.status]}">${s.status}</span></td>
       <td style="padding:12px 14px" onclick="event.stopPropagation()">
         <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="openEditStudent('${s._id}')">Edit</button>
+        ${s.status !== 'Graduated' ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:#6a9fff" onclick="graduateStudent('${s._id}','${s.fullName.replace(/'/g,"\\'")}')">Graduate</button>` : ''}
         <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--danger)" onclick="deleteStudent('${s._id}','${s.fullName}')">Delete</button>
       </td>
     </tr>
@@ -4464,6 +4465,15 @@ async function deleteStudent(id, name) {
     await apiFetch(`/api/students/${id}`, { method: 'DELETE' });
     loadStudents();
     showToast(`${name} deleted`);
+  });
+}
+
+async function graduateStudent(id, name) {
+  glConfirm(`Graduate "${name}"?`, 'This will mark the student as Graduated, send them a congratulations email, and create an in-app notification.', 'Graduate Student', 'primary', async () => {
+    const res = await apiFetch(`/api/students/${id}/graduate`, { method: 'POST' });
+    if (res?.error) { showToast(res.error, 'error'); return; }
+    loadStudents();
+    showToast(`${name} graduated`);
   });
 }
 

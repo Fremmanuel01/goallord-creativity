@@ -7,7 +7,8 @@ const { requireAuth }       = require('../middleware/auth');
 const { requireStudent }    = require('../middleware/studentAuth');
 const { requireLecturer }   = require('../middleware/lecturerAuth');
 const { sendMail }          = require('../utils/mailer');
-const { passwordResetEmail } = require('../utils/emailTemplates');
+const { passwordResetEmail, graduationEmail } = require('../utils/emailTemplates');
+const Notification = require('../models/Notification');
 
 const router = express.Router();
 
@@ -241,6 +242,39 @@ router.patch('/:id', requireAuth, async (req, res) => {
     res.json(student);
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+// ── POST /api/students/:id/graduate — admin ────────────────────
+router.post('/:id/graduate', requireAuth, async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) return res.status(404).json({ error: 'Not found' });
+    if (student.status === 'Graduated') return res.status(400).json({ error: 'Student is already graduated' });
+
+    student.status = 'Graduated';
+    await student.save();
+
+    const loginUrl = (process.env.HOST || 'https://goallordcreativity.com') + '/student-login.html';
+
+    sendMail({
+      to:      student.email,
+      subject: 'Congratulations on your graduation! — Goallord Creativity Academy',
+      html:    graduationEmail({ fullName: student.fullName, cohort: student.cohort, track: student.track, loginUrl })
+    }).catch(e => console.error('Graduation email failed:', e.message));
+
+    Notification.create({
+      recipient:     student._id,
+      recipientType: 'Student',
+      type:          'graduation',
+      title:         'Congratulations! You have graduated',
+      message:       `You have successfully completed the ${student.track} program at Goallord Creativity Academy. We are proud of your achievement!`,
+      link:          loginUrl
+    }).catch(e => console.error('Graduation notification failed:', e.message));
+
+    res.json({ success: true, student: { id: student._id, status: student.status } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

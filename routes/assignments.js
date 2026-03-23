@@ -2,6 +2,7 @@ const express    = require('express');
 const Assignment = require('../models/Assignment');
 const Submission = require('../models/Submission');
 const Student    = require('../models/Student');
+const Notification = require('../models/Notification');
 const { requireLecturer } = require('../middleware/lecturerAuth');
 const { requireStudentAuth } = require('../middleware/studentAuth');
 
@@ -141,6 +142,20 @@ router.patch('/:id/submissions/:subId', requireLecturer, async (req, res) => {
       { new: true }
     );
     if (!sub) return res.status(404).json({ error: 'Not found' });
+
+    // Notify student that their assignment has been graded
+    if (score != null) {
+      const assignment = await Assignment.findById(req.params.id).select('title maxScore');
+      const msg = `Your submission for "${assignment?.title || 'an assignment'}" has been graded: ${score}${assignment?.maxScore ? '/' + assignment.maxScore : ''} points.${feedback ? ' Feedback: ' + feedback : ''}`;
+      Notification.create({
+        recipient:     sub.student,
+        recipientType: 'Student',
+        type:          'assignment_scored',
+        title:         'Assignment Graded',
+        message:       msg
+      }).catch(() => {});
+    }
+
     res.json(sub);
   } catch (err) {
     res.status(400).json({ error: err.message });

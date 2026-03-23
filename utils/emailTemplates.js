@@ -394,6 +394,56 @@ function paymentReminderEmail({ fullName, category, amountDue, dueDate, isOverdu
 </body></html>`;
 }
 
+// ── Account suspension ────────────────────────────────────────
+function suspensionEmail({ fullName, loginUrl }) {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0F1115;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#171A21;border-radius:12px;border:1px solid #2A2F3A;overflow:hidden;">
+      <tr><td style="background:#ef4444;padding:24px 32px;">
+        <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;">⚠️ Account Suspended</h1>
+        <p style="margin:4px 0 0;color:rgba(255,255,255,0.8);font-size:13px;">Goallord Creativity Academy</p>
+      </td></tr>
+      <tr><td style="padding:32px;">
+        <p style="color:#F4F6FA;font-size:15px;margin:0 0 16px;">Hi <strong>${fullName}</strong>,</p>
+        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 24px;">Your student account has been <strong>suspended</strong> due to an overdue payment that remains unpaid. You will not be able to access your student dashboard until the outstanding balance is settled.</p>
+        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 24px;">Please log in to your student portal and make your payment immediately to reactivate your account.</p>
+        <div style="text-align:center;margin:24px 0;">
+          <a href="${loginUrl}" style="display:inline-block;background:#ef4444;color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">Settle Balance &amp; Reactivate</a>
+        </div>
+        <hr style="border:none;border-top:1px solid #2A2F3A;margin:24px 0;">
+        <p style="color:#A0A6B3;font-size:12px;margin:0;">Questions? Email <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;">hello@goallordcreativity.com</a></p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
+// ── Graduation ────────────────────────────────────────────────
+function graduationEmail({ fullName, cohort, track, loginUrl }) {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0F1115;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#171A21;border-radius:12px;border:1px solid #2A2F3A;overflow:hidden;">
+      <tr><td style="background:linear-gradient(135deg,#1E4BFF 0%,#D66A1F 100%);padding:24px 32px;">
+        <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700;">🎓 Congratulations, ${fullName}!</h1>
+        <p style="margin:4px 0 0;color:rgba(255,255,255,0.85);font-size:13px;">Goallord Creativity Academy</p>
+      </td></tr>
+      <tr><td style="padding:32px;">
+        <p style="color:#F4F6FA;font-size:15px;margin:0 0 16px;">Hi <strong>${fullName}</strong>,</p>
+        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 16px;">We are incredibly proud to announce that you have successfully <strong>graduated</strong> from the <strong>${track}</strong> program at Goallord Creativity Academy — Cohort <strong>${cohort || '—'}</strong>.</p>
+        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 24px;">Your dedication, hard work, and creativity throughout this journey have been outstanding. You are now equipped with the skills to build an amazing career. Go forth and create!</p>
+        <div style="text-align:center;margin:24px 0;">
+          <a href="${loginUrl}" style="display:inline-block;background:#D66A1F;color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">View Your Dashboard</a>
+        </div>
+        <hr style="border:none;border-top:1px solid #2A2F3A;margin:24px 0;">
+        <p style="color:#A0A6B3;font-size:12px;margin:0;">— The Goallord Creativity Academy Team &nbsp;·&nbsp; <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;">hello@goallordcreativity.com</a></p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
 // ── Contact form: admin notification ──────────────────────────
 function adminContactEmail({ name, email, service, budget, message, dashboardUrl }) {
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
@@ -472,4 +522,4 @@ function contactReplyEmail({ name, replyBody }) {
 </body></html>`;
 }
 
-module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail };
+module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail, suspensionEmail, graduationEmail };

@@ -5,7 +5,8 @@ const Student = require('../models/Student');
 const { requireAuth } = require('../middleware/auth');
 const { requireStudent } = require('../middleware/studentAuth');
 const { sendMail } = require('../utils/mailer');
-const { receiptEmail, paymentReminderEmail } = require('../utils/emailTemplates');
+const { receiptEmail, paymentReminderEmail, suspensionEmail } = require('../utils/emailTemplates');
+const Notification = require('../models/Notification');
 
 const router = express.Router();
 
@@ -286,21 +287,21 @@ router.post('/run-overdue-check', requireAuth, async (req, res) => {
 
 // Shared overdue check logic (called by scheduler and admin endpoint)
 async function runOverdueCheck() {
-  const now        = new Date();
-  const in3days    = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-  const loginUrl   = (process.env.HOST || 'https://goallordcreativity.com') + '/student-login.html';
-  let markedOverdue = 0, remindersSent = 0;
+  const now             = new Date();
+  const in3days         = new Date(now.getTime() + 3  * 24 * 60 * 60 * 1000);
+  const suspendCutoff   = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+  const loginUrl        = (process.env.HOST || 'https://goallordcreativity.com') + '/student-login.html';
+  const catLabel = { application_fee: 'Application Fee', tuition_month_1: 'Tuition Month 1', tuition_month_2: 'Tuition Month 2', tuition_month_3: 'Tuition Month 3', full_tuition_payment: 'Full Tuition Payment' };
+  let markedOverdue = 0, remindersSent = 0, suspended = 0;
 
-  // 1. Mark pending payments past due date as overdue
+  // 1. Mark pending/partially_paid payments past due date as overdue
   const overduePayments = await Payment.find({
-    status: 'pending',
-    amountPaid: 0,
+    status: { $in: ['pending', 'partially_paid'] },
     dueDate: { $lt: now }
   }).populate('student', 'fullName email');
 
   for (const p of overduePayments) {
-    p.status = 'overdue';
-    await p.save(); // triggers post-save to sync student.paymentStatus
+    await p.save(); // pre-save hook now correctly sets overdue for both pending and partial
     markedOverdue++;
 
     // Email student
@@ -311,16 +312,28 @@ async function runOverdueCheck() {
         html:    paymentReminderEmail({ fullName: p.student.fullName, category: p.category, amountDue: p.amountDue, dueDate: p.dueDate, isOverdue: true, loginUrl })
       }).catch(e => console.error('Overdue email failed:', e.message));
     }
+
+    // In-app notification
+    if (p.student?._id) {
+      const dueDateStr = new Date(p.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      Notification.create({
+        recipient:     p.student._id,
+        recipientType: 'Student',
+        type:          'payment_overdue',
+        title:         'Payment Overdue',
+        message:       `Your ${catLabel[p.category] || p.category} of ₦${p.amountDue.toLocaleString()} was due on ${dueDateStr}. Please settle this immediately to avoid suspension.`,
+        link:          loginUrl
+      }).catch(e => console.error('Overdue notification failed:', e.message));
+    }
   }
 
   // 2. Send reminder emails for payments due in the next 3 days (not yet reminded today)
   const upcomingPayments = await Payment.find({
-    status:      'pending',
-    amountPaid:  0,
-    dueDate:     { $gte: now, $lte: in3days },
+    status:     { $in: ['pending', 'partially_paid'] },
+    dueDate:    { $gte: now, $lte: in3days },
     $or: [
       { reminderSentAt: { $exists: false } },
-      { reminderSentAt: { $lt: new Date(now - 24 * 60 * 60 * 1000) } } // not reminded in last 24h
+      { reminderSentAt: { $lt: new Date(now - 24 * 60 * 60 * 1000) } }
     ]
   }).populate('student', 'fullName email');
 
@@ -336,8 +349,42 @@ async function runOverdueCheck() {
     remindersSent++;
   }
 
-  console.log(`[Overdue Check] Marked overdue: ${markedOverdue}, Reminders sent: ${remindersSent}`);
-  return { markedOverdue, remindersSent };
+  // 3. Auto-suspend students whose payments have been overdue for ≥14 days
+  const longOverdue = await Payment.find({
+    status:  'overdue',
+    dueDate: { $lt: suspendCutoff }
+  }).populate('student', 'fullName email status');
+
+  const toSuspend = new Map();
+  for (const p of longOverdue) {
+    if (p.student && p.student.status === 'Active') {
+      toSuspend.set(String(p.student._id), p.student);
+    }
+  }
+
+  for (const [studentId, student] of toSuspend) {
+    await Student.findByIdAndUpdate(studentId, { status: 'Suspended' });
+
+    sendMail({
+      to:      student.email,
+      subject: 'Account suspended — Goallord Creativity Academy',
+      html:    suspensionEmail({ fullName: student.fullName, loginUrl })
+    }).catch(e => console.error('Suspension email failed:', e.message));
+
+    Notification.create({
+      recipient:     studentId,
+      recipientType: 'Student',
+      type:          'account_suspended',
+      title:         'Account Suspended',
+      message:       'Your account has been suspended due to an overdue payment. Please log in and settle your balance to reactivate.',
+      link:          loginUrl
+    }).catch(e => console.error('Suspension notification failed:', e.message));
+
+    suspended++;
+  }
+
+  console.log(`[Overdue Check] Marked overdue: ${markedOverdue}, Reminders sent: ${remindersSent}, Suspended: ${suspended}`);
+  return { markedOverdue, remindersSent, suspended };
 }
 
 module.exports = router;

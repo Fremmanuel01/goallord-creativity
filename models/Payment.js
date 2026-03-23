@@ -37,6 +37,8 @@ paymentSchema.pre('save', async function(next) {
   } else if (this.amountPaid >= this.amountDue) {
     this.status = 'paid';
     if (!this.paidAt) this.paidAt = now;
+  } else if (this.amountPaid > 0 && this.dueDate && this.dueDate < now) {
+    this.status = 'overdue'; // partial payment past due date
   } else if (this.amountPaid > 0) {
     this.status = 'partially_paid';
   } else if (this.dueDate && this.dueDate < now) {

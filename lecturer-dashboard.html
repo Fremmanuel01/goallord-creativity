@@ -990,6 +990,7 @@ function openAddCurriculum() {
 function openEditCurriculum(id) {
   const c = allCurriculum.find(x => x._id === id);
   if (!c) return;
+  document.getElementById('curErr').style.display = 'none';
   document.getElementById('curModalTitle').textContent = 'Edit Entry';
   document.getElementById('cur-edit-id').value    = id;
   document.getElementById('cur-week').value       = c.week || '';

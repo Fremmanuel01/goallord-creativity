@@ -1491,7 +1491,7 @@ async function submitBankTransfer() {
     if (!res.ok) { errEl.textContent = data.error || 'Submission failed.'; errEl.style.display = 'block'; btn.disabled = false; btn.textContent = 'Submit Reference'; return; }
     document.getElementById('bt-success').style.display = 'block';
     btn.textContent = 'Submitted ✓';
-    if (typeof loadData === 'function') setTimeout(loadData, 1500);
+    if (typeof loadAll === 'function') setTimeout(loadAll, 1500);
   } catch { errEl.textContent = 'Network error. Please try again.'; errEl.style.display = 'block'; btn.disabled = false; btn.textContent = 'Submit Reference'; }
 }
 
