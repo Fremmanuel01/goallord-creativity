@@ -6,7 +6,6 @@ const studentSchema = new mongoose.Schema({
   password:           { type: String, required: true },
   phone:              { type: String },
   track:              { type: String, enum: ['Web Design', 'WordPress', 'Digital Marketing', 'Brand Identity', 'Other'], required: true },
-  cohort:             { type: String }, // legacy string field, kept for backwards compat
   batch:              { type: mongoose.Schema.Types.ObjectId, ref: 'Batch' },
   profilePicture:     { type: String, default: '' },
   paymentPlan:        { type: String, enum: ['monthly', 'full_upfront'], default: 'monthly' },

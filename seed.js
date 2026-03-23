@@ -110,7 +110,6 @@ async function seed() {
       password:  await spw('Student2026'),
       phone:     '08091234501',
       track:     'Web Design',
-      cohort:    'January 2026',
       batch:     batchA._id,
       status:    'Active',
       paymentPlan: 'monthly'
@@ -121,7 +120,6 @@ async function seed() {
       password:  await spw('Student2026'),
       phone:     '08091234502',
       track:     'Web Design',
-      cohort:    'January 2026',
       batch:     batchA._id,
       status:    'Active',
       paymentPlan: 'full_upfront'
@@ -132,7 +130,6 @@ async function seed() {
       password:  await spw('Student2026'),
       phone:     '08091234503',
       track:     'Web Design',
-      cohort:    'January 2026',
       batch:     batchA._id,
       status:    'Active',
       paymentPlan: 'monthly'
@@ -143,7 +140,6 @@ async function seed() {
       password:  await spw('Student2026'),
       phone:     '08091234504',
       track:     'Digital Marketing',
-      cohort:    'April 2026',
       batch:     batchB._id,
       status:    'Active',
       paymentPlan: 'monthly'
@@ -154,7 +150,6 @@ async function seed() {
       password:  await spw('Student2026'),
       phone:     '08091234505',
       track:     'Brand Identity',
-      cohort:    'September 2025',
       batch:     batchC._id,
       status:    'Graduated',
       paymentPlan: 'full_upfront'

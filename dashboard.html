@@ -1896,7 +1896,7 @@
 
           <div class="settings-row">
             <div class="settings-row-info">
-              <strong>Seats Per Cohort</strong>
+              <strong>Seats Per Batch</strong>
               <small>Maximum students per intake</small>
             </div>
             <input class="settings-number" type="number" value="20" min="1" max="100">
@@ -2084,8 +2084,8 @@
       <!-- Filters -->
       <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
         <input class="form-input" id="stu-search" placeholder="Search name or email…" style="max-width:220px" oninput="filterStudents()">
-        <select class="form-input" id="stu-cohort-filter" style="max-width:160px" onchange="filterStudents()">
-          <option value="">All Cohorts</option>
+        <select class="form-input" id="stu-batch-filter" style="max-width:160px" onchange="filterStudents()">
+          <option value="">All Batches</option>
         </select>
         <select class="form-input" id="stu-track-filter" style="max-width:180px" onchange="filterStudents()">
           <option value="">All Tracks</option>
@@ -2108,7 +2108,7 @@
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Name</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Email</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Track</th>
-            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Cohort</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Batch</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Status</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Actions</th>
           </tr></thead>
@@ -2170,8 +2170,8 @@
         <button class="btn btn-primary" onclick="openTakeAttendance()">+ Take Attendance</button>
       </div>
       <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
-        <select class="form-input" id="att-cohort-filter" style="max-width:160px" onchange="loadAttendancePage()">
-          <option value="">All Cohorts</option>
+        <select class="form-input" id="att-batch-filter" style="max-width:160px" onchange="loadAttendancePage()">
+          <option value="">All Batches</option>
         </select>
         <input class="form-input" id="att-month-filter" type="month" style="max-width:160px" onchange="loadAttendancePage()">
       </div>
@@ -2179,7 +2179,7 @@
         <table style="width:100%;border-collapse:collapse">
           <thead><tr>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Date</th>
-            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Cohort</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Batch</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Track</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Present</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Absent</th>
@@ -2514,7 +2514,11 @@
               <option>Web Design</option><option>WordPress</option><option>Digital Marketing</option><option>Brand Identity</option><option>Other</option>
             </select>
           </div>
-          <div class="form-group"><label>Cohort</label><input class="form-input" id="stu-cohort" placeholder="e.g. 2026-A"></div>
+          <div class="form-group"><label>Batch</label>
+            <select class="form-input" id="stu-batch-select">
+              <option value="">— No batch —</option>
+            </select>
+          </div>
         </div>
         <div class="modal-form-row">
           <div class="form-group"><label>Status</label>
@@ -2544,9 +2548,9 @@
     <div class="modal-body">
       <div class="modal-form">
         <div class="modal-form-row">
-          <div class="form-group"><label>Cohort</label>
-            <select class="form-input" id="att-cohort-input" onchange="loadStudentsForAttendance()">
-              <option value="">— Select cohort —</option>
+          <div class="form-group"><label>Batch</label>
+            <select class="form-input" id="att-batch-input" onchange="loadStudentsForAttendance()">
+              <option value="">— Select batch —</option>
             </select>
           </div>
           <div class="form-group"><label>Class Date</label><input class="form-input" id="att-date-input" type="date" onchange="loadStudentsForAttendance()"></div>
@@ -4269,20 +4273,23 @@ async function loadStudents() {
   if (!res) return;
   allStudents = res.data || [];
 
-  // Populate cohort filters
-  const cohorts = [...new Set(allStudents.map(s => s.cohort).filter(Boolean))].sort();
-  ['stu-cohort-filter','att-cohort-filter'].forEach(id => {
+  // Populate batch filters from loaded students (unique batches)
+  const batchMap = {};
+  allStudents.forEach(s => { if (s.batch?._id) batchMap[s.batch._id] = s.batch.name; });
+  const batchEntries = Object.entries(batchMap).sort((a, b) => a[1].localeCompare(b[1]));
+  ['stu-batch-filter','att-batch-filter'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const current = el.value;
-    el.innerHTML = '<option value="">All Cohorts</option>' + cohorts.map(c => `<option value="${c}">${c}</option>`).join('');
+    el.innerHTML = '<option value="">All Batches</option>' + batchEntries.map(([id, name]) => `<option value="${id}">${name}</option>`).join('');
     el.value = current;
   });
-  ['att-cohort-input'].forEach(id => {
+  ['att-batch-input', 'stu-batch-select'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const current = el.value;
-    el.innerHTML = '<option value="">— Select cohort —</option>' + cohorts.map(c => `<option value="${c}">${c}</option>`).join('');
+    const placeholder = id === 'stu-batch-select' ? '— No batch —' : '— Select batch —';
+    el.innerHTML = `<option value="">${placeholder}</option>` + batchEntries.map(([id, name]) => `<option value="${id}">${name}</option>`).join('');
     el.value = current;
   });
 
@@ -4290,7 +4297,7 @@ async function loadStudents() {
   const pSelect = document.getElementById('pay-student-select');
   if (pSelect) {
     pSelect.innerHTML = '<option value="">— Select student —</option>' +
-      allStudents.filter(s => s.status === 'Active').map(s => `<option value="${s._id}">${s.fullName} (${s.cohort})</option>`).join('');
+      allStudents.filter(s => s.status === 'Active').map(s => `<option value="${s._id}">${s.fullName}${s.batch?.name ? ' (' + s.batch.name + ')' : ''}</option>`).join('');
   }
 
   filterStudents();
@@ -4298,13 +4305,13 @@ async function loadStudents() {
 
 function filterStudents() {
   const search = (document.getElementById('stu-search')?.value || '').toLowerCase();
-  const cohort = document.getElementById('stu-cohort-filter')?.value || '';
+  const batch  = document.getElementById('stu-batch-filter')?.value || '';
   const track  = document.getElementById('stu-track-filter')?.value || '';
   const status = document.getElementById('stu-status-filter')?.value || '';
 
   const filtered = allStudents.filter(s =>
     (!search || s.fullName.toLowerCase().includes(search) || s.email.toLowerCase().includes(search)) &&
-    (!cohort || s.cohort === cohort) &&
+    (!batch  || s.batch?._id === batch) &&
     (!track  || s.track  === track)  &&
     (!status || s.status === status)
   );
@@ -4320,7 +4327,7 @@ function filterStudents() {
       <td style="padding:12px 14px;font-weight:600">${s.fullName}</td>
       <td style="padding:12px 14px;color:var(--muted);font-size:13px">${s.email}</td>
       <td style="padding:12px 14px;font-size:13px">${s.track}</td>
-      <td style="padding:12px 14px;font-size:13px">${s.cohort}</td>
+      <td style="padding:12px 14px;font-size:13px">${s.batch?.name || '—'}</td>
       <td style="padding:12px 14px"><span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:${statusColors[s.status]+'22'};color:${statusColors[s.status]}">${s.status}</span></td>
       <td style="padding:12px 14px" onclick="event.stopPropagation()">
         <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="openEditStudent('${s._id}')">Edit</button>
@@ -4335,7 +4342,8 @@ function filterStudents() {
 function openAddStudent() {
   document.getElementById('addStudentTitle').textContent = 'Add Student';
   document.getElementById('stu-edit-id').value = '';
-  ['stu-fullName','stu-email','stu-password','stu-phone','stu-cohort','stu-notes'].forEach(id => document.getElementById(id).value = '');
+  ['stu-fullName','stu-email','stu-password','stu-phone','stu-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('stu-batch-select').value = '';
   document.getElementById('stu-track').value = 'Web Design';
   document.getElementById('stu-status').value = 'Active';
   document.getElementById('stuModalError').style.display = 'none';
@@ -4354,7 +4362,7 @@ async function openEditStudent(id) {
   document.getElementById('stu-password').placeholder = 'Leave blank to keep';
   document.getElementById('stu-phone').value    = s.phone    || '';
   document.getElementById('stu-track').value    = s.track    || 'Web Design';
-  document.getElementById('stu-cohort').value   = s.cohort   || '';
+  document.getElementById('stu-batch-select').value = s.batch?._id || '';
   document.getElementById('stu-status').value   = s.status   || 'Active';
   document.getElementById('stu-notes').value    = s.notes    || '';
   document.getElementById('stuModalError').style.display = 'none';
@@ -4369,14 +4377,14 @@ async function saveStudent() {
     email:    document.getElementById('stu-email').value.trim(),
     phone:    document.getElementById('stu-phone').value.trim(),
     track:    document.getElementById('stu-track').value,
-    cohort:   document.getElementById('stu-cohort').value.trim(),
+    batch:    document.getElementById('stu-batch-select').value || null,
     status:   document.getElementById('stu-status').value,
     notes:    document.getElementById('stu-notes').value.trim(),
   };
   const pw = document.getElementById('stu-password').value;
   if (pw) body.password = pw;
   if (!editId && !pw) { showErr(errEl, 'Password is required for new students.'); return; }
-  if (!body.fullName || !body.email || !body.cohort) { showErr(errEl, 'Full name, email and cohort are required.'); return; }
+  if (!body.fullName || !body.email) { showErr(errEl, 'Full name and email are required.'); return; }
 
   const btn = document.getElementById('saveStuBtn');
   btn.disabled = true; btn.textContent = 'Saving…';
@@ -4419,9 +4427,9 @@ function viewStudent(id) {
 
   // Contact
   document.getElementById('vsContactRow').innerHTML = [
-    { label: 'Email',  val: s.email,          href: 'mailto:' + s.email },
-    { label: 'Phone',  val: s.phone || '—',   href: s.phone ? 'tel:' + s.phone : null },
-    { label: 'Cohort', val: s.cohort || '—',  href: null }
+    { label: 'Email', val: s.email,               href: 'mailto:' + s.email },
+    { label: 'Phone', val: s.phone || '—',        href: s.phone ? 'tel:' + s.phone : null },
+    { label: 'Batch', val: s.batch?.name || '—',  href: null }
   ].map(c => `
     <${c.href ? `a href="${c.href}"` : 'div'} class="vap-contact-card">
       <div class="vc-label">${c.label}</div>
@@ -4492,11 +4500,11 @@ async function reactivateStudent(id, name) {
 // ═══════════════════════════════════════════════════════════
 async function loadAttendancePage() {
   if (allStudents.length === 0) await loadStudents();
-  const cohort = document.getElementById('att-cohort-filter')?.value || '';
-  const month  = document.getElementById('att-month-filter')?.value || '';
+  const batch = document.getElementById('att-batch-filter')?.value || '';
+  const month = document.getElementById('att-month-filter')?.value || '';
   let url = '/api/attendance?limit=200';
-  if (cohort) url += '&cohort=' + encodeURIComponent(cohort);
-  if (month)  url += '&month='  + encodeURIComponent(month);
+  if (batch) url += '&batch=' + encodeURIComponent(batch);
+  if (month) url += '&month=' + encodeURIComponent(month);
 
   const res = await apiFetch(url);
   const docs = res?.data || [];
@@ -4508,7 +4516,7 @@ async function loadAttendancePage() {
   tbody.innerHTML = docs.map(r => `
     <tr>
       <td style="padding:12px 14px;font-weight:600">${fmtDateAdmin(r.classDate)}</td>
-      <td style="padding:12px 14px">${r.cohort}</td>
+      <td style="padding:12px 14px">${r.batch?.name || '—'}</td>
       <td style="padding:12px 14px;color:var(--muted);font-size:13px">${r.track || '—'}</td>
       <td style="padding:12px 14px"><span style="color:var(--success);font-weight:700">${r.presentStudents?.length || 0}</span></td>
       <td style="padding:12px 14px"><span style="color:var(--danger);font-weight:700">${r.absentStudents?.length || 0}</span></td>
@@ -4523,17 +4531,17 @@ function openTakeAttendance() {
   document.getElementById('att-date-input').value = new Date().toISOString().slice(0,10);
   document.getElementById('att-track-input').value = '';
   document.getElementById('att-notes-input').value = '';
-  document.getElementById('attStudentList').innerHTML = '<p style="color:var(--muted);font-size:13px">Select a cohort to load students.</p>';
+  document.getElementById('attStudentList').innerHTML = '<p style="color:var(--muted);font-size:13px">Select a batch to load students.</p>';
   document.getElementById('attModalError').style.display = 'none';
   openModal('takeAttendanceModal');
 }
 
 function loadStudentsForAttendance() {
-  const cohort = document.getElementById('att-cohort-input').value;
+  const batchId = document.getElementById('att-batch-input').value;
   const container = document.getElementById('attStudentList');
-  if (!cohort) { container.innerHTML = '<p style="color:var(--muted);font-size:13px">Select a cohort to load students.</p>'; return; }
-  const students = allStudents.filter(s => s.cohort === cohort && s.status === 'Active');
-  if (students.length === 0) { container.innerHTML = '<p style="color:var(--muted);font-size:13px">No active students in this cohort.</p>'; return; }
+  if (!batchId) { container.innerHTML = '<p style="color:var(--muted);font-size:13px">Select a batch to load students.</p>'; return; }
+  const students = allStudents.filter(s => s.batch?._id === batchId && s.status === 'Active');
+  if (students.length === 0) { container.innerHTML = '<p style="color:var(--muted);font-size:13px">No active students in this batch.</p>'; return; }
   container.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <strong style="font-size:13px">${students.length} students</strong>
@@ -4558,15 +4566,15 @@ function markAllPresent(val) {
 }
 
 async function saveAttendance() {
-  const cohort = document.getElementById('att-cohort-input').value;
+  const batchId   = document.getElementById('att-batch-input').value;
   const classDate = document.getElementById('att-date-input').value;
   const errEl = document.getElementById('attModalError');
-  if (!cohort)    { showErr(errEl, 'Please select a cohort.');   return; }
+  if (!batchId)   { showErr(errEl, 'Please select a batch.');      return; }
   if (!classDate) { showErr(errEl, 'Please select a class date.'); return; }
 
   const presentStudentIds = [...document.querySelectorAll('.att-check:checked')].map(cb => cb.dataset.id);
   const body = {
-    cohort, classDate,
+    batchId, classDate,
     track: document.getElementById('att-track-input').value.trim(),
     notes: document.getElementById('att-notes-input').value.trim(),
     presentStudentIds

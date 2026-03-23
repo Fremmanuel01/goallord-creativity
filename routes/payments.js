@@ -36,7 +36,7 @@ router.get('/', requireAuth, async (req, res) => {
     const skip = (Number(page) - 1) * Number(limit);
     const [docs, total] = await Promise.all([
       Payment.find(filter)
-        .populate('student', 'fullName email track cohort')
+        .populate('student', 'fullName email track')
         .populate('batch', 'name number')
         .sort({ createdAt: -1 })
         .skip(skip)

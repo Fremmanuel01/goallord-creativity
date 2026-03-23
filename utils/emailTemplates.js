@@ -420,7 +420,7 @@ function suspensionEmail({ fullName, loginUrl }) {
 }
 
 // ── Graduation ────────────────────────────────────────────────
-function graduationEmail({ fullName, cohort, track, loginUrl }) {
+function graduationEmail({ fullName, batchName, track, loginUrl }) {
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#0F1115;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;">
@@ -431,7 +431,7 @@ function graduationEmail({ fullName, cohort, track, loginUrl }) {
       </td></tr>
       <tr><td style="padding:32px;">
         <p style="color:#F4F6FA;font-size:15px;margin:0 0 16px;">Hi <strong>${fullName}</strong>,</p>
-        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 16px;">We are incredibly proud to announce that you have successfully <strong>graduated</strong> from the <strong>${track}</strong> program at Goallord Creativity Academy — Cohort <strong>${cohort || '—'}</strong>.</p>
+        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 16px;">We are incredibly proud to announce that you have successfully <strong>graduated</strong> from the <strong>${track}</strong> program at Goallord Creativity Academy${batchName ? ' — <strong>' + batchName + '</strong>' : ''}.</p>
         <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 24px;">Your dedication, hard work, and creativity throughout this journey have been outstanding. You are now equipped with the skills to build an amazing career. Go forth and create!</p>
         <div style="text-align:center;margin:24px 0;">
           <a href="${loginUrl}" style="display:inline-block;background:#D66A1F;color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">View Your Dashboard</a>

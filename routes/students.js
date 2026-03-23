@@ -27,14 +27,14 @@ router.post('/login', async (req, res) => {
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
 
     const token = jwt.sign(
-      { id: student._id, email: student.email, name: student.fullName, role: 'student', cohort: student.cohort, track: student.track },
+      { id: student._id, email: student.email, name: student.fullName, role: 'student', track: student.track },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
     res.json({
       token,
-      student: { id: student._id, fullName: student.fullName, email: student.email, cohort: student.cohort, track: student.track, status: student.status }
+      student: { id: student._id, fullName: student.fullName, email: student.email, track: student.track, status: student.status }
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -44,7 +44,7 @@ router.post('/login', async (req, res) => {
 // ── GET /api/students/me — student auth ────────────────────────
 router.get('/me', requireStudent, async (req, res) => {
   try {
-    const student = await Student.findById(req.student.id).select('-password -resetToken -resetExpires');
+    const student = await Student.findById(req.student.id).select('-password -resetToken -resetExpires').populate('batch', 'name number');
     if (!student) return res.status(404).json({ error: 'Student not found' });
     res.json(student);
   } catch (err) {
@@ -172,9 +172,8 @@ router.post('/reset-password', async (req, res) => {
 // ── GET /api/students — admin or lecturer: list (lecturer restricted to batch filter) ──
 router.get('/', requireLecturer, async (req, res) => {
   try {
-    const { cohort, track, status, batch, search, page = 1, limit = 100 } = req.query;
+    const { track, status, batch, search, page = 1, limit = 100 } = req.query;
     const filter = {};
-    if (cohort) filter.cohort = cohort;
     if (track)  filter.track  = track;
     if (status) filter.status = status;
     if (batch)  filter.batch  = batch;
@@ -184,12 +183,10 @@ router.get('/', requireLecturer, async (req, res) => {
     }
     const skip = (Number(page) - 1) * Number(limit);
     const [docs, total] = await Promise.all([
-      Student.find(filter).select('-password').sort({ enrolledAt: -1 }).skip(skip).limit(Number(limit)),
+      Student.find(filter).select('-password').populate('batch', 'name number').sort({ enrolledAt: -1 }).skip(skip).limit(Number(limit)),
       Student.countDocuments(filter)
     ]);
-    // Return distinct cohorts for filter dropdowns
-    const cohorts = await Student.distinct('cohort');
-    res.json({ data: docs, total, page: Number(page), cohorts });
+    res.json({ data: docs, total, page: Number(page) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -198,15 +195,15 @@ router.get('/', requireLecturer, async (req, res) => {
 // ── POST /api/students — admin: create ─────────────────────────
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { fullName, email, password, phone, track, cohort, applicantRef, notes } = req.body;
-    if (!fullName || !email || !password || !track || !cohort) {
-      return res.status(400).json({ error: 'fullName, email, password, track and cohort are required' });
+    const { fullName, email, password, phone, track, batch, applicantRef, notes } = req.body;
+    if (!fullName || !email || !password || !track) {
+      return res.status(400).json({ error: 'fullName, email, password and track are required' });
     }
     const existing = await Student.findOne({ email: email.toLowerCase() });
     if (existing) return res.status(409).json({ error: 'A student with this email already exists' });
 
     const hash = await bcrypt.hash(password, 10);
-    const student = await Student.create({ fullName, email, password: hash, phone, track, cohort, applicantRef, notes });
+    const student = await Student.create({ fullName, email, password: hash, phone, track, batch, applicantRef, notes });
     res.status(201).json({ success: true, id: student._id, email: student.email });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -216,7 +213,7 @@ router.post('/', requireAuth, async (req, res) => {
 // ── GET /api/students/:id — admin: single ──────────────────────
 router.get('/:id', requireAuth, async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id).select('-password');
+    const student = await Student.findById(req.params.id).select('-password').populate('batch', 'name number');
     if (!student) return res.status(404).json({ error: 'Not found' });
     res.json(student);
   } catch (err) {
@@ -227,13 +224,13 @@ router.get('/:id', requireAuth, async (req, res) => {
 // ── PATCH /api/students/:id — admin: update ────────────────────
 router.patch('/:id', requireAuth, async (req, res) => {
   try {
-    const { fullName, email, phone, track, cohort, status, notes } = req.body;
+    const { fullName, email, phone, track, batch, status, notes } = req.body;
     const update = {};
     if (fullName !== undefined) update.fullName = fullName;
     if (email   !== undefined) update.email    = email.toLowerCase();
     if (phone   !== undefined) update.phone    = phone;
     if (track   !== undefined) update.track    = track;
-    if (cohort  !== undefined) update.cohort   = cohort;
+    if (batch   !== undefined) update.batch    = batch || null;
     if (status  !== undefined) update.status   = status;
     if (notes   !== undefined) update.notes    = notes;
 
@@ -248,7 +245,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
 // ── POST /api/students/:id/graduate — admin ────────────────────
 router.post('/:id/graduate', requireAuth, async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id);
+    const student = await Student.findById(req.params.id).populate('batch', 'name');
     if (!student) return res.status(404).json({ error: 'Not found' });
     if (student.status === 'Graduated') return res.status(400).json({ error: 'Student is already graduated' });
 
@@ -260,7 +257,7 @@ router.post('/:id/graduate', requireAuth, async (req, res) => {
     sendMail({
       to:      student.email,
       subject: 'Congratulations on your graduation! — Goallord Creativity Academy',
-      html:    graduationEmail({ fullName: student.fullName, cohort: student.cohort, track: student.track, loginUrl })
+      html:    graduationEmail({ fullName: student.fullName, batchName: student.batch?.name, track: student.track, loginUrl })
     }).catch(e => console.error('Graduation email failed:', e.message));
 
     Notification.create({

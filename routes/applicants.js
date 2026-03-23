@@ -167,7 +167,6 @@ h2{color:#D66A1F;margin:0 0 16px}p{color:#A0A6B3;margin:0 0 24px}a{color:#D66A1F
 async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
   const plainPassword = generatePassword();
   const hashed        = await bcrypt.hash(plainPassword, 12);
-  const cohort        = new Date().toLocaleString('en-GB', { month: 'long', year: 'numeric' });
   const activeBatch   = await Batch.findOne({ isActive: true }).select('_id');
   const method        = opts.method    || (applicant.applicationFeeRef ? 'Bank Transfer' : 'Paystack');
   const reference     = opts.reference || applicant.applicationFeeRef || '';
@@ -178,7 +177,6 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
     password:           hashed,
     phone:              applicant.phone || '',
     track:              applicant.track || 'Other',
-    cohort,
     batch:              activeBatch ? activeBatch._id : undefined,
     status:             'Active',
     applicantRef:       applicant._id,
@@ -447,7 +445,6 @@ router.patch('/:id', requireAuth, async (req, res) => {
       if (!existing) {
         const plainPassword = generatePassword();
         const hashed        = await bcrypt.hash(plainPassword, 12);
-        const cohort        = new Date().toLocaleString('en-GB', { month: 'long', year: 'numeric' });
 
         // Assign to the current active batch
         const activeBatch = await Batch.findOne({ isActive: true }).select('_id');
@@ -458,7 +455,6 @@ router.patch('/:id', requireAuth, async (req, res) => {
           password:          hashed,
           phone:             doc.phone || '',
           track:             doc.track || 'Other',
-          cohort,
           batch:             activeBatch ? activeBatch._id : undefined,
           status:            'Active',
           applicantRef:      doc._id,
