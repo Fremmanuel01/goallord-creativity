@@ -462,7 +462,8 @@ router.patch('/:id', requireAuth, async (req, res) => {
           batch:             activeBatch ? activeBatch._id : undefined,
           status:            'Active',
           applicantRef:      doc._id,
-          applicationFeePaid: true
+          applicationFeePaid: true,
+          profilePicture:    doc.profilePhoto || ''
         });
 
         const host     = process.env.HOST || 'https://goallordcreativity.com';
