@@ -455,16 +455,17 @@
             $btn.prop('disabled', true).text('Submitting…');
 
             try {
-                const res = await fetch('/api/applicants', {
+                const res  = await fetch('/api/applicants', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                if (!res.ok) throw new Error('Submission failed');
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Submission failed');
                 $form.addClass('d-none');
                 $('#applySuccess').removeClass('d-none');
             } catch (err) {
-                alert('Something went wrong. Please try again or email us directly.');
+                alert(err.message);
                 $btn.prop('disabled', false).text('SUBMIT APPLICATION');
             }
         });

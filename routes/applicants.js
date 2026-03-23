@@ -65,20 +65,24 @@ router.post('/', async (req, res) => {
     const emailLower = (req.body.email || '').toLowerCase().trim();
     if (!emailLower) return res.status(400).json({ error: 'Email address is required.' });
 
-    // Block if already applied (and not rejected)
-    const existingApplicant = await Applicant.findOne({ email: emailLower, status: { $ne: 'Rejected' } });
-    if (existingApplicant) {
-      return res.status(409).json({
-        error: existingApplicant.applicationFeePaid
-          ? 'An account already exists for this email. Please log in at the student portal.'
-          : 'An application with this email already exists. Check your inbox for the verification link, or contact admin for help.'
-      });
-    }
-
     // Block if already a student
     const existingStudent = await Student.findOne({ email: emailLower });
     if (existingStudent) {
       return res.status(409).json({ error: 'A student account already exists for this email. Please log in at the student portal.' });
+    }
+
+    // Block if already applied (and not rejected); if rejected, remove old record so they can reapply
+    const existingApplicant = await Applicant.findOne({ email: emailLower });
+    if (existingApplicant) {
+      if (existingApplicant.status !== 'Rejected') {
+        return res.status(409).json({
+          error: existingApplicant.applicationFeePaid
+            ? 'An account already exists for this email. Please log in at the student portal.'
+            : 'An application with this email already exists. Check your inbox for the verification link, or contact admin if you need help.'
+        });
+      }
+      // Rejected — remove old record so they can reapply cleanly
+      await Applicant.deleteOne({ _id: existingApplicant._id });
     }
 
     const token   = crypto.randomBytes(32).toString('hex');
