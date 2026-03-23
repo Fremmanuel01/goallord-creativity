@@ -141,7 +141,10 @@
       <div class="stat-card"><div class="sl">Assignments</div><div class="sv orange" id="ov-asgn">—</div></div>
       <div class="stat-card"><div class="sl">Flashcard Sets</div><div class="sv green" id="ov-flash">—</div></div>
     </div>
-    <div class="section-title">Active Batch</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div class="section-title" style="margin:0">Active Batch</div>
+      <button class="btn btn-primary" onclick="openAnnounceModal()" style="font-size:12px;padding:7px 14px">📢 Announce to Batch</button>
+    </div>
     <div id="ov-batch" class="table-wrap" style="padding:16px;font-size:14px;color:var(--muted)">Loading…</div>
   </div>
 
@@ -367,6 +370,21 @@
   </div>
 </div>
 
+<!-- ── ANNOUNCE MODAL ── -->
+<div class="modal-overlay" id="announceModal">
+  <div class="modal">
+    <div class="modal-header"><h3>Announce to Batch</h3><button class="modal-close" onclick="closeModal('announceModal')">✕</button></div>
+    <div class="error-msg" id="announceErr"></div>
+    <div class="success-msg" id="announceOk" style="display:none;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#22c55e;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px"></div>
+    <div class="form-group"><label>Title *</label><input id="announce-title" placeholder="e.g. Class rescheduled to Thursday"></div>
+    <div class="form-group"><label>Message *</label><textarea id="announce-message" rows="4" placeholder="Write your announcement here…"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('announceModal')">Cancel</button>
+      <button class="btn btn-primary" id="announceBtn" onclick="sendAnnouncement()">Send to All Students</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── TAKE ATTENDANCE MODAL ── -->
 <div class="modal-overlay" id="attModal">
   <div class="modal">
@@ -496,6 +514,39 @@ async function loadOverview() {
     ? `<strong>${activeBatch.name}</strong> — ${activeBatch.track || 'All Tracks'} — ${activeBatch.totalWeeks} weeks
        <span style="margin-left:16px;font-size:12px;color:var(--muted)">${activeBatch.startDate ? fmtDate(activeBatch.startDate) : ''} → ${activeBatch.endDate ? fmtDate(activeBatch.endDate) : 'TBD'}</span>`
     : '<span style="color:var(--muted)">No active batch. Contact admin to set one.</span>';
+}
+
+// ── ANNOUNCEMENTS ────────────────────────────────────────────
+function openAnnounceModal() {
+  document.getElementById('announce-title').value = '';
+  document.getElementById('announce-message').value = '';
+  document.getElementById('announceErr').style.display = 'none';
+  document.getElementById('announceOk').style.display = 'none';
+  document.getElementById('announceBtn').disabled = false;
+  document.getElementById('announceBtn').textContent = 'Send to All Students';
+  openModal('announceModal');
+}
+
+async function sendAnnouncement() {
+  const title   = document.getElementById('announce-title').value.trim();
+  const message = document.getElementById('announce-message').value.trim();
+  const errEl   = document.getElementById('announceErr');
+  const okEl    = document.getElementById('announceOk');
+  errEl.style.display = 'none'; okEl.style.display = 'none';
+  if (!title || !message) { errEl.textContent = 'Title and message are required.'; errEl.style.display = 'block'; return; }
+  if (!activeBatch?._id) { errEl.textContent = 'No active batch loaded. Please wait and try again.'; errEl.style.display = 'block'; return; }
+  const btn = document.getElementById('announceBtn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  const res = await api('/api/notifications/announce', {
+    method: 'POST',
+    body: JSON.stringify({ batchId: activeBatch._id, title, message })
+  });
+  btn.disabled = false; btn.textContent = 'Send to All Students';
+  if (!res || res.error) { errEl.textContent = res?.error || 'Failed to send.'; errEl.style.display = 'block'; return; }
+  okEl.textContent = `Announcement sent to ${res.sent} student${res.sent !== 1 ? 's' : ''}.`;
+  okEl.style.display = 'block';
+  document.getElementById('announce-title').value = '';
+  document.getElementById('announce-message').value = '';
 }
 
 // ── MATERIALS ────────────────────────────────────────────────

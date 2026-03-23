@@ -278,6 +278,40 @@ router.post('/:id/graduate', requireAuth, async (req, res) => {
   }
 });
 
+// ── POST /api/students/:id/reactivate — admin ──────────────────
+router.post('/:id/reactivate', requireAuth, async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) return res.status(404).json({ error: 'Not found' });
+    if (student.status !== 'Suspended') return res.status(400).json({ error: 'Student is not suspended' });
+
+    student.status = 'Active';
+    await student.save();
+
+    const loginUrl = (process.env.HOST || 'https://goallordcreativity.com') + '/student-login.html';
+
+    const { reactivationEmail } = require('../utils/emailTemplates');
+    sendMail({
+      to:      student.email,
+      subject: 'Account reactivated — Goallord Creativity Academy',
+      html:    reactivationEmail({ fullName: student.fullName, loginUrl })
+    }).catch(e => console.error('Reactivation email failed:', e.message));
+
+    Notification.create({
+      recipient:     student._id,
+      recipientType: 'Student',
+      type:          'account_reactivated',
+      title:         'Account Reactivated',
+      message:       'Your account has been manually reactivated by an admin. Welcome back!',
+      link:          loginUrl
+    }).catch(e => console.error('Reactivation notification failed:', e.message));
+
+    res.json({ success: true, student: { id: student._id, status: student.status } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── POST /api/students/:id/reset-password — admin ──────────────
 router.post('/:id/reset-password', requireAuth, async (req, res) => {
   try {

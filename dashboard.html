@@ -4324,6 +4324,7 @@ function filterStudents() {
       <td style="padding:12px 14px"><span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:${statusColors[s.status]+'22'};color:${statusColors[s.status]}">${s.status}</span></td>
       <td style="padding:12px 14px" onclick="event.stopPropagation()">
         <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="openEditStudent('${s._id}')">Edit</button>
+        ${s.status === 'Suspended' ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--success)" onclick="reactivateStudent('${s._id}','${s.fullName.replace(/'/g,"\\'")}')">Reactivate</button>` : ''}
         ${s.status !== 'Graduated' ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:#6a9fff" onclick="graduateStudent('${s._id}','${s.fullName.replace(/'/g,"\\'")}')">Graduate</button>` : ''}
         <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--danger)" onclick="deleteStudent('${s._id}','${s.fullName}')">Delete</button>
       </td>
@@ -4474,6 +4475,15 @@ async function graduateStudent(id, name) {
     if (res?.error) { showToast(res.error, 'error'); return; }
     loadStudents();
     showToast(`${name} graduated`);
+  });
+}
+
+async function reactivateStudent(id, name) {
+  glConfirm(`Reactivate "${name}"?`, 'This will restore the student\'s account to Active, send a reactivation email, and create an in-app notification.', 'Reactivate', 'primary', async () => {
+    const res = await apiFetch(`/api/students/${id}/reactivate`, { method: 'POST' });
+    if (res?.error) { showToast(res.error, 'error'); return; }
+    loadStudents();
+    showToast(`${name} reactivated`);
   });
 }
 

@@ -1,5 +1,6 @@
 const express      = require('express');
 const Notification = require('../models/Notification');
+const Student      = require('../models/Student');
 const { requireLecturer } = require('../middleware/lecturerAuth');
 const { requireStudentAuth } = require('../middleware/studentAuth');
 
@@ -50,6 +51,29 @@ router.patch('/read-all', async (req, res) => {
     const decoded = jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET);
     await Notification.updateMany({ recipient: decoded.id, read: false }, { read: true });
     res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/notifications/announce — broadcast to all active students in a batch
+router.post('/announce', requireLecturer, async (req, res) => {
+  try {
+    const { batchId, title, message } = req.body;
+    if (!batchId || !title || !message) return res.status(400).json({ error: 'batchId, title, and message are required' });
+
+    const students = await Student.find({ batch: batchId, status: 'Active' }).select('_id');
+    if (!students.length) return res.json({ sent: 0 });
+
+    await Notification.insertMany(students.map(s => ({
+      recipient:     s._id,
+      recipientType: 'Student',
+      type:          'announcement',
+      title,
+      message
+    })));
+
+    res.json({ sent: students.length });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -444,6 +444,30 @@ function graduationEmail({ fullName, cohort, track, loginUrl }) {
 </body></html>`;
 }
 
+// ── Account reactivation ──────────────────────────────────────
+function reactivationEmail({ fullName, loginUrl }) {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0F1115;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#171A21;border-radius:12px;border:1px solid #2A2F3A;overflow:hidden;">
+      <tr><td style="background:#22c55e;padding:24px 32px;">
+        <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;">✅ Account Reactivated</h1>
+        <p style="margin:4px 0 0;color:rgba(255,255,255,0.8);font-size:13px;">Goallord Creativity Academy</p>
+      </td></tr>
+      <tr><td style="padding:32px;">
+        <p style="color:#F4F6FA;font-size:15px;margin:0 0 16px;">Hi <strong>${fullName}</strong>,</p>
+        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 24px;">Great news — your outstanding payment has been confirmed and your student account is now <strong>fully reactivated</strong>. You can log in and resume your studies.</p>
+        <div style="text-align:center;margin:24px 0;">
+          <a href="${loginUrl}" style="display:inline-block;background:#22c55e;color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">Log In Now</a>
+        </div>
+        <hr style="border:none;border-top:1px solid #2A2F3A;margin:24px 0;">
+        <p style="color:#A0A6B3;font-size:12px;margin:0;">Questions? Email <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;">hello@goallordcreativity.com</a></p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
 // ── Contact form: admin notification ──────────────────────────
 function adminContactEmail({ name, email, service, budget, message, dashboardUrl }) {
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
@@ -522,4 +546,4 @@ function contactReplyEmail({ name, replyBody }) {
 </body></html>`;
 }
 
-module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail, suspensionEmail, graduationEmail };
+module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail, suspensionEmail, graduationEmail, reactivationEmail };

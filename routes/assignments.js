@@ -162,4 +162,50 @@ router.patch('/:id/submissions/:subId', requireLecturer, async (req, res) => {
   }
 });
 
+// Scheduled: remind students of assignments due within 24 hours that they haven't submitted
+async function runDeadlineReminders() {
+  const now     = new Date();
+  const in24h   = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  let sent = 0;
+
+  const upcoming = await Assignment.find({
+    published: true,
+    deadline:  { $gte: now, $lte: in24h }
+  });
+
+  for (const assignment of upcoming) {
+    if (!assignment.batch) continue;
+
+    const students  = await Student.find({ batch: assignment.batch, status: 'Active' }).select('_id');
+    const submitted = new Set((await Submission.find({ assignment: assignment._id }).distinct('student')).map(String));
+
+    for (const s of students) {
+      if (submitted.has(String(s._id))) continue;
+
+      // Only notify once per assignment per student
+      const exists = await Notification.exists({
+        recipient: s._id,
+        type:      'assignment_deadline',
+        link:      String(assignment._id)
+      });
+      if (exists) continue;
+
+      const hoursLeft = Math.round((new Date(assignment.deadline) - now) / (1000 * 60 * 60));
+      await Notification.create({
+        recipient:     s._id,
+        recipientType: 'Student',
+        type:          'assignment_deadline',
+        title:         'Assignment Due Soon',
+        message:       `"${assignment.title}" is due in about ${hoursLeft} hour${hoursLeft !== 1 ? 's' : ''}. Submit before the deadline.`,
+        link:          String(assignment._id)
+      }).catch(() => {});
+      sent++;
+    }
+  }
+
+  console.log(`[Deadline Reminders] Sent: ${sent}`);
+  return { deadlineReminders: sent };
+}
+
 module.exports = router;
+module.exports.runDeadlineReminders = runDeadlineReminders;

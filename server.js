@@ -109,14 +109,19 @@ mongoose.connect(process.env.MONGODB_URI)
     await seedAll();
     httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-    // ── Daily overdue payment check ──────────────────────────────
-    const { runOverdueCheck } = require('./routes/payments');
+    // ── Daily checks (payments + deadline reminders) ─────────────
+    const { runOverdueCheck }      = require('./routes/payments');
+    const { runDeadlineReminders } = require('./routes/assignments');
+
+    async function runDailyChecks() {
+      await runOverdueCheck().catch(e => console.error('Overdue check failed:', e.message));
+      await runDeadlineReminders().catch(e => console.error('Deadline reminders failed:', e.message));
+    }
+
     // Run once on startup (after 30s to let DB settle), then every 24h
     setTimeout(() => {
-      runOverdueCheck().catch(e => console.error('Startup overdue check failed:', e.message));
-      setInterval(() => {
-        runOverdueCheck().catch(e => console.error('Scheduled overdue check failed:', e.message));
-      }, 24 * 60 * 60 * 1000);
+      runDailyChecks();
+      setInterval(runDailyChecks, 24 * 60 * 60 * 1000);
     }, 30 * 1000);
   })
   .catch(err => {
