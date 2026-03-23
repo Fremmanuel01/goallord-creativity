@@ -2553,7 +2553,18 @@
               <option value="">— Select batch —</option>
             </select>
           </div>
-          <div class="form-group"><label>Class Date</label><input class="form-input" id="att-date-input" type="date" onchange="loadStudentsForAttendance()"></div>
+          <div class="form-group"><label>Class Date</label><input class="form-input" id="att-date-input" type="date" onchange="autoFillAttDay();loadStudentsForAttendance()"></div>
+        </div>
+        <div class="modal-form-row">
+          <div class="form-group"><label>Week #</label><input class="form-input" id="att-week-input" type="number" min="1" max="52" placeholder="e.g. 3"></div>
+          <div class="form-group"><label>Day</label>
+            <select class="form-input" id="att-day-input">
+              <option value="">— Select day —</option>
+              <option>Tuesday</option>
+              <option>Wednesday</option>
+              <option>Thursday</option>
+            </select>
+          </div>
         </div>
         <div class="modal-form-row">
           <div class="form-group"><label>Track (optional)</label><input class="form-input" id="att-track-input" placeholder="e.g. Web Design"></div>
@@ -4273,7 +4284,7 @@ async function loadStudents() {
   if (!res) return;
   allStudents = res.data || [];
 
-  // Populate batch filters from loaded students (unique batches)
+  // Populate batch filter dropdowns from students (only batches with students)
   const batchMap = {};
   allStudents.forEach(s => { if (s.batch?._id) batchMap[s.batch._id] = s.batch.name; });
   const batchEntries = Object.entries(batchMap).sort((a, b) => a[1].localeCompare(b[1]));
@@ -4284,12 +4295,17 @@ async function loadStudents() {
     el.innerHTML = '<option value="">All Batches</option>' + batchEntries.map(([id, name]) => `<option value="${id}">${name}</option>`).join('');
     el.value = current;
   });
+
+  // Populate modal batch selects from ALL batches (including empty ones)
+  const allBatchesRes = await apiFetch('/api/batches');
+  const allBatchList = Array.isArray(allBatchesRes) ? allBatchesRes : [];
+  const allBatchEntries = allBatchList.sort((a, b) => a.name.localeCompare(b.name));
   ['att-batch-input', 'stu-batch-select'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const current = el.value;
     const placeholder = id === 'stu-batch-select' ? '— No batch —' : '— Select batch —';
-    el.innerHTML = `<option value="">${placeholder}</option>` + batchEntries.map(([id, name]) => `<option value="${id}">${name}</option>`).join('');
+    el.innerHTML = `<option value="">${placeholder}</option>` + allBatchEntries.map(b => `<option value="${b._id}">${b.name}</option>`).join('');
     el.value = current;
   });
 
@@ -4529,6 +4545,8 @@ async function loadAttendancePage() {
 function openTakeAttendance() {
   if (allStudents.length === 0) { loadStudents().then(() => openTakeAttendance()); return; }
   document.getElementById('att-date-input').value = new Date().toISOString().slice(0,10);
+  document.getElementById('att-week-input').value = '';
+  document.getElementById('att-day-input').value  = '';
   document.getElementById('att-track-input').value = '';
   document.getElementById('att-notes-input').value = '';
   document.getElementById('attStudentList').innerHTML = '<p style="color:var(--muted);font-size:13px">Select a batch to load students.</p>';
@@ -4561,6 +4579,16 @@ function loadStudentsForAttendance() {
       </label>`).join('') + '</div>';
 }
 
+function autoFillAttDay() {
+  const dateVal = document.getElementById('att-date-input').value;
+  if (!dateVal) return;
+  const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const dayName  = dayNames[new Date(dateVal + 'T12:00:00').getDay()];
+  const daySelect = document.getElementById('att-day-input');
+  const matchOpt = [...daySelect.options].find(o => o.value === dayName);
+  if (matchOpt) daySelect.value = dayName;
+}
+
 function markAllPresent(val) {
   document.querySelectorAll('.att-check').forEach(cb => cb.checked = val);
 }
@@ -4568,13 +4596,17 @@ function markAllPresent(val) {
 async function saveAttendance() {
   const batchId   = document.getElementById('att-batch-input').value;
   const classDate = document.getElementById('att-date-input').value;
+  const week      = document.getElementById('att-week-input').value;
+  const day       = document.getElementById('att-day-input').value;
   const errEl = document.getElementById('attModalError');
   if (!batchId)   { showErr(errEl, 'Please select a batch.');      return; }
   if (!classDate) { showErr(errEl, 'Please select a class date.'); return; }
+  if (!week)      { showErr(errEl, 'Please enter the week number.'); return; }
+  if (!day)       { showErr(errEl, 'Please select the day.');       return; }
 
   const presentStudentIds = [...document.querySelectorAll('.att-check:checked')].map(cb => cb.dataset.id);
   const body = {
-    batchId, classDate,
+    batchId, classDate, week: Number(week), day,
     track: document.getElementById('att-track-input').value.trim(),
     notes: document.getElementById('att-notes-input').value.trim(),
     presentStudentIds
