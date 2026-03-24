@@ -2361,8 +2361,8 @@
 </div>
 
 <!-- ── Blog Post Editor Modal ─────────────────────────────────────── -->
-<div class="modal-overlay" id="blogPostModal">
-  <div class="modal modal-lg" style="max-width:860px;width:100%;max-height:92vh;overflow-y:auto">
+<div id="blogPostModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;width:100%;max-width:860px;max-height:92vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.5);animation:slideIn .2s ease">
     <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between">
       <h3 id="blogModalTitle" style="font-size:16px">New Post</h3>
       <button style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1" onclick="closeBlogModal()">✕</button>
@@ -2413,18 +2413,7 @@
       <div style="grid-column:1/-1">
         <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Article Content (HTML)</label>
         <!-- Toolbar -->
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;background:var(--bg);border:1px solid var(--border);border-bottom:none;border-radius:6px 6px 0 0;padding:8px">
-          <button type="button" onclick="blogFmt('<strong>','</strong>')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:700">B</button>
-          <button type="button" onclick="blogFmt('<em>','</em>')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;font-style:italic">I</button>
-          <button type="button" onclick="blogFmt('<h2 class=\"letter-space--2 mb-4\">','</h2>\n')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">H2</button>
-          <button type="button" onclick="blogFmt('<h3 class=\"letter-space--2 mb-3\">','</h3>\n')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">H3</button>
-          <button type="button" onclick="blogFmt('<p class=\"text-white-64 mb-4\">','</p>\n')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">¶</button>
-          <button type="button" onclick="blogFmt('<div class=\"gl-pullquote mb-5\"><p class=\"h4 letter-space--2 mb-2\">','</p><p class=\"text-caption text-primary letter-space--1 mb-0\">— GOALLORD CREATIVITY TEAM</p></div>\n')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">"</button>
-          <button type="button" onclick="blogFmt('<ul class=\"text-white-64 mb-5\" style=\"padding-left:1.5rem;line-height:2\"><li>','</li></ul>\n')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">• List</button>
-          <button type="button" onclick="blogFmt('<ol class=\"text-white-64 mb-5\" style=\"padding-left:1.5rem;line-height:2\"><li>','</li></ol>\n')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">1. List</button>
-          <button type="button" onclick="blogFmt('<a href=\"\" class=\"link text-primary\">','</a>')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">Link</button>
-          <button type="button" onclick="blogFmt('<div class=\"br-line mb-5\"></div>\n','')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">— HR</button>
-        </div>
+        <div id="blogToolbar" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;background:var(--bg);border:1px solid var(--border);border-bottom:none;border-radius:6px 6px 0 0;padding:8px"></div>
         <textarea class="form-input" id="bmContent" rows="16" placeholder="<p class=&quot;text-white-64 mb-4&quot;>Start writing your article…</p>" style="border-radius:0 0 6px 6px;resize:vertical;font-family:monospace;font-size:12px;line-height:1.6"></textarea>
       </div>
     </div>
@@ -4103,6 +4092,7 @@ function renderBlogTable(posts) {
 async function openBlogEditor(slug) {
   _editingBlogSlug = slug;
   document.getElementById('blogModalTitle').textContent = slug ? 'Edit Post' : 'New Post';
+  buildBlogToolbar();
   // reset form
   ['bmTitle','bmSlug','bmCategory','bmAuthor','bmReadTime','bmTags','bmCoverImage','bmExcerpt','bmContent'].forEach(id => {
     document.getElementById(id).value = '';
@@ -4126,11 +4116,13 @@ async function openBlogEditor(slug) {
       document.getElementById('bmFeatured').checked  = !!post.featured;
     }
   }
-  openModal('blogPostModal');
+  const modal = document.getElementById('blogPostModal');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
 }
 
 function closeBlogModal() {
-  document.getElementById('blogPostModal').classList.remove('open');
+  document.getElementById('blogPostModal').style.display = 'none';
   document.body.style.overflow = '';
   _editingBlogSlug = null;
 }
@@ -4196,6 +4188,34 @@ function blogAutoSlug() {
   const title = document.getElementById('bmTitle').value;
   document.getElementById('bmSlug').value = title.toLowerCase()
     .replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').trim();
+}
+
+// ── Blog toolbar format definitions (avoids inline HTML escaping bugs) ────
+const _BLOG_FMT = {
+  bold:    { open: '<strong>',                                   close: '</strong>',  label: 'B',      style: 'font-weight:700' },
+  italic:  { open: '<em>',                                       close: '</em>',      label: 'I',      style: 'font-style:italic' },
+  h2:      { open: '<h2 class="letter-space--2 mb-4">',         close: '</h2>\n',    label: 'H2',     style: '' },
+  h3:      { open: '<h3 class="letter-space--2 mb-3">',         close: '</h3>\n',    label: 'H3',     style: '' },
+  para:    { open: '<p class="text-white-64 mb-4">',            close: '</p>\n',     label: '¶',      style: '' },
+  quote:   { open: '<div class="gl-pullquote mb-5"><p class="h4 letter-space--2 mb-2">', close: '</p><p class="text-caption text-primary letter-space--1 mb-0">— GOALLORD CREATIVITY TEAM</p></div>\n', label: '" Quote', style: '' },
+  ul:      { open: '<ul class="text-white-64 mb-5" style="padding-left:1.5rem;line-height:2"><li>', close: '</li></ul>\n', label: '• List', style: '' },
+  ol:      { open: '<ol class="text-white-64 mb-5" style="padding-left:1.5rem;line-height:2"><li>', close: '</li></ol>\n', label: '1. List', style: '' },
+  link:    { open: '<a href="" class="link text-primary">',     close: '</a>',       label: 'Link',   style: '' },
+  hr:      { open: '<div class="br-line mb-5"></div>\n',        close: '',           label: '— HR',   style: '' },
+};
+
+function buildBlogToolbar() {
+  const wrap = document.getElementById('blogToolbar');
+  if (!wrap) return;
+  wrap.innerHTML = Object.keys(_BLOG_FMT).map(key => {
+    const f = _BLOG_FMT[key];
+    return `<button type="button" onclick="blogFmtNamed('${key}')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;${f.style}">${f.label}</button>`;
+  }).join('');
+}
+
+function blogFmtNamed(key) {
+  const f = _BLOG_FMT[key];
+  if (f) blogFmt(f.open, f.close);
 }
 
 // Insert HTML around selected text in content textarea
