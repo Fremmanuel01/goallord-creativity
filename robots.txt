@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Block private/dashboard pages
+Disallow: /dashboard.html
+Disallow: /student-dashboard.html
+Disallow: /lecturer-dashboard.html
+Disallow: /chat-dashboard.html
+Disallow: /login.html
+Disallow: /student-login.html
+Disallow: /lecturer-login.html
+Disallow: /forgot-password.html
+Disallow: /reset-password.html
+Disallow: /apply-payment.html
+Disallow: /api/
+
+Sitemap: https://goallordcreativity.com/sitemap.xml

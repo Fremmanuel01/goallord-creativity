@@ -19,13 +19,18 @@
     <meta property="og:url" content="https://goallordcreativity.com/">
     <meta property="og:title" content="Goallord Creativity Limited — Web Design &amp; Development Agency">
     <meta property="og:description" content="Premium web design, development, and digital marketing agency based in Onitsha, Nigeria. Building exceptional digital experiences since 2020.">
-    <meta property="og:image" content="assets/images/logo/og-image.jpg">
+    <meta property="og:image" content="https://goallordcreativity.com/assets/images/logo/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="Goallord Creativity Limited">
+    <meta property="og:locale" content="en_US">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@goallordcreates">
     <meta name="twitter:title" content="Goallord Creativity Limited — Web Design &amp; Development Agency">
     <meta name="twitter:description" content="Premium web design, development, and digital marketing agency based in Onitsha, Nigeria.">
-    <meta name="twitter:image" content="assets/images/logo/og-image.jpg">
+    <meta name="twitter:image" content="https://goallordcreativity.com/assets/images/logo/og-image.jpg">
 
     <!-- font -->
     <link rel="stylesheet" href="assets/fonts/fonts.css">
@@ -44,25 +49,57 @@
     <link rel="shortcut icon" href="assets/images/logo/favicon.svg?v=2">
     <link rel="apple-touch-icon-precomposed" href="assets/images/logo/favicon.svg?v=2">
 
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
     <!-- Performance: preconnect to key origins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://prod.spline.design">
 
-    <!-- AggregateRating schema -->
+    <!-- Organization + LocalBusiness Schema -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "LocalBusiness",
+      "@type": ["LocalBusiness", "ProfessionalService"],
       "name": "Goallord Creativity Limited",
       "url": "https://goallordcreativity.com/",
-      "image": "assets/images/logo/og-image.jpg",
-      "description": "Full-service web design and development agency in Onitsha, Nigeria.",
+      "logo": "https://goallordcreativity.com/assets/images/logo/goallord-logo.png",
+      "image": "https://goallordcreativity.com/assets/images/logo/og-image.jpg",
+      "description": "Full-service web design and development agency in Onitsha, Nigeria. We build WordPress sites, custom web apps, e-commerce stores, and deliver SEO & digital marketing.",
+      "foundingDate": "2020",
+      "slogan": "Brands That Get Noticed",
+      "priceRange": "$$",
+      "telephone": "",
+      "email": "hello@goallordcreativity.com",
       "address": {
         "@type": "PostalAddress",
         "addressLocality": "Onitsha",
         "addressRegion": "Anambra State",
         "addressCountry": "NG"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "6.1428",
+        "longitude": "6.7919"
+      },
+      "sameAs": [
+        "https://www.facebook.com/goallordcreativity",
+        "https://www.instagram.com/goallordcreativity",
+        "https://twitter.com/goallordcreates",
+        "https://www.linkedin.com/company/goallord-creativity"
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Web Design & Digital Marketing Services",
+        "itemListElement": [
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Web Design"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "WordPress Development"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Web Application Development"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "E-commerce Development"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "SEO & Digital Marketing"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Media Production"}}
+        ]
       },
       "aggregateRating": {
         "@type": "AggregateRating",
@@ -71,6 +108,16 @@
         "bestRating": "5",
         "worstRating": "1"
       }
+    }
+    </script>
+
+    <!-- WebSite Schema with SearchAction -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Goallord Creativity Limited",
+      "url": "https://goallordcreativity.com/"
     }
     </script>
 
