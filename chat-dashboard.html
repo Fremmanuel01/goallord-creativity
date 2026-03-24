@@ -273,8 +273,12 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
     body { height: 100dvh; overflow: hidden; }
 
     /* Login */
-    #loginScreen { height: 100dvh; padding: 20px; align-items: flex-start; padding-top: 60px; }
+    #loginScreen { height: 100dvh; padding: 20px; align-items: flex-start; padding-top: calc(60px + env(safe-area-inset-top)); }
     .login-box { width: 100%; max-width: 420px; padding: 32px 24px; border-radius: 16px; }
+
+    /* Safe area — push headers below status bar */
+    .sidebar-header { padding-top: calc(18px + env(safe-area-inset-top)); }
+    .chat-header { padding-top: calc(14px + env(safe-area-inset-top)); }
 
     /* App */
     #app { height: 100dvh; }
