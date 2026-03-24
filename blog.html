@@ -290,52 +290,55 @@
     <script src="assets/js/main.js"></script>
 
     <script>
-    fetch('/api/content/blog')
+    var DEFAULT_BLOG_IMGS = [
+      'assets/images/portfolio/img-2.jpg','assets/images/portfolio/img-3.jpg',
+      'assets/images/portfolio/img-4.jpg','assets/images/portfolio/img-5.jpg',
+      'assets/images/portfolio/img-6.jpg','assets/images/portfolio/img-7.jpg',
+    ];
+
+    function fmtDate(d) {
+      if (!d) return '';
+      return new Date(d).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+    }
+
+    fetch('/api/blog?limit=20')
       .then(function(r){ return r.json(); })
       .then(function(res){
-        var d = res && res.data;
-        if (!d) return;
-
         // ── Featured post ───────────────────────────────────
-        var f = d.featured;
+        var f = res.featured;
         if (f) {
+          var featUrl = 'blog-single.html?slug=' + f.slug;
           var meta = [
             'FEATURED',
             f.category ? f.category.toUpperCase() : '',
-            f.date ? f.date.toUpperCase() : '',
+            fmtDate(f.publishedAt).toUpperCase(),
             f.readTime ? f.readTime.toUpperCase() : ''
           ].filter(Boolean).join(' &nbsp;·&nbsp; ');
 
-          document.getElementById('featuredMeta').innerHTML  = meta;
+          document.getElementById('featuredMeta').innerHTML    = meta;
           document.getElementById('featuredTitle').textContent = f.title || '';
-          document.getElementById('featuredTitle').href       = f.url || '#';
+          document.getElementById('featuredTitle').href        = featUrl;
           document.getElementById('featuredExcerpt').textContent = f.excerpt || '';
-          document.getElementById('featuredImgLink').href    = f.url || '#';
-          document.getElementById('featuredLink').href       = f.url || '#';
-          if (f.image) {
-            document.getElementById('featuredImg').src = f.image;
+          document.getElementById('featuredImgLink').href      = featUrl;
+          document.getElementById('featuredLink').href         = featUrl;
+          if (f.coverImage) {
+            document.getElementById('featuredImg').src = f.coverImage;
             document.getElementById('featuredImg').alt = f.title || '';
           }
         }
 
         // ── Blog grid ───────────────────────────────────────
-        var posts = d.posts || [];
+        var posts = res.posts || [];
         var grid  = document.getElementById('blogGrid');
         if (!posts.length) {
           grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:rgba(255,255,255,0.4)">No posts yet.</div>';
           return;
         }
 
-        var DEFAULT_BLOG_IMGS = [
-          'assets/images/portfolio/img-2.jpg','assets/images/portfolio/img-3.jpg',
-          'assets/images/portfolio/img-4.jpg','assets/images/portfolio/img-5.jpg',
-          'assets/images/portfolio/img-6.jpg','assets/images/portfolio/img-7.jpg',
-        ];
-
         grid.innerHTML = posts.map(function(p, i){
-          var img = p.image || DEFAULT_BLOG_IMGS[i % DEFAULT_BLOG_IMGS.length];
-          var meta = [p.category, p.date, p.readTime].filter(Boolean).join(' &nbsp;·&nbsp; ');
-          var url  = p.url || 'blog-single.html';
+          var img  = p.coverImage || DEFAULT_BLOG_IMGS[i % DEFAULT_BLOG_IMGS.length];
+          var url  = 'blog-single.html?slug=' + p.slug;
+          var meta = [p.category, fmtDate(p.publishedAt), p.readTime].filter(Boolean).join(' &nbsp;·&nbsp; ');
           return '<div class="article-blog hover-img effectFade fadeUp no-div">' +
             '<a href="' + url + '" class="blog-image img-style">' +
               '<img loading="lazy" width="426" height="307" src="' + img + '" alt="' + (p.title||'') + '">' +
@@ -350,7 +353,7 @@
           '</div>';
         }).join('');
       })
-      .catch(function(){});
+      .catch(function(err){ console.error('Blog load error:', err); });
     </script>
 </body>
 </html>

@@ -5,66 +5,33 @@
 <!--<![endif]-->
 <head>
     <meta charset="utf-8">
-    <title>Nigeria's Web Landscape in 2026 | Goallord Creativity Blog</title>
+    <title id="pageTitle">Blog | Goallord Creativity</title>
     <meta name="author" content="Goallord Creativity Limited">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="Over 220 million people, a growing middle class, and fewer than 30% of SMEs with a functional website. Here's what the data says and what it means for your business in 2026.">
-    <meta name="keywords" content="Nigeria web landscape 2026, Nigerian business website statistics, SME digital presence Nigeria, web design Nigeria 2026">
-    <link rel="canonical" href="https://goallordcreativity.com/blog-single.html">
+    <meta name="description" id="metaDesc" content="Read the latest insights from Goallord Creativity on web design, SEO, and digital business in Nigeria.">
+    <meta name="keywords" id="metaKeywords" content="Goallord Creativity blog, web design Nigeria, SEO Nigeria, digital business">
+    <link rel="canonical" id="canonicalLink" href="https://goallordcreativity.com/blog-single.html">
     <!-- Open Graph -->
     <meta property="og:type" content="article">
-    <meta property="og:url" content="https://goallordcreativity.com/blog-single.html">
-    <meta property="og:title" content="Nigeria's Web Landscape in 2026: What Every Business Owner Needs to Know">
-    <meta property="og:description" content="Over 220 million people, fewer than 30% of SMEs with a website. The opportunity is enormous — and the risk of getting it wrong is real.">
+    <meta property="og:url" id="ogUrl" content="https://goallordcreativity.com/blog-single.html">
+    <meta property="og:title" id="ogTitle" content="Blog | Goallord Creativity">
+    <meta property="og:description" id="ogDesc" content="Read the latest insights from Goallord Creativity.">
     <meta property="og:image" content="https://goallordcreativity.com/assets/images/logo/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:site_name" content="Goallord Creativity Limited">
-    <meta property="article:published_time" content="2026-03-01">
+    <meta property="og:locale" content="en_NG">
+    <meta property="article:published_time" id="ogPubTime" content="">
     <meta property="article:author" content="Goallord Creativity Limited">
-    <meta property="article:section" content="Web Design">
+    <meta property="article:section" id="ogSection" content="Web Design">
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@goallordcreates">
-    <meta name="twitter:title" content="Nigeria's Web Landscape in 2026: What Every Business Owner Needs to Know">
-    <meta name="twitter:description" content="Over 220 million people, fewer than 30% of SMEs with a website. The opportunity is enormous.">
+    <meta name="twitter:title" id="twTitle" content="Blog | Goallord Creativity">
+    <meta name="twitter:description" id="twDesc" content="Read the latest insights from Goallord Creativity.">
     <meta name="twitter:image" content="https://goallordcreativity.com/assets/images/logo/og-image.jpg">
-    <!-- Schema -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Nigeria's Web Landscape in 2026: What Every Business Owner Needs to Know",
-        "datePublished": "2026-03-01",
-        "dateModified": "2026-03-24",
-        "image": "https://goallordcreativity.com/assets/images/logo/og-image.jpg",
-        "author": {
-          "@type": "Organization",
-          "name": "Goallord Creativity Limited",
-          "url": "https://goallordcreativity.com"
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "Goallord Creativity Limited",
-          "url": "https://goallordcreativity.com",
-          "logo": {
-            "@type": "ImageObject",
-            "url": "https://goallordcreativity.com/assets/images/logo/og-image.jpg"
-          }
-        },
-        "description": "Over 220 million people and fewer than 30% of SMEs with a functional website. The opportunity is enormous.",
-        "mainEntityOfPage": {
-          "@type": "WebPage",
-          "@id": "https://goallordcreativity.com/blog-single.html"
-        },
-        "breadcrumb": {
-          "@type": "BreadcrumbList",
-          "itemListElement": [
-            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://goallordcreativity.com/"},
-            {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://goallordcreativity.com/blog.html"},
-            {"@type": "ListItem", "position": 3, "name": "Nigeria's Web Landscape in 2026", "item": "https://goallordcreativity.com/blog-single.html"}
-          ]
-        }
-    }
-    </script>
+    <!-- Schema — injected dynamically -->
+    <script id="schemaScript" type="application/ld+json">{}</script>
     <link rel="stylesheet" href="assets/fonts/fonts.css">
     <link rel="stylesheet" href="assets/icon/icomoon/style.css">
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
@@ -80,6 +47,19 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <style>
+        .gl-share-btn { display:inline-flex; align-items:center; gap:8px; padding:10px 18px; border-radius:6px; font-size:12px; font-weight:600; letter-spacing:.08em; text-decoration:none; transition:opacity .2s; cursor:pointer; border:none; }
+        .gl-share-btn:hover { opacity:.8; }
+        .gl-share-wa  { background:#25D366; color:#fff; }
+        .gl-share-tw  { background:#000; color:#fff; }
+        .gl-share-li  { background:#0A66C2; color:#fff; }
+        .gl-share-cp  { background:var(--gl-card); border:1px solid var(--gl-border); color:#fff; }
+        .gl-newsletter { background:var(--gl-card); border:1px solid var(--primary); border-radius:8px; padding:32px; }
+        .gl-newsletter input[type=email] { background:rgba(255,255,255,.07); border:1px solid var(--gl-border); border-radius:6px; color:#fff; padding:12px 16px; width:100%; font-size:14px; }
+        .gl-newsletter input[type=email]::placeholder { color:rgba(255,255,255,.35); }
+        .gl-newsletter input[type=email]:focus { outline:none; border-color:var(--primary); }
+        #postLoading, #postError { display:none; }
+    </style>
 </head>
 <body class="counter-scroll">
     <canvas class="cursor-trail d-none d-xl-block" id="trail"></canvas>
@@ -137,21 +117,33 @@
         </header>
         <!-- /Header -->
 
+        <!-- Loading state -->
+        <div id="postLoading" style="padding:200px 0;text-align:center;">
+            <p class="text-white-64 text-caption letter-space--1">LOADING ARTICLE...</p>
+        </div>
+
+        <!-- Error state -->
+        <div id="postError" style="padding:200px 0;text-align:center;">
+            <p class="text-white-64 text-caption letter-space--1 mb-3">ARTICLE NOT FOUND</p>
+            <a href="blog.html" class="tf-btn style-fill"><span class="text-caption fw-medium">BACK TO BLOG</span></a>
+        </div>
+
+        <!-- Article content (hidden until loaded) -->
+        <div id="postContent" style="display:none;">
+
         <!-- Article Hero -->
         <section class="flat-spacing" style="padding-top: 120px;">
             <div class="container">
                 <div class="row justify-content-center">
                     <div class="col-lg-9 text-center">
-                        <p class="text-caption text-white-64 letter-space--1 effectFade fadeUp">
-                            <a href="blog.html" class="link text-white-64">BLOG</a> &nbsp;/&nbsp; BUSINESS &nbsp;·&nbsp; MARCH 2026 &nbsp;·&nbsp; 8 MIN READ
+                        <p class="text-caption text-white-64 letter-space--1 effectFade fadeUp" id="postMeta">
+                            <a href="blog.html" class="link text-white-64">BLOG</a>
                         </p>
-                        <h1 class="text-display-2 fw-semibold letter-space--3 mt-4 effectFade fadeUp">
-                            Nigeria's Web Landscape in 2026: What Every Business Owner Needs to Know
-                        </h1>
+                        <h1 class="text-display-2 fw-semibold letter-space--3 mt-4 effectFade fadeUp" id="postTitle"></h1>
                         <div class="d-flex align-items-center justify-content-center gap-3 mt-5 effectFade fadeUp">
-                            <img src="assets/images/avatar/avt-1.jpg" alt="Goallord Team" width="40" height="40" style="border-radius: 50%; object-fit: cover;">
+                            <img id="postAuthorImg" src="assets/images/avatar/avt-1.jpg" alt="Author" width="40" height="40" style="border-radius:50%;object-fit:cover;">
                             <div class="text-start">
-                                <p class="fw-medium mb-0">The Goallord Team</p>
+                                <p class="fw-medium mb-0" id="postAuthorName">The Goallord Team</p>
                                 <p class="text-caption text-white-64 mb-0">Goallord Creativity Limited, Onitsha</p>
                             </div>
                         </div>
@@ -162,11 +154,11 @@
         </section>
         <!-- /Article Hero -->
 
-        <!-- Cover Image -->
+        <!-- Cover Image + Body -->
         <section class="flat-spacing pt-0">
             <div class="container">
                 <div class="effectFade fadeUp mb-5">
-                    <img loading="lazy" width="1200" height="680" src="assets/images/portfolio/img-1.jpg" alt="Nigeria digital business landscape 2026" class="img-fluid w-100" style="border-radius: 8px; max-height: 520px; object-fit: cover;">
+                    <img id="postCoverImg" loading="lazy" width="1200" height="680" src="assets/images/portfolio/img-1.jpg" alt="" class="img-fluid w-100" style="border-radius:8px;max-height:520px;object-fit:cover;">
                 </div>
 
                 <!-- Article + Sidebar -->
@@ -174,167 +166,92 @@
                     <div class="col-lg-8 effectFade fadeUp">
 
                         <!-- Article body -->
-                        <div class="gl-article-body">
-                            <p class="text-white-64 mb-4" style="font-size: 1.15rem; line-height: 1.8;">
-                                Over 220 million people. A fast-growing middle class. Smartphone penetration crossing 50%. And yet, fewer than 30% of Nigerian SMEs have a functional website in 2026. The opportunity is enormous — but so is the risk of getting it wrong.
-                            </p>
-                            <p class="text-white-64 mb-5">
-                                At Goallord Creativity Limited, we work with Nigerian businesses every day. We see what separates brands that win online from those that remain invisible. This article breaks down the current state of Nigeria's web landscape and what it means for your business — practically.
-                            </p>
+                        <div class="gl-article-body" id="postBody"></div>
 
-                            <div class="br-line mb-5"></div>
+                        <div class="br-line mb-5"></div>
 
-                            <h2 class="letter-space--2 mb-4">The Numbers First</h2>
-                            <p class="text-white-64 mb-4">
-                                Nigeria has approximately 122 million internet users as of early 2026 — that's over half the population online. Mobile accounts for more than 80% of that traffic. Data from Google's Year in Search and local market surveys consistently show that Nigerians are searching for products, services, healthcare providers, schools, and professionals online at record rates.
-                            </p>
-                            <p class="text-white-64 mb-5">
-                                The search happens. The question is: can they find you?
-                            </p>
-
-                            <!-- Pull quote -->
-                            <div class="gl-pullquote mb-5">
-                                <p class="h4 letter-space--2 mb-2">"The search happens every day. Millions of Nigerians looking for products, services, professionals. The question is whether your business shows up when they look."</p>
-                                <p class="text-caption text-primary letter-space--1 mb-0">— GOALLORD CREATIVITY TEAM</p>
+                        <!-- Social Share -->
+                        <div class="mb-5">
+                            <p class="text-caption text-white-64 letter-space--1 mb-3">SHARE THIS ARTICLE</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a id="shareWhatsApp" href="#" target="_blank" rel="noopener" class="gl-share-btn gl-share-wa">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                                    WhatsApp
+                                </a>
+                                <a id="shareTwitter" href="#" target="_blank" rel="noopener" class="gl-share-btn gl-share-tw">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                                    Twitter / X
+                                </a>
+                                <a id="shareLinkedIn" href="#" target="_blank" rel="noopener" class="gl-share-btn gl-share-li">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                                    LinkedIn
+                                </a>
+                                <button id="shareCopy" class="gl-share-btn gl-share-cp">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                    Copy Link
+                                </button>
                             </div>
-
-                            <h2 class="letter-space--2 mb-4">Why Most Nigerian SMEs Still Don't Have Websites</h2>
-                            <p class="text-white-64 mb-3">We asked this question across dozens of client discovery calls in 2025. The answers fell into three buckets:</p>
-                            <ol class="text-white-64 mb-5" style="padding-left: 1.5rem; line-height: 2;">
-                                <li class="mb-2"><strong class="text-white">Cost perception.</strong> Many business owners believe a professional website costs ₦2–5 million. It doesn't. A solid WordPress business site starts from ₦500,000 — and the return on investment begins immediately.</li>
-                                <li class="mb-2"><strong class="text-white">The "WhatsApp is enough" trap.</strong> WhatsApp Business is powerful for customer management, but it doesn't make you discoverable. A new customer who doesn't already know you cannot find you on WhatsApp.</li>
-                                <li><strong class="text-white">Bad past experience.</strong> Some owners paid someone who delivered a poorly built site that never ranked, never worked on mobile, and then became inaccessible when the developer went dark. That experience kills confidence.</li>
-                            </ol>
-
-                            <h2 class="letter-space--2 mb-4">What Google Now Expects from Nigerian Business Websites</h2>
-                            <p class="text-white-64 mb-4">Google's ranking algorithm has evolved significantly. The signals that matter most in 2026 are fundamentals every well-built site should have:</p>
-                            <div class="mb-5">
-                                <div class="d-flex gap-3 mb-4">
-                                    <span class="text-primary fw-bold flex-shrink-0" style="margin-top: 2px;">01</span>
-                                    <div><strong class="text-white d-block mb-1">Core Web Vitals</strong><p class="text-white-64 mb-0">Largest Contentful Paint under 2.5s, Cumulative Layout Shift under 0.1, Interaction to Next Paint under 200ms. Google uses these directly in ranking.</p></div>
-                                </div>
-                                <div class="d-flex gap-3 mb-4">
-                                    <span class="text-primary fw-bold flex-shrink-0" style="margin-top: 2px;">02</span>
-                                    <div><strong class="text-white d-block mb-1">Mobile-first design</strong><p class="text-white-64 mb-0">Google indexes the mobile version of your site first. If it looks broken on a ₦60,000 Android phone, you're losing rankings and customers simultaneously.</p></div>
-                                </div>
-                                <div class="d-flex gap-3 mb-4">
-                                    <span class="text-primary fw-bold flex-shrink-0" style="margin-top: 2px;">03</span>
-                                    <div><strong class="text-white d-block mb-1">E-E-A-T signals</strong><p class="text-white-64 mb-0">Real team pages, verifiable contact info, client testimonials, and local business schema all contribute to Google trusting — and ranking — your site.</p></div>
-                                </div>
-                                <div class="d-flex gap-3 mb-4">
-                                    <span class="text-primary fw-bold flex-shrink-0" style="margin-top: 2px;">04</span>
-                                    <div><strong class="text-white d-block mb-1">HTTPS + security</strong><p class="text-white-64 mb-0">An insecure site is flagged as "Not Secure" in Chrome. In Nigeria, where trust in online transactions is still being built, a security warning can kill a conversion instantly.</p></div>
-                                </div>
-                                <div class="d-flex gap-3">
-                                    <span class="text-primary fw-bold flex-shrink-0" style="margin-top: 2px;">05</span>
-                                    <div><strong class="text-white d-block mb-1">Local SEO schema</strong><p class="text-white-64 mb-0">Structured data telling Google your business name, address, phone, and hours. Combined with Google Business Profile, this is what puts you in local map packs for "web designer Onitsha".</p></div>
-                                </div>
-                            </div>
-
-                            <h2 class="letter-space--2 mb-4">The Three Types of Website a Nigerian Business Actually Needs</h2>
-                            <div class="mb-3" style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 24px 28px;">
-                                <p class="text-primary text-caption fw-medium letter-space--1 mb-2">01 — THE CREDIBILITY SITE</p>
-                                <p class="text-white-64 mb-0">If your business makes money through phone calls, WhatsApp, or in-person visits — you need a 5–7 page WordPress site that ranks locally, loads fast, and makes it easy to call or message. Think: lawyer, accountant, consultant, school, clinic. Budget: ₦500k–₦1.5M.</p>
-                            </div>
-                            <div class="mb-3" style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 24px 28px;">
-                                <p class="text-primary text-caption fw-medium letter-space--1 mb-2">02 — THE COMMERCE SITE</p>
-                                <p class="text-white-64 mb-0">If you sell physical or digital products, you need an e-commerce store — Shopify or WooCommerce — with Paystack or Flutterwave integrated, inventory management, and logistics partner APIs. Budget: ₦1.5M–₦4M.</p>
-                            </div>
-                            <div class="mb-5" style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 24px 28px;">
-                                <p class="text-primary text-caption fw-medium letter-space--1 mb-2">03 — THE PLATFORM / WEB APP</p>
-                                <p class="text-white-64 mb-0">If your business model depends on users logging in, booking, paying, tracking, or connecting — you need a custom web application. Build the core workflow, validate it with real users, then scale. Budget: ₦3M–₦10M+ depending on complexity.</p>
-                            </div>
-
-                            <h2 class="letter-space--2 mb-4">Red Flags When Hiring a Web Team</h2>
-                            <ul class="text-white-64 mb-5" style="padding-left: 1.5rem; line-height: 2.2;">
-                                <li class="mb-2"><strong class="text-white">No portfolio, or template screenshots only.</strong> If they can't show you live sites they've built, that's a problem.</li>
-                                <li class="mb-2"><strong class="text-white">No contract or written scope.</strong> "We'll sort it out as we go" is how projects become abandoned half-builds.</li>
-                                <li class="mb-2"><strong class="text-white">No SEO discussion.</strong> A beautiful site nobody can find is a decoration, not a business asset.</li>
-                                <li class="mb-2"><strong class="text-white">You don't own your domain or hosting.</strong> Your domain name and hosting account should be registered in your name. Always. Non-negotiable.</li>
-                                <li><strong class="text-white">No post-launch support plan.</strong> Websites need maintenance — security updates, backups, speed monitoring.</li>
-                            </ul>
-
-                            <h2 class="letter-space--2 mb-4">The Bottom Line</h2>
-                            <p class="text-white-64 mb-4">
-                                Nigeria's digital economy is not a future trend — it's the current reality. Every day without a functional, search-optimised web presence is a day your competitors are capturing the customers who were looking for exactly what you offer.
-                            </p>
-                            <p class="text-white-64 mb-5">
-                                At Goallord, we've helped 50+ businesses across Nigeria get this right. If you want a direct conversation about what your specific business needs, reach out — no sales pitch, just an honest assessment.
-                            </p>
-
-                            <div class="br-line mb-5"></div>
-
-                            <!-- Inline CTA -->
-                            <div style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 36px 32px;" class="mb-5">
-                                <div class="row align-items-center">
-                                    <div class="col-lg-8">
-                                        <h4 class="letter-space--2 mb-2">Ready to talk about your website?</h4>
-                                        <p class="text-white-64 mb-0">Tell us what you need and we'll get back within 24 hours.</p>
-                                    </div>
-                                    <div class="col-lg-4 mt-3 mt-lg-0 text-lg-end">
-                                        <a href="contact.html" class="tf-btn style-fill"><span class="text-caption fw-medium">START A PROJECT</span></a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Tags -->
-                            <div class="d-flex flex-wrap align-items-center gap-2 mb-5">
-                                <p class="text-caption text-white-64 letter-space--1 mb-0">TAGGED:</p>
-                                <span class="tf-btn btn-sm style-troke text-caption">Nigeria</span>
-                                <span class="tf-btn btn-sm style-troke text-caption">Web Design</span>
-                                <span class="tf-btn btn-sm style-troke text-caption">SEO</span>
-                                <span class="tf-btn btn-sm style-troke text-caption">Business</span>
-                            </div>
-
-                            <!-- Author box -->
-                            <div style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 28px;" class="mb-5">
-                                <div class="d-flex gap-4 align-items-start">
-                                    <img src="assets/images/avatar/avt-1.jpg" alt="Goallord Team" width="60" height="60" style="border-radius: 50%; object-fit: cover; flex-shrink: 0;">
-                                    <div>
-                                        <h5 class="letter-space--2 mb-1">The Goallord Team</h5>
-                                        <p class="text-caption text-primary letter-space--1 mb-2">GOALLORD CREATIVITY LIMITED · ONITSHA, NIGERIA</p>
-                                        <p class="text-white-64 fs-14 mb-0">Goallord Creativity Limited is a full-service web agency and tech training studio based in Onitsha, Anambra State. We build websites, web apps, and digital marketing strategies that help Nigerian businesses grow.</p>
-                                    </div>
-                                </div>
-                            </div>
-
                         </div>
+
+                        <!-- Tags -->
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-5" id="postTagsWrap">
+                            <p class="text-caption text-white-64 letter-space--1 mb-0">TAGGED:</p>
+                            <div id="postTags" class="d-flex flex-wrap gap-2"></div>
+                        </div>
+
+                        <!-- Author box -->
+                        <div style="background:var(--gl-card);border:1px solid var(--gl-border);border-radius:8px;padding:28px;" class="mb-5">
+                            <div class="d-flex gap-4 align-items-start">
+                                <img id="postAuthorImgBox" src="assets/images/avatar/avt-1.jpg" alt="Author" width="60" height="60" style="border-radius:50%;object-fit:cover;flex-shrink:0;">
+                                <div>
+                                    <h5 class="letter-space--2 mb-1" id="postAuthorNameBox">The Goallord Team</h5>
+                                    <p class="text-caption text-primary letter-space--1 mb-2">GOALLORD CREATIVITY LIMITED · ONITSHA, NIGERIA</p>
+                                    <p class="text-white-64 fs-14 mb-0">Goallord Creativity Limited is a full-service web agency and tech training studio based in Onitsha, Anambra State. We build websites, web apps, and digital marketing strategies that help Nigerian businesses grow.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Newsletter signup -->
+                        <div class="gl-newsletter mb-5">
+                            <p class="text-caption text-primary fw-medium letter-space--1 mb-2">STAY IN THE LOOP</p>
+                            <h4 class="letter-space--2 mb-2">Get articles like this in your inbox</h4>
+                            <p class="text-white-64 fs-14 mb-4">No spam. Just practical insights on web design, SEO, and growing a business online in Nigeria. Sent occasionally.</p>
+                            <form id="newsletterForm" class="d-flex gap-2 flex-wrap">
+                                <input type="email" id="newsletterEmail" placeholder="your@email.com" required style="flex:1;min-width:200px;">
+                                <button type="submit" class="tf-btn style-fill flex-shrink-0"><span class="text-caption fw-medium">SUBSCRIBE</span></button>
+                            </form>
+                            <p id="newsletterMsg" class="text-caption mt-2 mb-0" style="display:none;"></p>
+                        </div>
+
+                        <!-- Inline CTA -->
+                        <div style="background:var(--gl-card);border:1px solid var(--gl-border);border-radius:8px;padding:36px 32px;" class="mb-5">
+                            <div class="row align-items-center">
+                                <div class="col-lg-8">
+                                    <h4 class="letter-space--2 mb-2">Ready to talk about your website?</h4>
+                                    <p class="text-white-64 mb-0">Tell us what you need and we'll get back within 24 hours.</p>
+                                </div>
+                                <div class="col-lg-4 mt-3 mt-lg-0 text-lg-end">
+                                    <a href="contact.html" class="tf-btn style-fill"><span class="text-caption fw-medium">START A PROJECT</span></a>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                     <!-- Sidebar -->
                     <div class="col-lg-4 mt-5 mt-lg-0">
-                        <div class="effectFade fadeRight" style="position: sticky; top: 120px;">
+                        <div class="effectFade fadeRight" style="position:sticky;top:120px;">
 
                             <!-- More articles -->
                             <h6 class="mini-title text-caption text-white-64 mb-4">MORE ARTICLES</h6>
-                            <div class="mb-5">
-                                <a href="blog-single.html" class="d-flex gap-3 mb-4 link">
-                                    <img src="assets/images/portfolio/img-2.jpg" alt="" width="64" height="64" style="object-fit: cover; border-radius: 6px; flex-shrink: 0;">
-                                    <div>
-                                        <p class="fw-medium fs-14 mb-1">WordPress vs Custom Website: Which Should Your Business Choose?</p>
-                                        <p class="text-caption text-white-64 mb-0">February 2026</p>
-                                    </div>
-                                </a>
-                                <a href="blog-single.html" class="d-flex gap-3 mb-4 link">
-                                    <img src="assets/images/portfolio/img-3.jpg" alt="" width="64" height="64" style="object-fit: cover; border-radius: 6px; flex-shrink: 0;">
-                                    <div>
-                                        <p class="fw-medium fs-14 mb-1">Local SEO for Nigerian Businesses: Rank Without a Big Budget</p>
-                                        <p class="text-caption text-white-64 mb-0">January 2026</p>
-                                    </div>
-                                </a>
-                                <a href="blog-single.html" class="d-flex gap-3 link">
-                                    <img src="assets/images/portfolio/img-4.jpg" alt="" width="64" height="64" style="object-fit: cover; border-radius: 6px; flex-shrink: 0;">
-                                    <div>
-                                        <p class="fw-medium fs-14 mb-1">5 Signs Your Website Is Costing You Customers</p>
-                                        <p class="text-caption text-white-64 mb-0">December 2025</p>
-                                    </div>
-                                </a>
+                            <div class="mb-5" id="postSidebarRelated">
+                                <!-- dynamic -->
                             </div>
 
                             <div class="br-line mb-5"></div>
 
                             <!-- Sidebar CTA -->
-                            <div style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 28px;">
+                            <div style="background:var(--gl-card);border:1px solid var(--gl-border);border-radius:8px;padding:28px;">
                                 <p class="text-caption text-primary fw-medium letter-space--1 mb-3">WORK WITH US</p>
                                 <h5 class="letter-space--2 mb-3">Need a website that actually works?</h5>
                                 <p class="text-white-64 fs-14 mb-4">Tell us your goals and we'll send a proposal within 24 hours.</p>
@@ -357,47 +274,14 @@
                         <h6 class="mini-title text-caption text-white-64">KEEP READING</h6>
                     </div>
                 </div>
-                <div class="tf-grid-layout sm-col-2 md-col-3">
-                    <div class="article-blog hover-img effectFade fadeUp no-div">
-                        <a href="blog-single.html" class="blog-image img-style">
-                            <img loading="lazy" width="426" height="307" src="assets/images/portfolio/img-2.jpg" alt="WordPress vs Custom">
-                        </a>
-                        <div class="blog-content">
-                            <div class="infor">
-                                <p class="infor_sub text-white-64">WordPress &nbsp;·&nbsp; Feb 2026</p>
-                                <h6><a href="blog-single.html" class="link infor_name">WordPress vs Custom Website: Which Should Your Business Choose in 2026?</a></h6>
-                            </div>
-                            <a href="blog-single.html" class="btn-action"><i class="icon icon-arrow-top-right"></i></a>
-                        </div>
-                    </div>
-                    <div class="article-blog hover-img effectFade fadeUp no-div">
-                        <a href="blog-single.html" class="blog-image img-style">
-                            <img loading="lazy" width="426" height="307" src="assets/images/portfolio/img-3.jpg" alt="Local SEO">
-                        </a>
-                        <div class="blog-content">
-                            <div class="infor">
-                                <p class="infor_sub text-white-64">SEO &nbsp;·&nbsp; Jan 2026</p>
-                                <h6><a href="blog-single.html" class="link infor_name">Local SEO for Nigerian Businesses: Rank on Google Without a Big Budget</a></h6>
-                            </div>
-                            <a href="blog-single.html" class="btn-action"><i class="icon icon-arrow-top-right"></i></a>
-                        </div>
-                    </div>
-                    <div class="article-blog hover-img effectFade fadeUp no-div">
-                        <a href="blog-single.html" class="blog-image img-style">
-                            <img loading="lazy" width="426" height="307" src="assets/images/portfolio/img-4.jpg" alt="Website costing customers">
-                        </a>
-                        <div class="blog-content">
-                            <div class="infor">
-                                <p class="infor_sub text-white-64">Web Design &nbsp;·&nbsp; Dec 2025</p>
-                                <h6><a href="blog-single.html" class="link infor_name">5 Signs Your Website Is Costing You Customers</a></h6>
-                            </div>
-                            <a href="blog-single.html" class="btn-action"><i class="icon icon-arrow-top-right"></i></a>
-                        </div>
-                    </div>
+                <div class="tf-grid-layout sm-col-2 md-col-3" id="postRelatedGrid">
+                    <!-- dynamic -->
                 </div>
             </div>
         </section>
         <!-- /Related Posts -->
+
+        </div><!-- /postContent -->
 
         <!-- Footer -->
         <footer class="tf-footer">
@@ -437,7 +321,7 @@
             </div>
             <div class="footer-bottom">
                 <div class="container">
-                    <div class="img-agency"><svg class="effectFade fadeZoom" viewBox="0 0 1293 269" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" aria-label="Goallord Creativity Limited"><defs><filter id="gl-liq" x="-5%" y="-30%" width="110%" height="160%"><feTurbulence type="turbulence" baseFrequency="0.008 0.018" numOctaves="2" result="noise"><animate attributeName="baseFrequency" values="0.008 0.018;0.015 0.028;0.010 0.020;0.008 0.018" dur="14s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1"/></feTurbulence><feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G"/></filter><linearGradient id="gl-wm" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1293" y2="0"><stop offset="0%" stop-color="white" stop-opacity="0.03"/><stop offset="28%" stop-color="white" stop-opacity="0.07"/><stop offset="50%" stop-color="#D66A1F" stop-opacity="0.20"/><stop offset="72%" stop-color="white" stop-opacity="0.07"/><stop offset="100%" stop-color="white" stop-opacity="0.03"/><animateTransform attributeName="gradientTransform" type="translate" from="-1293 0" to="1293 0" dur="9s" repeatCount="indefinite"/></linearGradient></defs><text x="50%" y="72%" dominant-baseline="middle" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, &apos;SF Pro Display&apos;, &apos;Segoe UI&apos;, Helvetica, Arial, sans-serif" font-size="200" font-weight="800" letter-spacing="-8" fill="url(#gl-wm)" filter="url(#gl-liq)">GOALLORD</text></svg></div>
+                    <div class="img-agency"><svg class="effectFade fadeZoom" viewBox="0 0 1293 269" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" aria-label="Goallord Creativity Limited"><defs><filter id="gl-liq" x="-5%" y="-30%" width="110%" height="160%"><feTurbulence type="turbulence" baseFrequency="0.008 0.018" numOctaves="2" result="noise"><animate attributeName="baseFrequency" values="0.008 0.018;0.015 0.028;0.010 0.020;0.008 0.018" dur="14s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1"/></feTurbulence><feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G"/></filter><linearGradient id="gl-wm" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1293" y2="0"><stop offset="0%" stop-color="white" stop-opacity="0.03"/><stop offset="28%" stop-color="white" stop-opacity="0.07"/><stop offset="50%" stop-color="#D66A1F" stop-opacity="0.20"/><stop offset="72%" stop-color="white" stop-opacity="0.07"/><stop offset="100%" stop-color="white" stop-opacity="0.03"/><animateTransform attributeName="gradientTransform" type="translate" from="-1293 0" to="1293 0" dur="9s" repeatCount="indefinite"/></linearGradient></defs><text x="50%" y="72%" dominant-baseline="middle" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Helvetica, Arial, sans-serif" font-size="200" font-weight="800" letter-spacing="-8" fill="url(#gl-wm)" filter="url(#gl-liq)">GOALLORD</text></svg></div>
                     <div class="bottom">
                         <p class="text-nocopy text-caption fw-medium letter-space--1">© 2026 GOALLORD CREATIVITY LIMITED — ONITSHA, NIGERIA</p>
                         <a href="#" class="action-go-top tf-link-icon link text-caption fw-medium letter-space--1">BACK TO TOP <i class="icon icon-arrow-long-right"></i></a>
@@ -478,5 +362,232 @@
     <script src="assets/js/infinityslide.js"></script>
     <script src="assets/js/gsapAnimation.js"></script>
     <script src="assets/js/main.js"></script>
+
+    <script>
+    (function () {
+      var DEFAULT_IMGS = [
+        'assets/images/portfolio/img-1.jpg','assets/images/portfolio/img-2.jpg',
+        'assets/images/portfolio/img-3.jpg','assets/images/portfolio/img-4.jpg',
+        'assets/images/portfolio/img-5.jpg','assets/images/portfolio/img-6.jpg',
+        'assets/images/portfolio/img-7.jpg'
+      ];
+
+      function fmtDate(d) {
+        if (!d) return '';
+        return new Date(d).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+      }
+      function fmtDateShort(d) {
+        if (!d) return '';
+        return new Date(d).toLocaleDateString('en-US', { year:'numeric', month:'short' });
+      }
+      function setMeta(id, attr, val) {
+        var el = document.getElementById(id) || document.querySelector('[' + attr + '="' + id + '"]');
+        if (el) el.setAttribute(attr === 'id' ? 'content' : attr, val);
+      }
+      function esc(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
+
+      var params = new URLSearchParams(window.location.search);
+      var slug   = params.get('slug');
+
+      if (!slug) {
+        document.getElementById('postLoading').style.display = 'none';
+        document.getElementById('postError').style.display   = 'block';
+        return;
+      }
+
+      document.getElementById('postLoading').style.display = 'block';
+
+      fetch('/api/blog/' + encodeURIComponent(slug))
+        .then(function(r) {
+          if (!r.ok) throw new Error('not found');
+          return r.json();
+        })
+        .then(function(post) {
+          document.getElementById('postLoading').style.display = 'none';
+          document.getElementById('postContent').style.display = 'block';
+
+          var pageUrl = 'https://goallordcreativity.com/blog-single.html?slug=' + encodeURIComponent(post.slug);
+          var coverImg = post.coverImage || DEFAULT_IMGS[0];
+          var ogImg = 'https://goallordcreativity.com/assets/images/logo/og-image.jpg';
+
+          // ── Head meta ─────────────────────────────────────────────
+          document.title = (post.title || 'Blog') + ' | Goallord Creativity';
+          document.getElementById('pageTitle').textContent = document.title;
+
+          var descEl = document.querySelector('meta[name="description"]');
+          if (descEl) descEl.setAttribute('content', post.excerpt || '');
+          var kwEl = document.querySelector('meta[name="keywords"]');
+          if (kwEl && post.tags && post.tags.length) kwEl.setAttribute('content', post.tags.join(', '));
+
+          var canonEl = document.getElementById('canonicalLink');
+          if (canonEl) canonEl.setAttribute('href', pageUrl);
+
+          var ogUrlEl = document.getElementById('ogUrl');
+          if (ogUrlEl) ogUrlEl.setAttribute('content', pageUrl);
+          var ogTitleEl = document.getElementById('ogTitle');
+          if (ogTitleEl) ogTitleEl.setAttribute('content', post.title || '');
+          var ogDescEl = document.getElementById('ogDesc');
+          if (ogDescEl) ogDescEl.setAttribute('content', post.excerpt || '');
+          var ogPubEl = document.getElementById('ogPubTime');
+          if (ogPubEl && post.publishedAt) ogPubEl.setAttribute('content', new Date(post.publishedAt).toISOString());
+          var ogSecEl = document.getElementById('ogSection');
+          if (ogSecEl) ogSecEl.setAttribute('content', post.category || 'Web Design');
+
+          var twTitleEl = document.getElementById('twTitle');
+          if (twTitleEl) twTitleEl.setAttribute('content', post.title || '');
+          var twDescEl = document.getElementById('twDesc');
+          if (twDescEl) twDescEl.setAttribute('content', post.excerpt || '');
+
+          // ── JSON-LD Schema ─────────────────────────────────────────
+          var schema = {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": post.title || '',
+            "datePublished": post.publishedAt ? new Date(post.publishedAt).toISOString() : '',
+            "dateModified": post.updatedAt ? new Date(post.updatedAt).toISOString() : '',
+            "image": ogImg,
+            "author": { "@type": "Organization", "name": post.author || 'Goallord Creativity Limited', "url": "https://goallordcreativity.com" },
+            "publisher": {
+              "@type": "Organization",
+              "name": "Goallord Creativity Limited",
+              "url": "https://goallordcreativity.com",
+              "logo": { "@type": "ImageObject", "url": ogImg }
+            },
+            "description": post.excerpt || '',
+            "mainEntityOfPage": { "@type": "WebPage", "@id": pageUrl },
+            "breadcrumb": {
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {"@type":"ListItem","position":1,"name":"Home","item":"https://goallordcreativity.com/"},
+                {"@type":"ListItem","position":2,"name":"Blog","item":"https://goallordcreativity.com/blog.html"},
+                {"@type":"ListItem","position":3,"name": post.title || 'Article',"item": pageUrl}
+              ]
+            }
+          };
+          document.getElementById('schemaScript').textContent = JSON.stringify(schema);
+
+          // ── Hero ───────────────────────────────────────────────────
+          var metaStr = '<a href="blog.html" class="link text-white-64">BLOG</a>';
+          if (post.category) metaStr += ' &nbsp;/&nbsp; ' + esc(post.category.toUpperCase());
+          if (post.publishedAt) metaStr += ' &nbsp;·&nbsp; ' + fmtDate(post.publishedAt).toUpperCase();
+          if (post.readTime) metaStr += ' &nbsp;·&nbsp; ' + esc(post.readTime.toUpperCase());
+          document.getElementById('postMeta').innerHTML = metaStr;
+          document.getElementById('postTitle').textContent = post.title || '';
+
+          var authorName = post.author || 'The Goallord Team';
+          document.getElementById('postAuthorName').textContent = authorName;
+          document.getElementById('postAuthorNameBox').textContent = authorName;
+
+          // ── Cover Image ────────────────────────────────────────────
+          var ci = document.getElementById('postCoverImg');
+          ci.src = coverImg;
+          ci.alt = post.title || '';
+
+          // ── Body ───────────────────────────────────────────────────
+          document.getElementById('postBody').innerHTML = post.content || '<p class="text-white-64">Content coming soon.</p>';
+
+          // ── Share buttons ──────────────────────────────────────────
+          var encodedUrl   = encodeURIComponent(pageUrl);
+          var encodedTitle = encodeURIComponent(post.title || '');
+          document.getElementById('shareWhatsApp').href = 'https://wa.me/?text=' + encodedTitle + '%20' + encodedUrl;
+          document.getElementById('shareTwitter').href  = 'https://twitter.com/intent/tweet?text=' + encodedTitle + '&url=' + encodedUrl + '&via=goallordcreates';
+          document.getElementById('shareLinkedIn').href = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodedUrl;
+          document.getElementById('shareCopy').addEventListener('click', function() {
+            navigator.clipboard.writeText(pageUrl).then(function() {
+              var btn = document.getElementById('shareCopy');
+              btn.innerHTML = btn.innerHTML.replace('Copy Link', 'Copied!');
+              setTimeout(function() { btn.innerHTML = btn.innerHTML.replace('Copied!', 'Copy Link'); }, 2000);
+            });
+          });
+
+          // ── Tags ───────────────────────────────────────────────────
+          var tagsContainer = document.getElementById('postTags');
+          if (post.tags && post.tags.length) {
+            tagsContainer.innerHTML = post.tags.map(function(t) {
+              return '<span class="tf-btn btn-sm style-troke text-caption">' + esc(t) + '</span>';
+            }).join('');
+          } else {
+            document.getElementById('postTagsWrap').style.display = 'none';
+          }
+
+          // ── Related posts ──────────────────────────────────────────
+          fetch('/api/blog?limit=4&exclude=' + encodeURIComponent(post.slug))
+            .then(function(r){ return r.json(); })
+            .then(function(res) {
+              var related = (res.posts || []).slice(0, 3);
+
+              // Sidebar
+              var sidebarHtml = related.map(function(p, i) {
+                var img = p.coverImage || DEFAULT_IMGS[(i + 1) % DEFAULT_IMGS.length];
+                var url = 'blog-single.html?slug=' + encodeURIComponent(p.slug);
+                return '<a href="' + url + '" class="d-flex gap-3 mb-4 link">' +
+                  '<img src="' + esc(img) + '" alt="' + esc(p.title) + '" width="64" height="64" style="object-fit:cover;border-radius:6px;flex-shrink:0;">' +
+                  '<div>' +
+                    '<p class="fw-medium fs-14 mb-1">' + esc(p.title || '') + '</p>' +
+                    '<p class="text-caption text-white-64 mb-0">' + fmtDateShort(p.publishedAt) + '</p>' +
+                  '</div>' +
+                '</a>';
+              }).join('');
+              document.getElementById('postSidebarRelated').innerHTML = sidebarHtml ||
+                '<p class="text-caption text-white-64">No other articles yet.</p>';
+
+              // Related grid
+              var gridHtml = related.map(function(p, i) {
+                var img = p.coverImage || DEFAULT_IMGS[(i + 1) % DEFAULT_IMGS.length];
+                var url = 'blog-single.html?slug=' + encodeURIComponent(p.slug);
+                var meta = [p.category, fmtDateShort(p.publishedAt)].filter(Boolean).join(' &nbsp;·&nbsp; ');
+                return '<div class="article-blog hover-img effectFade fadeUp no-div">' +
+                  '<a href="' + url + '" class="blog-image img-style">' +
+                    '<img loading="lazy" width="426" height="307" src="' + esc(img) + '" alt="' + esc(p.title || '') + '">' +
+                  '</a>' +
+                  '<div class="blog-content">' +
+                    '<div class="infor">' +
+                      '<p class="infor_sub text-white-64">' + meta + '</p>' +
+                      '<h6><a href="' + url + '" class="link infor_name">' + esc(p.title || '') + '</a></h6>' +
+                    '</div>' +
+                    '<a href="' + url + '" class="btn-action"><i class="icon icon-arrow-top-right"></i></a>' +
+                  '</div>' +
+                '</div>';
+              }).join('');
+              document.getElementById('postRelatedGrid').innerHTML = gridHtml;
+            })
+            .catch(function(){});
+        })
+        .catch(function() {
+          document.getElementById('postLoading').style.display = 'none';
+          document.getElementById('postError').style.display   = 'block';
+        });
+
+      // ── Newsletter form ──────────────────────────────────────────
+      document.getElementById('newsletterForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var email   = document.getElementById('newsletterEmail').value.trim();
+        var msgEl   = document.getElementById('newsletterMsg');
+        var btn     = this.querySelector('button[type=submit]');
+        btn.disabled = true;
+        fetch('/api/contacts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, name: 'Newsletter Subscriber', message: 'Blog newsletter signup', source: 'blog-newsletter' })
+        })
+        .then(function(r){ return r.json(); })
+        .then(function() {
+          msgEl.style.display = 'block';
+          msgEl.style.color   = 'var(--primary)';
+          msgEl.textContent   = 'You\'re subscribed! We\'ll be in touch.';
+          document.getElementById('newsletterEmail').value = '';
+        })
+        .catch(function() {
+          msgEl.style.display = 'block';
+          msgEl.style.color   = 'rgba(255,80,80,0.9)';
+          msgEl.textContent   = 'Something went wrong. Please try again.';
+        })
+        .finally(function() { btn.disabled = false; });
+      });
+
+    })();
+    </script>
 </body>
 </html>

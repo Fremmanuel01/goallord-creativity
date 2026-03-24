@@ -66,6 +66,7 @@ app.use('/api/chat',          require('./routes/chat'));
 app.use('/api/conversations', require('./routes/conversations'));
 app.use('/api/agents',        require('./routes/agents'));
 app.use('/api/contacts',      require('./routes/contacts'));
+app.use('/api/blog',          require('./routes/blog'));
 
 // ─── SOCKET.IO ────────────────────────────────────────────────
 io.on('connection', socket => {
@@ -130,8 +131,9 @@ mongoose.connect(process.env.MONGODB_URI)
   });
 
 async function seedAll() {
-  const { seedAdmin }    = require('./routes/auth');
-  const { seedProducts } = require('./routes/products');
-  const { seedContent }  = require('./routes/content');
-  await Promise.all([seedAdmin(), seedProducts(), seedContent()]);
+  const { seedAdmin }      = require('./routes/auth');
+  const { seedProducts }   = require('./routes/products');
+  const { seedContent }    = require('./routes/content');
+  const { seedBlogPosts }  = require('./routes/blog');
+  await Promise.all([seedAdmin(), seedProducts(), seedContent(), seedBlogPosts()]);
 }
