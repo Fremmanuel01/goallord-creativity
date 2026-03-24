@@ -1950,7 +1950,37 @@ canvas.cursor-trail {
     margin-top: 3px;
 }
 
-/* ── 31. CUSTOM CURSOR ─────────────────────────────────────── */
+/* ── 31. TEAM SECTION ──────────────────────────────────────── */
+.section-team { background: var(--bg-2, #0f1115); }
+
+.gl-team-grid {
+    display: grid;
+    gap: 28px;
+    margin-bottom: 28px;
+}
+.gl-team-grid--top  { grid-template-columns: repeat(3, 1fr); }
+.gl-team-grid--bottom {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: calc((100% - 28px) * 2 / 3 + 28px); /* align width to 2 of 3 columns */
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 0;
+}
+
+@media (max-width: 991px) {
+    .gl-team-grid--top    { grid-template-columns: repeat(2, 1fr); }
+    .gl-team-grid--bottom {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 100%;
+    }
+}
+@media (max-width: 575px) {
+    .gl-team-grid--top,
+    .gl-team-grid--bottom { grid-template-columns: 1fr; max-width: 100%; }
+    .gl-founder-wrap { max-width: 100%; }
+}
+
+/* ── 32. CUSTOM CURSOR ─────────────────────────────────────── */
 @media (pointer: fine) {
     * { cursor: none !important; }
 
