@@ -323,10 +323,7 @@
                         animateBars();
                     } else {
                         var preloaderTL = gsap.timeline({
-                            onComplete: () => {
-                                $(".preloader").remove();
-                                runAnimations();
-                            },
+                            onComplete: forceRemovePreloader,
                         });
 
                         preloaderTL.to(".preloader", {
@@ -338,7 +335,20 @@
                 });
             }
 
+            // Safety fallback: if window.load never fires (blocked resources in Firefox
+            // private browsing, tracking protection, etc.) force-remove after 5s
+            var preloaderDone = false;
+            function forceRemovePreloader() {
+                if (preloaderDone) return;
+                preloaderDone = true;
+                $(".preloader").remove();
+                runAnimations();
+            }
+            var safetyTimer = setTimeout(forceRemovePreloader, 5000);
+
             $(window).on("load", function () {
+                clearTimeout(safetyTimer);
+                if (preloaderDone) return;
                 animateBars();
             });
         } else {
