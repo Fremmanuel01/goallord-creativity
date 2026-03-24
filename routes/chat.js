@@ -28,7 +28,7 @@ function callClaude(messages) {
   return new Promise((resolve, reject) => {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     const body = JSON.stringify({
-      model:      'claude-sonnet-4-5',
+      model:      'claude-sonnet-4-6',
       max_tokens: 400,
       system:     SYSTEM_PROMPT,
       messages:   messages.map(m => ({
