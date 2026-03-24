@@ -503,9 +503,12 @@
           document.getElementById('postMeta').innerHTML = metaStr;
           document.getElementById('postTitle').textContent = post.title || '';
 
-          var authorName = post.author || 'The Goallord Team';
-          document.getElementById('postAuthorName').textContent = authorName;
+          var authorName   = post.author || 'The Goallord Team';
+          var authorAvatar = post.authorAvatar || 'assets/images/avatar/avt-1.jpg';
+          document.getElementById('postAuthorName').textContent    = authorName;
           document.getElementById('postAuthorNameBox').textContent = authorName;
+          document.getElementById('postAuthorImg').src    = authorAvatar;
+          document.getElementById('postAuthorImgBox').src = authorAvatar;
 
           // ── Cover Image ────────────────────────────────────────────
           var ci = document.getElementById('postCoverImg');

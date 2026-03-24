@@ -2380,9 +2380,21 @@
         <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Category</label>
         <input class="form-input" id="bmCategory" placeholder="e.g. Web Design" style="margin-top:6px">
       </div>
-      <div>
-        <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Author</label>
-        <input class="form-input" id="bmAuthor" placeholder="The Goallord Team" style="margin-top:6px">
+      <div style="display:flex;gap:12px;align-items:flex-end">
+        <div style="flex:1">
+          <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Author</label>
+          <input class="form-input" id="bmAuthor" placeholder="The Goallord Team" style="margin-top:6px">
+        </div>
+        <div style="flex-shrink:0">
+          <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Avatar</label>
+          <input type="hidden" id="bmAuthorAvatar">
+          <input type="file" id="bmAvatarFile" accept="image/*" style="display:none" onchange="blogUploadAvatar(this)">
+          <div id="bmAvatarArea" onclick="document.getElementById('bmAvatarFile').click()" title="Click to upload author avatar" style="width:48px;height:48px;border-radius:50%;border:2px dashed var(--border);cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--bg);position:relative;transition:border-color .2s" onmouseenter="this.style.borderColor='var(--orange)'" onmouseleave="this.style.borderColor='var(--border)'">
+            <svg id="bmAvatarIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <img id="bmAvatarPreviewImg" src="" alt="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+          </div>
+          <p id="bmAvatarStatus" style="display:none;font-size:10px;margin-top:3px;text-align:center"></p>
+        </div>
       </div>
       <div>
         <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Read Time</label>
@@ -4104,14 +4116,17 @@ async function openBlogEditor(slug) {
   document.getElementById('blogModalTitle').textContent = slug ? 'Edit Post' : 'New Post';
   buildBlogToolbar();
   // reset form
-  ['bmTitle','bmSlug','bmCategory','bmAuthor','bmReadTime','bmTags','bmCoverImage','bmExcerpt','bmContent'].forEach(id => {
+  ['bmTitle','bmSlug','bmCategory','bmAuthor','bmReadTime','bmTags','bmCoverImage','bmAuthorAvatar','bmExcerpt','bmContent'].forEach(id => {
     document.getElementById(id).value = '';
   });
   document.getElementById('bmPublished').checked = true;
   document.getElementById('bmFeatured').checked  = false;
   document.getElementById('bmCoverFile').value   = '';
-  document.getElementById('bmCoverStatus').style.display = 'none';
+  document.getElementById('bmAvatarFile').value  = '';
+  document.getElementById('bmCoverStatus').style.display  = 'none';
+  document.getElementById('bmAvatarStatus').style.display = 'none';
   blogSetCoverPreview('');
+  blogSetAvatarPreview('');
 
   if (slug) {
     const post = await apiFetch('/api/blog/' + encodeURIComponent(slug));
@@ -4122,8 +4137,10 @@ async function openBlogEditor(slug) {
       document.getElementById('bmAuthor').value     = post.author   || '';
       document.getElementById('bmReadTime').value   = post.readTime || '';
       document.getElementById('bmTags').value       = (post.tags||[]).join(', ');
-      document.getElementById('bmCoverImage').value = post.coverImage || '';
+      document.getElementById('bmCoverImage').value    = post.coverImage    || '';
+      document.getElementById('bmAuthorAvatar').value  = post.authorAvatar  || '';
       blogSetCoverPreview(post.coverImage || '');
+      blogSetAvatarPreview(post.authorAvatar || '');
       document.getElementById('bmExcerpt').value    = post.excerpt || '';
       document.getElementById('bmContent').value    = post.content || '';
       document.getElementById('bmPublished').checked = !!post.published;
@@ -4153,7 +4170,8 @@ async function saveBlogPost() {
     author:     document.getElementById('bmAuthor').value.trim()   || 'The Goallord Team',
     readTime:   document.getElementById('bmReadTime').value.trim() || '5 min read',
     tags:       document.getElementById('bmTags').value.split(',').map(t=>t.trim()).filter(Boolean),
-    coverImage: document.getElementById('bmCoverImage').value.trim(),
+    coverImage:   document.getElementById('bmCoverImage').value.trim(),
+    authorAvatar: document.getElementById('bmAuthorAvatar').value.trim(),
     excerpt:    document.getElementById('bmExcerpt').value.trim(),
     content:    document.getElementById('bmContent').value,
     published:  document.getElementById('bmPublished').checked,
@@ -4282,6 +4300,59 @@ async function blogUploadCover(input) {
   } catch {
     statusEl.style.color = '#ef4444';
     statusEl.textContent = 'Upload failed — check connection';
+  }
+}
+
+async function blogUploadAvatar(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const statusEl   = document.getElementById('bmAvatarStatus');
+  const icon       = document.getElementById('bmAvatarIcon');
+  const previewImg = document.getElementById('bmAvatarPreviewImg');
+
+  statusEl.style.display = 'block';
+  statusEl.style.color   = 'var(--muted)';
+  statusEl.textContent   = '…';
+
+  const formData = new FormData();
+  formData.append('image', file);
+  const token = localStorage.getItem('gl_token');
+
+  try {
+    const res  = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData
+    });
+    const data = await res.json();
+    if (data.url) {
+      document.getElementById('bmAuthorAvatar').value = data.url;
+      blogSetAvatarPreview(data.url);
+      statusEl.style.color = '#22c55e';
+      statusEl.textContent = '✓';
+      setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+    } else {
+      statusEl.style.color = '#ef4444';
+      statusEl.textContent = '✕';
+    }
+  } catch {
+    statusEl.style.color = '#ef4444';
+    statusEl.textContent = '✕';
+  }
+}
+
+function blogSetAvatarPreview(url) {
+  const icon       = document.getElementById('bmAvatarIcon');
+  const previewImg = document.getElementById('bmAvatarPreviewImg');
+  if (url) {
+    previewImg.src            = url;
+    previewImg.style.display  = 'block';
+    icon.style.display        = 'none';
+  } else {
+    previewImg.src = '';
+    previewImg.style.display = 'none';
+    icon.style.display       = 'block';
   }
 }
 

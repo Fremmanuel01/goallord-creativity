@@ -9,6 +9,7 @@ const blogPostSchema = new mongoose.Schema({
   category:    { type: String, default: 'General' },
   tags:        { type: [String], default: [] },
   author:      { type: String, default: 'The Goallord Team' },
+  authorAvatar: { type: String, default: '' },
   readTime:    { type: String, default: '5 min read' },
   featured:    { type: Boolean, default: false },
   published:   { type: Boolean, default: true },
