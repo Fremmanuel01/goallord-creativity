@@ -1984,13 +1984,10 @@ canvas.cursor-trail {
     border-color: rgba(214,106,31,0.3);
 }
 
-/* CEO featured card — taller */
+/* CEO featured card — subtle accent only */
 .gl-team-card--ceo {
-    grid-row: span 1;
     border: 1px solid rgba(214,106,31,0.15);
 }
-.gl-team-card--ceo .gl-team-photo { aspect-ratio: 3 / 4; }
-.gl-team-card--ceo .gl-team-name { font-size: 18px; }
 .gl-team-card--ceo .gl-team-role svg { color: var(--gl-orange, #d66a1f); }
 
 /* Photo wrapper + gradient overlay */
@@ -2087,7 +2084,6 @@ canvas.cursor-trail {
         grid-template-columns: repeat(2, 1fr);
         max-width: 100%;
     }
-    .gl-team-card--ceo .gl-team-photo { aspect-ratio: 4 / 5; }
 }
 @media (max-width: 575px) {
     .gl-team-grid--top,
