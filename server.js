@@ -19,6 +19,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// ─── AFFILIATE REDIRECT (must be before static) ───────────────
+app.use('/go', require('./routes/go'));
+
 // ─── DYNAMIC SITEMAP (must be before static so it overrides sitemap.xml) ─────
 app.get('/sitemap.xml', async (req, res) => {
   try {
@@ -102,6 +105,7 @@ app.use('/api/conversations', require('./routes/conversations'));
 app.use('/api/agents',        require('./routes/agents'));
 app.use('/api/contacts',      require('./routes/contacts'));
 app.use('/api/blog',          require('./routes/blog'));
+app.use('/api/affiliate',     require('./routes/affiliate'));
 
 // ─── SOCKET.IO ────────────────────────────────────────────────
 io.on('connection', socket => {

@@ -66,11 +66,59 @@
         @media(max-width:576px){ .gl-post-nav { grid-template-columns:1fr; } }
         .gl-post-nav-card { background:var(--gl-card); border:1px solid var(--gl-border); border-radius:8px; padding:20px 24px; text-decoration:none; display:block; transition:border-color .2s; }
         .gl-post-nav-card:hover { border-color:var(--primary); }
+
+        /* ── Affiliate disclosure banner ─────────────────────────── */
+        .gl-affiliate-disclosure { background:rgba(214,106,31,0.08); border:1px solid rgba(214,106,31,0.3); border-radius:6px; padding:10px 16px; font-size:12px; color:rgba(255,255,255,0.6); display:flex; align-items:center; gap:10px; margin-bottom:24px; }
+        .gl-affiliate-disclosure svg { flex-shrink:0; opacity:.7; }
+
+        /* ── Product card ────────────────────────────────────────── */
+        .gl-product-card { background:var(--gl-card,#1a1d24); border:1px solid rgba(255,255,255,0.08); border-radius:12px; overflow:hidden; display:flex; gap:0; margin:2rem 0; }
+        .gl-product-card__img { width:160px; height:160px; object-fit:cover; flex-shrink:0; }
+        .gl-product-card__body { padding:20px 24px; flex:1; }
+        .gl-product-card__title { font-size:18px; font-weight:700; margin-bottom:8px; }
+        .gl-product-card__desc { font-size:14px; color:rgba(255,255,255,0.65); margin-bottom:12px; }
+        .gl-product-card__rating { font-size:13px; color:#F59E0B; margin-bottom:14px; }
+        .gl-product-card__rating span { color:rgba(255,255,255,0.5); margin-left:6px; }
+        .gl-product-card__btn { display:inline-block; background:var(--primary,#D66A1F); color:#fff; padding:10px 22px; border-radius:6px; font-size:13px; font-weight:600; text-decoration:none; transition:opacity .2s; }
+        .gl-product-card__btn:hover { opacity:.85; color:#fff; }
+        @media(max-width:576px){ .gl-product-card { flex-direction:column; } .gl-product-card__img { width:100%; height:200px; } }
+
+        /* ── CTA box ─────────────────────────────────────────────── */
+        .gl-cta-box { background:linear-gradient(135deg,rgba(214,106,31,0.15),rgba(214,106,31,0.05)); border:1px solid rgba(214,106,31,0.4); border-radius:12px; padding:28px 32px; display:flex; align-items:center; justify-content:space-between; gap:20px; margin:2rem 0; flex-wrap:wrap; }
+        .gl-cta-box__text { font-size:16px; font-weight:600; flex:1; }
+        .gl-cta-box__btn { background:var(--primary,#D66A1F); color:#fff; padding:12px 26px; border-radius:6px; font-size:14px; font-weight:700; text-decoration:none; white-space:nowrap; transition:opacity .2s; }
+        .gl-cta-box__btn:hover { opacity:.85; color:#fff; }
+
+        /* ── Comparison table ────────────────────────────────────── */
+        .gl-comparison { margin:2rem 0; border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); }
+        .gl-comparison__table { width:100%; border-collapse:collapse; font-size:14px; }
+        .gl-comparison__table th { background:rgba(214,106,31,0.12); color:#D66A1F; font-weight:700; padding:12px 16px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.08); }
+        .gl-comparison__table td { padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.06); color:rgba(255,255,255,0.8); }
+        .gl-comparison__table tr:last-child td { border-bottom:none; }
+        .gl-comparison__table tr:nth-child(even) td { background:rgba(255,255,255,0.02); }
+
+        /* ── Sticky CTA bar ──────────────────────────────────────── */
+        #glStickyCta { position:fixed; bottom:0; left:0; right:0; background:rgba(15,17,21,0.96); backdrop-filter:blur(10px); border-top:1px solid rgba(214,106,31,0.4); padding:14px 20px; display:none; align-items:center; justify-content:space-between; gap:16px; z-index:9998; flex-wrap:wrap; animation:slideUpBar .3s ease; }
+        #glStickyCta.visible { display:flex; }
+        @keyframes slideUpBar { from { transform:translateY(100%); opacity:0; } to { transform:translateY(0); opacity:1; } }
+        #glStickyCta__text { font-size:14px; font-weight:500; color:rgba(255,255,255,0.85); flex:1; min-width:0; }
+        #glStickyCta__btn { background:var(--primary,#D66A1F); color:#fff; padding:10px 22px; border-radius:6px; font-size:13px; font-weight:700; text-decoration:none; white-space:nowrap; transition:opacity .2s; }
+        #glStickyCta__btn:hover { opacity:.85; color:#fff; }
+        #glStickyCta__close { background:none; border:none; color:rgba(255,255,255,0.4); cursor:pointer; font-size:18px; padding:4px 8px; line-height:1; transition:color .2s; flex-shrink:0; }
+        #glStickyCta__close:hover { color:#fff; }
     </style>
 </head>
 <body class="counter-scroll">
     <!-- Reading progress bar -->
     <div id="readProgress"></div>
+
+    <!-- Sticky CTA bar (shown when post has affiliateCta) -->
+    <div id="glStickyCta">
+      <span id="glStickyCta__text"></span>
+      <a id="glStickyCta__btn" href="#" target="_blank" rel="noopener sponsored">Get It Now</a>
+      <button id="glStickyCta__close" onclick="document.getElementById('glStickyCta').style.display='none'" title="Dismiss">✕</button>
+    </div>
+
     <canvas class="cursor-trail d-none d-xl-block" id="trail"></canvas>
     <button id="goTop"><span class="border-progress"></span><span class="ic-wrap"><span class="icon icon-arrow-caret-right"></span></span></button>
 
@@ -173,6 +221,12 @@
                 <!-- Article + Sidebar -->
                 <div class="row">
                     <div class="col-lg-8 effectFade fadeUp">
+
+                        <!-- Affiliate disclosure (shown when post.hasAffiliate) -->
+                        <div id="postAffiliateDisclosure" style="display:none" class="gl-affiliate-disclosure">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                          <span>This article contains affiliate links. We may earn a commission at no extra cost to you if you click through and make a purchase.</span>
+                        </div>
 
                         <!-- Article body -->
                         <div class="gl-article-body" id="postBody"></div>
@@ -572,7 +626,9 @@
           }
 
           // ── Reading progress bar ────────────────────────────────────
-          var progressBar = document.getElementById('readProgress');
+          var progressBar  = document.getElementById('readProgress');
+          var stickyCta    = document.getElementById('glStickyCta');
+          var ctaShown     = false;
           window.addEventListener('scroll', function() {
             var body    = document.body;
             var html    = document.documentElement;
@@ -580,7 +636,24 @@
             var current = window.scrollY || window.pageYOffset;
             var pct     = total > 0 ? Math.min(100, (current / total) * 100) : 0;
             progressBar.style.width = pct + '%';
+            // Show sticky CTA after 40% scroll
+            if (!ctaShown && pct >= 40 && stickyCta.dataset.active === '1') {
+              stickyCta.classList.add('visible');
+              ctaShown = true;
+            }
           }, { passive: true });
+
+          // ── Affiliate disclosure + sticky CTA ──────────────────────
+          if (post.hasAffiliate) {
+            document.getElementById('postAffiliateDisclosure').style.display = 'flex';
+          }
+          var cta = post.affiliateCta;
+          if (cta && cta.url && cta.text) {
+            document.getElementById('glStickyCta__text').textContent = cta.text;
+            document.getElementById('glStickyCta__btn').textContent  = cta.label || 'Get It Now';
+            document.getElementById('glStickyCta__btn').href         = cta.url;
+            stickyCta.dataset.active = '1';
+          }
 
           // ── Related posts ──────────────────────────────────────────
           fetch('/api/blog?limit=4&exclude=' + encodeURIComponent(post.slug))
@@ -656,6 +729,35 @@
         })
         .finally(function() { btn.disabled = false; });
       });
+
+    // ── Analytics injection (GA4 + Clarity) ────────────────────────
+    (function() {
+      fetch('/api/content/analytics')
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(d) {
+          if (!d) return;
+          // Google Analytics 4
+          if (d.ga4Id && d.ga4Id.startsWith('G-')) {
+            var s1 = document.createElement('script');
+            s1.async = true;
+            s1.src = 'https://www.googletagmanager.com/gtag/js?id=' + d.ga4Id;
+            document.head.appendChild(s1);
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){ window.dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', d.ga4Id);
+          }
+          // Microsoft Clarity
+          if (d.clarityId) {
+            (function(c,l,a,r,i,t,y){
+              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+              t=l.createElement(r);t.async=1;t.src='https://www.clarity.ms/tag/'+i;
+              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window,document,'clarity','script',d.clarityId);
+          }
+        })
+        .catch(function(){});
+    })();
 
     })();
     </script>

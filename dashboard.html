@@ -1442,6 +1442,14 @@
       <span>Website</span>
     </div>
 
+    <div class="nav-item" data-page="affiliate" title="Affiliate Links">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+      </svg>
+      <span>Affiliate</span>
+    </div>
+
     <div class="nav-label">System</div>
 
     <div class="nav-item" data-page="settings" title="Settings">
@@ -1919,6 +1927,30 @@
           </div>
         </div>
 
+        <!-- Analytics Settings -->
+        <div class="settings-card">
+          <h3>Analytics</h3>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <strong>GA4 Measurement ID</strong>
+              <small>Google Analytics 4 (e.g. G-XXXXXXXXXX)</small>
+            </div>
+            <input class="settings-number" type="text" id="settingsGa4Id" placeholder="G-XXXXXXXXXX" style="width:160px;text-align:left;padding:6px 10px">
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <strong>Microsoft Clarity ID</strong>
+              <small>Clarity project ID (e.g. abc123xyz)</small>
+            </div>
+            <input class="settings-number" type="text" id="settingsClarityId" placeholder="abc123xyz" style="width:160px;text-align:left;padding:6px 10px">
+          </div>
+          <div class="settings-row" style="border-top:none;padding-top:0">
+            <div></div>
+            <button class="btn btn-primary" style="font-size:12px;padding:6px 16px" onclick="saveAnalyticsSettings()">Save Analytics</button>
+          </div>
+          <p id="analyticsSaveMsg" style="font-size:12px;color:var(--success);display:none;margin-top:4px;padding:0 20px 12px">Saved!</p>
+        </div>
+
         <!-- Store Settings -->
         <div class="settings-card">
           <h3>Store Settings</h3>
@@ -2086,6 +2118,50 @@
           <button class="btn btn-primary" onclick="addTestimonial()">+ Add</button>
         </div>
         <div id="testimonialsList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         PAGE: AFFILIATE LINKS
+    ══════════════════════════════════════════════════ -->
+    <div class="page" id="page-affiliate">
+      <div class="section-header">
+        <h2>Affiliate Links</h2>
+        <button class="btn btn-primary" onclick="openAffiliateEditor(null)">+ New Link</button>
+      </div>
+
+      <!-- Stats row -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:24px" id="affiliateStatsRow">
+        <div class="card" style="padding:20px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Total Links</div>
+          <div style="font-size:28px;font-weight:700" id="affStatLinks">—</div>
+        </div>
+        <div class="card" style="padding:20px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Total Clicks</div>
+          <div style="font-size:28px;font-weight:700;color:var(--orange)" id="affStatClicks">—</div>
+        </div>
+        <div class="card" style="padding:20px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Top Performer</div>
+          <div style="font-size:14px;font-weight:600" id="affStatTop">—</div>
+          <div style="font-size:11px;color:var(--muted)" id="affStatTopClicks"></div>
+        </div>
+      </div>
+
+      <!-- Links table -->
+      <div class="table-wrapper">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Name</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Slug (/go/…)</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Category</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Clicks</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Status</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Actions</th>
+          </tr></thead>
+          <tbody id="affiliateTableBody">
+            <tr><td colspan="6" style="padding:32px;text-align:center;color:var(--muted)">Loading…</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -2423,13 +2499,34 @@
         <textarea class="form-input" id="bmExcerpt" rows="2" placeholder="Short summary shown in blog listings…" style="margin-top:6px;resize:vertical"></textarea>
       </div>
       <!-- Flags -->
-      <div style="display:flex;gap:24px;align-items:center;grid-column:1/-1">
+      <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;grid-column:1/-1">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
           <input type="checkbox" id="bmPublished" checked style="accent-color:var(--orange)"> Published
         </label>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
           <input type="checkbox" id="bmFeatured" style="accent-color:var(--orange)"> Featured post
         </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="bmHasAffiliate" style="accent-color:var(--orange)" onchange="toggleAffiliateCta(this.checked)"> Contains affiliate links
+        </label>
+      </div>
+      <!-- Affiliate CTA -->
+      <div id="bmAffiliateCta" style="grid-column:1/-1;display:none;background:rgba(214,106,31,0.06);border:1px solid rgba(214,106,31,0.25);border-radius:8px;padding:16px">
+        <div style="font-size:11px;color:var(--orange);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Sticky CTA Bar (appears after 40% scroll)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div style="grid-column:1/-1">
+            <label style="font-size:11px;color:var(--muted)">CTA Text</label>
+            <input class="form-input" id="bmCtaText" placeholder="Upgrade to Elementor Pro today" style="margin-top:4px">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--muted)">Button Label</label>
+            <input class="form-input" id="bmCtaLabel" placeholder="Get 50% Off" style="margin-top:4px">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--muted)">Button URL</label>
+            <input class="form-input" id="bmCtaUrl" placeholder="/go/elementor-pro" style="margin-top:4px">
+          </div>
+        </div>
       </div>
       <!-- Content editor -->
       <div style="grid-column:1/-1">
@@ -2442,6 +2539,47 @@
     <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px">
       <button class="btn btn-secondary" onclick="closeBlogModal()">Cancel</button>
       <button class="btn btn-primary" onclick="saveBlogPost()" id="bmSaveBtn">Save Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- Affiliate Editor Modal -->
+<div id="affiliateModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.5);animation:slideIn .2s ease">
+    <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between">
+      <h3 id="affModalTitle" style="font-size:16px">New Affiliate Link</h3>
+      <button style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1" onclick="closeAffiliateModal()">✕</button>
+    </div>
+    <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="grid-column:1/-1">
+        <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Link Name *</label>
+        <input class="form-input" id="amName" placeholder="e.g. Elementor Pro" style="margin-top:6px">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Slug * (used in /go/…)</label>
+        <input class="form-input" id="amSlug" placeholder="elementor-pro" style="margin-top:6px" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Category</label>
+        <input class="form-input" id="amCategory" placeholder="e.g. Page Builder" style="margin-top:6px">
+      </div>
+      <div style="grid-column:1/-1">
+        <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Destination URL *</label>
+        <input class="form-input" id="amDestination" placeholder="https://elementor.com/pro/?ref=yourcode" style="margin-top:6px">
+      </div>
+      <div style="grid-column:1/-1">
+        <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Description (optional)</label>
+        <textarea class="form-input" id="amDescription" rows="2" placeholder="Short note about this link…" style="margin-top:6px;resize:vertical"></textarea>
+      </div>
+      <div style="grid-column:1/-1;display:flex;gap:20px;align-items:center">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="amActive" checked style="accent-color:var(--orange)"> Active (redirect works)
+        </label>
+      </div>
+    </div>
+    <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px">
+      <button class="btn btn-secondary" onclick="closeAffiliateModal()">Cancel</button>
+      <button class="btn btn-primary" id="amSaveBtn" onclick="saveAffiliateLink()">Save Link</button>
     </div>
   </div>
 </div>
@@ -2830,6 +2968,9 @@ const pageTitles = {
   lecturers:  'Lecturers',
   attendance: 'Attendance',
   payments:   'Payments',
+  affiliate:  'Affiliate Links',
+  website:    'Website Content',
+  contacts:   'Contacts',
 };
 
 function navigate(page) {
@@ -2854,6 +2995,8 @@ function navigate(page) {
   if (page === 'lecturers')  loadLecturers();
   if (page === 'attendance') loadAttendancePage();
   if (page === 'payments')   loadPaymentsPage();
+  if (page === 'affiliate')  loadAffiliateLinks();
+  if (page === 'settings')   loadAnalyticsSettings();
 
   if (isMobile()) closeMobileSidebar();
 
@@ -4116,11 +4259,13 @@ async function openBlogEditor(slug) {
   document.getElementById('blogModalTitle').textContent = slug ? 'Edit Post' : 'New Post';
   buildBlogToolbar();
   // reset form
-  ['bmTitle','bmSlug','bmCategory','bmAuthor','bmReadTime','bmTags','bmCoverImage','bmAuthorAvatar','bmExcerpt','bmContent'].forEach(id => {
+  ['bmTitle','bmSlug','bmCategory','bmAuthor','bmReadTime','bmTags','bmCoverImage','bmAuthorAvatar','bmExcerpt','bmContent','bmCtaText','bmCtaLabel','bmCtaUrl'].forEach(id => {
     document.getElementById(id).value = '';
   });
-  document.getElementById('bmPublished').checked = true;
-  document.getElementById('bmFeatured').checked  = false;
+  document.getElementById('bmPublished').checked    = true;
+  document.getElementById('bmFeatured').checked     = false;
+  document.getElementById('bmHasAffiliate').checked = false;
+  toggleAffiliateCta(false);
   document.getElementById('bmCoverFile').value   = '';
   document.getElementById('bmAvatarFile').value  = '';
   document.getElementById('bmCoverStatus').style.display  = 'none';
@@ -4143,8 +4288,13 @@ async function openBlogEditor(slug) {
       blogSetAvatarPreview(post.authorAvatar || '');
       document.getElementById('bmExcerpt').value    = post.excerpt || '';
       document.getElementById('bmContent').value    = post.content || '';
-      document.getElementById('bmPublished').checked = !!post.published;
-      document.getElementById('bmFeatured').checked  = !!post.featured;
+      document.getElementById('bmPublished').checked    = !!post.published;
+      document.getElementById('bmFeatured').checked     = !!post.featured;
+      document.getElementById('bmHasAffiliate').checked = !!post.hasAffiliate;
+      document.getElementById('bmCtaText').value  = post.affiliateCta?.text  || '';
+      document.getElementById('bmCtaLabel').value = post.affiliateCta?.label || '';
+      document.getElementById('bmCtaUrl').value   = post.affiliateCta?.url   || '';
+      toggleAffiliateCta(!!post.hasAffiliate);
     }
   }
   const modal = document.getElementById('blogPostModal');
@@ -4174,8 +4324,14 @@ async function saveBlogPost() {
     authorAvatar: document.getElementById('bmAuthorAvatar').value.trim(),
     excerpt:    document.getElementById('bmExcerpt').value.trim(),
     content:    document.getElementById('bmContent').value,
-    published:  document.getElementById('bmPublished').checked,
-    featured:   document.getElementById('bmFeatured').checked,
+    published:    document.getElementById('bmPublished').checked,
+    featured:     document.getElementById('bmFeatured').checked,
+    hasAffiliate: document.getElementById('bmHasAffiliate').checked,
+    affiliateCta: {
+      text:  document.getElementById('bmCtaText').value.trim(),
+      label: document.getElementById('bmCtaLabel').value.trim(),
+      url:   document.getElementById('bmCtaUrl').value.trim(),
+    },
   };
 
   const btn = document.getElementById('bmSaveBtn');
@@ -4235,6 +4391,46 @@ const _BLOG_FMT = {
   link:    { open: '<a href="" class="link text-primary">',     close: '</a>',       label: 'Link',   style: '' },
   hr:      { open: '<div class="br-line mb-5"></div>\n',        close: '',           label: '— HR',   style: '' },
 };
+
+// ── Affiliate block templates ─────────────────────────────────────────────
+const _BLOG_BLOCKS = {
+  productCard: `<div class="gl-product-card">
+  <img src="PRODUCT_IMAGE_URL" alt="Product Name" class="gl-product-card__img">
+  <div class="gl-product-card__body">
+    <h4 class="gl-product-card__title">Product Name</h4>
+    <p class="gl-product-card__desc">Short description of what this product does and why readers should care.</p>
+    <div class="gl-product-card__rating">★★★★★ <span>4.9/5</span></div>
+    <a href="/go/YOUR-SLUG" class="gl-product-card__btn" target="_blank" rel="noopener sponsored">Get It Now →</a>
+  </div>
+</div>\n`,
+
+  ctaBox: `<div class="gl-cta-box">
+  <p class="gl-cta-box__text">Ready to take your skills to the next level? This tool is a game changer.</p>
+  <a href="/go/YOUR-SLUG" class="gl-cta-box__btn" target="_blank" rel="noopener sponsored">Try It Free →</a>
+</div>\n`,
+
+  comparison: `<div class="gl-comparison">
+  <table class="gl-comparison__table">
+    <thead><tr><th>Feature</th><th>Tool A</th><th>Tool B</th></tr></thead>
+    <tbody>
+      <tr><td>Price</td><td>$49/mo</td><td>$99/mo</td></tr>
+      <tr><td>Free Trial</td><td>✓</td><td>✕</td></tr>
+      <tr><td>Templates</td><td>300+</td><td>150+</td></tr>
+    </tbody>
+  </table>
+</div>\n`,
+};
+
+function blogInsertBlock(key) {
+  const tpl = _BLOG_BLOCKS[key];
+  if (!tpl) return;
+  const ta = document.getElementById('bmContent');
+  const pos = ta.selectionStart;
+  ta.value = ta.value.substring(0, pos) + tpl + ta.value.substring(pos);
+  ta.selectionStart = ta.selectionEnd = pos + tpl.length;
+  ta.focus();
+}
+
 // Image button is handled separately (async upload)
 
 function buildBlogToolbar() {
@@ -4255,7 +4451,16 @@ function buildBlogToolbar() {
     <span id="blogImgUploadStatus" style="font-size:11px;color:var(--muted);margin-left:6px;display:none">Uploading…</span>
   </span>`;
 
-  wrap.innerHTML = fmtBtns + imgBtn;
+  // Affiliate block buttons
+  const blockBtns = [
+    { key: 'productCard', label: '🛒 Product Card' },
+    { key: 'ctaBox',      label: '📣 CTA Box' },
+    { key: 'comparison',  label: '⚖️ Compare' },
+  ].map(b =>
+    `<button type="button" onclick="blogInsertBlock('${b.key}')" style="background:rgba(214,106,31,0.1);border:1px solid rgba(214,106,31,0.35);color:var(--orange);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">${b.label}</button>`
+  ).join('');
+
+  wrap.innerHTML = fmtBtns + imgBtn + '<span style="display:inline-block;width:1px;height:22px;background:var(--border);margin:0 4px;vertical-align:middle"></span>' + blockBtns;
 }
 
 function blogFmtNamed(key) {
@@ -4422,6 +4627,174 @@ function blogSetCoverPreview(url) {
     previewImg.src = '';
     previewImg.style.display  = 'none';
     placeholder.style.display = 'flex';
+  }
+}
+
+// ── Blog affiliate CTA toggle ──────────────────────────────────
+function toggleAffiliateCta(show) {
+  document.getElementById('bmAffiliateCta').style.display = show ? 'block' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  AFFILIATE LINKS
+// ═══════════════════════════════════════════════════════════
+let _affiliateLinks       = [];
+let _editingAffiliateSlug = null;
+
+async function loadAffiliateLinks() {
+  const [links, stats] = await Promise.all([
+    apiFetch('/api/affiliate'),
+    apiFetch('/api/affiliate/stats'),
+  ]);
+  _affiliateLinks = links || [];
+  renderAffiliateTable();
+  if (stats) {
+    document.getElementById('affStatLinks').textContent  = stats.totalLinks  ?? '—';
+    document.getElementById('affStatClicks').textContent = stats.totalClicks ?? '—';
+    if (stats.top) {
+      document.getElementById('affStatTop').textContent       = stats.top.name  || '—';
+      document.getElementById('affStatTopClicks').textContent = stats.top.totalClicks + ' clicks';
+    } else {
+      document.getElementById('affStatTop').textContent       = '—';
+      document.getElementById('affStatTopClicks').textContent = '';
+    }
+  }
+}
+
+function renderAffiliateTable() {
+  const tbody = document.getElementById('affiliateTableBody');
+  if (!tbody) return;
+  if (!_affiliateLinks.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:32px;text-align:center;color:var(--muted)">No affiliate links yet. Click "+ New Link" to add one.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = _affiliateLinks.map(link => `
+    <tr>
+      <td style="padding:12px 14px;border-bottom:1px solid var(--border)">${escHtml(link.name)}<br><span style="font-size:11px;color:var(--muted)">${escHtml(link.category||'')}</span></td>
+      <td style="padding:12px 14px;border-bottom:1px solid var(--border)"><code style="font-size:12px;background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px">/go/${escHtml(link.slug)}</code></td>
+      <td style="padding:12px 14px;border-bottom:1px solid var(--border)">${escHtml(link.category||'—')}</td>
+      <td style="padding:12px 14px;border-bottom:1px solid var(--border);font-weight:600;color:var(--orange)">${link.totalClicks||0}</td>
+      <td style="padding:12px 14px;border-bottom:1px solid var(--border)">
+        <span style="font-size:11px;padding:2px 8px;border-radius:20px;${link.active ? 'background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.25)' : 'background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.25)'}">
+          ${link.active ? 'Active' : 'Inactive'}
+        </span>
+      </td>
+      <td style="padding:12px 14px;border-bottom:1px solid var(--border)">
+        <button class="btn" style="padding:4px 10px;font-size:11px;margin-right:4px" onclick="openAffiliateEditor('${(link.slug||'').replace(/'/g,"\\'")}')">Edit</button>
+        <button class="btn" style="padding:4px 10px;font-size:11px;background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.25)" onclick="deleteAffiliateLink('${(link.slug||'').replace(/'/g,"\\'")}')">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function openAffiliateEditor(slug) {
+  _editingAffiliateSlug = slug;
+  document.getElementById('affModalTitle').textContent = slug ? 'Edit Link' : 'New Affiliate Link';
+
+  // Reset form
+  ['amName','amSlug','amCategory','amDestination','amDescription'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('amActive').checked = true;
+
+  if (slug) {
+    const link = _affiliateLinks.find(l => l.slug === slug);
+    if (link) {
+      document.getElementById('amName').value        = link.name        || '';
+      document.getElementById('amSlug').value        = link.slug        || '';
+      document.getElementById('amCategory').value    = link.category    || '';
+      document.getElementById('amDestination').value = link.destination || '';
+      document.getElementById('amDescription').value = link.description || '';
+      document.getElementById('amActive').checked    = !!link.active;
+    }
+  }
+
+  document.getElementById('affiliateModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeAffiliateModal() {
+  document.getElementById('affiliateModal').style.display = 'none';
+  document.body.style.overflow = '';
+  _editingAffiliateSlug = null;
+}
+
+async function saveAffiliateLink() {
+  const name        = document.getElementById('amName').value.trim();
+  const slug        = document.getElementById('amSlug').value.trim();
+  const destination = document.getElementById('amDestination').value.trim();
+  if (!name || !slug || !destination) {
+    showToast('Name, slug, and destination URL are required', 'error');
+    return;
+  }
+
+  const body = {
+    name, slug, destination,
+    category:    document.getElementById('amCategory').value.trim()    || 'General',
+    description: document.getElementById('amDescription').value.trim() || '',
+    active:      document.getElementById('amActive').checked,
+  };
+
+  const btn = document.getElementById('amSaveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    let res;
+    if (_editingAffiliateSlug) {
+      res = await apiFetch('/api/affiliate/' + encodeURIComponent(_editingAffiliateSlug), {
+        method: 'PUT', body: JSON.stringify(body)
+      });
+    } else {
+      res = await apiFetch('/api/affiliate', {
+        method: 'POST', body: JSON.stringify(body)
+      });
+    }
+    if (res && !res.error) {
+      showToast(_editingAffiliateSlug ? 'Link updated!' : 'Link created!');
+      closeAffiliateModal();
+      await loadAffiliateLinks();
+    } else {
+      showToast((res && res.error) || 'Save failed', 'error');
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Link';
+  }
+}
+
+function deleteAffiliateLink(slug) {
+  glConfirm('Delete this affiliate link?', 'All click data for this link will also be deleted.', 'Delete', async () => {
+    const res = await apiFetch('/api/affiliate/' + encodeURIComponent(slug), { method: 'DELETE' });
+    if (res && !res.error) { showToast('Link deleted!'); await loadAffiliateLinks(); }
+    else showToast((res && res.error) || 'Delete failed', 'error');
+  });
+}
+
+// ─── Analytics settings ───────────────────────────────────
+async function loadAnalyticsSettings() {
+  try {
+    const d = await apiFetch('/api/content/analytics');
+    if (d) {
+      document.getElementById('settingsGa4Id').value     = d.ga4Id      || '';
+      document.getElementById('settingsClarityId').value = d.clarityId  || '';
+    }
+  } catch {}
+}
+
+async function saveAnalyticsSettings() {
+  const ga4Id     = document.getElementById('settingsGa4Id').value.trim();
+  const clarityId = document.getElementById('settingsClarityId').value.trim();
+  const res = await apiFetch('/api/content/analytics', {
+    method: 'PUT',
+    body: JSON.stringify({ ga4Id, clarityId }),
+  });
+  const msg = document.getElementById('analyticsSaveMsg');
+  if (res && !res.error) {
+    msg.style.display = 'block';
+    setTimeout(() => { msg.style.display = 'none'; }, 2500);
+  } else {
+    showToast((res && res.error) || 'Save failed', 'error');
   }
 }
 

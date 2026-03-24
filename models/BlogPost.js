@@ -11,9 +11,15 @@ const blogPostSchema = new mongoose.Schema({
   author:      { type: String, default: 'The Goallord Team' },
   authorAvatar: { type: String, default: '' },
   readTime:    { type: String, default: '5 min read' },
-  featured:    { type: Boolean, default: false },
-  published:   { type: Boolean, default: true },
-  publishedAt: { type: Date, default: Date.now },
+  featured:     { type: Boolean, default: false },
+  published:    { type: Boolean, default: true },
+  publishedAt:  { type: Date, default: Date.now },
+  hasAffiliate: { type: Boolean, default: false },
+  affiliateCta: {
+    text:  { type: String, default: '' },
+    url:   { type: String, default: '' },
+    label: { type: String, default: '' },
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model('BlogPost', blogPostSchema);
