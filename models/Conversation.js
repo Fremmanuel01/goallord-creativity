@@ -16,6 +16,8 @@ const ConversationSchema = new mongoose.Schema({
   agentName:      { type: String },
   unreadByAgent:  { type: Number, default: 0 },
   visitorPage:    { type: String, default: '/' },
+  visitorName:    { type: String, default: '' },
+  visitorEmail:   { type: String, default: '' },
   createdAt:      { type: Date, default: Date.now },
   updatedAt:      { type: Date, default: Date.now }
 });

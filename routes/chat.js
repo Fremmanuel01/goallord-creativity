@@ -69,7 +69,7 @@ function callClaude(messages) {
 
 // POST /api/chat  — visitor sends a message
 router.post('/', async (req, res) => {
-  const { messages, sessionId, visitorPage } = req.body;
+  const { messages, sessionId, visitorPage, visitorName, visitorEmail } = req.body;
   if (!messages || !Array.isArray(messages) || !sessionId) {
     return res.status(400).json({ error: 'Invalid payload' });
   }
@@ -80,7 +80,17 @@ router.post('/', async (req, res) => {
     // Upsert conversation
     let convo = await Conversation.findOne({ sessionId });
     if (!convo) {
-      convo = new Conversation({ sessionId, visitorPage: visitorPage || '/', messages: [] });
+      convo = new Conversation({
+        sessionId,
+        visitorPage:  visitorPage  || '/',
+        visitorName:  visitorName  || '',
+        visitorEmail: visitorEmail || '',
+        messages: []
+      });
+    } else {
+      // Fill in identity if not already captured
+      if (!convo.visitorName  && visitorName)  convo.visitorName  = visitorName;
+      if (!convo.visitorEmail && visitorEmail) convo.visitorEmail = visitorEmail;
     }
 
     // Save latest user message
@@ -107,6 +117,8 @@ router.post('/', async (req, res) => {
         await convo.save();
         if (io) io.to('agents').emit('visitor:message', {
           sessionId,
+          visitorName:  convo.visitorName  || '',
+          visitorEmail: convo.visitorEmail || '',
           message: { role: 'user', content: lastMsg.content, timestamp: new Date() }
         });
         return res.json({ reply: null, mode: 'human' });
@@ -122,6 +134,8 @@ router.post('/', async (req, res) => {
     if (io) {
       io.to('agents').emit('visitor:message', {
         sessionId,
+        visitorName:  convo.visitorName  || '',
+        visitorEmail: convo.visitorEmail || '',
         message: { role: 'user', content: lastMsg.content, timestamp: new Date() }
       });
       io.to('agents').emit('ai:reply', {
@@ -132,6 +146,8 @@ router.post('/', async (req, res) => {
       if (convo.messages.length <= 2) {
         io.to('agents').emit('new:conversation', {
           sessionId,
+          visitorName:  convo.visitorName  || '',
+          visitorEmail: convo.visitorEmail || '',
           preview: lastMsg.content,
           timestamp: new Date()
         });

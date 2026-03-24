@@ -2304,6 +2304,109 @@ canvas.cursor-trail {
     flex-shrink: 0;
 }
 
+/* ── Pre-chat identity form ────────────────────────────────── */
+.gl-chat-body {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+.gl-prechat {
+    position: absolute;
+    inset: 0;
+    background: #13151e;
+    z-index: 10;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 28px 22px 22px;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.gl-prechat.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+}
+.gl-prechat-wave {
+    font-size: 34px;
+    margin-bottom: 14px;
+    line-height: 1;
+}
+.gl-prechat h3 {
+    font-size: 17px;
+    font-weight: 800;
+    color: #f0f2f7;
+    margin-bottom: 5px;
+    letter-spacing: -0.3px;
+}
+.gl-prechat-sub {
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 22px;
+    line-height: 1.5;
+}
+.gl-prechat-field {
+    margin-bottom: 13px;
+}
+.gl-prechat-field label {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.gl-prechat-field input {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 14px;
+    color: #f0f2f7;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+}
+.gl-prechat-field input:focus {
+    border-color: rgba(214,106,31,0.6);
+    box-shadow: 0 0 0 3px rgba(214,106,31,0.1);
+}
+.gl-prechat-error {
+    font-size: 11.5px;
+    color: #ef4444;
+    margin: -6px 0 10px;
+    display: none;
+}
+.gl-prechat-btn {
+    width: 100%;
+    background: var(--gl-orange, #D66A1F);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 2px;
+    transition: background 0.2s, transform 0.1s;
+    font-family: inherit;
+    letter-spacing: 0.2px;
+}
+.gl-prechat-btn:hover  { background: #c05d18; }
+.gl-prechat-btn:active { transform: scale(0.98); }
+.gl-prechat-privacy {
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.25);
+    text-align: center;
+    margin-top: 13px;
+    margin-bottom: 0;
+}
+
 /* ── 33. SCROLL REVEAL ─────────────────────────────────────── */
 @media (prefers-reduced-motion: no-preference) {
     .gl-reason-item,

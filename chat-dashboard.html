@@ -87,7 +87,8 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .conv-item:hover { background: rgba(255,255,255,0.03); }
 .conv-item.active { background: var(--orange-l); border-left: 2px solid var(--orange); }
 .conv-item-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-.conv-session { font-size: 11px; font-weight: 700; color: var(--text); letter-spacing: 0.3px; }
+.conv-session { font-size: 12px; font-weight: 700; color: var(--text); letter-spacing: 0.1px; }
+.conv-email   { font-size: 10px; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
 .conv-time { font-size: 10px; color: var(--muted); }
 .conv-preview { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
 .conv-badges { display: flex; align-items: center; gap: 5px; margin-top: 6px; }
@@ -148,8 +149,13 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .msg-agent .msg-bubble     { background: var(--orange); color: #fff; border-bottom-right-radius: 4px; }
 .msg-meta { font-size: 10px; color: var(--muted); padding: 0 4px; margin-top: 3px; }
 .msg-label { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 2px 7px; border-radius: 20px; margin-bottom: 4px; }
-.msg-label-ai    { background: rgba(59,130,246,0.15); color: var(--blue); }
-.msg-label-agent { background: rgba(214,106,31,0.15); color: var(--orange); }
+.msg-label-ai      { background: rgba(59,130,246,0.15); color: var(--blue); }
+.msg-label-agent   { background: rgba(214,106,31,0.15); color: var(--orange); }
+.msg-label-visitor { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5); }
+/* Visitor info pill in chat header */
+.visitor-info-pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px 3px 6px; font-size: 11px; color: var(--text); margin-top: 2px; }
+.visitor-info-pill svg { opacity: 0.5; flex-shrink: 0; }
+.visitor-info-email { font-size: 10px; color: var(--muted); margin-left: 4px; }
 
 /* Mode banner */
 .mode-banner { padding: 8px 20px; font-size: 11px; font-weight: 600; text-align: center; letter-spacing: 0.3px; flex-shrink: 0; }
@@ -602,13 +608,15 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
         socket.emit('agent:join', { token });
 
         socket.on('new:conversation', function(data) {
-            // visitor:message fires simultaneously for the first message and handles toast/beep
             loadConversations();
         });
 
         socket.on('visitor:message', function(data) {
             var c = allConvos.find(c => c.sessionId === data.sessionId);
             if (c) {
+                // Capture identity if newly provided
+                if (data.visitorName  && !c.visitorName)  c.visitorName  = data.visitorName;
+                if (data.visitorEmail && !c.visitorEmail) c.visitorEmail = data.visitorEmail;
                 c.messages = c.messages || [];
                 c.messages.push(data.message);
                 c.unreadByAgent = (c.unreadByAgent || 0) + 1;
@@ -618,12 +626,14 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
                     appendMsg(data.message);
                     markRead(data.sessionId);
                 } else {
-                    showToast('New message', data.message.content, data.sessionId);
+                    var toastTitle = c.visitorName ? c.visitorName : 'New message';
+                    showToast(toastTitle, data.message.content, data.sessionId);
                     playBeep();
                 }
             } else {
                 // Brand-new conversation not yet in list — notify and reload
-                showToast('New visitor', data.message.content, data.sessionId);
+                var newTitle = data.visitorName ? data.visitorName : 'New visitor';
+                showToast(newTitle, data.message.content, data.sessionId);
                 playBeep();
                 loadConversations();
             }
@@ -726,8 +736,11 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
                         : c.mode === 'human'    ? '<span class="badge badge-human">Live</span>'
                                                  : '<span class="badge badge-ai">AI</span>';
             var unread  = c.unreadByAgent > 0 ? '<div class="unread-dot"></div>' : '';
+            var displayName = c.visitorName ? escHtml(c.visitorName) : shortId(c.sessionId);
+            var emailLine   = c.visitorEmail ? '<div class="conv-email">' + escHtml(c.visitorEmail) + '</div>' : '';
             return '<div class="conv-item' + (isActive ? ' active' : '') + '" data-sid="' + c.sessionId + '">'
-                 + '<div class="conv-item-top"><span class="conv-session">' + shortId(c.sessionId) + '</span><span class="conv-time">' + time + '</span></div>'
+                 + '<div class="conv-item-top"><span class="conv-session">' + displayName + '</span><span class="conv-time">' + time + '</span></div>'
+                 + emailLine
                  + '<div class="conv-preview">' + escHtml(preview) + '</div>'
                  + '<div class="conv-badges">' + badge + '</div>'
                  + unread
@@ -797,8 +810,12 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
         chatView.style.display = 'flex';
         mobilePushChat();
 
-        document.getElementById('viewSessionId').textContent = shortId(sessionId);
-        document.getElementById('viewMeta').textContent = 'Page: ' + (c.visitorPage || '/') + ' · ' + (c.messages ? c.messages.length : 0) + ' messages';
+        document.getElementById('viewSessionId').textContent = c.visitorName || shortId(sessionId);
+        var metaParts = [];
+        if (c.visitorEmail) metaParts.push(c.visitorEmail);
+        metaParts.push('Page: ' + (c.visitorPage || '/'));
+        metaParts.push((c.messages ? c.messages.length : 0) + ' messages');
+        document.getElementById('viewMeta').textContent = metaParts.join(' · ');
 
         // Render messages
         var msgArea = document.getElementById('chatMessages');
@@ -819,8 +836,12 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
         div.className = 'msg ' + roleClass;
 
         var label = '';
+        if (msg.role === 'user') {
+            var vName = (activeConvo && activeConvo.visitorName) ? activeConvo.visitorName : 'Visitor';
+            label = '<span class="msg-label msg-label-visitor">' + escHtml(vName) + '</span>';
+        }
         if (msg.role === 'assistant') label = '<span class="msg-label msg-label-ai">GoallordAI</span>';
-        if (msg.role === 'agent')     label = '<span class="msg-label msg-label-agent">' + (msg.agentName || 'Agent') + '</span>';
+        if (msg.role === 'agent')     label = '<span class="msg-label msg-label-agent">' + escHtml(msg.agentName || 'Agent') + '</span>';
 
         var time = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '';
         div.innerHTML = label + '<div class="msg-bubble">' + escHtml(msg.content) + '</div><div class="msg-meta">' + time + '</div>';

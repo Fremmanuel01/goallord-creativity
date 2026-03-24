@@ -3209,31 +3209,54 @@
             </button>
         </div>
 
-        <!-- Messages -->
-        <div class="gl-chat-messages" id="glChatMessages">
-            <div class="gl-chat-msg gl-chat-msg--ai">
-                <div class="gl-chat-bubble">
-                    Hi there! 👋 I'm GoallordAI — ask me anything about our services, pricing, or how to get started.
-                </div>
-                <span class="gl-chat-time">Just now</span>
-            </div>
-            <!-- Quick replies -->
-            <div class="gl-chat-quick-replies" id="glChatQuickReplies">
-                <button class="gl-chat-qr" data-q="What services do you offer?">What services do you offer?</button>
-                <button class="gl-chat-qr" data-q="What's your pricing?">What's your pricing?</button>
-                <button class="gl-chat-qr" data-q="How long does a project take?">How long does a project take?</button>
-                <button class="gl-chat-qr" data-q="Do you work with international clients?">Do you work internationally?</button>
-            </div>
-        </div>
+        <!-- Chat body (pre-chat form + messages + input) -->
+        <div class="gl-chat-body">
 
-        <!-- Input -->
-        <div class="gl-chat-input-wrap">
-            <input class="gl-chat-input" id="glChatInput" type="text" placeholder="Ask anything about Goallord…" autocomplete="off" maxlength="500">
-            <button class="gl-chat-send" id="glChatSend" aria-label="Send message">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            </button>
-        </div>
-        <p class="gl-chat-footer">GoallordAI can make mistakes. Verify important info.</p>
+            <!-- Pre-chat identity form -->
+            <div class="gl-prechat" id="glPreChat">
+                <div class="gl-prechat-wave">👋</div>
+                <h3>Before we start</h3>
+                <p class="gl-prechat-sub">Tell us who you are so we can give you the best help.</p>
+                <div class="gl-prechat-field">
+                    <label for="glPreName">Your Name</label>
+                    <input type="text" id="glPreName" placeholder="e.g. John Smith" maxlength="60" autocomplete="name" spellcheck="false">
+                </div>
+                <div class="gl-prechat-field">
+                    <label for="glPreEmail">Email Address</label>
+                    <input type="email" id="glPreEmail" placeholder="e.g. john@company.com" maxlength="120" autocomplete="email" spellcheck="false">
+                </div>
+                <p class="gl-prechat-error" id="glPreError">Please enter your name and a valid email.</p>
+                <button class="gl-prechat-btn" id="glPreStart">Start Chat &rarr;</button>
+                <p class="gl-prechat-privacy">🔒 Your details are kept private and never shared.</p>
+            </div>
+
+            <!-- Messages -->
+            <div class="gl-chat-messages" id="glChatMessages">
+                <div class="gl-chat-msg gl-chat-msg--ai">
+                    <div class="gl-chat-bubble" id="glGreeting">
+                        Hi there! 👋 I'm GoallordAI — ask me anything about our services, pricing, or how to get started.
+                    </div>
+                    <span class="gl-chat-time">Just now</span>
+                </div>
+                <!-- Quick replies -->
+                <div class="gl-chat-quick-replies" id="glChatQuickReplies">
+                    <button class="gl-chat-qr" data-q="What services do you offer?">What services do you offer?</button>
+                    <button class="gl-chat-qr" data-q="What's your pricing?">What's your pricing?</button>
+                    <button class="gl-chat-qr" data-q="How long does a project take?">How long does a project take?</button>
+                    <button class="gl-chat-qr" data-q="Do you work with international clients?">Do you work internationally?</button>
+                </div>
+            </div>
+
+            <!-- Input -->
+            <div class="gl-chat-input-wrap">
+                <input class="gl-chat-input" id="glChatInput" type="text" placeholder="Ask anything about Goallord…" autocomplete="off" maxlength="500">
+                <button class="gl-chat-send" id="glChatSend" aria-label="Send message">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+            </div>
+            <p class="gl-chat-footer">GoallordAI can make mistakes. Verify important info.</p>
+
+        </div><!-- /.gl-chat-body -->
     </div>
 
     <!-- Custom Cursor JS -->
@@ -3287,6 +3310,12 @@
         var input    = document.getElementById('glChatInput');
         var sendBtn  = document.getElementById('glChatSend');
         var quickR   = document.getElementById('glChatQuickReplies');
+        var preChat  = document.getElementById('glPreChat');
+        var preName  = document.getElementById('glPreName');
+        var preEmail = document.getElementById('glPreEmail');
+        var preStart = document.getElementById('glPreStart');
+        var preError = document.getElementById('glPreError');
+        var greeting = document.getElementById('glGreeting');
         var history  = [];
         var isOpen   = false;
         var isLoading = false;
@@ -3298,6 +3327,47 @@
             sessionId = 'v_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
             localStorage.setItem('gl_chat_session', sessionId);
         }
+
+        // Visitor identity — load from localStorage if already captured
+        var visitorName  = localStorage.getItem('gl_chat_name')  || '';
+        var visitorEmail = localStorage.getItem('gl_chat_email') || '';
+
+        // Personalise greeting if we already know the visitor
+        function applyGreeting() {
+            if (greeting && visitorName) {
+                var first = visitorName.split(' ')[0];
+                greeting.textContent = 'Hi ' + first + '! \uD83D\uDC4B I\u2019m GoallordAI \u2014 ask me anything about our services, pricing, or how to get started.';
+            }
+        }
+        applyGreeting();
+
+        // If identity already known, hide the pre-chat form immediately
+        if (visitorName && visitorEmail) {
+            preChat.classList.add('hidden');
+        }
+
+        // Pre-chat form submit
+        function validateEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+        preStart.addEventListener('click', function() {
+            var name  = preName.value.trim();
+            var email = preEmail.value.trim();
+            if (!name || !validateEmail(email)) {
+                preError.style.display = 'block';
+                if (!name) preName.focus(); else preEmail.focus();
+                return;
+            }
+            preError.style.display = 'none';
+            visitorName  = name;
+            visitorEmail = email;
+            localStorage.setItem('gl_chat_name',  name);
+            localStorage.setItem('gl_chat_email', email);
+            applyGreeting();
+            preChat.classList.add('hidden');
+            setTimeout(function() { input.focus(); }, 80);
+        });
+        preName.addEventListener('keydown',  function(e) { if (e.key === 'Enter') { e.preventDefault(); preEmail.focus(); } });
+        preEmail.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); preStart.click(); } });
 
         // Socket.io — join visitor room for real-time agent replies
         var socket = io();
@@ -3351,7 +3421,15 @@
             panel.classList.toggle('is-open', isOpen);
             fab.classList.toggle('is-open', isOpen);
             panel.setAttribute('aria-hidden', !isOpen);
-            if (isOpen) { setTimeout(function() { input.focus(); }, 320); }
+            if (isOpen) {
+                if (!visitorName || !visitorEmail) {
+                    preChat.classList.remove('hidden');
+                    setTimeout(function() { preName.focus(); }, 320);
+                } else {
+                    preChat.classList.add('hidden');
+                    setTimeout(function() { input.focus(); }, 320);
+                }
+            }
         }
 
         fab.addEventListener('click', toggleChat);
@@ -3439,7 +3517,7 @@
             fetch('/api/chat', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ messages: history, sessionId: sessionId, visitorPage: window.location.pathname }),
+                body:    JSON.stringify({ messages: history, sessionId: sessionId, visitorPage: window.location.pathname, visitorName: visitorName, visitorEmail: visitorEmail }),
                 signal:  chatAbort.signal
             })
             .then(function(r) { return r.json(); })
