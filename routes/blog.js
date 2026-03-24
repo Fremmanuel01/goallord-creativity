@@ -32,7 +32,16 @@ router.get('/:slug', async (req, res) => {
   try {
     const post = await BlogPost.findOne({ slug: req.params.slug, published: true });
     if (!post) return res.status(404).json({ error: 'Post not found' });
-    res.json(post);
+
+    const fields = 'slug title publishedAt coverImage category readTime';
+    const [prev, next] = await Promise.all([
+      BlogPost.findOne({ published: true, publishedAt: { $gt: post.publishedAt } })
+        .sort({ publishedAt: 1 }).select(fields),
+      BlogPost.findOne({ published: true, publishedAt: { $lt: post.publishedAt } })
+        .sort({ publishedAt: -1 }).select(fields),
+    ]);
+
+    res.json({ ...post.toObject(), _prev: prev || null, _next: next || null });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

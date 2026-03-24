@@ -16,7 +16,7 @@
     <meta property="og:url" id="ogUrl" content="https://goallordcreativity.com/blog-single.html">
     <meta property="og:title" id="ogTitle" content="Blog | Goallord Creativity">
     <meta property="og:description" id="ogDesc" content="Read the latest insights from Goallord Creativity.">
-    <meta property="og:image" content="https://goallordcreativity.com/assets/images/logo/og-image.jpg">
+    <meta property="og:image" id="ogImage" content="https://goallordcreativity.com/assets/images/logo/og-image.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:site_name" content="Goallord Creativity Limited">
@@ -29,7 +29,7 @@
     <meta name="twitter:site" content="@goallordcreates">
     <meta name="twitter:title" id="twTitle" content="Blog | Goallord Creativity">
     <meta name="twitter:description" id="twDesc" content="Read the latest insights from Goallord Creativity.">
-    <meta name="twitter:image" content="https://goallordcreativity.com/assets/images/logo/og-image.jpg">
+    <meta name="twitter:image" id="twImage" content="https://goallordcreativity.com/assets/images/logo/og-image.jpg">
     <!-- Schema — injected dynamically -->
     <script id="schemaScript" type="application/ld+json">{}</script>
     <link rel="stylesheet" href="assets/fonts/fonts.css">
@@ -59,9 +59,18 @@
         .gl-newsletter input[type=email]::placeholder { color:rgba(255,255,255,.35); }
         .gl-newsletter input[type=email]:focus { outline:none; border-color:var(--primary); }
         #postLoading, #postError { display:none; }
+        /* Reading progress bar */
+        #readProgress { position:fixed; top:0; left:0; height:3px; width:0%; background:var(--primary,#D66A1F); z-index:9999; transition:width .1s linear; }
+        /* Prev/Next nav */
+        .gl-post-nav { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        @media(max-width:576px){ .gl-post-nav { grid-template-columns:1fr; } }
+        .gl-post-nav-card { background:var(--gl-card); border:1px solid var(--gl-border); border-radius:8px; padding:20px 24px; text-decoration:none; display:block; transition:border-color .2s; }
+        .gl-post-nav-card:hover { border-color:var(--primary); }
     </style>
 </head>
 <body class="counter-scroll">
+    <!-- Reading progress bar -->
+    <div id="readProgress"></div>
     <canvas class="cursor-trail d-none d-xl-block" id="trail"></canvas>
     <button id="goTop"><span class="border-progress"></span><span class="ic-wrap"><span class="icon icon-arrow-caret-right"></span></span></button>
 
@@ -265,6 +274,15 @@
         </section>
         <!-- /Article -->
 
+        <!-- Prev / Next Navigation -->
+        <section class="flat-spacing pt-0" id="postNavSection" style="display:none">
+            <div class="container">
+                <div class="br-line mb-5 effectFade fadeUp"></div>
+                <div class="gl-post-nav effectFade fadeUp" id="postNav"></div>
+            </div>
+        </section>
+        <!-- /Prev Next -->
+
         <!-- Related Posts -->
         <section class="section-blog flat-spacing pt-0">
             <div class="container">
@@ -440,6 +458,15 @@
           var twDescEl = document.getElementById('twDesc');
           if (twDescEl) twDescEl.setAttribute('content', post.excerpt || '');
 
+          // ── OG image — use cover image when available ──────────────
+          var ogImgUrl = (post.coverImage && post.coverImage.startsWith('http'))
+            ? post.coverImage
+            : 'https://goallordcreativity.com/assets/images/logo/og-image.jpg';
+          var ogImgEl = document.getElementById('ogImage');
+          if (ogImgEl) ogImgEl.setAttribute('content', ogImgUrl);
+          var twImgEl = document.getElementById('twImage');
+          if (twImgEl) twImgEl.setAttribute('content', ogImgUrl);
+
           // ── JSON-LD Schema ─────────────────────────────────────────
           var schema = {
             "@context": "https://schema.org",
@@ -511,6 +538,46 @@
           } else {
             document.getElementById('postTagsWrap').style.display = 'none';
           }
+
+          // ── Prev / Next navigation ─────────────────────────────────
+          var navCards = [];
+          if (post._prev) {
+            var pUrl = 'blog-single.html?slug=' + encodeURIComponent(post._prev.slug);
+            navCards.push(
+              '<a href="' + pUrl + '" class="gl-post-nav-card">' +
+                '<p class="text-caption text-white-64 letter-space--1 mb-2">← PREVIOUS</p>' +
+                '<p class="fw-medium mb-0" style="font-size:14px;line-height:1.5">' + esc(post._prev.title || '') + '</p>' +
+              '</a>'
+            );
+          } else {
+            navCards.push('<div></div>');
+          }
+          if (post._next) {
+            var nUrl = 'blog-single.html?slug=' + encodeURIComponent(post._next.slug);
+            navCards.push(
+              '<a href="' + nUrl + '" class="gl-post-nav-card" style="text-align:right">' +
+                '<p class="text-caption text-white-64 letter-space--1 mb-2">NEXT →</p>' +
+                '<p class="fw-medium mb-0" style="font-size:14px;line-height:1.5">' + esc(post._next.title || '') + '</p>' +
+              '</a>'
+            );
+          } else {
+            navCards.push('<div></div>');
+          }
+          if (post._prev || post._next) {
+            document.getElementById('postNav').innerHTML = navCards.join('');
+            document.getElementById('postNavSection').style.display = 'block';
+          }
+
+          // ── Reading progress bar ────────────────────────────────────
+          var progressBar = document.getElementById('readProgress');
+          window.addEventListener('scroll', function() {
+            var body    = document.body;
+            var html    = document.documentElement;
+            var total   = Math.max(body.scrollHeight, html.scrollHeight) - window.innerHeight;
+            var current = window.scrollY || window.pageYOffset;
+            var pct     = total > 0 ? Math.min(100, (current / total) * 100) : 0;
+            progressBar.style.width = pct + '%';
+          }, { passive: true });
 
           // ── Related posts ──────────────────────────────────────────
           fetch('/api/blog?limit=4&exclude=' + encodeURIComponent(post.slug))

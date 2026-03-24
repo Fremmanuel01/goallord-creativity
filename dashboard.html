@@ -2058,11 +2058,25 @@
 
       <!-- Blog Editor -->
       <div id="cms-blog" style="display:none">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
           <h3 style="font-size:15px;color:var(--muted)">Blog Posts</h3>
-          <button class="btn btn-primary" onclick="addBlogPost()">+ Add Post</button>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input class="form-input" id="blogSearch" placeholder="Search posts…" style="max-width:200px;padding:8px 12px;font-size:13px" oninput="filterBlogTable()">
+            <button class="btn btn-primary" onclick="openBlogEditor(null)">+ New Post</button>
+          </div>
         </div>
-        <div id="blogList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px"></div>
+        <div class="table-wrapper">
+          <table style="width:100%;border-collapse:collapse">
+            <thead><tr>
+              <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Title</th>
+              <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Category</th>
+              <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Published</th>
+              <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Status</th>
+              <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Actions</th>
+            </tr></thead>
+            <tbody id="blogTableBody"><tr><td colspan="5" style="padding:32px;text-align:center;color:var(--muted)">Loading…</td></tr></tbody>
+          </table>
+        </div>
       </div>
 
       <!-- Testimonials Editor -->
@@ -2342,6 +2356,81 @@
     <div class="vap-footer">
       <button class="vap-btn vap-btn-close" onclick="closeModal('viewStudentModal')">Close</button>
       <button class="vap-btn" style="background:var(--blue);color:#fff;border:none" onclick="closeModal('viewStudentModal');openEditStudent(_vsId)">Edit Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Blog Post Editor Modal ─────────────────────────────────────── -->
+<div class="modal-overlay" id="blogPostModal" style="align-items:flex-start;overflow-y:auto;padding:20px">
+  <div class="modal modal-lg" style="max-width:860px;width:100%;margin:auto;animation:slideIn .2s ease">
+    <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between">
+      <h3 id="blogModalTitle" style="font-size:16px">New Post</h3>
+      <button style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1" onclick="closeBlogModal()">✕</button>
+    </div>
+    <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px" id="blogModalBody">
+      <div style="grid-column:1/-1">
+        <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Title *</label>
+        <input class="form-input" id="bmTitle" placeholder="Article title" style="margin-top:6px" oninput="blogAutoSlug()">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Slug (URL) *</label>
+        <input class="form-input" id="bmSlug" placeholder="auto-generated-from-title" style="margin-top:6px">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Category</label>
+        <input class="form-input" id="bmCategory" placeholder="e.g. Web Design" style="margin-top:6px">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Author</label>
+        <input class="form-input" id="bmAuthor" placeholder="The Goallord Team" style="margin-top:6px">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Read Time</label>
+        <input class="form-input" id="bmReadTime" placeholder="5 min read" style="margin-top:6px">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Tags (comma-separated)</label>
+        <input class="form-input" id="bmTags" placeholder="Nigeria, SEO, Web Design" style="margin-top:6px">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Cover Image URL</label>
+        <input class="form-input" id="bmCoverImage" placeholder="https://… or /assets/images/…" style="margin-top:6px" oninput="blogPreviewImg()">
+      </div>
+      <div style="grid-column:1/-1">
+        <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Excerpt</label>
+        <textarea class="form-input" id="bmExcerpt" rows="2" placeholder="Short summary shown in blog listings…" style="margin-top:6px;resize:vertical"></textarea>
+      </div>
+      <!-- Flags -->
+      <div style="display:flex;gap:24px;align-items:center;grid-column:1/-1">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="bmPublished" checked style="accent-color:var(--orange)"> Published
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="bmFeatured" style="accent-color:var(--orange)"> Featured post
+        </label>
+      </div>
+      <!-- Content editor -->
+      <div style="grid-column:1/-1">
+        <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Article Content (HTML)</label>
+        <!-- Toolbar -->
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;background:var(--bg);border:1px solid var(--border);border-bottom:none;border-radius:6px 6px 0 0;padding:8px">
+          <button type="button" onclick="blogFmt('<strong>','</strong>')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:700">B</button>
+          <button type="button" onclick="blogFmt('<em>','</em>')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;font-style:italic">I</button>
+          <button type="button" onclick="blogFmt('<h2 class=\"letter-space--2 mb-4\">','</h2>\n')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">H2</button>
+          <button type="button" onclick="blogFmt('<h3 class=\"letter-space--2 mb-3\">','</h3>\n')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">H3</button>
+          <button type="button" onclick="blogFmt('<p class=\"text-white-64 mb-4\">','</p>\n')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">¶</button>
+          <button type="button" onclick="blogFmt('<div class=\"gl-pullquote mb-5\"><p class=\"h4 letter-space--2 mb-2\">','</p><p class=\"text-caption text-primary letter-space--1 mb-0\">— GOALLORD CREATIVITY TEAM</p></div>\n')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">"</button>
+          <button type="button" onclick="blogFmt('<ul class=\"text-white-64 mb-5\" style=\"padding-left:1.5rem;line-height:2\"><li>','</li></ul>\n')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">• List</button>
+          <button type="button" onclick="blogFmt('<ol class=\"text-white-64 mb-5\" style=\"padding-left:1.5rem;line-height:2\"><li>','</li></ol>\n')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">1. List</button>
+          <button type="button" onclick="blogFmt('<a href=\"\" class=\"link text-primary\">','</a>')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">Link</button>
+          <button type="button" onclick="blogFmt('<div class=\"br-line mb-5\"></div>\n','')" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">— HR</button>
+        </div>
+        <textarea class="form-input" id="bmContent" rows="16" placeholder="<p class=&quot;text-white-64 mb-4&quot;>Start writing your article…</p>" style="border-radius:0 0 6px 6px;resize:vertical;font-family:monospace;font-size:12px;line-height:1.6"></textarea>
+      </div>
+    </div>
+    <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px">
+      <button class="btn btn-secondary" onclick="closeBlogModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBlogPost()" id="bmSaveBtn">Save Post</button>
     </div>
   </div>
 </div>
@@ -3959,81 +4048,170 @@ function deletePortfolioItem(index) {
   });
 }
 
-// Blog
-function blogPostCard(post, i, isFeatured) {
-  const prefix = isFeatured ? 'featured' : `post_${i}`;
-  return `
-    <div class="card" style="padding:20px;${isFeatured ? 'border:1px solid var(--orange)' : ''}">
-      ${isFeatured ? '<div style="font-size:11px;color:var(--orange);font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">Featured Post</div>' : ''}
-      <div class="form-group" style="margin-bottom:10px">
-        <label style="font-size:11px;color:var(--muted)">Title</label>
-        <input class="form-input" style="margin-top:4px" value="${(post.title||'').replace(/"/g,'&quot;')}" onchange="updateBlogField('${prefix}','title',this.value)">
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
-        <div>
-          <label style="font-size:11px;color:var(--muted)">Category</label>
-          <input class="form-input" style="margin-top:4px" value="${post.category||''}" onchange="updateBlogField('${prefix}','category',this.value)">
-        </div>
-        <div>
-          <label style="font-size:11px;color:var(--muted)">Date</label>
-          <input class="form-input" style="margin-top:4px" value="${post.date||''}" onchange="updateBlogField('${prefix}','date',this.value)">
-        </div>
-        <div>
-          <label style="font-size:11px;color:var(--muted)">Read Time</label>
-          <input class="form-input" style="margin-top:4px" value="${post.readTime||''}" onchange="updateBlogField('${prefix}','readTime',this.value)">
-        </div>
-      </div>
-      <div class="form-group" style="margin-bottom:10px">
-        <label style="font-size:11px;color:var(--muted)">Excerpt</label>
-        <textarea class="form-input" style="margin-top:4px;min-height:60px;resize:vertical" onchange="updateBlogField('${prefix}','excerpt',this.value)">${post.excerpt||''}</textarea>
-      </div>
-      <div class="form-group" style="margin-bottom:12px">
-        <label style="font-size:11px;color:var(--muted)">Image URL</label>
-        <input class="form-input" style="margin-top:4px" value="${post.image||''}" onchange="updateBlogField('${prefix}','image',this.value)">
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-primary" style="flex:1" onclick="saveBlog()">Save</button>
-        ${!isFeatured ? `<button class="btn btn-danger" onclick="deleteBlogPost(${i})">Delete</button>` : ''}
-      </div>
-    </div>
-  `;
-}
+// ── Blog CMS (connected to /api/blog) ────────────────────────────────────
+let _blogPosts = [];
+let _editingBlogSlug = null;
 
 async function loadBlog() {
-  const d = await loadCmsSection('blog');
-  const featured = d?.featured || {};
-  const posts = d?.posts || [];
-  const container = document.getElementById('blogList');
-  container.innerHTML = blogPostCard(featured, -1, true) + posts.map((post, i) => blogPostCard(post, i, false)).join('');
+  const res = await apiFetch('/api/blog?limit=50');
+  _blogPosts = res ? [...(res.featured ? [res.featured] : []), ...(res.posts || [])] : [];
+  // deduplicate by slug
+  const seen = new Set();
+  _blogPosts = _blogPosts.filter(p => { if (seen.has(p.slug)) return false; seen.add(p.slug); return true; });
+  renderBlogTable(_blogPosts);
 }
 
-function updateBlogField(key, field, value) {
-  if (!cmsCache.blog) return;
-  if (key === 'featured') {
-    cmsCache.blog.featured = cmsCache.blog.featured || {};
-    cmsCache.blog.featured[field] = value;
-  } else {
-    const i = parseInt(key.replace('post_', ''));
-    if (!isNaN(i) && cmsCache.blog.posts[i]) cmsCache.blog.posts[i][field] = value;
+function filterBlogTable() {
+  const q = (document.getElementById('blogSearch').value || '').toLowerCase();
+  renderBlogTable(_blogPosts.filter(p =>
+    (p.title||'').toLowerCase().includes(q) ||
+    (p.category||'').toLowerCase().includes(q) ||
+    (p.author||'').toLowerCase().includes(q)
+  ));
+}
+
+function renderBlogTable(posts) {
+  const tbody = document.getElementById('blogTableBody');
+  if (!posts.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="padding:32px;text-align:center;color:var(--muted)">No posts found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = posts.map(p => {
+    const date = p.publishedAt ? new Date(p.publishedAt).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : '—';
+    const status = p.published
+      ? '<span style="background:rgba(34,197,94,.15);color:#22c55e;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">Published</span>'
+      : '<span style="background:rgba(255,255,255,.08);color:var(--muted);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">Draft</span>';
+    const featured = p.featured
+      ? '<span style="background:rgba(214,106,31,.15);color:var(--orange);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-left:6px">Featured</span>'
+      : '';
+    return `<tr>
+      <td style="padding:12px 14px;font-size:13px;border-bottom:1px solid var(--border)">${(p.title||'').replace(/</g,'&lt;')}${featured}</td>
+      <td style="padding:12px 14px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border)">${p.category||'—'}</td>
+      <td style="padding:12px 14px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border)">${date}</td>
+      <td style="padding:12px 14px;border-bottom:1px solid var(--border)">${status}</td>
+      <td style="padding:12px 14px;border-bottom:1px solid var(--border)">
+        <div style="display:flex;gap:6px">
+          <button class="btn" style="padding:4px 10px;font-size:11px" onclick="openBlogEditor('${(p.slug||'').replace(/'/g,"\\'")}')">Edit</button>
+          <button class="btn btn-danger" style="padding:4px 10px;font-size:11px" onclick="deleteBlogPostBySlug('${(p.slug||'').replace(/'/g,"\\'")}')">Delete</button>
+          <a href="/blog-single.html?slug=${encodeURIComponent(p.slug||'')}" target="_blank" class="btn" style="padding:4px 10px;font-size:11px">View</a>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function openBlogEditor(slug) {
+  _editingBlogSlug = slug;
+  document.getElementById('blogModalTitle').textContent = slug ? 'Edit Post' : 'New Post';
+  // reset form
+  ['bmTitle','bmSlug','bmCategory','bmAuthor','bmReadTime','bmTags','bmCoverImage','bmExcerpt','bmContent'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('bmPublished').checked = true;
+  document.getElementById('bmFeatured').checked  = false;
+
+  if (slug) {
+    const post = await apiFetch('/api/blog/' + encodeURIComponent(slug));
+    if (post) {
+      document.getElementById('bmTitle').value      = post.title || '';
+      document.getElementById('bmSlug').value       = post.slug  || '';
+      document.getElementById('bmCategory').value   = post.category || '';
+      document.getElementById('bmAuthor').value     = post.author   || '';
+      document.getElementById('bmReadTime').value   = post.readTime || '';
+      document.getElementById('bmTags').value       = (post.tags||[]).join(', ');
+      document.getElementById('bmCoverImage').value = post.coverImage || '';
+      document.getElementById('bmExcerpt').value    = post.excerpt || '';
+      document.getElementById('bmContent').value    = post.content || '';
+      document.getElementById('bmPublished').checked = !!post.published;
+      document.getElementById('bmFeatured').checked  = !!post.featured;
+    }
+  }
+  openModal('blogPostModal');
+}
+
+function closeBlogModal() {
+  document.getElementById('blogPostModal').classList.remove('open');
+  document.body.style.overflow = '';
+  _editingBlogSlug = null;
+}
+
+async function saveBlogPost() {
+  const title = document.getElementById('bmTitle').value.trim();
+  const slug  = document.getElementById('bmSlug').value.trim();
+  if (!title || !slug) { showToast('Title and slug are required', 'error'); return; }
+
+  const body = {
+    title,
+    slug,
+    category:   document.getElementById('bmCategory').value.trim() || 'General',
+    author:     document.getElementById('bmAuthor').value.trim()   || 'The Goallord Team',
+    readTime:   document.getElementById('bmReadTime').value.trim() || '5 min read',
+    tags:       document.getElementById('bmTags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    coverImage: document.getElementById('bmCoverImage').value.trim(),
+    excerpt:    document.getElementById('bmExcerpt').value.trim(),
+    content:    document.getElementById('bmContent').value,
+    published:  document.getElementById('bmPublished').checked,
+    featured:   document.getElementById('bmFeatured').checked,
+  };
+
+  const btn = document.getElementById('bmSaveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    let res;
+    if (_editingBlogSlug) {
+      res = await apiFetch('/api/blog/' + encodeURIComponent(_editingBlogSlug), {
+        method: 'PUT', body: JSON.stringify(body)
+      });
+    } else {
+      res = await apiFetch('/api/blog', {
+        method: 'POST', body: JSON.stringify(body)
+      });
+    }
+    if (res && !res.error) {
+      showToast(_editingBlogSlug ? 'Post updated!' : 'Post created!');
+      closeBlogModal();
+      await loadBlog();
+    } else {
+      showToast((res && res.error) || 'Save failed', 'error');
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Post';
   }
 }
 
-async function saveBlog() {
-  await saveCmsSection('blog', cmsCache.blog);
-  showToast('Blog saved!');
-}
-
-function addBlogPost() {
-  if (!cmsCache.blog) cmsCache.blog = { featured: {}, posts: [] };
-  cmsCache.blog.posts.push({ id: Date.now(), title: 'New Post', category: '', date: '', readTime: '', excerpt: '', image: '', url: 'blog-single.html' });
-  loadBlog();
-}
-
-function deleteBlogPost(index) {
-  glConfirm('Delete this blog post?', 'The post will be permanently removed.', 'Delete', () => {
-    cmsCache.blog.posts.splice(index, 1);
-    saveBlog().then(() => loadBlog());
+function deleteBlogPostBySlug(slug) {
+  glConfirm('Delete this post?', 'This cannot be undone.', 'Delete', async () => {
+    const res = await apiFetch('/api/blog/' + encodeURIComponent(slug), { method: 'DELETE' });
+    if (res && !res.error) { showToast('Post deleted!'); await loadBlog(); }
+    else showToast((res && res.error) || 'Delete failed', 'error');
   });
+}
+
+// Auto-generate slug from title
+function blogAutoSlug() {
+  if (_editingBlogSlug) return; // don't overwrite slug when editing
+  const title = document.getElementById('bmTitle').value;
+  document.getElementById('bmSlug').value = title.toLowerCase()
+    .replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').trim();
+}
+
+// Insert HTML around selected text in content textarea
+function blogFmt(open, close) {
+  const ta = document.getElementById('bmContent');
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const selected = ta.value.substring(start, end);
+  const replacement = open + selected + close;
+  ta.value = ta.value.substring(0, start) + replacement + ta.value.substring(end);
+  ta.selectionStart = start + open.length;
+  ta.selectionEnd   = start + open.length + selected.length;
+  ta.focus();
+}
+
+function blogPreviewImg() {
+  // no-op placeholder for future image preview
 }
 
 // Testimonials

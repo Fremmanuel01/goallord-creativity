@@ -19,6 +19,41 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// ─── DYNAMIC SITEMAP (must be before static so it overrides sitemap.xml) ─────
+app.get('/sitemap.xml', async (req, res) => {
+  try {
+    const BlogPost = require('./models/BlogPost');
+    const posts = await BlogPost.find({ published: true }, 'slug publishedAt updatedAt').sort({ publishedAt: -1 });
+    const base = 'https://goallordcreativity.com';
+    const now  = new Date().toISOString().split('T')[0];
+    const staticPages = [
+      { url: '/',             priority: '1.0', freq: 'weekly'  },
+      { url: '/services.html',priority: '0.9', freq: 'monthly' },
+      { url: '/academy.html', priority: '0.9', freq: 'weekly'  },
+      { url: '/about.html',   priority: '0.8', freq: 'monthly' },
+      { url: '/portfolio.html',priority:'0.8', freq: 'weekly'  },
+      { url: '/contact.html', priority: '0.8', freq: 'monthly' },
+      { url: '/blog.html',    priority: '0.8', freq: 'weekly'  },
+      { url: '/pricing.html', priority: '0.7', freq: 'monthly' },
+      { url: '/apply.html',   priority: '0.6', freq: 'monthly' },
+      { url: '/alumni.html',  priority: '0.6', freq: 'monthly' },
+    ];
+    const urlTags = [
+      ...staticPages.map(p =>
+        `  <url><loc>${base}${p.url}</loc><lastmod>${now}</lastmod><changefreq>${p.freq}</changefreq><priority>${p.priority}</priority></url>`
+      ),
+      ...posts.map(post => {
+        const mod = post.updatedAt ? post.updatedAt.toISOString().split('T')[0] : now;
+        return `  <url><loc>${base}/blog-single.html?slug=${encodeURIComponent(post.slug)}</loc><lastmod>${mod}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>`;
+      }),
+    ];
+    res.set('Content-Type', 'application/xml');
+    res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlTags.join('\n')}\n</urlset>`);
+  } catch (err) {
+    res.status(500).send('Sitemap error');
+  }
+});
+
 // ─── STATIC FILES (serve the website) ────────────────────────
 app.use(express.static(path.join(__dirname)));
 
