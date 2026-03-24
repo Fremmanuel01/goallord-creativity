@@ -357,7 +357,7 @@
         var img  = p.coverImage || DEFAULT_BLOG_IMGS[i % DEFAULT_BLOG_IMGS.length];
         var url  = 'blog-single.html?slug=' + encodeURIComponent(p.slug);
         var meta = [p.category, fmtDate(p.publishedAt), p.readTime].filter(Boolean).join(' &nbsp;·&nbsp; ');
-        return '<div class="article-blog hover-img effectFade fadeUp no-div">' +
+        return '<div class="article-blog hover-img">' +
           '<a href="' + url + '" class="blog-image img-style">' +
             '<img loading="lazy" width="426" height="307" src="' + esc(img) + '" alt="' + esc(p.title||'') + '">' +
           '</a>' +
