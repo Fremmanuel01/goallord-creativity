@@ -4775,9 +4775,9 @@ function deleteAffiliateLink(slug) {
 async function loadAnalyticsSettings() {
   try {
     const d = await apiFetch('/api/content/analytics');
-    if (d) {
-      document.getElementById('settingsGa4Id').value     = d.ga4Id      || '';
-      document.getElementById('settingsClarityId').value = d.clarityId  || '';
+    if (d && d.data) {
+      document.getElementById('settingsGa4Id').value     = d.data.ga4Id      || '';
+      document.getElementById('settingsClarityId').value = d.data.clarityId  || '';
     }
   } catch {}
 }
@@ -4787,7 +4787,7 @@ async function saveAnalyticsSettings() {
   const clarityId = document.getElementById('settingsClarityId').value.trim();
   const res = await apiFetch('/api/content/analytics', {
     method: 'PUT',
-    body: JSON.stringify({ ga4Id, clarityId }),
+    body: JSON.stringify({ data: { ga4Id, clarityId } }),
   });
   const msg = document.getElementById('analyticsSaveMsg');
   if (res && !res.error) {
