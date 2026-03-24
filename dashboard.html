@@ -2177,61 +2177,108 @@
     ══════════════════════════════════════════════════ -->
     <div class="page" id="page-analytics">
       <div class="section-header">
-        <h2>Site Analytics</h2>
+        <h2>Analytics</h2>
         <button class="btn btn-ghost" style="font-size:13px" onclick="loadAnalyticsPage()">↺ Refresh</button>
       </div>
 
-      <!-- Totals row -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px">
-        <div class="card" style="padding:20px">
-          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Blog Posts</div>
-          <div style="font-size:32px;font-weight:700" id="an-totalPosts">—</div>
+      <!-- Toggle -->
+      <div style="display:inline-flex;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:4px;margin-bottom:24px">
+        <button id="anTabBlog" onclick="switchAnalyticsTab('blog')" style="padding:7px 22px;border-radius:5px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;background:var(--orange);color:#fff">Blog</button>
+        <button id="anTabSite" onclick="switchAnalyticsTab('site')" style="padding:7px 22px;border-radius:5px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;background:transparent;color:var(--muted)">Site</button>
+      </div>
+
+      <!-- ── BLOG TAB ── -->
+      <div id="anViewBlog">
+        <!-- Blog stat cards -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px">
+          <div class="card" style="padding:20px">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Published Posts</div>
+            <div style="font-size:32px;font-weight:700" id="an-totalPosts">—</div>
+          </div>
+          <div class="card" style="padding:20px">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Total Post Views</div>
+            <div style="font-size:32px;font-weight:700;color:var(--orange)" id="an-totalViews">—</div>
+          </div>
+          <div class="card" style="padding:20px">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Affiliate Clicks</div>
+            <div style="font-size:32px;font-weight:700;color:#1E4BFF" id="an-totalAffClicks">—</div>
+          </div>
         </div>
-        <div class="card" style="padding:20px">
-          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Total Post Views</div>
-          <div style="font-size:32px;font-weight:700;color:var(--orange)" id="an-totalViews">—</div>
+
+        <!-- Blog charts -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px">
+          <div class="card" style="padding:20px">
+            <div style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px;margin-bottom:16px">AFFILIATE CLICKS — LAST 30 DAYS</div>
+            <div style="height:180px;position:relative"><canvas id="anAffChart"></canvas></div>
+          </div>
+          <div class="card" style="padding:20px">
+            <div style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px;margin-bottom:16px">TOP POSTS BY VIEWS</div>
+            <div style="height:180px;position:relative"><canvas id="anViewsChart"></canvas></div>
+          </div>
         </div>
-        <div class="card" style="padding:20px">
-          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Affiliate Clicks</div>
-          <div style="font-size:32px;font-weight:700;color:#1E4BFF" id="an-totalAffClicks">—</div>
-        </div>
-        <div class="card" style="padding:20px">
-          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Contact Leads</div>
-          <div style="font-size:32px;font-weight:700;color:var(--success)" id="an-totalContacts">—</div>
+
+        <!-- Blog tables -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div class="card" style="padding:0;overflow:hidden">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600">Top Posts by Views</div>
+            <table style="width:100%;border-collapse:collapse">
+              <tbody id="anTopPostsBody">
+                <tr><td colspan="3" style="padding:24px;text-align:center;color:var(--muted)">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card" style="padding:0;overflow:hidden">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600">Top Affiliate Links by Clicks</div>
+            <table style="width:100%;border-collapse:collapse">
+              <tbody id="anTopAffBody">
+                <tr><td colspan="3" style="padding:24px;text-align:center;color:var(--muted)">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <!-- Charts row -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px">
-        <div class="card" style="padding:20px">
-          <div style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px;margin-bottom:16px">AFFILIATE CLICKS — LAST 30 DAYS</div>
-          <div style="height:180px;position:relative"><canvas id="anAffChart"></canvas></div>
+      <!-- ── SITE TAB ── -->
+      <div id="anViewSite" style="display:none">
+        <!-- Site stat cards -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px">
+          <div class="card" style="padding:20px">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Total Leads</div>
+            <div style="font-size:32px;font-weight:700;color:var(--success)" id="an-totalContacts">—</div>
+          </div>
+          <div class="card" style="padding:20px">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">This Month</div>
+            <div style="font-size:32px;font-weight:700;color:var(--orange)" id="an-monthContacts">—</div>
+          </div>
+          <div class="card" style="padding:20px;display:flex;flex-direction:column;justify-content:space-between">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">GA4 Full Site Stats</div>
+            <a href="https://analytics.google.com" target="_blank" rel="noopener" class="btn btn-primary" style="font-size:12px;text-align:center;margin-top:8px">Open GA4 →</a>
+          </div>
+          <div class="card" style="padding:20px;display:flex;flex-direction:column;justify-content:space-between">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Session Recordings</div>
+            <a href="https://clarity.microsoft.com" target="_blank" rel="noopener" class="btn btn-ghost" style="font-size:12px;text-align:center;margin-top:8px;border:1px solid var(--border)">Open Clarity →</a>
+          </div>
         </div>
-        <div class="card" style="padding:20px">
-          <div style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px;margin-bottom:16px">CONTACT LEADS — LAST 30 DAYS</div>
-          <div style="height:180px;position:relative"><canvas id="anContactChart"></canvas></div>
-        </div>
-      </div>
 
-      <!-- Tables row -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-        <!-- Top posts -->
-        <div class="card" style="padding:0;overflow:hidden">
-          <div style="padding:16px 20px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600">Top Blog Posts by Views</div>
-          <table style="width:100%;border-collapse:collapse" id="anTopPostsTable">
-            <tbody id="anTopPostsBody">
-              <tr><td colspan="3" style="padding:24px;text-align:center;color:var(--muted)">Loading…</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <!-- Top affiliate links -->
-        <div class="card" style="padding:0;overflow:hidden">
-          <div style="padding:16px 20px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600">Top Affiliate Links by Clicks</div>
-          <table style="width:100%;border-collapse:collapse">
-            <tbody id="anTopAffBody">
-              <tr><td colspan="3" style="padding:24px;text-align:center;color:var(--muted)">Loading…</td></tr>
-            </tbody>
-          </table>
+        <!-- Site chart + info -->
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:28px">
+          <div class="card" style="padding:20px">
+            <div style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px;margin-bottom:16px">CONTACT LEADS — LAST 30 DAYS</div>
+            <div style="height:220px;position:relative"><canvas id="anContactChart"></canvas></div>
+          </div>
+          <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">Tracked Pages</div>
+            <p style="font-size:12px;color:var(--muted);line-height:1.7;margin:0">GA4 + Clarity are now active on <strong style="color:var(--text)">all 14 public pages</strong> of your site including homepage, services, academy, contact, blog, and more.</p>
+            <div style="border-top:1px solid var(--border);padding-top:14px">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Pages Tracked</div>
+              <div style="font-size:12px;color:var(--text);line-height:2">
+                Home · About · Services<br>
+                Portfolio · Academy · Pricing<br>
+                Apply · Alumni · Contact<br>
+                Blog · Blog Posts · 404
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -4708,104 +4755,118 @@ function blogSetCoverPreview(url) {
 // ═══════════════════════════════════════════════════════════
 let _anAffChart     = null;
 let _anContactChart = null;
+let _anViewsChart   = null;
+let _anCurrentTab   = 'blog';
+
+function switchAnalyticsTab(tab) {
+  _anCurrentTab = tab;
+  document.getElementById('anViewBlog').style.display = tab === 'blog' ? 'block' : 'none';
+  document.getElementById('anViewSite').style.display = tab === 'site' ? 'block' : 'none';
+
+  const blogBtn = document.getElementById('anTabBlog');
+  const siteBtn = document.getElementById('anTabSite');
+  if (tab === 'blog') {
+    blogBtn.style.background = 'var(--orange)'; blogBtn.style.color = '#fff';
+    siteBtn.style.background = 'transparent';   siteBtn.style.color = 'var(--muted)';
+  } else {
+    siteBtn.style.background = 'var(--orange)'; siteBtn.style.color = '#fff';
+    blogBtn.style.background = 'transparent';   blogBtn.style.color = 'var(--muted)';
+    // Re-render contact chart now that canvas is visible
+    if (_anContactChart) { _anContactChart.resize(); }
+  }
+}
+
+const _anChartOpts = () => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false }, tooltip: {
+    backgroundColor: '#171A21', borderColor: '#2A2F3A', borderWidth: 1,
+    titleColor: '#F4F6FA', bodyColor: '#8892A4', padding: 10,
+  }},
+  scales: {
+    x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#8892A4', font: { size: 10 }, maxTicksLimit: 8 }, border: { color: 'rgba(255,255,255,0.06)' } },
+    y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#8892A4', font: { size: 10 }, stepSize: 1 }, border: { color: 'rgba(255,255,255,0.06)' }, beginAtZero: true },
+  }
+});
 
 async function loadAnalyticsPage() {
   const data = await apiFetch('/api/analytics/summary');
   if (!data) return;
 
-  // ── Totals ──────────────────────────────────────────────
-  document.getElementById('an-totalPosts').textContent      = data.totals.posts           ?? '—';
-  document.getElementById('an-totalViews').textContent      = (data.totals.views || 0).toLocaleString();
-  document.getElementById('an-totalAffClicks').textContent  = (data.totals.affiliateClicks || 0).toLocaleString();
-  document.getElementById('an-totalContacts').textContent   = (data.totals.contacts || 0).toLocaleString();
-
-  // ── Charts ──────────────────────────────────────────────
   const days   = Object.keys(data.affByDay);
   const labels = days.map(d => { const p = d.split('-'); return p[2] + '/' + p[1]; });
 
-  const chartOpts = (color) => ({
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: {
-      backgroundColor: '#171A21', borderColor: '#2A2F3A', borderWidth: 1,
-      titleColor: '#F4F6FA', bodyColor: '#8892A4', padding: 10,
-    }},
-    scales: {
-      x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#8892A4', font: { size: 10 }, maxTicksLimit: 8 }, border: { color: 'rgba(255,255,255,0.06)' } },
-      y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#8892A4', font: { size: 10 }, stepSize: 1 }, border: { color: 'rgba(255,255,255,0.06)' }, beginAtZero: true },
-    }
-  });
+  // ── Blog tab — totals ────────────────────────────────────
+  document.getElementById('an-totalPosts').textContent     = data.totals.posts ?? '—';
+  document.getElementById('an-totalViews').textContent     = (data.totals.views || 0).toLocaleString();
+  document.getElementById('an-totalAffClicks').textContent = (data.totals.affiliateClicks || 0).toLocaleString();
 
-  // Affiliate clicks chart
+  // ── Site tab — totals ────────────────────────────────────
+  document.getElementById('an-totalContacts').textContent = (data.totals.contacts || 0).toLocaleString();
+  const thisMonth = Object.entries(data.contactByDay)
+    .filter(([d]) => d.startsWith(new Date().toISOString().slice(0,7)))
+    .reduce((s, [, v]) => s + v, 0);
+  document.getElementById('an-monthContacts').textContent = thisMonth;
+
+  // ── Affiliate clicks chart ───────────────────────────────
   if (_anAffChart) _anAffChart.destroy();
   _anAffChart = new Chart(document.getElementById('anAffChart').getContext('2d'), {
     type: 'line',
     data: {
       labels,
-      datasets: [{
-        data: Object.values(data.affByDay),
-        borderColor: '#1E4BFF',
-        backgroundColor: 'rgba(30,75,255,0.08)',
-        borderWidth: 2,
-        pointRadius: 3,
-        pointHoverRadius: 5,
-        fill: true,
-        tension: 0.4,
-      }]
+      datasets: [{ data: Object.values(data.affByDay), borderColor: '#1E4BFF', backgroundColor: 'rgba(30,75,255,0.08)', borderWidth: 2, pointRadius: 3, pointHoverRadius: 5, fill: true, tension: 0.4 }]
     },
-    options: chartOpts('#1E4BFF'),
+    options: _anChartOpts(),
   });
 
-  // Contact leads chart
+  // ── Top posts views bar chart ────────────────────────────
+  if (_anViewsChart) _anViewsChart.destroy();
+  const top5 = data.topPosts.slice(0, 5);
+  _anViewsChart = new Chart(document.getElementById('anViewsChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: top5.map(p => p.title.length > 20 ? p.title.slice(0, 20) + '…' : p.title),
+      datasets: [{ data: top5.map(p => p.views || 0), backgroundColor: 'rgba(214,106,31,0.3)', borderColor: '#D66A1F', borderWidth: 1.5, borderRadius: 4 }]
+    },
+    options: _anChartOpts(),
+  });
+
+  // ── Contact leads chart ──────────────────────────────────
   if (_anContactChart) _anContactChart.destroy();
   _anContactChart = new Chart(document.getElementById('anContactChart').getContext('2d'), {
     type: 'bar',
     data: {
       labels,
-      datasets: [{
-        data: Object.values(data.contactByDay),
-        backgroundColor: 'rgba(34,197,94,0.25)',
-        borderColor: '#22C55E',
-        borderWidth: 1.5,
-        borderRadius: 3,
-      }]
+      datasets: [{ data: Object.values(data.contactByDay), backgroundColor: 'rgba(34,197,94,0.25)', borderColor: '#22C55E', borderWidth: 1.5, borderRadius: 3 }]
     },
-    options: chartOpts('#22C55E'),
+    options: _anChartOpts(),
   });
 
-  // ── Top posts table ────────────────────────────────────
+  // ── Top posts table ──────────────────────────────────────
   const tbody = document.getElementById('anTopPostsBody');
-  if (!data.topPosts.length) {
-    tbody.innerHTML = '<tr><td colspan="3" style="padding:24px;text-align:center;color:var(--muted)">No views yet — publish and share posts to see data.</td></tr>';
-  } else {
-    tbody.innerHTML = data.topPosts.map((p, i) => `
-      <tr>
-        <td style="padding:10px 20px;border-bottom:1px solid var(--border);color:var(--muted);font-size:12px;width:30px">${i + 1}</td>
-        <td style="padding:10px 14px;border-bottom:1px solid var(--border)">
-          <a href="blog-single.html?slug=${encodeURIComponent(p.slug)}" target="_blank" class="link" style="font-size:13px;font-weight:500">${escHtml(p.title)}</a>
-          <div style="font-size:11px;color:var(--muted)">${escHtml(p.category||'')}</div>
-        </td>
-        <td style="padding:10px 14px;border-bottom:1px solid var(--border);text-align:right;font-weight:700;color:var(--orange);font-size:14px;padding-right:20px">${(p.views||0).toLocaleString()}</td>
-      </tr>
-    `).join('');
-  }
+  tbody.innerHTML = data.topPosts.length ? data.topPosts.map((p, i) => `
+    <tr>
+      <td style="padding:10px 20px;border-bottom:1px solid var(--border);color:var(--muted);font-size:12px;width:30px">${i + 1}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid var(--border)">
+        <a href="blog-single.html?slug=${encodeURIComponent(p.slug)}" target="_blank" class="link" style="font-size:13px;font-weight:500">${escHtml(p.title)}</a>
+        <div style="font-size:11px;color:var(--muted)">${escHtml(p.category||'')}</div>
+      </td>
+      <td style="padding:10px 14px;border-bottom:1px solid var(--border);text-align:right;font-weight:700;color:var(--orange);font-size:14px;padding-right:20px">${(p.views||0).toLocaleString()}</td>
+    </tr>`).join('') :
+    '<tr><td colspan="3" style="padding:24px;text-align:center;color:var(--muted)">No views yet — share your posts to see data.</td></tr>';
 
-  // ── Top affiliate links table ──────────────────────────
+  // ── Top affiliate links table ────────────────────────────
   const affBody = document.getElementById('anTopAffBody');
-  if (!data.topAffLinks.length) {
-    affBody.innerHTML = '<tr><td colspan="3" style="padding:24px;text-align:center;color:var(--muted)">No affiliate links yet.</td></tr>';
-  } else {
-    affBody.innerHTML = data.topAffLinks.map((l, i) => `
-      <tr>
-        <td style="padding:10px 20px;border-bottom:1px solid var(--border);color:var(--muted);font-size:12px;width:30px">${i + 1}</td>
-        <td style="padding:10px 14px;border-bottom:1px solid var(--border)">
-          <div style="font-size:13px;font-weight:500">${escHtml(l.name)}</div>
-          <code style="font-size:11px;color:var(--muted)">/go/${escHtml(l.slug)}</code>
-        </td>
-        <td style="padding:10px 14px;border-bottom:1px solid var(--border);text-align:right;font-weight:700;color:#1E4BFF;font-size:14px;padding-right:20px">${(l.totalClicks||0).toLocaleString()}</td>
-      </tr>
-    `).join('');
-  }
+  affBody.innerHTML = data.topAffLinks.length ? data.topAffLinks.map((l, i) => `
+    <tr>
+      <td style="padding:10px 20px;border-bottom:1px solid var(--border);color:var(--muted);font-size:12px;width:30px">${i + 1}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:500">${escHtml(l.name)}</div>
+        <code style="font-size:11px;color:var(--muted)">/go/${escHtml(l.slug)}</code>
+      </td>
+      <td style="padding:10px 14px;border-bottom:1px solid var(--border);text-align:right;font-weight:700;color:#1E4BFF;font-size:14px;padding-right:20px">${(l.totalClicks||0).toLocaleString()}</td>
+    </tr>`).join('') :
+    '<tr><td colspan="3" style="padding:24px;text-align:center;color:var(--muted)">No affiliate links yet.</td></tr>';
 }
 
 // ── Blog affiliate CTA toggle ──────────────────────────────────

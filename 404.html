@@ -192,5 +192,27 @@
     <script src="assets/js/infinityslide.js"></script>
     <script src="assets/js/gsapAnimation.js"></script>
     <script src="assets/js/main.js"></script>
+<script>
+(function(){
+  fetch('/api/content/analytics').then(function(r){return r.ok?r.json():null;}).then(function(res){
+    var d=res&&res.data;if(!d)return;
+    if(d.ga4Id&&d.ga4Id.startsWith('G-')){
+      var s=document.createElement('script');s.async=1;
+      s.src='https://www.googletagmanager.com/gtag/js?id='+d.ga4Id;
+      document.head.appendChild(s);
+      window.dataLayer=window.dataLayer||[];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js',new Date());gtag('config',d.ga4Id);
+    }
+    if(d.clarityId&&d.clarityId.trim()){
+      (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src='https://www.clarity.ms/tag/'+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window,document,'clarity','script',d.clarityId);
+    }
+  }).catch(function(){});
+})();
+</script>
 </body>
 </html>
