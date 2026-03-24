@@ -14,6 +14,7 @@ const blogPostSchema = new mongoose.Schema({
   featured:     { type: Boolean, default: false },
   published:    { type: Boolean, default: true },
   publishedAt:  { type: Date, default: Date.now },
+  views:        { type: Number, default: 0 },
   hasAffiliate: { type: Boolean, default: false },
   affiliateCta: {
     text:  { type: String, default: '' },

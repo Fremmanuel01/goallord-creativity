@@ -33,6 +33,9 @@ router.get('/:slug', async (req, res) => {
     const post = await BlogPost.findOne({ slug: req.params.slug, published: true });
     if (!post) return res.status(404).json({ error: 'Post not found' });
 
+    // Non-blocking view increment
+    BlogPost.updateOne({ _id: post._id }, { $inc: { views: 1 } }).catch(() => {});
+
     const fields = 'slug title publishedAt coverImage category readTime';
     const [prev, next] = await Promise.all([
       BlogPost.findOne({ published: true, publishedAt: { $gt: post.publishedAt } })

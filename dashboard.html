@@ -1452,6 +1452,13 @@
 
     <div class="nav-label">System</div>
 
+    <div class="nav-item" data-page="analytics" title="Site Analytics">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+      </svg>
+      <span>Analytics</span>
+    </div>
+
     <div class="nav-item" data-page="settings" title="Settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/>
@@ -2162,6 +2169,70 @@
             <tr><td colspan="6" style="padding:32px;text-align:center;color:var(--muted)">Loading…</td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         PAGE: SITE ANALYTICS
+    ══════════════════════════════════════════════════ -->
+    <div class="page" id="page-analytics">
+      <div class="section-header">
+        <h2>Site Analytics</h2>
+        <button class="btn btn-ghost" style="font-size:13px" onclick="loadAnalyticsPage()">↺ Refresh</button>
+      </div>
+
+      <!-- Totals row -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px">
+        <div class="card" style="padding:20px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Blog Posts</div>
+          <div style="font-size:32px;font-weight:700" id="an-totalPosts">—</div>
+        </div>
+        <div class="card" style="padding:20px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Total Post Views</div>
+          <div style="font-size:32px;font-weight:700;color:var(--orange)" id="an-totalViews">—</div>
+        </div>
+        <div class="card" style="padding:20px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Affiliate Clicks</div>
+          <div style="font-size:32px;font-weight:700;color:#1E4BFF" id="an-totalAffClicks">—</div>
+        </div>
+        <div class="card" style="padding:20px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Contact Leads</div>
+          <div style="font-size:32px;font-weight:700;color:var(--success)" id="an-totalContacts">—</div>
+        </div>
+      </div>
+
+      <!-- Charts row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px">
+        <div class="card" style="padding:20px">
+          <div style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px;margin-bottom:16px">AFFILIATE CLICKS — LAST 30 DAYS</div>
+          <div style="height:180px;position:relative"><canvas id="anAffChart"></canvas></div>
+        </div>
+        <div class="card" style="padding:20px">
+          <div style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px;margin-bottom:16px">CONTACT LEADS — LAST 30 DAYS</div>
+          <div style="height:180px;position:relative"><canvas id="anContactChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Tables row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <!-- Top posts -->
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600">Top Blog Posts by Views</div>
+          <table style="width:100%;border-collapse:collapse" id="anTopPostsTable">
+            <tbody id="anTopPostsBody">
+              <tr><td colspan="3" style="padding:24px;text-align:center;color:var(--muted)">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Top affiliate links -->
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600">Top Affiliate Links by Clicks</div>
+          <table style="width:100%;border-collapse:collapse">
+            <tbody id="anTopAffBody">
+              <tr><td colspan="3" style="padding:24px;text-align:center;color:var(--muted)">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -2969,6 +3040,7 @@ const pageTitles = {
   attendance: 'Attendance',
   payments:   'Payments',
   affiliate:  'Affiliate Links',
+  analytics:  'Site Analytics',
   website:    'Website Content',
   contacts:   'Contacts',
 };
@@ -2996,6 +3068,7 @@ function navigate(page) {
   if (page === 'attendance') loadAttendancePage();
   if (page === 'payments')   loadPaymentsPage();
   if (page === 'affiliate')  loadAffiliateLinks();
+  if (page === 'analytics')  loadAnalyticsPage();
   if (page === 'settings')   loadAnalyticsSettings();
 
   if (isMobile()) closeMobileSidebar();
@@ -4627,6 +4700,111 @@ function blogSetCoverPreview(url) {
     previewImg.src = '';
     previewImg.style.display  = 'none';
     placeholder.style.display = 'flex';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SITE ANALYTICS PAGE
+// ═══════════════════════════════════════════════════════════
+let _anAffChart     = null;
+let _anContactChart = null;
+
+async function loadAnalyticsPage() {
+  const data = await apiFetch('/api/analytics/summary');
+  if (!data) return;
+
+  // ── Totals ──────────────────────────────────────────────
+  document.getElementById('an-totalPosts').textContent      = data.totals.posts           ?? '—';
+  document.getElementById('an-totalViews').textContent      = (data.totals.views || 0).toLocaleString();
+  document.getElementById('an-totalAffClicks').textContent  = (data.totals.affiliateClicks || 0).toLocaleString();
+  document.getElementById('an-totalContacts').textContent   = (data.totals.contacts || 0).toLocaleString();
+
+  // ── Charts ──────────────────────────────────────────────
+  const days   = Object.keys(data.affByDay);
+  const labels = days.map(d => { const p = d.split('-'); return p[2] + '/' + p[1]; });
+
+  const chartOpts = (color) => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      backgroundColor: '#171A21', borderColor: '#2A2F3A', borderWidth: 1,
+      titleColor: '#F4F6FA', bodyColor: '#8892A4', padding: 10,
+    }},
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#8892A4', font: { size: 10 }, maxTicksLimit: 8 }, border: { color: 'rgba(255,255,255,0.06)' } },
+      y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#8892A4', font: { size: 10 }, stepSize: 1 }, border: { color: 'rgba(255,255,255,0.06)' }, beginAtZero: true },
+    }
+  });
+
+  // Affiliate clicks chart
+  if (_anAffChart) _anAffChart.destroy();
+  _anAffChart = new Chart(document.getElementById('anAffChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: Object.values(data.affByDay),
+        borderColor: '#1E4BFF',
+        backgroundColor: 'rgba(30,75,255,0.08)',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        fill: true,
+        tension: 0.4,
+      }]
+    },
+    options: chartOpts('#1E4BFF'),
+  });
+
+  // Contact leads chart
+  if (_anContactChart) _anContactChart.destroy();
+  _anContactChart = new Chart(document.getElementById('anContactChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: Object.values(data.contactByDay),
+        backgroundColor: 'rgba(34,197,94,0.25)',
+        borderColor: '#22C55E',
+        borderWidth: 1.5,
+        borderRadius: 3,
+      }]
+    },
+    options: chartOpts('#22C55E'),
+  });
+
+  // ── Top posts table ────────────────────────────────────
+  const tbody = document.getElementById('anTopPostsBody');
+  if (!data.topPosts.length) {
+    tbody.innerHTML = '<tr><td colspan="3" style="padding:24px;text-align:center;color:var(--muted)">No views yet — publish and share posts to see data.</td></tr>';
+  } else {
+    tbody.innerHTML = data.topPosts.map((p, i) => `
+      <tr>
+        <td style="padding:10px 20px;border-bottom:1px solid var(--border);color:var(--muted);font-size:12px;width:30px">${i + 1}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid var(--border)">
+          <a href="blog-single.html?slug=${encodeURIComponent(p.slug)}" target="_blank" class="link" style="font-size:13px;font-weight:500">${escHtml(p.title)}</a>
+          <div style="font-size:11px;color:var(--muted)">${escHtml(p.category||'')}</div>
+        </td>
+        <td style="padding:10px 14px;border-bottom:1px solid var(--border);text-align:right;font-weight:700;color:var(--orange);font-size:14px;padding-right:20px">${(p.views||0).toLocaleString()}</td>
+      </tr>
+    `).join('');
+  }
+
+  // ── Top affiliate links table ──────────────────────────
+  const affBody = document.getElementById('anTopAffBody');
+  if (!data.topAffLinks.length) {
+    affBody.innerHTML = '<tr><td colspan="3" style="padding:24px;text-align:center;color:var(--muted)">No affiliate links yet.</td></tr>';
+  } else {
+    affBody.innerHTML = data.topAffLinks.map((l, i) => `
+      <tr>
+        <td style="padding:10px 20px;border-bottom:1px solid var(--border);color:var(--muted);font-size:12px;width:30px">${i + 1}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid var(--border)">
+          <div style="font-size:13px;font-weight:500">${escHtml(l.name)}</div>
+          <code style="font-size:11px;color:var(--muted)">/go/${escHtml(l.slug)}</code>
+        </td>
+        <td style="padding:10px 14px;border-bottom:1px solid var(--border);text-align:right;font-weight:700;color:#1E4BFF;font-size:14px;padding-right:20px">${(l.totalClicks||0).toLocaleString()}</td>
+      </tr>
+    `).join('');
   }
 }
 

@@ -106,6 +106,7 @@ app.use('/api/agents',        require('./routes/agents'));
 app.use('/api/contacts',      require('./routes/contacts'));
 app.use('/api/blog',          require('./routes/blog'));
 app.use('/api/affiliate',     require('./routes/affiliate'));
+app.use('/api/analytics',    require('./routes/analytics'));
 
 // ─── SOCKET.IO ────────────────────────────────────────────────
 io.on('connection', socket => {
