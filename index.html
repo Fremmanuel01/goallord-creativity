@@ -3440,11 +3440,18 @@
             })
             .then(function(r) { return r.json(); })
             .then(function(d) {
-                // Human mode — wait for agent reply via socket
+                // Human mode — wait for agent reply via socket, fallback after 30s
                 if (d.mode === 'human') {
                     mode = 'human';
                     updateModeIndicator();
-                    return; // typing stays until agent replies
+                    setTimeout(function() {
+                        if (mode === 'human') {
+                            hideTyping();
+                            addMsg('ai', 'Our team has been notified and will reply shortly. You can also reach us at hello@goallordcreativity.com');
+                            setLoading(false);
+                        }
+                    }, 30000);
+                    return;
                 }
                 hideTyping();
                 var reply = d.reply || 'Sorry, something went wrong. Please try again.';

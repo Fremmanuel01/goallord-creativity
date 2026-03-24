@@ -90,14 +90,27 @@ router.post('/', async (req, res) => {
       convo.unreadByAgent += 1;
     }
 
-    // If a human agent has taken over — don't call AI, just save & notify dashboard
+    // If a human agent has taken over — check if they've gone idle (5 min with no reply)
     if (convo.mode === 'human') {
-      await convo.save();
-      if (io) io.to('agents').emit('visitor:message', {
-        sessionId,
-        message: { role: 'user', content: lastMsg.content, timestamp: new Date() }
-      });
-      return res.json({ reply: null, mode: 'human' });
+      const lastAgentMsg = [...(convo.messages || [])].reverse().find(m => m.role === 'agent');
+      const lastActivity = lastAgentMsg
+        ? new Date(lastAgentMsg.timestamp || 0)
+        : new Date(convo.updatedAt || convo.createdAt || 0);
+      const idleMs = Date.now() - lastActivity.getTime();
+
+      if (idleMs > 5 * 60 * 1000) {
+        // Agent has been idle 5+ min — revert to AI silently
+        convo.mode = 'ai';
+        if (io) io.to('agents').emit('mode:changed', { sessionId, mode: 'ai' });
+        // Fall through to AI response below
+      } else {
+        await convo.save();
+        if (io) io.to('agents').emit('visitor:message', {
+          sessionId,
+          message: { role: 'user', content: lastMsg.content, timestamp: new Date() }
+        });
+        return res.json({ reply: null, mode: 'human' });
+      }
     }
 
     // AI mode — call Claude
