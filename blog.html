@@ -183,7 +183,7 @@
                         <div class="d-flex align-items-center justify-content-lg-end gap-2 flex-wrap mt-3 mt-lg-0">
                             <div id="blogFilters" class="d-flex gap-2 flex-wrap"></div>
                             <div style="position:relative;flex-shrink:0">
-                                <input id="blogSearchInput" type="search" placeholder="Search…" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:6px;color:#fff;padding:8px 12px 8px 32px;font-size:12px;outline:none;width:160px;" oninput="filterBlogGrid()">
+                                <input id="blogSearchInput" type="search" placeholder="Search…" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:6px;color:#fff;padding:8px 12px 8px 32px;font-size:12px;outline:none;width:160px;" oninput="if(this.value){_activeCategory='all';buildFilters(_allBlogPosts);}filterBlogGrid()">
                                 <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.4;pointer-events:none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
                             </div>
                         </div>
@@ -330,6 +330,9 @@
 
     function setCategoryFilter(cat) {
       _activeCategory = cat;
+      // Clear search so category filter shows all matching posts
+      var searchInput = document.getElementById('blogSearchInput');
+      if (searchInput) searchInput.value = '';
       buildFilters(_allBlogPosts);
       filterBlogGrid();
     }
