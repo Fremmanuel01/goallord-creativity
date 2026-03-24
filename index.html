@@ -3308,7 +3308,7 @@
             hideTyping();
             setLoading(false);
             addMsg('agent', data.content, data.agentName);
-            history.push({ role: 'assistant', content: data.content });
+            history.push({ role: 'agent', content: data.content });
         });
 
         // Mode changed (AI handed back or taken over)
@@ -3433,22 +3433,27 @@
             setLoading(true);
             showTyping();
 
+            var chatAbort = new AbortController();
+            var chatTimeout = setTimeout(function() { chatAbort.abort(); }, 30000);
+
             fetch('/api/chat', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ messages: history, sessionId: sessionId, visitorPage: window.location.pathname })
+                body:    JSON.stringify({ messages: history, sessionId: sessionId, visitorPage: window.location.pathname }),
+                signal:  chatAbort.signal
             })
             .then(function(r) { return r.json(); })
             .then(function(d) {
-                // Human mode — wait for agent reply via socket, fallback after 30s
+                clearTimeout(chatTimeout);
+                // Human mode — let visitor keep typing; show notice after 30s if no agent reply
                 if (d.mode === 'human') {
                     mode = 'human';
                     updateModeIndicator();
+                    hideTyping();
+                    setLoading(false);
                     setTimeout(function() {
                         if (mode === 'human') {
-                            hideTyping();
                             addMsg('ai', 'Our team has been notified and will reply shortly. You can also reach us at hello@goallordcreativity.com');
-                            setLoading(false);
                         }
                     }, 30000);
                     return;
@@ -3460,6 +3465,7 @@
                 setLoading(false);
             })
             .catch(function() {
+                clearTimeout(chatTimeout);
                 hideTyping();
                 addMsg('ai', 'I\'m having trouble connecting. Please email us at hello@goallordcreativity.com');
                 setLoading(false);

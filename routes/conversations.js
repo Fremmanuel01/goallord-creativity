@@ -86,8 +86,12 @@ router.patch('/:sessionId/mode', requireAuth, async (req, res) => {
 
 // PATCH mark as read
 router.patch('/:sessionId/read', requireAuth, async (req, res) => {
-  await Conversation.findOneAndUpdate({ sessionId: req.params.sessionId }, { unreadByAgent: 0 });
-  res.json({ ok: true });
+  try {
+    await Conversation.findOneAndUpdate({ sessionId: req.params.sessionId }, { unreadByAgent: 0 });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // PATCH close conversation
