@@ -18,7 +18,7 @@ router.get('/', requireAuth, requirePermission('projects'), async (req, res) => 
         }
 
         const projects = await Project.find(filter)
-            .populate('members', 'name email')
+            .populate('members', 'name email avatar')
             .populate('createdBy', 'name')
             .sort({ updatedAt: -1 });
 
@@ -39,7 +39,7 @@ router.get('/', requireAuth, requirePermission('projects'), async (req, res) => 
 router.get('/:id', requireAuth, requirePermission('projects'), async (req, res) => {
     try {
         const project = await Project.findById(req.params.id)
-            .populate('members', 'name email')
+            .populate('members', 'name email avatar')
             .populate('createdBy', 'name');
         if (!project) return res.status(404).json({ error: 'Not found' });
 
@@ -103,7 +103,7 @@ router.patch('/:id', requireAuth, requirePermission('projects'), async (req, res
         }
 
         const project = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
-            .populate('members', 'name email');
+            .populate('members', 'name email avatar');
         if (!project) return res.status(404).json({ error: 'Not found' });
         res.json(project);
     } catch (err) {

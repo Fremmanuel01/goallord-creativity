@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema({
     applicants: { type: Boolean, default: false },
     academy:    { type: Boolean, default: false }
   },
+  avatar:    { type: String, default: '' },
   createdAt: { type: Date, default: Date.now }
 });
 

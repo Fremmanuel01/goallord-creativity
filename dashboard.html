@@ -2426,74 +2426,59 @@
           <button class="modal-close" onclick="closeModal('projectModal')">✕</button>
         </div>
         <div class="modal-body">
-          <div class="step-progress" id="projStepProgress"><div class="step-progress-bar" id="projStepProgressBar"></div></div>
           <div class="modal-form" id="projFormSteps">
             <input type="hidden" id="projEditId">
-            <div class="form-step" data-step="1">
+            <div class="form-group">
+              <label>Project Name *</label>
+              <input class="form-input" type="text" id="projName" placeholder="e.g. Holy Rosary Website Redesign">
+            </div>
+            <div class="modal-form-row">
               <div class="form-group">
-                <label>Project Name *</label>
-                <input class="form-input step-input" type="text" id="projName" placeholder="e.g. Holy Rosary Website Redesign" data-next-step="2">
+                <label>Client</label>
+                <input class="form-input" type="text" id="projClient" placeholder="e.g. Holy Rosary Hospital">
               </div>
-              <button type="button" class="step-continue-btn" onclick="revealProjStep(2)">Continue</button>
-            </div>
-            <div class="form-step" data-step="2">
-              <div class="modal-form-row">
-                <div class="form-group">
-                  <label>Client</label>
-                  <input class="form-input step-input" type="text" id="projClient" placeholder="e.g. Holy Rosary Hospital" data-next-step="3">
-                </div>
-                <div class="form-group">
-                  <label>Deadline</label>
-                  <input class="form-input step-input" type="date" id="projDeadline" data-next-step="3">
-                </div>
-              </div>
-              <button type="button" class="step-continue-btn" onclick="revealProjStep(3)">Continue</button>
-            </div>
-            <div class="form-step" data-step="3">
-              <div class="modal-form-row">
-                <div class="form-group">
-                  <label>Status</label>
-                  <select class="form-input step-input" id="projStatus" data-next-step="4">
-                    <option value="not-started">Not Started</option>
-                    <option value="in-progress">In Progress</option>
-                    <option value="review">In Review</option>
-                    <option value="completed">Completed</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Priority</label>
-                  <select class="form-input step-input" id="projPriority" data-next-step="4">
-                    <option value="low">Low</option>
-                    <option value="medium" selected>Medium</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
-                  </select>
-                </div>
-              </div>
-              <button type="button" class="step-continue-btn" onclick="revealProjStep(4)">Continue</button>
-            </div>
-            <div class="form-step" data-step="4">
               <div class="form-group">
-                <label>Description</label>
-                <textarea class="form-input step-input" id="projDesc" rows="3" placeholder="Brief project description..." data-next-step="5"></textarea>
+                <label>Deadline</label>
+                <input class="form-input" type="date" id="projDeadline">
               </div>
-              <button type="button" class="step-continue-btn" onclick="revealProjStep(5)">Continue</button>
             </div>
-            <div class="form-step" data-step="5">
-              <div class="modal-form-row">
-                <div class="form-group">
-                  <label>Budget (&#8358;)</label>
-                  <input class="form-input" type="number" id="projBudget" min="0" step="1000" placeholder="0" value="0">
-                </div>
-                <div class="form-group">
-                  <label>Spent (&#8358;)</label>
-                  <input class="form-input" type="number" id="projSpent" min="0" step="1000" placeholder="0" value="0">
-                </div>
+            <div class="modal-form-row">
+              <div class="form-group">
+                <label>Status</label>
+                <select class="form-input" id="projStatus">
+                  <option value="not-started">Not Started</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="review">In Review</option>
+                  <option value="completed">Completed</option>
+                </select>
               </div>
-              <div class="form-group" style="margin-top:12px">
-                <label>Color</label>
-                <input class="form-input" type="color" id="projColor" value="#D66A1F" style="height:40px;padding:4px">
+              <div class="form-group">
+                <label>Priority</label>
+                <select class="form-input" id="projPriority">
+                  <option value="low">Low</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
               </div>
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea class="form-input" id="projDesc" rows="3" placeholder="Brief project description..."></textarea>
+            </div>
+            <div class="modal-form-row">
+              <div class="form-group">
+                <label>Budget (&#8358;)</label>
+                <input class="form-input" type="number" id="projBudget" min="0" step="1000" placeholder="0" value="0">
+              </div>
+              <div class="form-group">
+                <label>Spent (&#8358;)</label>
+                <input class="form-input" type="number" id="projSpent" min="0" step="1000" placeholder="0" value="0">
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:12px">
+              <label>Color</label>
+              <input class="form-input" type="color" id="projColor" value="#D66A1F" style="height:40px;padding:4px">
             </div>
           </div>
         </div>
@@ -2540,70 +2525,64 @@
           <button class="modal-close" onclick="closeModal('taskModal')">✕</button>
         </div>
         <div class="modal-body">
-          <div class="step-progress" id="taskStepProgress"><div class="step-progress-bar" id="taskStepProgressBar"></div></div>
           <div class="modal-form" id="taskFormSteps">
             <input type="hidden" id="taskEditId">
             <input type="hidden" id="taskProjectId">
-            <div class="form-step" data-step="1">
+            <div class="form-group">
+              <label>Task Title *</label>
+              <input class="form-input" type="text" id="taskTitle" placeholder="e.g. Design homepage mockup">
+            </div>
+            <div class="modal-form-row">
               <div class="form-group">
-                <label>Task Title *</label>
-                <input class="form-input step-input" type="text" id="taskTitle" placeholder="e.g. Design homepage mockup" data-next-step="2">
+                <label>Assignee</label>
+                <select class="form-input" id="taskAssignee">
+                  <option value="">Unassigned</option>
+                </select>
               </div>
-              <button type="button" class="step-continue-btn" onclick="revealTaskStep(2)">Continue</button>
-            </div>
-            <div class="form-step" data-step="2">
-              <div class="modal-form-row">
-                <div class="form-group">
-                  <label>Assignee</label>
-                  <select class="form-input step-input" id="taskAssignee" data-next-step="3">
-                    <option value="">Unassigned</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Due Date</label>
-                  <input class="form-input step-input" type="date" id="taskDueDate" data-next-step="3">
-                </div>
-              </div>
-              <button type="button" class="step-continue-btn" onclick="revealTaskStep(3)">Continue</button>
-            </div>
-            <div class="form-step" data-step="3">
-              <div class="modal-form-row">
-                <div class="form-group">
-                  <label>Status</label>
-                  <select class="form-input step-input" id="taskStatus" data-next-step="4">
-                    <option value="todo">To Do</option>
-                    <option value="in-progress">In Progress</option>
-                    <option value="review">Review</option>
-                    <option value="done">Done</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Priority</label>
-                  <select class="form-input step-input" id="taskPriority" data-next-step="4">
-                    <option value="low">Low</option>
-                    <option value="medium" selected>Medium</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
-                  </select>
-                </div>
-              </div>
-              <button type="button" class="step-continue-btn" onclick="revealTaskStep(4)">Continue</button>
-            </div>
-            <div class="form-step" data-step="4">
               <div class="form-group">
-                <label>Description (optional)</label>
-                <textarea class="form-input" id="taskDesc" rows="2" placeholder="Details..."></textarea>
+                <label>Due Date</label>
+                <input class="form-input" type="date" id="taskDueDate">
               </div>
-              <div class="modal-form-row" style="margin-top:12px">
-                <div class="form-group">
-                  <label>Estimated Hours</label>
-                  <input class="form-input" type="number" id="taskEstimated" min="0" step="0.5" placeholder="0" value="0">
-                </div>
-                <div class="form-group">
-                  <label>Hours Spent</label>
-                  <input class="form-input" type="number" id="taskSpent" min="0" step="0.5" placeholder="0" value="0">
-                </div>
+            </div>
+            <div class="modal-form-row">
+              <div class="form-group">
+                <label>Status</label>
+                <select class="form-input" id="taskStatus">
+                  <option value="todo">To Do</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="review">Review</option>
+                  <option value="done">Done</option>
+                </select>
               </div>
+              <div class="form-group">
+                <label>Priority</label>
+                <select class="form-input" id="taskPriority">
+                  <option value="low">Low</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Description (optional)</label>
+              <textarea class="form-input" id="taskDesc" rows="2" placeholder="Details..."></textarea>
+            </div>
+            <div class="modal-form-row" style="margin-top:12px">
+              <div class="form-group">
+                <label>Estimated Hours</label>
+                <input class="form-input" type="number" id="taskEstimated" min="0" step="0.5" placeholder="0" value="0">
+              </div>
+              <div class="form-group">
+                <label>Hours Spent</label>
+                <input class="form-input" type="number" id="taskSpent" min="0" step="0.5" placeholder="0" value="0">
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:12px">
+              <label>Blocked By</label>
+              <select class="form-input" id="taskBlockedBy" multiple style="min-height:60px">
+              </select>
+              <span style="font-size:10px;color:var(--muted)">Hold Ctrl/Cmd to select multiple tasks</span>
             </div>
           </div>
           <!-- Task Comments Section (only visible when editing) -->
@@ -2840,6 +2819,16 @@
           </div>
           <div class="modal-body">
             <input type="hidden" id="staffEditId">
+            <input type="hidden" id="staffAvatarUrl">
+            <div class="form-group" style="margin-bottom:14px;display:flex;align-items:center;gap:14px">
+              <div id="staffAvatarPreview" style="width:48px;height:48px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+                <span style="font-size:18px;color:var(--muted)">?</span>
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Avatar</label>
+                <input type="file" id="staffAvatarFile" accept="image/*" onchange="uploadStaffAvatar(this)" style="font-size:12px;color:var(--text)">
+              </div>
+            </div>
             <div class="form-group" style="margin-bottom:14px">
               <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Full Name</label>
               <input class="form-input" type="text" id="staffName" placeholder="Enter full name">
@@ -4890,89 +4879,12 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// ─── STEP-BY-STEP FORM LOGIC ─────────────────────────────
-function initStepForm(containerId, progressBarId, totalSteps, isEdit) {
-  const container = document.getElementById(containerId);
-  const steps = container.querySelectorAll('.form-step');
-  const progressBar = document.getElementById(progressBarId);
+// ─── STEP-BY-STEP FORM LOGIC (disabled — all fields shown at once) ───
+function initStepForm() { /* no-op: modals now show all fields */ }
+function stepInputKeyHandler() { /* no-op */ }
 
-  steps.forEach(s => {
-    s.classList.remove('step-visible', 'step-all');
-  });
-
-  if (isEdit) {
-    // Show all steps at once when editing
-    steps.forEach(s => s.classList.add('step-all'));
-    if (progressBar) progressBar.style.width = '100%';
-    return;
-  }
-
-  // Sequential reveal: show only step 1
-  const step1 = container.querySelector('[data-step="1"]');
-  if (step1) {
-    requestAnimationFrame(() => {
-      step1.classList.add('step-visible');
-    });
-  }
-  if (progressBar) progressBar.style.width = (1 / totalSteps * 100) + '%';
-
-  // Add Enter key listeners to step inputs
-  container.querySelectorAll('.step-input').forEach(input => {
-    input.removeEventListener('keydown', stepInputKeyHandler);
-    input.addEventListener('keydown', stepInputKeyHandler);
-  });
-}
-
-function stepInputKeyHandler(e) {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    const nextStep = parseInt(e.target.dataset.nextStep);
-    if (nextStep) {
-      const container = e.target.closest('.modal-form');
-      if (container.id === 'projFormSteps') revealProjStep(nextStep);
-      else if (container.id === 'taskFormSteps') revealTaskStep(nextStep);
-    }
-  }
-}
-
-let projCurrentStep = 1;
-const projTotalSteps = 5;
-
-function revealProjStep(stepNum) {
-  if (stepNum <= projCurrentStep) return;
-  projCurrentStep = stepNum;
-  const container = document.getElementById('projFormSteps');
-  const step = container.querySelector('[data-step="' + stepNum + '"]');
-  if (step) {
-    requestAnimationFrame(() => {
-      step.classList.add('step-visible');
-      // Focus the first input in the new step
-      const firstInput = step.querySelector('.form-input');
-      if (firstInput) setTimeout(() => firstInput.focus(), 300);
-    });
-  }
-  const progressBar = document.getElementById('projStepProgressBar');
-  if (progressBar) progressBar.style.width = (stepNum / projTotalSteps * 100) + '%';
-}
-
-let taskCurrentStep = 1;
-const taskTotalSteps = 4;
-
-function revealTaskStep(stepNum) {
-  if (stepNum <= taskCurrentStep) return;
-  taskCurrentStep = stepNum;
-  const container = document.getElementById('taskFormSteps');
-  const step = container.querySelector('[data-step="' + stepNum + '"]');
-  if (step) {
-    requestAnimationFrame(() => {
-      step.classList.add('step-visible');
-      const firstInput = step.querySelector('.form-input');
-      if (firstInput) setTimeout(() => firstInput.focus(), 300);
-    });
-  }
-  const progressBar = document.getElementById('taskStepProgressBar');
-  if (progressBar) progressBar.style.width = (stepNum / taskTotalSteps * 100) + '%';
-}
+function revealProjStep() { /* no-op */ }
+function revealTaskStep() { /* no-op */ }
 
 // ─── INIT ────────────────────────────────────────────────
 (function init() {
@@ -5711,6 +5623,18 @@ async function loadAllUsers() {
   } catch(e) { allUsers = []; }
 }
 
+function userAvatar(user, size) {
+    size = size || 24;
+    if (!user || !user.name) return '';
+    if (user.avatar) {
+        return '<img src="'+user.avatar+'" style="width:'+size+'px;height:'+size+'px;border-radius:50%;object-fit:cover;flex-shrink:0">';
+    }
+    var initials = (user.name || '?').split(' ').map(function(w){return w[0]}).join('').toUpperCase().slice(0,2);
+    var colors = ['#D66A1F','#1E4BFF','#22C55E','#F59E0B','#EF4444','#8B5CF6','#EC4899'];
+    var color = colors[user.name.charCodeAt(0) % colors.length];
+    return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';display:inline-flex;align-items:center;justify-content:center;font-size:'+(size*0.4)+'px;font-weight:600;color:#fff;flex-shrink:0">'+initials+'</div>';
+}
+
 const statusClassMap = { 'not-started':'badge-draft','in-progress':'badge-progress','review':'badge-reviewed','completed':'badge-completed','todo':'badge-draft','done':'badge-completed' };
 const statusLabelMap = { 'not-started':'Not Started','in-progress':'In Progress','review':'Review','completed':'Completed','todo':'To Do','done':'Done' };
 const taskStatusCycle = ['todo','in-progress','review','done'];
@@ -5958,6 +5882,7 @@ function renderProjects() {
               '<div style="height:100%;width:'+bPct+'%;background:'+(overBudget?'var(--danger)':'var(--success)')+';border-radius:4px;transition:width .3s"></div>' +
             '</div>';
         })() : '') +
+        ((p.members && p.members.length) ? '<div style="display:flex;align-items:center;margin-top:10px"><div style="display:flex">' + p.members.slice(0,5).map(function(m,i){ return '<div style="margin-left:'+(i>0?'-6':'0')+'px;position:relative;z-index:'+(5-i)+'">' + userAvatar(m, 24) + '</div>'; }).join('') + '</div>' + (p.members.length > 5 ? '<span style="font-size:10px;color:var(--muted);margin-left:4px">+' + (p.members.length-5) + '</span>' : '') + '</div>' : '') +
         '<div style="display:flex;gap:6px;margin-top:12px">' +
           '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openProjectModal(\''+p._id+'\')" style="font-size:11px">Edit</button>' +
           '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();deleteProject(\''+p._id+'\')" style="font-size:11px;color:var(--danger)">Delete</button>' +
@@ -6002,8 +5927,6 @@ function openProjectModal(id) {
     document.getElementById('projSpent').value = 0;
     document.getElementById('projColor').value = '#D66A1F';
   }
-  projCurrentStep = 1;
-  initStepForm('projFormSteps', 'projStepProgressBar', projTotalSteps, !!id);
   openModal('projectModal');
 }
 
@@ -6076,6 +5999,7 @@ async function openProjectDetail(id) {
 
 async function loadProjectTasks(projectId) {
   try {
+    await loadAllUsers();
     const tasks = await apiFetch('/api/tasks?project=' + projectId);
     if (!tasks) return;
     const list = sortTasks(Array.isArray(tasks) ? tasks : []);
@@ -6095,16 +6019,39 @@ async function loadProjectTasks(projectId) {
         : '';
     }
 
-    container.innerHTML = list.map(t => {
+    // Bulk toolbar
+    var bulkHtml = '<div id="bulkToolbar" style="display:none;padding:10px 0;margin-bottom:8px;border-bottom:1px solid var(--border);display:none;align-items:center;gap:10px;flex-wrap:wrap">' +
+      '<span id="bulkCount" style="font-size:12px;color:var(--muted)">0 selected</span>' +
+      '<select class="form-input" id="bulkReassignSelect" style="width:auto;font-size:12px;padding:4px 10px"><option value="">Reassign to...</option>' + allUsers.map(function(u){return '<option value="'+u._id+'">'+u.name+'</option>'}).join('') + '</select>' +
+      '<button class="btn btn-primary btn-sm" onclick="bulkReassign()" style="font-size:11px;padding:4px 12px">Reassign</button>' +
+      '<select class="form-input" id="bulkStatusSelect" style="width:auto;font-size:12px;padding:4px 10px"><option value="">Change status...</option><option value="todo">To Do</option><option value="in-progress">In Progress</option><option value="review">Review</option><option value="done">Done</option></select>' +
+      '<button class="btn btn-primary btn-sm" onclick="bulkChangeStatus()" style="font-size:11px;padding:4px 12px">Apply</button>' +
+      '<button class="btn btn-sm" onclick="bulkDelete()" style="font-size:11px;padding:4px 12px;background:var(--danger);color:#fff;border:none;border-radius:6px">Delete Selected</button>' +
+    '</div>';
+
+    // Select all header
+    var headerHtml = '<div style="display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:4px">' +
+      '<input type="checkbox" onchange="toggleBulkSelect(this.checked)" style="accent-color:var(--orange);width:16px;height:16px" title="Select all">' +
+      '<span style="font-size:11px;color:var(--muted);font-weight:600">Select All</span>' +
+    '</div>';
+
+    container.innerHTML = bulkHtml + headerHtml + list.map(t => {
       const di = dueDateInfo(t.dueDate, t.status);
       const timeOverrun = t.spent > t.estimated && t.estimated > 0;
       const timeStr = t.estimated ? '<span style="font-size:11px;'+(timeOverrun?'color:var(--danger);font-weight:600':'color:var(--muted)')+'">'+t.spent+'h/'+t.estimated+'h</span>' : '';
+      var hasBlocker = (t.blockedBy || []).some(function(b){ return b.status && b.status !== 'done'; });
+      var blockedBadge = hasBlocker ? '<span style="font-size:10px;padding:1px 6px;border-radius:4px;background:var(--danger);color:#fff;font-weight:600;white-space:nowrap">Blocked</span>' : '';
+      var avatarHtml = t.assignee ? '<span style="display:inline-flex;align-items:center;gap:4px">' + userAvatar(t.assignee, 20) + '<span style="color:var(--muted)">'+t.assignee.name+'</span></span>' : '<span style="color:var(--muted)">Unassigned</span>';
       return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">' +
-        '<input type="checkbox" '+(t.status==='done'?'checked':'')+' onchange="toggleTaskDone(\''+t._id+'\',this.checked)" style="accent-color:var(--orange);width:16px;height:16px">' +
+        '<input type="checkbox" class="bulk-task-cb" data-task-id="'+t._id+'" onchange="updateBulkToolbar()" style="accent-color:var(--orange);width:16px;height:16px">' +
+        '<input type="checkbox" '+(t.status==='done'?'checked':'')+' onchange="toggleTaskDone(\''+t._id+'\',this.checked)" style="accent-color:var(--orange);width:16px;height:16px" title="Mark done">' +
         '<div style="flex:1;min-width:0">' +
-          '<span style="font-size:13px;color:var(--text);'+(t.status==='done'?'text-decoration:line-through;opacity:.5':'')+'">'+t.title+'</span>' +
-          '<div style="display:flex;gap:8px;margin-top:3px;font-size:11px">' +
-            (t.assignee ? '<span style="color:var(--muted)">'+t.assignee.name+'</span>' : '<span style="color:var(--muted)">Unassigned</span>') +
+          '<div style="display:flex;align-items:center;gap:6px">' +
+            '<span style="font-size:13px;color:var(--text);'+(t.status==='done'?'text-decoration:line-through;opacity:.5':'')+'">'+t.title+'</span>' +
+            blockedBadge +
+          '</div>' +
+          '<div style="display:flex;gap:8px;margin-top:3px;font-size:11px;align-items:center">' +
+            avatarHtml +
             (di.text ? '<span style="'+di.cls+'">Due: '+di.text+'</span>' : '') +
             timeStr +
           '</div>' +
@@ -6118,6 +6065,72 @@ async function loadProjectTasks(projectId) {
   } catch(e) { console.error(e); }
 }
 
+// ── Bulk Task Operations ──
+function toggleBulkSelect(checked) {
+  document.querySelectorAll('.bulk-task-cb').forEach(function(cb) { cb.checked = checked; });
+  updateBulkToolbar();
+}
+
+function getSelectedTaskIds() {
+  return Array.from(document.querySelectorAll('.bulk-task-cb:checked')).map(function(cb) { return cb.dataset.taskId; });
+}
+
+function updateBulkToolbar() {
+  var ids = getSelectedTaskIds();
+  var toolbar = document.getElementById('bulkToolbar');
+  if (!toolbar) return;
+  if (ids.length > 0) {
+    toolbar.style.display = 'flex';
+    document.getElementById('bulkCount').textContent = ids.length + ' selected';
+  } else {
+    toolbar.style.display = 'none';
+  }
+}
+
+async function bulkReassign() {
+  var ids = getSelectedTaskIds();
+  var assignee = document.getElementById('bulkReassignSelect').value;
+  if (!assignee) return showToast('Select a user to reassign to', 'error');
+  if (!ids.length) return showToast('No tasks selected', 'error');
+  try {
+    await Promise.all(ids.map(function(id) {
+      return apiFetch('/api/tasks/' + id, { method: 'PATCH', body: JSON.stringify({ assignee: assignee }) });
+    }));
+    showToast(ids.length + ' tasks reassigned', 'success');
+    loadProjectTasks(currentProjectId);
+    loadProjects();
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+async function bulkChangeStatus() {
+  var ids = getSelectedTaskIds();
+  var status = document.getElementById('bulkStatusSelect').value;
+  if (!status) return showToast('Select a status', 'error');
+  if (!ids.length) return showToast('No tasks selected', 'error');
+  try {
+    await Promise.all(ids.map(function(id) {
+      return apiFetch('/api/tasks/' + id, { method: 'PATCH', body: JSON.stringify({ status: status }) });
+    }));
+    showToast(ids.length + ' tasks updated', 'success');
+    loadProjectTasks(currentProjectId);
+    loadProjects();
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+async function bulkDelete() {
+  var ids = getSelectedTaskIds();
+  if (!ids.length) return showToast('No tasks selected', 'error');
+  if (!confirm('Delete ' + ids.length + ' selected tasks? This cannot be undone.')) return;
+  try {
+    await Promise.all(ids.map(function(id) {
+      return apiFetch('/api/tasks/' + id, { method: 'DELETE' });
+    }));
+    showToast(ids.length + ' tasks deleted', 'success');
+    loadProjectTasks(currentProjectId);
+    loadProjects();
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
 async function toggleTaskDone(taskId, done) {
   await apiFetch('/api/tasks/' + taskId, { method: 'PATCH', body: JSON.stringify({ status: done ? 'done' : 'todo' }) });
   loadProjectTasks(currentProjectId);
@@ -6128,6 +6141,21 @@ async function openTaskModal(taskId) {
   await loadAllUsers();
   const sel = document.getElementById('taskAssignee');
   sel.innerHTML = '<option value="">Unassigned</option>' + allUsers.map(u => '<option value="'+u._id+'">'+u.name+'</option>').join('');
+
+  // Populate blockedBy options with tasks from the same project
+  var blockedBySel = document.getElementById('taskBlockedBy');
+  blockedBySel.innerHTML = '';
+  if (currentProjectId) {
+    try {
+      var projTasks = await apiFetch('/api/tasks?project=' + currentProjectId);
+      var ptList = Array.isArray(projTasks) ? projTasks : [];
+      ptList.forEach(function(pt) {
+        if (pt._id !== taskId) {
+          blockedBySel.innerHTML += '<option value="'+pt._id+'">'+pt.title+' ('+pt.status+')</option>';
+        }
+      });
+    } catch(e) {}
+  }
 
   document.getElementById('taskEditId').value = taskId || '';
   document.getElementById('taskProjectId').value = currentProjectId;
@@ -6146,6 +6174,11 @@ async function openTaskModal(taskId) {
       document.getElementById('taskDesc').value = t.description || '';
       document.getElementById('taskEstimated').value = t.estimated || 0;
       document.getElementById('taskSpent').value = t.spent || 0;
+      // Populate blockedBy selections
+      var blockedIds = (t.blockedBy || []).map(function(b) { return b._id || b; });
+      Array.from(blockedBySel.options).forEach(function(opt) {
+        opt.selected = blockedIds.indexOf(opt.value) !== -1;
+      });
       // Show comments section when editing
       document.getElementById('taskCommentsSection').style.display = 'block';
       renderTaskComments(t.comments || []);
@@ -6163,8 +6196,6 @@ async function openTaskModal(taskId) {
     document.getElementById('taskCommentsSection').style.display = 'none';
     document.getElementById('taskCommentsList').innerHTML = '';
   }
-  taskCurrentStep = 1;
-  initStepForm('taskFormSteps', 'taskStepProgressBar', taskTotalSteps, !!taskId);
   openModal('taskModal');
 }
 
@@ -6182,7 +6213,8 @@ async function saveTask() {
     priority: document.getElementById('taskPriority').value,
     description: document.getElementById('taskDesc').value.trim(),
     estimated: parseFloat(document.getElementById('taskEstimated').value) || 0,
-    spent: parseFloat(document.getElementById('taskSpent').value) || 0
+    spent: parseFloat(document.getElementById('taskSpent').value) || 0,
+    blockedBy: Array.from(document.getElementById('taskBlockedBy').selectedOptions).map(function(o){return o.value})
   };
 
   const btn = document.getElementById('taskSaveBtn');
@@ -6275,11 +6307,14 @@ async function loadMyTasks() {
             const di = dueDateInfo(t.dueDate, t.status);
             const timeOverrun = t.spent > t.estimated && t.estimated > 0;
             const timeStr = t.estimated ? '<span style="font-size:10px;'+(timeOverrun?'color:var(--danger);font-weight:600':'color:var(--muted)')+'">'+t.spent+'h/'+t.estimated+'h</span>' : '';
+            var hasBlocker = (t.blockedBy || []).some(function(b){ return b.status && b.status !== 'done'; });
+            var blockedBadge = hasBlocker ? '<span style="font-size:9px;padding:1px 6px;border-radius:4px;background:var(--danger);color:#fff;font-weight:600">Blocked</span>' : '';
             return '<div class="kanban-card kanban-card-enter" draggable="true" data-task-id="'+t._id+'" ondragstart="kanbanDragStart(event)" ondragend="kanbanDragEnd(event)" style="transition:opacity .2s,transform .2s">' +
               '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
                 (t.project ? '<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:'+(t.project.color||'var(--orange)')+';color:#fff;white-space:nowrap">'+t.project.name+'</span>' : '') +
                 priorityDot(t.priority) +
                 timeStr +
+                blockedBadge +
                 '<span style="margin-left:auto">' + statusBadge(t.status, { clickable: true, taskId: t._id, context: 'mytasks' }) + '</span>' +
               '</div>' +
               '<p style="font-size:13px;color:var(--text);'+(t.status==='done'?'text-decoration:line-through;opacity:.5':'')+'">'+t.title+'</p>' +
@@ -6458,7 +6493,7 @@ async function loadCheckIns() {
       const isToday = c.date === new Date().toISOString().slice(0,10);
       return '<div class="card" style="padding:18px 20px;margin-bottom:12px;max-width:640px;border-left:3px solid '+(isToday?'var(--orange)':'var(--border)')+'">' +
         '<div style="display:flex;justify-content:space-between;align-items:center">' +
-          '<strong style="font-size:14px;color:var(--text)">'+(c.user?.name||'Unknown')+'</strong>' +
+          '<span style="display:flex;align-items:center;gap:8px">' + (c.user ? userAvatar(c.user, 28) : '') + '<strong style="font-size:14px;color:var(--text)">'+(c.user?.name||'Unknown')+'</strong></span>' +
           '<span style="font-size:11px;color:var(--muted)">'+c.date+(isToday?' (today)':'')+'</span>' +
         '</div>' +
         (c.yesterday ? '<div style="margin-top:10px"><span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Yesterday</span><p style="font-size:13px;color:var(--text);margin-top:2px">'+c.yesterday+'</p></div>' : '') +
@@ -7577,6 +7612,9 @@ function openStaffModal(userId) {
   document.getElementById('staffPassword').value = '';
   document.getElementById('staffRole').value = 'staff';
   document.getElementById('staffPwdHint').textContent = '';
+  document.getElementById('staffAvatarUrl').value = '';
+  document.getElementById('staffAvatarPreview').innerHTML = '<span style="font-size:18px;color:var(--muted)">?</span>';
+  document.getElementById('staffAvatarFile').value = '';
   setPermissionsInModal(null); // reset to defaults
 
   if (userId) {
@@ -7590,6 +7628,11 @@ function openStaffModal(userId) {
     document.getElementById('staffPwdHint').textContent = '(leave blank to keep current)';
     document.getElementById('staffSaveBtn').textContent = 'Update';
     setPermissionsInModal(user.permissions);
+    // Populate avatar
+    if (user.avatar) {
+      document.getElementById('staffAvatarUrl').value = user.avatar;
+      document.getElementById('staffAvatarPreview').innerHTML = '<img src="'+user.avatar+'" style="width:48px;height:48px;border-radius:50%;object-fit:cover">';
+    }
   } else {
     document.getElementById('staffModalTitle').textContent = 'Add Staff';
     document.getElementById('staffSaveBtn').textContent = 'Create';
@@ -7597,6 +7640,30 @@ function openStaffModal(userId) {
 
   togglePermissionsPanel();
   openModal('staffModal');
+}
+
+async function uploadStaffAvatar(input) {
+  if (!input.files || !input.files[0]) return;
+  var formData = new FormData();
+  formData.append('file', input.files[0]);
+  try {
+    var token = localStorage.getItem('gl_token');
+    var resp = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData
+    });
+    var data = await resp.json();
+    if (data && data.url) {
+      document.getElementById('staffAvatarUrl').value = data.url;
+      document.getElementById('staffAvatarPreview').innerHTML = '<img src="'+data.url+'" style="width:48px;height:48px;border-radius:50%;object-fit:cover">';
+      showToast('Avatar uploaded', 'success');
+    } else {
+      showToast(data.error || 'Upload failed', 'error');
+    }
+  } catch(e) {
+    showToast('Upload error: ' + e.message, 'error');
+  }
 }
 
 async function saveStaffUser() {
@@ -7616,11 +7683,13 @@ async function saveStaffUser() {
   btn.disabled = true;
   btn.textContent = 'Saving...';
 
+  var avatar = document.getElementById('staffAvatarUrl').value;
   try {
     if (id) {
       const body = { name, email, role };
       if (password) body.password = password;
       if (permissions) body.permissions = permissions;
+      if (avatar) body.avatar = avatar;
       const res = await apiFetch('/api/auth/users/' + id, {
         method: 'PATCH',
         body: JSON.stringify(body)
@@ -7637,6 +7706,7 @@ async function saveStaffUser() {
       }
       const body = { name, email, password, role };
       if (permissions) body.permissions = permissions;
+      if (avatar) body.avatar = avatar;
       const res = await apiFetch('/api/auth/register', {
         method: 'POST',
         body: JSON.stringify(body)

@@ -18,7 +18,7 @@ router.get('/', requireAuth, requirePermission('checkins'), async (req, res) => 
         }
 
         const checkins = await CheckIn.find(filter)
-            .populate('user', 'name email')
+            .populate('user', 'name email avatar')
             .sort({ date: -1, createdAt: -1 })
             .limit(parseInt(req.query.limit) || 50);
         res.json(checkins);
@@ -43,7 +43,7 @@ router.post('/', requireAuth, requirePermission('checkins'), async (req, res) =>
             { yesterday, today, blockers },
             { new: true, upsert: true, runValidators: true }
         );
-        const populated = await checkin.populate('user', 'name email');
+        const populated = await checkin.populate('user', 'name email avatar');
         res.json(populated);
     } catch (err) {
         res.status(500).json({ error: err.message });

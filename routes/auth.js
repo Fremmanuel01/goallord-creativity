@@ -56,7 +56,7 @@ async function seedAdmin() {
 // GET /api/auth/users — list all users (for assignee dropdowns)
 router.get('/users', requireAuth, async (req, res) => {
   try {
-    const users = await User.find({}, 'name email role permissions createdAt').sort({ name: 1 });
+    const users = await User.find({}, 'name email role permissions avatar createdAt').sort({ name: 1 });
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -66,7 +66,7 @@ router.get('/users', requireAuth, async (req, res) => {
 // POST /api/auth/register — create a staff/admin account (admin only)
 router.post('/register', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { name, email, password, role, permissions } = req.body;
+    const { name, email, password, role, permissions, avatar } = req.body;
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Name, email and password are required' });
     }
@@ -81,6 +81,7 @@ router.post('/register', requireAuth, requireAdmin, async (req, res) => {
     if (permissions && typeof permissions === 'object') {
       userData.permissions = permissions;
     }
+    if (avatar) userData.avatar = avatar;
     const user = await User.create(userData);
 
     res.status(201).json({
@@ -99,12 +100,13 @@ router.post('/register', requireAuth, requireAdmin, async (req, res) => {
 // PATCH /api/auth/users/:id — update a user (admin only)
 router.patch('/users/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { name, email, password, role, permissions } = req.body;
+    const { name, email, password, role, permissions, avatar } = req.body;
     const updates = {};
     if (name) updates.name = name;
     if (email) updates.email = email.toLowerCase();
     if (role && ['admin', 'staff'].includes(role)) updates.role = role;
     if (password) updates.password = await bcrypt.hash(password, 10);
+    if (typeof avatar === 'string') updates.avatar = avatar;
     if (permissions && typeof permissions === 'object') {
       // Set each permission key individually so Mongoose merges correctly
       for (const [key, val] of Object.entries(permissions)) {

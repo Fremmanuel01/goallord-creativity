@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const Task = require('../models/Task');
+const Project = require('../models/Project');
 const { requireAuth, requirePermission } = require('../middleware/auth');
 
 // List tasks (filter by project, assignee, status)
@@ -25,8 +26,9 @@ router.get('/', requireAuth, requirePermission('tasks'), async (req, res) => {
         }
 
         const tasks = await Task.find(filter)
-            .populate('assignee', 'name email')
+            .populate('assignee', 'name email avatar')
             .populate('project', 'name color')
+            .populate('blockedBy', 'title status')
             .sort({ priority: -1, dueDate: 1 });
         res.json(tasks);
     } catch (err) {
@@ -38,8 +40,9 @@ router.get('/', requireAuth, requirePermission('tasks'), async (req, res) => {
 router.get('/:id', requireAuth, requirePermission('tasks'), async (req, res) => {
     try {
         const task = await Task.findById(req.params.id)
-            .populate('assignee', 'name email')
+            .populate('assignee', 'name email avatar')
             .populate('project', 'name')
+            .populate('blockedBy', 'title status')
             .populate('comments.user', 'name');
         if (!task) return res.status(404).json({ error: 'Not found' });
 
@@ -59,7 +62,7 @@ router.get('/:id', requireAuth, requirePermission('tasks'), async (req, res) => 
 // Create
 router.post('/', requireAuth, requirePermission('tasks'), async (req, res) => {
     try {
-        const { title, description, project, assignee, status, priority, dueDate, estimated, spent } = req.body;
+        const { title, description, project, assignee, status, priority, dueDate, estimated, spent, blockedBy } = req.body;
 
         // Input validation
         if (!title || typeof title !== 'string' || !title.trim()) {
@@ -83,6 +86,7 @@ router.post('/', requireAuth, requirePermission('tasks'), async (req, res) => {
             dueDate: dueDate || null,
             estimated: estimated || 0,
             spent: spent || 0,
+            blockedBy: Array.isArray(blockedBy) ? blockedBy : [],
             createdBy: req.user.id
         });
         const populated = await task.populate([
@@ -109,9 +113,27 @@ router.patch('/:id', requireAuth, requirePermission('tasks'), async (req, res) =
         }
 
         const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
-            .populate('assignee', 'name email')
-            .populate('project', 'name color');
+            .populate('assignee', 'name email avatar')
+            .populate('project', 'name color')
+            .populate('blockedBy', 'title status');
         if (!task) return res.status(404).json({ error: 'Not found' });
+
+        // Auto-transition project status
+        if (task.project) {
+            const projectTasks = await Task.find({ project: task.project._id || task.project });
+            const allDone = projectTasks.length > 0 && projectTasks.every(t => t.status === 'done');
+            const anyActive = projectTasks.some(t => ['in-progress','review'].includes(t.status));
+
+            if (allDone) {
+                await Project.findByIdAndUpdate(task.project._id || task.project, { status: 'completed' });
+            } else if (anyActive) {
+                const proj = await Project.findById(task.project._id || task.project);
+                if (proj && proj.status === 'not-started') {
+                    await Project.findByIdAndUpdate(proj._id, { status: 'in-progress' });
+                }
+            }
+        }
+
         res.json(task);
     } catch (err) {
         res.status(500).json({ error: err.message });
