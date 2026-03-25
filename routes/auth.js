@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -47,8 +47,65 @@ async function seedAdmin() {
 // GET /api/auth/users — list all users (for assignee dropdowns)
 router.get('/users', requireAuth, async (req, res) => {
   try {
-    const users = await User.find({}, 'name email role').sort({ name: 1 });
+    const users = await User.find({}, 'name email role createdAt').sort({ name: 1 });
     res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/auth/register — create a staff/admin account (admin only)
+router.post('/register', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email and password are required' });
+    }
+    const validRoles = ['admin', 'staff'];
+    const userRole = validRoles.includes(role) ? role : 'staff';
+
+    const existing = await User.findOne({ email: email.toLowerCase() });
+    if (existing) return res.status(409).json({ error: 'A user with that email already exists' });
+
+    const hash = await bcrypt.hash(password, 10);
+    const user = await User.create({ name, email: email.toLowerCase(), password: hash, role: userRole });
+
+    res.status(201).json({ _id: user._id, name: user.name, email: user.email, role: user.role, createdAt: user.createdAt });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/auth/users/:id — update a user (admin only)
+router.patch('/users/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+    const updates = {};
+    if (name) updates.name = name;
+    if (email) updates.email = email.toLowerCase();
+    if (role && ['admin', 'staff'].includes(role)) updates.role = role;
+    if (password) updates.password = await bcrypt.hash(password, 10);
+
+    const user = await User.findByIdAndUpdate(req.params.id, updates, { new: true }).select('-password');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/auth/users/:id — delete a user (admin only)
+router.delete('/users/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    // Prevent self-deletion
+    if (req.params.id === req.user.id) {
+      return res.status(400).json({ error: 'You cannot delete your own account' });
+    }
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.json({ message: 'User deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

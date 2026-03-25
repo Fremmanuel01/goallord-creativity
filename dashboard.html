@@ -1314,6 +1314,131 @@
   @media (max-width: 480px) {
     .stat-grid { grid-template-columns: 1fr; }
   }
+
+  /* Clickable status badges */
+  .badge-clickable {
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    user-select: none;
+  }
+  .badge-clickable:hover {
+    transform: scale(1.08);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  }
+
+  /* Quick-add task input */
+  .quick-add-task {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .quick-add-task:focus {
+    border-color: var(--orange);
+    border-style: solid;
+  }
+  .quick-add-task::placeholder { color: var(--muted); }
+
+  /* Kanban board */
+  .kanban-board {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    min-height: 300px;
+  }
+  .kanban-column {
+    flex: 1;
+    min-width: 240px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+  }
+  .kanban-column-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .kanban-column-header .kanban-count {
+    background: rgba(255,255,255,0.08);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .kanban-column-body {
+    padding: 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+  }
+  .kanban-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    transition: box-shadow 0.2s;
+  }
+  .kanban-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .kanban-empty {
+    color: var(--muted);
+    font-size: 12px;
+    text-align: center;
+    padding: 20px 10px;
+  }
+
+  /* Activity timeline */
+  .activity-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .activity-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text);
+    align-items: flex-start;
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .activity-time {
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 768px) {
+    .kanban-board { flex-direction: row; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .kanban-column { min-width: 260px; }
+  }
 </style>
 </head>
 <body>
@@ -1689,6 +1814,17 @@
           </table>
         </div>
       </div>
+
+      <!-- Activity Feed -->
+      <div class="card" style="padding:24px;margin-top:24px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h3 style="font-size:15px;font-weight:600;color:var(--text)">Recent Activity</h3>
+          <span style="font-size:11px;color:var(--muted)">Last 10 items</span>
+        </div>
+        <div id="activityFeed" class="activity-feed">
+          <p style="color:var(--muted);font-size:13px">Loading activity...</p>
+        </div>
+      </div>
     </div>
 
     <!-- ══════════════════════════════════════════════════
@@ -2017,7 +2153,8 @@
             <p style="font-size:13px;color:var(--muted);margin-top:8px" id="projDetailDesc"></p>
           </div>
           <div style="padding:20px 24px">
-            <div id="projTasksList"></div>
+            <input type="text" class="quick-add-task" id="quickAddTaskInput" placeholder="Add a task and press Enter..." onkeydown="if(event.key==='Enter')quickAddTask(this)">
+            <div id="projTasksList" style="margin-top:14px"></div>
           </div>
         </div>
       </div>
@@ -2091,17 +2228,7 @@
         <h2>My Tasks</h2>
       </div>
 
-      <div class="filter-bar" style="margin-bottom:20px">
-        <select class="filter-input" id="myTaskStatusFilter" onchange="loadMyTasks()" style="max-width:180px">
-          <option value="">All</option>
-          <option value="todo">To Do</option>
-          <option value="in-progress">In Progress</option>
-          <option value="review">Review</option>
-          <option value="done">Done</option>
-        </select>
-      </div>
-
-      <div id="myTasksList"></div>
+      <div id="myTasksList" class="kanban-board"></div>
     </div>
 
     <!-- ══════════════════════════════════════════════════
@@ -2242,6 +2369,69 @@
               <small>Temporarily disable public store</small>
             </div>
             <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Staff Accounts -->
+      <div class="settings-card" style="grid-column:1/-1;margin-bottom:24px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h3>Staff Accounts</h3>
+          <button class="btn btn-primary" onclick="openStaffModal(null)" style="font-size:12px;padding:6px 16px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-2px;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Staff
+          </button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="staffTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="staffBody">
+              <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Staff Modal -->
+      <div class="modal-overlay" id="staffModal">
+        <div class="modal" style="max-width:480px;width:100%">
+          <div class="modal-header">
+            <h3 id="staffModalTitle">Add Staff</h3>
+            <button class="modal-close" onclick="closeModal('staffModal')">&#10005;</button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="staffEditId">
+            <div class="form-group" style="margin-bottom:14px">
+              <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Full Name</label>
+              <input class="form-input" type="text" id="staffName" placeholder="Enter full name">
+            </div>
+            <div class="form-group" style="margin-bottom:14px">
+              <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Email Address</label>
+              <input class="form-input" type="email" id="staffEmail" placeholder="Enter email">
+            </div>
+            <div class="form-group" style="margin-bottom:14px">
+              <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Password <span id="staffPwdHint" style="font-size:10px;opacity:.5"></span></label>
+              <input class="form-input" type="password" id="staffPassword" placeholder="Enter password">
+            </div>
+            <div class="form-group" style="margin-bottom:14px">
+              <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Role</label>
+              <select class="form-input" id="staffRole">
+                <option value="staff">Staff</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer" style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:16px">
+            <button class="btn btn-secondary" onclick="closeModal('staffModal')">Cancel</button>
+            <button class="btn btn-primary" id="staffSaveBtn" onclick="saveStaffUser()">Save</button>
           </div>
         </div>
       </div>
@@ -3514,9 +3704,12 @@ function navigate(page) {
   document.getElementById('pageTitle').textContent = pageTitles[page] || page;
   currentPage = page;
 
-  if (page === 'overview' && !chartsInitialized) {
-    setTimeout(initCharts, 50);
-    chartsInitialized = true;
+  if (page === 'overview') {
+    if (!chartsInitialized) {
+      setTimeout(initCharts, 50);
+      chartsInitialized = true;
+    }
+    loadActivityFeed();
   }
 
   if (page === 'website') {
@@ -4871,15 +5064,98 @@ async function loadAllUsers() {
   } catch(e) { allUsers = []; }
 }
 
-function statusBadge(s) {
-  const map = { 'not-started':'badge-draft','in-progress':'badge-progress','review':'badge-reviewed','completed':'badge-completed','todo':'badge-draft','done':'badge-completed' };
-  const label = { 'not-started':'Not Started','in-progress':'In Progress','review':'Review','completed':'Completed','todo':'To Do','done':'Done' };
-  return '<span class="badge '+(map[s]||'')+'">'+(label[s]||s)+'</span>';
+const statusClassMap = { 'not-started':'badge-draft','in-progress':'badge-progress','review':'badge-reviewed','completed':'badge-completed','todo':'badge-draft','done':'badge-completed' };
+const statusLabelMap = { 'not-started':'Not Started','in-progress':'In Progress','review':'Review','completed':'Completed','todo':'To Do','done':'Done' };
+const taskStatusCycle = ['todo','in-progress','review','done'];
+
+function statusBadge(s, opts) {
+  // opts: { clickable: false, taskId: null, context: null }
+  opts = opts || {};
+  const cls = 'badge ' + (statusClassMap[s]||'') + (opts.clickable ? ' badge-clickable' : '');
+  const click = opts.clickable && opts.taskId ? ' onclick="cycleTaskStatus(\''+opts.taskId+'\',\''+s+'\',\''+opts.context+'\')"' : '';
+  return '<span class="'+cls+'"'+click+'>'+(statusLabelMap[s]||s)+'</span>';
 }
 
 function priorityDot(p) {
   const c = { low:'#8892A4', medium:'#F59E0B', high:'#EF4444', urgent:'#DC2626' };
   return '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+(c[p]||c.medium)+'" title="'+p+'"></span>';
+}
+
+async function cycleTaskStatus(taskId, currentStatus, context) {
+  const idx = taskStatusCycle.indexOf(currentStatus);
+  const next = taskStatusCycle[(idx + 1) % taskStatusCycle.length];
+  try {
+    await apiFetch('/api/tasks/' + taskId, { method: 'PATCH', body: JSON.stringify({ status: next }) });
+    if (context === 'project') {
+      loadProjectTasks(currentProjectId);
+      loadProjects();
+    } else if (context === 'mytasks') {
+      loadMyTasks();
+    }
+  } catch(e) { console.error('cycleTaskStatus', e); }
+}
+
+async function quickAddTask(input) {
+  const title = input.value.trim();
+  if (!title || !currentProjectId) return;
+  input.disabled = true;
+  try {
+    const data = await apiFetch('/api/tasks', {
+      method: 'POST',
+      body: JSON.stringify({ title, project: currentProjectId, status: 'todo', priority: 'medium' })
+    });
+    if (data && (data._id || data.title)) {
+      input.value = '';
+      loadProjectTasks(currentProjectId);
+      loadProjects();
+    }
+  } catch(e) { alert('Error adding task: ' + e.message); }
+  finally { input.disabled = false; input.focus(); }
+}
+
+function dueDateInfo(dateStr, status) {
+  if (!dateStr) return { text: '', cls: '', sort: 3 };
+  const d = new Date(dateStr);
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0,10);
+  const dStr = d.toISOString().slice(0,10);
+  const formatted = d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  if (status === 'done') return { text: formatted, cls: 'color:var(--muted)', sort: 5 };
+  if (dStr < todayStr) return { text: formatted + ' (overdue)', cls: 'color:var(--danger);font-weight:600', sort: 0 };
+  if (dStr === todayStr) return { text: formatted + ' (today)', cls: 'color:var(--warning);font-weight:600', sort: 1 };
+  return { text: formatted, cls: 'color:var(--muted)', sort: 2 };
+}
+
+function sortTasks(tasks) {
+  return tasks.slice().sort((a, b) => {
+    // done tasks always at bottom
+    if (a.status === 'done' && b.status !== 'done') return 1;
+    if (a.status !== 'done' && b.status === 'done') return -1;
+    // overdue first, then today, then by date ascending
+    const aInfo = dueDateInfo(a.dueDate, a.status);
+    const bInfo = dueDateInfo(b.dueDate, b.status);
+    if (aInfo.sort !== bInfo.sort) return aInfo.sort - bInfo.sort;
+    // within same group, sort by due date ascending (no date = last)
+    const aDate = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+    const bDate = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+    return aDate - bDate;
+  });
+}
+
+function relativeTime(dateStr) {
+  if (!dateStr) return '';
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diff = now - then;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return 'yesterday';
+  if (days < 7) return days + 'd ago';
+  return new Date(dateStr).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
 }
 
 // ── Projects ──
@@ -5012,27 +5288,27 @@ async function loadProjectTasks(projectId) {
   try {
     const tasks = await apiFetch('/api/tasks?project=' + projectId);
     if (!tasks) return;
-    const list = Array.isArray(tasks) ? tasks : [];
+    const list = sortTasks(Array.isArray(tasks) ? tasks : []);
     const container = document.getElementById('projTasksList');
     if (!list.length) {
-      container.innerHTML = '<p style="color:var(--muted);font-size:13px">No tasks yet. Click "+ Add Task" above.</p>';
+      container.innerHTML = '<p style="color:var(--muted);font-size:13px">No tasks yet. Type in the box above or click "+ Add Task".</p>';
       return;
     }
     container.innerHTML = list.map(t => {
-      const due = t.dueDate ? new Date(t.dueDate).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : '';
+      const di = dueDateInfo(t.dueDate, t.status);
       return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">' +
         '<input type="checkbox" '+(t.status==='done'?'checked':'')+' onchange="toggleTaskDone(\''+t._id+'\',this.checked)" style="accent-color:var(--orange);width:16px;height:16px">' +
         '<div style="flex:1;min-width:0">' +
           '<span style="font-size:13px;color:var(--text);'+(t.status==='done'?'text-decoration:line-through;opacity:.5':'')+'">'+t.title+'</span>' +
-          '<div style="display:flex;gap:8px;margin-top:3px;font-size:11px;color:var(--muted)">' +
-            (t.assignee ? '<span>'+t.assignee.name+'</span>' : '<span>Unassigned</span>') +
-            (due ? '<span>Due: '+due+'</span>' : '') +
+          '<div style="display:flex;gap:8px;margin-top:3px;font-size:11px">' +
+            (t.assignee ? '<span style="color:var(--muted)">'+t.assignee.name+'</span>' : '<span style="color:var(--muted)">Unassigned</span>') +
+            (di.text ? '<span style="'+di.cls+'">Due: '+di.text+'</span>' : '') +
           '</div>' +
         '</div>' +
         priorityDot(t.priority) +
-        statusBadge(t.status) +
+        statusBadge(t.status, { clickable: true, taskId: t._id, context: 'project' }) +
         '<button class="btn btn-ghost btn-sm" onclick="openTaskModal(\''+t._id+'\')" style="font-size:10px;padding:4px 8px">Edit</button>' +
-        '<button class="btn-icon danger" onclick="deleteTask(\''+t._id+'\')" style="font-size:10px" title="Delete">✕</button>' +
+        '<button class="btn-icon danger" onclick="deleteTask(\''+t._id+'\')" style="font-size:10px" title="Delete">&#x2715;</button>' +
       '</div>';
     }).join('');
   } catch(e) { console.error(e); }
@@ -5113,33 +5389,48 @@ async function deleteTask(id) {
   loadProjects();
 }
 
-// ── My Tasks ──
+// ── My Tasks (Kanban) ──
 async function loadMyTasks() {
   try {
-    const status = document.getElementById('myTaskStatusFilter')?.value || '';
-    let url = '/api/tasks?mine=1';
-    if (status) url += '&status=' + status;
-    const tasks = await apiFetch(url);
-    const list = Array.isArray(tasks) ? tasks : [];
+    const tasks = await apiFetch('/api/tasks?mine=1');
+    const list = sortTasks(Array.isArray(tasks) ? tasks : []);
     const container = document.getElementById('myTasksList');
-    if (!list.length) {
-      container.innerHTML = '<p style="color:var(--muted)">No tasks assigned to you' + (status ? ' with this filter' : '') + '.</p>';
-      return;
-    }
-    container.innerHTML = list.map(t => {
-      const due = t.dueDate ? new Date(t.dueDate).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '';
-      const overdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done';
-      return '<div class="card" style="padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;gap:14px">' +
-        '<input type="checkbox" '+(t.status==='done'?'checked':'')+' onchange="quickToggleTask(\''+t._id+'\',this.checked)" style="accent-color:var(--orange);width:18px;height:18px;flex-shrink:0">' +
-        '<div style="flex:1;min-width:0">' +
-          '<div style="display:flex;align-items:center;gap:8px">' +
-            (t.project ? '<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:'+(t.project.color||'var(--orange)')+';color:#fff">'+t.project.name+'</span>' : '') +
-            priorityDot(t.priority) +
-          '</div>' +
-          '<p style="font-size:14px;color:var(--text);margin-top:6px;'+(t.status==='done'?'text-decoration:line-through;opacity:.5':'')+'">'+t.title+'</p>' +
-          (due ? '<p style="font-size:11px;margin-top:4px;color:'+(overdue?'var(--danger)':'var(--muted)')+'">Due: '+due+(overdue?' (overdue)':'')+'</p>' : '') +
+
+    const columns = [
+      { key: 'todo', label: 'To Do', color: 'var(--muted)' },
+      { key: 'in-progress', label: 'In Progress', color: '#6B8FFF' },
+      { key: 'review', label: 'Review', color: 'var(--warning)' },
+      { key: 'done', label: 'Done', color: 'var(--success)' }
+    ];
+
+    const grouped = {};
+    columns.forEach(c => grouped[c.key] = []);
+    list.forEach(t => {
+      if (grouped[t.status]) grouped[t.status].push(t);
+      else grouped['todo'].push(t); // fallback
+    });
+
+    container.innerHTML = columns.map(col => {
+      const tasks = grouped[col.key];
+      return '<div class="kanban-column">' +
+        '<div class="kanban-column-header">' +
+          '<span style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+col.color+'"></span> '+col.label+'</span>' +
+          '<span class="kanban-count">'+tasks.length+'</span>' +
         '</div>' +
-        statusBadge(t.status) +
+        '<div class="kanban-column-body">' +
+          (tasks.length ? tasks.map(t => {
+            const di = dueDateInfo(t.dueDate, t.status);
+            return '<div class="kanban-card">' +
+              '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
+                (t.project ? '<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:'+(t.project.color||'var(--orange)')+';color:#fff;white-space:nowrap">'+t.project.name+'</span>' : '') +
+                priorityDot(t.priority) +
+                '<span style="margin-left:auto">' + statusBadge(t.status, { clickable: true, taskId: t._id, context: 'mytasks' }) + '</span>' +
+              '</div>' +
+              '<p style="font-size:13px;color:var(--text);'+(t.status==='done'?'text-decoration:line-through;opacity:.5':'')+'">'+t.title+'</p>' +
+              (di.text ? '<p style="font-size:11px;margin-top:6px;'+di.cls+'">'+di.text+'</p>' : '') +
+            '</div>';
+          }).join('') : '<div class="kanban-empty">No tasks</div>') +
+        '</div>' +
       '</div>';
     }).join('');
   } catch(e) { console.error(e); }
@@ -5210,6 +5501,60 @@ async function submitCheckIn() {
     }
   } catch(e) { alert(e.message); }
   finally { btn.disabled = false; btn.textContent = 'Submit Check-in'; }
+}
+
+// ── Activity Feed (Overview) ──
+async function loadActivityFeed() {
+  const feed = document.getElementById('activityFeed');
+  if (!feed) return;
+  try {
+    const [doneTasks, checkins] = await Promise.all([
+      apiFetch('/api/tasks?status=done&sort=-updatedAt&limit=10').catch(() => []),
+      apiFetch('/api/checkins?limit=10').catch(() => [])
+    ]);
+
+    const items = [];
+
+    // Completed tasks
+    (Array.isArray(doneTasks) ? doneTasks : []).forEach(t => {
+      items.push({
+        type: 'task',
+        text: '<strong>' + (t.assignee?.name || 'Someone') + '</strong> completed <strong>' + t.title + '</strong>' + (t.project ? ' in <strong>' + (t.project.name || '') + '</strong>' : ''),
+        time: t.updatedAt || t.createdAt,
+        color: 'var(--success)'
+      });
+    });
+
+    // Check-ins
+    (Array.isArray(checkins) ? checkins : []).forEach(c => {
+      items.push({
+        type: 'checkin',
+        text: '<strong>' + (c.user?.name || 'Someone') + '</strong> checked in',
+        time: c.createdAt || c.date,
+        color: 'var(--orange)'
+      });
+    });
+
+    // Sort by time descending, take 10
+    items.sort((a, b) => new Date(b.time) - new Date(a.time));
+    const top = items.slice(0, 10);
+
+    if (!top.length) {
+      feed.innerHTML = '<p style="color:var(--muted);font-size:13px">No recent activity.</p>';
+      return;
+    }
+
+    feed.innerHTML = top.map(item =>
+      '<div class="activity-item">' +
+        '<div class="activity-dot" style="background:'+item.color+'"></div>' +
+        '<div style="flex:1;min-width:0">'+item.text+'</div>' +
+        '<span class="activity-time">'+relativeTime(item.time)+'</span>' +
+      '</div>'
+    ).join('');
+  } catch(e) {
+    feed.innerHTML = '<p style="color:var(--muted);font-size:13px">Could not load activity.</p>';
+    console.error('loadActivityFeed', e);
+  }
 }
 
 // Hero
@@ -6193,13 +6538,150 @@ async function uploadTestimonialImage(index, input) {
   }
 }
 
+// ═══════════════════════════════════════════════════════════
+//  STAFF ACCOUNT MANAGEMENT
+// ═══════════════════════════════════════════════════════════
+let allStaffUsers = [];
+
+async function loadStaffUsers() {
+  const data = await apiFetch('/api/auth/users');
+  if (!data) return;
+  allStaffUsers = Array.isArray(data) ? data : (data.data || []);
+  renderStaffTable();
+}
+
+function renderStaffTable() {
+  const tbody = document.getElementById('staffBody');
+  if (!tbody) return;
+
+  if (!allStaffUsers.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">No users found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = allStaffUsers.map(u => {
+    const created = u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '-';
+    const roleLabel = u.role === 'admin' ? 'Admin' : 'Staff';
+    const roleColor = u.role === 'admin' ? '#D66A1F' : '#3b82f6';
+    return `<tr>
+      <td style="font-weight:500">${u.name || '-'}</td>
+      <td>${u.email}</td>
+      <td><span style="background:${roleColor}22;color:${roleColor};padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600">${roleLabel}</span></td>
+      <td style="font-size:12px;color:var(--text-muted)">${created}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="openStaffModal('${u._id}')">Edit</button>
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;color:#ef4444" onclick="deleteStaffUser('${u._id}','${(u.name||'').replace(/'/g,"\\'")}')">Delete</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openStaffModal(userId) {
+  document.getElementById('staffEditId').value = '';
+  document.getElementById('staffName').value = '';
+  document.getElementById('staffEmail').value = '';
+  document.getElementById('staffPassword').value = '';
+  document.getElementById('staffRole').value = 'staff';
+  document.getElementById('staffPwdHint').textContent = '';
+
+  if (userId) {
+    const user = allStaffUsers.find(u => u._id === userId);
+    if (!user) return;
+    document.getElementById('staffEditId').value = user._id;
+    document.getElementById('staffName').value = user.name || '';
+    document.getElementById('staffEmail').value = user.email || '';
+    document.getElementById('staffRole').value = user.role || 'staff';
+    document.getElementById('staffModalTitle').textContent = 'Edit User';
+    document.getElementById('staffPwdHint').textContent = '(leave blank to keep current)';
+    document.getElementById('staffSaveBtn').textContent = 'Update';
+  } else {
+    document.getElementById('staffModalTitle').textContent = 'Add Staff';
+    document.getElementById('staffSaveBtn').textContent = 'Create';
+  }
+
+  openModal('staffModal');
+}
+
+async function saveStaffUser() {
+  const id = document.getElementById('staffEditId').value;
+  const name = document.getElementById('staffName').value.trim();
+  const email = document.getElementById('staffEmail').value.trim();
+  const password = document.getElementById('staffPassword').value;
+  const role = document.getElementById('staffRole').value;
+
+  if (!name || !email) {
+    showToast('Name and email are required', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('staffSaveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    if (id) {
+      const body = { name, email, role };
+      if (password) body.password = password;
+      const res = await apiFetch('/api/auth/users/' + id, {
+        method: 'PATCH',
+        body: JSON.stringify(body)
+      });
+      if (res && res.error) {
+        showToast(res.error, 'error');
+        return;
+      }
+      showToast('User updated successfully', 'success');
+    } else {
+      if (!password) {
+        showToast('Password is required for new users', 'error');
+        return;
+      }
+      const res = await apiFetch('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ name, email, password, role })
+      });
+      if (res && res.error) {
+        showToast(res.error, 'error');
+        return;
+      }
+      showToast('User created successfully', 'success');
+    }
+    closeModal('staffModal');
+    loadStaffUsers();
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = id ? 'Update' : 'Create';
+  }
+}
+
+async function deleteStaffUser(userId, userName) {
+  if (!confirm('Delete user "' + userName + '"? This cannot be undone.')) return;
+  try {
+    const res = await apiFetch('/api/auth/users/' + userId, { method: 'DELETE' });
+    if (res && res.error) {
+      showToast(res.error, 'error');
+      return;
+    }
+    showToast('User deleted', 'success');
+    loadStaffUsers();
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  }
+}
+
 // ── Load API data on page init ────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   loadApplicantsFromAPI();
   loadClientsFromAPI();
   loadOrdersFromAPI();
   loadOverviewStats();
+  loadActivityFeed();
   loadContacts();
+  loadStaffUsers();
 });
 
 // ═══════════════════════════════════════════════════════════
