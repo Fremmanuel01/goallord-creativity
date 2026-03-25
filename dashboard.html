@@ -1687,6 +1687,259 @@
     50% { transform: scale(1.2); }
     100% { transform: scale(1); }
   }
+
+  /* ── Premium Project Analytics ── */
+  .pm-analytics {
+    margin-bottom: 20px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+    border: 1px solid rgba(255,255,255,0.06);
+    overflow: hidden;
+    transition: all 0.4s ease;
+  }
+  .pm-analytics-header {
+    padding: 16px 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  .pm-analytics-header:hover { background: rgba(255,255,255,0.02); }
+  .pm-analytics-header h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pm-analytics-summary {
+    font-size: 12px;
+    color: var(--muted);
+    display: none;
+  }
+  .pm-analytics.collapsed .pm-analytics-summary { display: inline; }
+  .pm-analytics.collapsed .pm-analytics-body { display: none !important; }
+  .pm-analytics-arrow {
+    color: var(--muted);
+    transition: transform 0.3s ease;
+    font-size: 16px;
+  }
+  .pm-analytics.collapsed .pm-analytics-arrow { transform: rotate(-90deg); }
+  .pm-analytics-body {
+    padding: 0 20px 24px;
+    animation: pmFadeIn 0.3s ease;
+  }
+  @keyframes pmFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .pm-metrics-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .pm-metric-card {
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(255,255,255,0.06);
+    backdrop-filter: blur(12px);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .pm-metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.03), transparent);
+    pointer-events: none;
+  }
+  .pm-metric-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.12);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+  .pm-metric-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+  .pm-metric-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .pm-metric-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    transition: all 0.6s ease;
+  }
+  .pm-metric-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  .pm-metric-ring {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .pm-panels-row {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 16px;
+  }
+  .pm-panel {
+    border-radius: 12px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 20px;
+    transition: all 0.3s ease;
+  }
+  .pm-panel:hover {
+    border-color: rgba(255,255,255,0.1);
+  }
+  .pm-panel-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .pm-project-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+  }
+  .pm-project-row:nth-child(odd) {
+    background: rgba(255,255,255,0.02);
+  }
+  .pm-project-row:hover {
+    background: rgba(255,255,255,0.04);
+  }
+  .pm-project-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .pm-project-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .pm-project-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pm-project-client {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .pm-project-bar-wrap {
+    width: 100px;
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .pm-project-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.8s ease;
+  }
+  .pm-project-pct {
+    font-size: 11px;
+    color: var(--muted);
+    min-width: 70px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .pm-project-due {
+    font-size: 11px;
+    min-width: 70px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .pm-donut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  .pm-donut-chart {
+    position: relative;
+  }
+  .pm-donut-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .pm-donut-center .num {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .pm-donut-center .lbl {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .pm-donut-legend {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 20px;
+    width: 100%;
+  }
+  .pm-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .pm-legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .pm-legend-count {
+    margin-left: auto;
+    font-weight: 600;
+    color: var(--text);
+  }
+  @media (max-width: 900px) {
+    .pm-metrics-row { grid-template-columns: repeat(2, 1fr); }
+    .pm-panels-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 500px) {
+    .pm-metrics-row { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -2074,34 +2327,7 @@
         </div>
       </div>
 
-      <!-- Project Analytics -->
-      <div style="margin-top:24px">
-        <h3 style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:16px">Project Progress</h3>
-        <div class="stat-grid" id="projectAnalyticsStats" style="margin-bottom:20px">
-          <div class="stat-card"><div class="stat-info"><div class="stat-label">Total Projects</div><div class="stat-value" id="pa-total-projects">--</div></div></div>
-          <div class="stat-card"><div class="stat-info"><div class="stat-label">Active Projects</div><div class="stat-value" id="pa-active-projects">--</div></div></div>
-          <div class="stat-card"><div class="stat-info"><div class="stat-label">Completed</div><div class="stat-value" id="pa-completed-projects">--</div></div></div>
-          <div class="stat-card"><div class="stat-info"><div class="stat-label">Total Tasks</div><div class="stat-value" id="pa-total-tasks">--</div></div></div>
-          <div class="stat-card"><div class="stat-info"><div class="stat-label">Tasks Done</div><div class="stat-value" id="pa-tasks-done">--</div></div></div>
-          <div class="stat-card"><div class="stat-info"><div class="stat-label">Completion Rate</div><div class="stat-value" id="pa-completion-rate">--</div></div></div>
-        </div>
-
-        <!-- Active Project Progress Bars -->
-        <div class="card" style="padding:20px;margin-bottom:20px">
-          <h4 style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px">Active Project Progress</h4>
-          <div id="projectProgressBars" style="display:flex;flex-direction:column;gap:12px">
-            <p style="color:var(--muted);font-size:13px">Loading...</p>
-          </div>
-        </div>
-
-        <!-- Tasks by Status -->
-        <div class="card" style="padding:20px">
-          <h4 style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px">Tasks by Status</h4>
-          <div id="tasksByStatus">
-            <p style="color:var(--muted);font-size:13px">Loading...</p>
-          </div>
-        </div>
-      </div>
+      <!-- Project Analytics moved to Projects page -->
     </div>
 
     <!-- ══════════════════════════════════════════════════
@@ -2337,6 +2563,89 @@
         <div style="display:flex;gap:8px">
           <button class="btn btn-ghost" onclick="sendRemindersNow()" id="sendRemindersBtn">Send Reminders</button>
           <button class="btn btn-primary" onclick="openProjectModal(null)">+ New Project</button>
+        </div>
+      </div>
+
+      <!-- Premium Project Analytics (collapsible) -->
+      <div class="pm-analytics" id="pmAnalyticsPanel">
+        <div class="pm-analytics-header" onclick="togglePmAnalytics()">
+          <h4>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+            Analytics
+            <span class="pm-analytics-summary" id="pmAnalyticsSummary"></span>
+          </h4>
+          <span class="pm-analytics-arrow">&#9660;</span>
+        </div>
+        <div class="pm-analytics-body" id="pmAnalyticsBody">
+          <!-- Row 1: Key Metrics -->
+          <div class="pm-metrics-row" id="pmMetricsRow">
+            <!-- Card 1: Total Projects -->
+            <div class="pm-metric-card" style="background:linear-gradient(135deg, rgba(214,106,31,0.12), rgba(214,106,31,0.03))">
+              <div class="pm-metric-icon" style="background:rgba(214,106,31,0.15)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+              </div>
+              <div class="pm-metric-label">Total Projects</div>
+              <div class="pm-metric-value" id="pm-total">--</div>
+              <div class="pm-metric-sub" id="pm-total-sub">-- active</div>
+            </div>
+            <!-- Card 2: Completion Rate -->
+            <div class="pm-metric-card" style="background:linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.03))">
+              <div class="pm-metric-icon" style="background:rgba(34,197,94,0.15)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <div class="pm-metric-label">Completion Rate</div>
+              <div class="pm-metric-ring">
+                <div>
+                  <div class="pm-metric-value" id="pm-rate">--%</div>
+                  <div class="pm-metric-sub" id="pm-rate-sub">overall</div>
+                </div>
+                <svg id="pm-ring-svg" width="48" height="48" viewBox="0 0 48 48">
+                  <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="4"/>
+                  <circle id="pm-ring-circle" cx="24" cy="24" r="20" fill="none" stroke="var(--success)" stroke-width="4" stroke-dasharray="0 125.6" stroke-linecap="round" transform="rotate(-90 24 24)" style="transition:stroke-dasharray 0.8s ease"/>
+                </svg>
+              </div>
+            </div>
+            <!-- Card 3: Tasks Done -->
+            <div class="pm-metric-card" style="background:linear-gradient(135deg, rgba(59,130,246,0.12), rgba(59,130,246,0.03))">
+              <div class="pm-metric-icon" style="background:rgba(59,130,246,0.15)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="pm-metric-label">Tasks Done</div>
+              <div class="pm-metric-value" id="pm-tasks">--</div>
+              <div style="margin-top:8px">
+                <div style="height:4px;border-radius:2px;background:rgba(255,255,255,0.06);overflow:hidden">
+                  <div id="pm-tasks-bar" style="height:100%;width:0%;background:#3B82F6;border-radius:2px;transition:width 0.8s ease"></div>
+                </div>
+              </div>
+            </div>
+            <!-- Card 4: Hours Tracked -->
+            <div class="pm-metric-card" style="background:linear-gradient(135deg, rgba(245,158,11,0.12), rgba(245,158,11,0.03))">
+              <div class="pm-metric-icon" style="background:rgba(245,158,11,0.15)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="pm-metric-label">Hours Tracked</div>
+              <div class="pm-metric-value" id="pm-hours">--</div>
+              <div class="pm-metric-sub" id="pm-hours-sub">-- estimated</div>
+            </div>
+          </div>
+
+          <!-- Row 2: Two panels -->
+          <div class="pm-panels-row">
+            <!-- Left: Active Projects -->
+            <div class="pm-panel">
+              <div class="pm-panel-title">Active Projects</div>
+              <div id="pmActiveProjects">
+                <p style="color:var(--muted);font-size:13px">Loading...</p>
+              </div>
+            </div>
+            <!-- Right: Tasks by Status Donut -->
+            <div class="pm-panel">
+              <div class="pm-panel-title">Tasks by Status</div>
+              <div class="pm-donut" id="pmDonut">
+                <p style="color:var(--muted);font-size:13px">Loading...</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -4147,7 +4456,6 @@ function navigate(page) {
       chartsInitialized = true;
     }
     loadActivityFeed();
-    loadProjectAnalytics();
   }
 
   if (page === 'website') {
@@ -5845,6 +6153,7 @@ async function loadProjects() {
     if (!data) return;
     allProjects = Array.isArray(data) ? data : [];
     renderProjects();
+    loadProjectAnalytics();
   } catch(e) { console.error('loadProjects', e); }
 }
 
@@ -7751,7 +8060,6 @@ document.addEventListener('DOMContentLoaded', () => {
   loadActivityFeed();
   loadContacts();
   loadStaffUsers();
-  loadProjectAnalytics();
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -8931,12 +9239,16 @@ async function runOverdueCheck() {
   }
 }
 
-// ── Project Analytics (Overview Page) ──
+// ── Premium Project Analytics (Projects Page) ──
+function togglePmAnalytics() {
+  document.getElementById('pmAnalyticsPanel').classList.toggle('collapsed');
+}
+
 async function loadProjectAnalytics() {
   try {
     const [projects, tasks] = await Promise.all([
       apiFetch('/api/projects'),
-      apiFetch('/api/tasks')
+      apiFetch('/api/tasks?mine=0')
     ]);
 
     const projList = Array.isArray(projects) ? projects : [];
@@ -8949,33 +9261,81 @@ async function loadProjectAnalytics() {
     const tasksDone = allTasks.filter(t => t.status === 'done').length;
     const completionRate = totalTasks ? Math.round((tasksDone / totalTasks) * 100) : 0;
 
-    document.getElementById('pa-total-projects').textContent = totalProjects;
-    document.getElementById('pa-active-projects').textContent = activeProjects;
-    document.getElementById('pa-completed-projects').textContent = completedProjects;
-    document.getElementById('pa-total-tasks').textContent = totalTasks;
-    document.getElementById('pa-tasks-done').textContent = tasksDone;
-    document.getElementById('pa-completion-rate').textContent = completionRate + '%';
+    // Hours: sum estimated and spent from tasks
+    let totalEstimated = 0, totalSpent = 0;
+    allTasks.forEach(t => {
+      totalEstimated += (t.estimatedHours || t.estimated_hours || 0);
+      totalSpent += (t.spentHours || t.spent_hours || t.hoursSpent || t.hours_spent || 0);
+    });
 
-    // Active project progress bars
+    // -- Summary line for collapsed state --
+    const summaryEl = document.getElementById('pmAnalyticsSummary');
+    if (summaryEl) {
+      summaryEl.textContent = activeProjects + ' active project' + (activeProjects !== 1 ? 's' : '') +
+        ' \u00B7 ' + completionRate + '% complete \u00B7 ' + tasksDone + '/' + totalTasks + ' tasks done';
+    }
+
+    // -- Card 1: Total Projects --
+    document.getElementById('pm-total').textContent = totalProjects;
+    document.getElementById('pm-total-sub').textContent = activeProjects + ' active';
+
+    // -- Card 2: Completion Rate with ring --
+    document.getElementById('pm-rate').textContent = completionRate + '%';
+    document.getElementById('pm-rate-sub').textContent = completedProjects + ' completed';
+    const ringCircle = document.getElementById('pm-ring-circle');
+    if (ringCircle) {
+      const dashVal = (completionRate / 100) * 125.6;
+      ringCircle.setAttribute('stroke-dasharray', dashVal + ' 125.6');
+    }
+
+    // -- Card 3: Tasks Done --
+    document.getElementById('pm-tasks').textContent = tasksDone + ' / ' + totalTasks;
+    const tasksBar = document.getElementById('pm-tasks-bar');
+    if (tasksBar) tasksBar.style.width = (totalTasks ? (tasksDone / totalTasks * 100) : 0) + '%';
+
+    // -- Card 4: Hours --
+    document.getElementById('pm-hours').textContent = Math.round(totalSpent) + 'h';
+    document.getElementById('pm-hours-sub').textContent = Math.round(totalEstimated) + 'h estimated';
+
+    // -- Active Projects list --
     const activeProjList = projList.filter(p => p.status === 'in-progress' || p.status === 'review');
-    const barsContainer = document.getElementById('projectProgressBars');
+    const activeContainer = document.getElementById('pmActiveProjects');
     if (!activeProjList.length) {
-      barsContainer.innerHTML = '<p style="color:var(--muted);font-size:13px">No active projects</p>';
+      activeContainer.innerHTML = '<p style="color:var(--muted);font-size:13px">No active projects</p>';
     } else {
-      barsContainer.innerHTML = activeProjList.map(p => {
-        const pct = p.taskCount ? Math.round((p.tasksDone / p.taskCount) * 100) : 0;
+      activeContainer.innerHTML = activeProjList.map(p => {
+        const done = p.tasksDone || 0;
+        const total = p.taskCount || 0;
+        const pct = total ? Math.round((done / total) * 100) : 0;
         const color = p.color || 'var(--orange)';
-        return '<div style="display:flex;align-items:center;gap:12px">' +
-          '<span style="font-size:13px;color:var(--text);min-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + p.name + '</span>' +
-          '<div style="flex:1;background:rgba(255,255,255,.06);border-radius:4px;height:8px;overflow:hidden">' +
-            '<div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:4px;transition:width .4s"></div>' +
+        const client = p.client || p.clientName || '';
+        // Due date formatting
+        let dueHtml = '';
+        if (p.deadline) {
+          const dueDate = new Date(p.deadline);
+          const now = new Date();
+          const diffDays = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+          let dueColor = 'var(--muted)';
+          let dueText = dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          if (diffDays < 0) { dueColor = 'var(--danger)'; dueText = Math.abs(diffDays) + 'd overdue'; }
+          else if (diffDays <= 3) { dueColor = 'var(--warning)'; dueText = diffDays + 'd left'; }
+          else if (diffDays <= 7) { dueColor = 'var(--warning)'; }
+          dueHtml = '<span class="pm-project-due" style="color:' + dueColor + '">' + dueText + '</span>';
+        }
+        return '<div class="pm-project-row">' +
+          '<span class="pm-project-dot" style="background:' + color + '"></span>' +
+          '<div class="pm-project-info">' +
+            '<div class="pm-project-name">' + (p.name || 'Untitled') + '</div>' +
+            (client ? '<div class="pm-project-client">' + client + '</div>' : '') +
           '</div>' +
-          '<span style="font-size:12px;color:var(--muted);min-width:36px;text-align:right">' + pct + '%</span>' +
+          '<div class="pm-project-bar-wrap"><div class="pm-project-bar" style="width:' + pct + '%;background:' + color + '"></div></div>' +
+          '<span class="pm-project-pct">' + pct + '% \u00B7 ' + done + '/' + total + '</span>' +
+          dueHtml +
         '</div>';
       }).join('');
     }
 
-    // Tasks by status breakdown
+    // -- Donut chart: Tasks by Status --
     const statusCounts = { todo: 0, 'in-progress': 0, review: 0, done: 0 };
     allTasks.forEach(t => { if (statusCounts[t.status] !== undefined) statusCounts[t.status]++; });
 
@@ -8986,18 +9346,42 @@ async function loadProjectAnalytics() {
       { key: 'done', label: 'Done', color: '#22C55E' }
     ];
 
-    const statusContainer = document.getElementById('tasksByStatus');
-    statusContainer.innerHTML = statusConfig.map(s => {
+    const circumference = 339.3; // 2 * PI * 54
+    let offset = 0;
+    let donutSegments = '';
+    statusConfig.forEach(s => {
       const count = statusCounts[s.key];
-      const pct = totalTasks ? Math.round((count / totalTasks) * 100) : 0;
-      return '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">' +
-        '<span style="font-size:12px;color:var(--muted);min-width:90px">' + s.label + '</span>' +
-        '<div style="flex:1;background:rgba(255,255,255,.06);border-radius:4px;height:10px;overflow:hidden">' +
-          '<div style="height:100%;width:' + pct + '%;background:' + s.color + ';border-radius:4px;transition:width .4s"></div>' +
+      const segLen = totalTasks ? (count / totalTasks) * circumference : 0;
+      if (segLen > 0) {
+        donutSegments += '<circle cx="70" cy="70" r="54" fill="none" stroke="' + s.color + '" stroke-width="14" ' +
+          'stroke-dasharray="' + segLen + ' ' + circumference + '" ' +
+          'stroke-dashoffset="-' + offset + '" ' +
+          'transform="rotate(-90 70 70)" style="transition:all 0.6s ease"/>';
+      }
+      offset += segLen;
+    });
+
+    const donutContainer = document.getElementById('pmDonut');
+    donutContainer.innerHTML =
+      '<div class="pm-donut-chart">' +
+        '<svg width="140" height="140" viewBox="0 0 140 140">' +
+          '<circle cx="70" cy="70" r="54" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="14"/>' +
+          donutSegments +
+        '</svg>' +
+        '<div class="pm-donut-center">' +
+          '<div class="num">' + totalTasks + '</div>' +
+          '<div class="lbl">Tasks</div>' +
         '</div>' +
-        '<span style="font-size:12px;color:var(--text);min-width:50px;text-align:right">' + count + ' (' + pct + '%)</span>' +
+      '</div>' +
+      '<div class="pm-donut-legend">' +
+        statusConfig.map(s => {
+          return '<div class="pm-legend-item">' +
+            '<span class="pm-legend-dot" style="background:' + s.color + '"></span>' +
+            '<span>' + s.label + '</span>' +
+            '<span class="pm-legend-count">' + statusCounts[s.key] + '</span>' +
+          '</div>';
+        }).join('') +
       '</div>';
-    }).join('');
 
   } catch(e) { console.error('loadProjectAnalytics', e); }
 }
