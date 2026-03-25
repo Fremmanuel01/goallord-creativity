@@ -110,6 +110,13 @@ app.use('/api/logos',         require('./routes/logos'));
 app.use('/api/projects',      require('./routes/projects'));
 app.use('/api/tasks',         require('./routes/tasks'));
 app.use('/api/checkins',      require('./routes/checkins'));
+
+// Manual trigger for task reminders (admin only)
+app.post('/api/reminders/send', require('./middleware/auth').requireAuth, require('./middleware/auth').requireAdmin, async (req, res) => {
+    const { sendTaskReminders } = require('./utils/taskReminders');
+    await sendTaskReminders();
+    res.json({ message: 'Reminders sent' });
+});
 app.use('/api/affiliate',     require('./routes/affiliate'));
 app.use('/api/analytics',    require('./routes/analytics'));
 
@@ -154,6 +161,10 @@ mongoose.connect(process.env.MONGODB_URI)
     console.log('MongoDB connected');
     await seedAll();
     httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+    // ── Task reminder emails (every 2 days) ──────────────────────
+    const { startReminderCron } = require('./utils/taskReminders');
+    startReminderCron();
 
     // ── Daily checks (payments + deadline reminders) ─────────────
     const { runOverdueCheck }      = require('./routes/payments');
