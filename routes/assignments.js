@@ -65,8 +65,9 @@ router.get('/:id', requireLecturer, async (req, res) => {
 // POST /api/assignments
 router.post('/', requireLecturer, async (req, res) => {
   try {
+    const { title, description, batch, week, deadline, maxScore, published, attachments } = req.body;
     const lecturerId = req.user.role === 'lecturer' ? req.user.id : req.body.lecturer;
-    const doc = await Assignment.create({ ...req.body, lecturer: lecturerId });
+    const doc = await Assignment.create({ title, description, batch, week, deadline, maxScore, published, attachments, lecturer: lecturerId });
     res.status(201).json(doc);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -76,7 +77,17 @@ router.post('/', requireLecturer, async (req, res) => {
 // PATCH /api/assignments/:id
 router.patch('/:id', requireLecturer, async (req, res) => {
   try {
-    const doc = await Assignment.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { title, description, batch, week, deadline, maxScore, published, attachments } = req.body;
+    const update = {};
+    if (title !== undefined) update.title = title;
+    if (description !== undefined) update.description = description;
+    if (batch !== undefined) update.batch = batch;
+    if (week !== undefined) update.week = week;
+    if (deadline !== undefined) update.deadline = deadline;
+    if (maxScore !== undefined) update.maxScore = maxScore;
+    if (published !== undefined) update.published = published;
+    if (attachments !== undefined) update.attachments = attachments;
+    const doc = await Assignment.findByIdAndUpdate(req.params.id, update, { new: true });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
   } catch (err) {

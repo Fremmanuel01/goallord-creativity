@@ -55,8 +55,9 @@ router.get('/:id', requireLecturer, async (req, res) => {
 // POST /api/materials
 router.post('/', requireLecturer, async (req, res) => {
   try {
+    const { title, description, batch, type, fileUrl, fileName, week, topic, linkUrl, published } = req.body;
     const lecturerId = req.user.role === 'lecturer' ? req.user.id : req.body.lecturer;
-    const doc = await Material.create({ ...req.body, lecturer: lecturerId });
+    const doc = await Material.create({ title, description, batch, type, fileUrl, fileName, week, topic, linkUrl, published, lecturer: lecturerId });
     res.status(201).json(doc);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -66,7 +67,19 @@ router.post('/', requireLecturer, async (req, res) => {
 // PATCH /api/materials/:id
 router.patch('/:id', requireLecturer, async (req, res) => {
   try {
-    const doc = await Material.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { title, description, batch, type, fileUrl, fileName, week, topic, linkUrl, published } = req.body;
+    const update = {};
+    if (title !== undefined) update.title = title;
+    if (description !== undefined) update.description = description;
+    if (batch !== undefined) update.batch = batch;
+    if (type !== undefined) update.type = type;
+    if (fileUrl !== undefined) update.fileUrl = fileUrl;
+    if (fileName !== undefined) update.fileName = fileName;
+    if (week !== undefined) update.week = week;
+    if (topic !== undefined) update.topic = topic;
+    if (linkUrl !== undefined) update.linkUrl = linkUrl;
+    if (published !== undefined) update.published = published;
+    const doc = await Material.findByIdAndUpdate(req.params.id, update, { new: true });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
   } catch (err) {

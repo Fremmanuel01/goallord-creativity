@@ -351,6 +351,7 @@ body {
 
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
+function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 // ── State ───────────────────────────────────────────────────────
 const AID = new URLSearchParams(location.search).get('id');
 let fees = { application: 20000, fullTuition: 150000, monthlyTuition: 60000 };
@@ -514,7 +515,14 @@ function payWithPaystack() {
     return;
   }
   if (typeof PaystackPop === 'undefined') {
-    errEl.innerHTML     = 'Paystack failed to load. <a href="" onclick="location.reload();return false;" style="color:var(--orange);">Refresh page</a> or use Bank Transfer below.';
+    errEl.textContent = 'Paystack failed to load. ';
+    var refreshLink = document.createElement('a');
+    refreshLink.href = '';
+    refreshLink.style.cssText = 'color:var(--orange)';
+    refreshLink.textContent = 'Refresh page';
+    refreshLink.onclick = function(){ location.reload(); return false; };
+    errEl.appendChild(refreshLink);
+    errEl.appendChild(document.createTextNode(' or use Bank Transfer below.'));
     errEl.style.display = 'block';
     return;
   }
@@ -592,8 +600,11 @@ async function createAccount(reference) {
     const data = await res.json();
 
     if (!res.ok) {
-      errEl.innerHTML    = (data.error || 'Account activation failed.') +
-        '<br><small>Your payment reference: <strong style="color:var(--orange);">' + reference + '</strong> — contact admin if needed.</small>';
+      errEl.textContent = data.error || 'Account activation failed.';
+      var small = document.createElement('small');
+      small.innerHTML = 'Your payment reference: <strong style="color:var(--orange);">' + escHtml(reference) + '</strong> — contact admin if needed.';
+      errEl.appendChild(document.createElement('br'));
+      errEl.appendChild(small);
       errEl.style.display = 'block';
       psRef = null;
       resetBtn(btn, 'Retry →');
@@ -604,8 +615,11 @@ async function createAccount(reference) {
     showReceipt(data.receipt, reference);
 
   } catch {
-    errEl.innerHTML    = 'Network error. Your payment may have gone through.' +
-      '<br><small>Reference: <strong style="color:var(--orange);">' + reference + '</strong> — contact admin.</small>';
+    errEl.textContent = 'Network error. Your payment may have gone through.';
+    var small2 = document.createElement('small');
+    small2.innerHTML = 'Reference: <strong style="color:var(--orange);">' + escHtml(reference) + '</strong> — contact admin.';
+    errEl.appendChild(document.createElement('br'));
+    errEl.appendChild(small2);
     errEl.style.display = 'block';
     psRef = null;
     resetBtn(btn, 'Retry →');

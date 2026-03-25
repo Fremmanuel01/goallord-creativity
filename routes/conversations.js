@@ -1,5 +1,6 @@
 const express  = require('express');
 const router   = express.Router();
+const xss      = require('xss');
 const Conversation = require('../models/Conversation');
 const { requireAuth } = require('../middleware/auth');
 
@@ -30,7 +31,12 @@ router.get('/:sessionId', requireAuth, async (req, res) => {
 // POST agent reply
 router.post('/:sessionId/reply', requireAuth, async (req, res) => {
   const { content } = req.body;
-  if (!content) return res.status(400).json({ error: 'Content required' });
+  if (!content || typeof content !== 'string' || content.trim().length === 0) {
+    return res.status(400).json({ error: 'Content required' });
+  }
+  if (content.length > 5000) {
+    return res.status(400).json({ error: 'Message too long' });
+  }
 
   try {
     const convo = await Conversation.findOne({ sessionId: req.params.sessionId });
@@ -38,7 +44,7 @@ router.post('/:sessionId/reply', requireAuth, async (req, res) => {
 
     const msg = {
       role:      'agent',
-      content,
+      content:   xss(content.trim()),
       agentName: req.user.name,
       timestamp: new Date()
     };

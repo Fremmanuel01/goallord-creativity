@@ -157,10 +157,14 @@
       const json = await res.json();
 
       if (!res.ok) {
+        errorMsg.textContent = json.error || 'Login failed.';
         if (json.paymentRequired) {
-          errorMsg.innerHTML = json.error + ' <a href="/apply-payment.html" style="color:#D66A1F;font-weight:600;">Complete payment →</a>';
-        } else {
-          errorMsg.textContent = json.error || 'Login failed.';
+          var link = document.createElement('a');
+          link.href = '/apply-payment.html';
+          link.style.cssText = 'color:#D66A1F;font-weight:600;margin-left:8px';
+          link.textContent = 'Complete payment →';
+          errorMsg.appendChild(document.createTextNode(' '));
+          errorMsg.appendChild(link);
         }
         errorMsg.style.display = 'block';
         btn.disabled = false;

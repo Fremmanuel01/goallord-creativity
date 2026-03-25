@@ -71,9 +71,17 @@ router.post('/', requireAuth, async (req, res) => {
 // PATCH /api/lecturers/:id
 router.patch('/:id', requireAuth, async (req, res) => {
   try {
-    const update = { ...req.body };
-    if (update.password) {
-      update.password = await bcrypt.hash(update.password, 12);
+    const { fullName, email, phone, bio, specialization, batches, status } = req.body;
+    const update = {};
+    if (fullName !== undefined) update.fullName = fullName;
+    if (email !== undefined) update.email = email;
+    if (phone !== undefined) update.phone = phone;
+    if (bio !== undefined) update.bio = bio;
+    if (specialization !== undefined) update.specialization = specialization;
+    if (batches !== undefined) update.batches = batches;
+    if (status !== undefined) update.status = status;
+    if (req.body.password) {
+      update.password = await bcrypt.hash(req.body.password, 12);
     }
     const lecturer = await Lecturer.findByIdAndUpdate(req.params.id, update, { new: true }).select('-password');
     if (!lecturer) return res.status(404).json({ error: 'Not found' });

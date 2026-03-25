@@ -112,7 +112,19 @@ router.patch('/:id', requireAuth, requirePermission('tasks'), async (req, res) =
             }
         }
 
-        const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+        const { title, description, assignee, status, priority, dueDate, estimated, spent, blockedBy } = req.body;
+        const updateFields = {};
+        if (title !== undefined) updateFields.title = title;
+        if (description !== undefined) updateFields.description = description;
+        if (assignee !== undefined) updateFields.assignee = assignee;
+        if (status !== undefined) updateFields.status = status;
+        if (priority !== undefined) updateFields.priority = priority;
+        if (dueDate !== undefined) updateFields.dueDate = dueDate;
+        if (estimated !== undefined) updateFields.estimated = estimated;
+        if (spent !== undefined) updateFields.spent = spent;
+        if (blockedBy !== undefined) updateFields.blockedBy = blockedBy;
+
+        const task = await Task.findByIdAndUpdate(req.params.id, updateFields, { new: true, runValidators: true })
             .populate('assignee', 'name email avatar')
             .populate('project', 'name color')
             .populate('blockedBy', 'title status');

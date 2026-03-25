@@ -652,7 +652,7 @@
     document.getElementById('prof-name').textContent = s.fullName || '—';
     document.getElementById('prof-email').textContent = s.email || '—';
     document.getElementById('prof-track').textContent = s.track || '—';
-    document.getElementById('prof-status').innerHTML = '<span class="badge badge-' + (s.status === 'Active' ? 'present' : 'absent') + '">' + s.status + '</span>';
+    document.getElementById('prof-status').innerHTML = '<span class="badge badge-' + (s.status === 'Active' ? 'present' : 'absent') + '">' + escHtml(s.status) + '</span>';
 
     // ── Attendance stats
     const totalClasses = attendData.totalClasses || 0;
@@ -704,10 +704,10 @@
       attBody.innerHTML = history.map(r =>
         '<tr>' +
         '<td>' + fmtDate(r.classDate) + '</td>' +
-        '<td>' + (r.batch ? (r.batch.name || '—') : '—') + '</td>' +
-        '<td>Week ' + (r.week || '?') + ' · ' + (r.day || '') + '</td>' +
+        '<td>' + escHtml(r.batch ? (r.batch.name || '—') : '—') + '</td>' +
+        '<td>Week ' + (r.week || '?') + ' · ' + escHtml(r.day || '') + '</td>' +
         '<td>' + (r.present ? '<span class="badge badge-present">Present</span>' : '<span class="badge badge-absent">Absent</span>') + '</td>' +
-        '<td style="color:var(--muted);font-size:13px;">' + (r.notes || '') + '</td>' +
+        '<td style="color:var(--muted);font-size:13px;">' + escHtml(r.notes || '') + '</td>' +
         '</tr>'
       ).join('');
     }
@@ -748,12 +748,12 @@
                     `<button onclick="showBankTransfer('${p._id}')" style="padding:5px 10px;font-size:12px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:6px;cursor:pointer;">Bank Transfer</button>`;
         }
         return '<tr>' +
-          '<td style="font-weight:600">' + (catLabel[p.category] || p.category || '—') + '</td>' +
+          '<td style="font-weight:600">' + escHtml(catLabel[p.category] || p.category || '—') + '</td>' +
           '<td>' + fmt(p.amountDue) + '</td>' +
           '<td>' + fmt(p.amountPaid) + '</td>' +
-          '<td><span class="badge badge-' + statusClass(p.status) + '">' + p.status + '</span></td>' +
-          '<td style="color:var(--muted)">' + (p.method || '—') + '</td>' +
-          '<td style="color:var(--muted);font-size:13px;">' + (p.reference || '—') + '</td>' +
+          '<td><span class="badge badge-' + statusClass(p.status) + '">' + escHtml(p.status) + '</span></td>' +
+          '<td style="color:var(--muted)">' + escHtml(p.method || '—') + '</td>' +
+          '<td style="color:var(--muted);font-size:13px;">' + escHtml(p.reference || '—') + '</td>' +
           '<td style="color:var(--muted)">' + (p.paidAt ? fmtDate(p.paidAt) : (p.dueDate ? 'Due ' + fmtDate(p.dueDate) : '—')) + '</td>' +
           '<td>' + actions + '</td>' +
           '</tr>';
@@ -833,19 +833,19 @@
             ${byWeek[week].map(e => `
               <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:${(e.subtopics?.length||e.objectives)?'10px':'0'}">
-                  <span style="background:rgba(214,106,31,0.12);color:var(--orange);padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700;flex-shrink:0">${e.day}</span>
-                  <span style="font-weight:700;font-size:14px">${e.topic}</span>
+                  <span style="background:rgba(214,106,31,0.12);color:var(--orange);padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700;flex-shrink:0">${escHtml(e.day)}</span>
+                  <span style="font-weight:700;font-size:14px">${escHtml(e.topic)}</span>
                 </div>
                 ${e.subtopics && e.subtopics.length ? `
                   <div style="margin-top:8px">
                     <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Sub-topics</div>
                     <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px">
-                      ${e.subtopics.map(s => `<li style="font-size:13px;color:var(--muted)">${s}</li>`).join('')}
+                      ${e.subtopics.map(s => `<li style="font-size:13px;color:var(--muted)">${escHtml(s)}</li>`).join('')}
                     </ul>
                   </div>` : ''}
                 ${e.objectives ? `
                   <div style="margin-top:8px;font-size:13px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px">
-                    <span style="font-weight:600;color:var(--text)">Objectives: </span>${e.objectives}
+                    <span style="font-weight:600;color:var(--text)">Objectives: </span>${escHtml(e.objectives)}
                   </div>` : ''}
               </div>`).join('')}
           </div>
@@ -874,9 +874,9 @@
           <div class="table-wrap">
             <table><thead><tr><th>Title</th><th>Type</th><th>Topic</th><th>Link</th></tr></thead>
             <tbody>${byWeek[week].map(m => `<tr>
-              <td style="font-weight:600">${m.title}</td>
-              <td><span style="background:rgba(30,75,255,0.12);color:#6a9fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${m.type.toUpperCase()}</span></td>
-              <td style="color:var(--muted)">${m.topic || '—'}</td>
+              <td style="font-weight:600">${escHtml(m.title)}</td>
+              <td><span style="background:rgba(30,75,255,0.12);color:#6a9fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${escHtml(m.type.toUpperCase())}</span></td>
+              <td style="color:var(--muted)">${escHtml(m.topic || '—')}</td>
               <td>${(m.fileUrl || m.linkUrl) ? `<a href="${m.fileUrl || m.linkUrl}" target="_blank" style="color:var(--orange);font-size:13px">Open ↗</a>` : '—'}</td>
             </tr>`).join('')}</tbody></table>
           </div>
@@ -915,7 +915,7 @@
             actionCell = `<button onclick="openSubmitModal('${a._id}','${a.title.replace(/'/g,"\\'")}','${(a.description||'').replace(/'/g,"\\'").replace(/\n/g,' ')}')" style="background:var(--orange);color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Submit</button>`;
           }
           return `<tr>
-            <td style="font-weight:600">${a.title}</td>
+            <td style="font-weight:600">${escHtml(a.title)}</td>
             <td>Week ${a.week}</td>
             <td>${fmtDate(a.deadline)} ${isPast && !sub ? '<span style="color:var(--red);font-size:11px">(Closed)</span>' : ''}</td>
             <td>${a.maxScore}</td>
@@ -1124,8 +1124,8 @@
       if (!items.length) { list.innerHTML = '<div class="notif-empty">No notifications yet.</div>'; return; }
       list.innerHTML = items.map(n => `
         <div class="notif-item ${n.read ? '' : 'unread'}" onclick="readNotif('${n._id}',this)">
-          <div class="notif-title">${n.title || 'Notification'}</div>
-          <div class="notif-msg">${n.message || ''}</div>
+          <div class="notif-title">${escHtml(n.title || 'Notification')}</div>
+          <div class="notif-msg">${escHtml(n.message || '')}</div>
           <div class="notif-time">${new Date(n.createdAt).toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'})}</div>
         </div>`).join('');
     } catch { /* ignore */ }

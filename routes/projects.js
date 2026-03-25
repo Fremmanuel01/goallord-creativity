@@ -102,7 +102,20 @@ router.patch('/:id', requireAuth, requirePermission('projects'), async (req, res
             }
         }
 
-        const project = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+        const { name, client, description, status, priority, deadline, members, color, budget, spent } = req.body;
+        const updateFields = {};
+        if (name !== undefined) updateFields.name = name;
+        if (client !== undefined) updateFields.client = client;
+        if (description !== undefined) updateFields.description = description;
+        if (status !== undefined) updateFields.status = status;
+        if (priority !== undefined) updateFields.priority = priority;
+        if (deadline !== undefined) updateFields.deadline = deadline;
+        if (members !== undefined) updateFields.members = members;
+        if (color !== undefined) updateFields.color = color;
+        if (budget !== undefined) updateFields.budget = budget;
+        if (spent !== undefined) updateFields.spent = spent;
+
+        const project = await Project.findByIdAndUpdate(req.params.id, updateFields, { new: true, runValidators: true })
             .populate('members', 'name email avatar');
         if (!project) return res.status(404).json({ error: 'Not found' });
         res.json(project);

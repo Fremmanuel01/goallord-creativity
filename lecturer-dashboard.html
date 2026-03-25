@@ -445,6 +445,7 @@
 </div>
 
 <script>
+function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 const TOKEN_KEY = 'gl_lecturer_token';
 const LEC_KEY   = 'gl_lecturer';
 const token = localStorage.getItem(TOKEN_KEY);
@@ -511,7 +512,7 @@ async function loadOverview() {
   document.getElementById('ov-flash').textContent = Array.isArray(flashRes) ? flashRes.length : (flashRes?.length || 0);
   const batchEl = document.getElementById('ov-batch');
   batchEl.innerHTML = activeBatch
-    ? `<strong>${activeBatch.name}</strong> — ${activeBatch.track || 'All Tracks'} — ${activeBatch.totalWeeks} weeks
+    ? `<strong>${escHtml(activeBatch.name)}</strong> — ${escHtml(activeBatch.track || 'All Tracks')} — ${activeBatch.totalWeeks} weeks
        <span style="margin-left:16px;font-size:12px;color:var(--muted)">${activeBatch.startDate ? fmtDate(activeBatch.startDate) : ''} → ${activeBatch.endDate ? fmtDate(activeBatch.endDate) : 'TBD'}</span>`
     : '<span style="color:var(--muted)">No active batch. Contact admin to set one.</span>';
 }
@@ -563,10 +564,10 @@ async function loadMaterials() {
   const tbody = document.getElementById('matTableBody');
   if (!allMaterials.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">No materials yet.</td></tr>'; return; }
   tbody.innerHTML = allMaterials.map(m => `<tr>
-    <td style="font-weight:600">${m.title}</td>
-    <td><span style="background:rgba(30,75,255,0.12);color:#6a9fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${m.type.toUpperCase()}</span></td>
+    <td style="font-weight:600">${escHtml(m.title)}</td>
+    <td><span style="background:rgba(30,75,255,0.12);color:#6a9fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${escHtml(m.type.toUpperCase())}</span></td>
     <td>Week ${m.week}</td>
-    <td style="color:var(--muted)">${m.topic || '—'}</td>
+    <td style="color:var(--muted)">${escHtml(m.topic || '—')}</td>
     <td>${m.published ? '<span class="badge-pub">Published</span>' : '<span class="badge-draft">Draft</span>'}</td>
     <td style="display:flex;gap:6px;flex-wrap:wrap">
       <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openEditMaterial('${m._id}')">Edit</button>
@@ -654,7 +655,7 @@ async function loadAssignments() {
   tbody.innerHTML = allAssignments.map(a => {
     const isPast = new Date(a.deadline) < new Date();
     return `<tr>
-      <td style="font-weight:600">${a.title}</td>
+      <td style="font-weight:600">${escHtml(a.title)}</td>
       <td>Week ${a.week}</td>
       <td>${fmtDT(a.deadline)} ${isPast ? '<span style="color:var(--red);font-size:11px">(Closed)</span>' : ''}</td>
       <td>${a.maxScore}</td>
@@ -743,7 +744,7 @@ async function viewSubmissions(id, title) {
       <thead><tr><th>Student</th><th>Submitted</th><th>Late?</th><th>Score</th><th>Action</th></tr></thead>
       <tbody>` +
     subs.map(s => `<tr>
-      <td style="font-weight:600">${s.student?.fullName || '—'}</td>
+      <td style="font-weight:600">${escHtml(s.student?.fullName || '—')}</td>
       <td style="font-size:13px;color:var(--muted)">${fmtDT(s.submittedAt)}</td>
       <td>${s.isLate ? '<span style="color:var(--red);font-size:12px;font-weight:600">Late</span>' : '<span style="color:var(--muted)">—</span>'}</td>
       <td>${s.score !== undefined && s.score !== null ? `<span style="color:var(--green);font-weight:700">${s.score}</span>` : '<span style="color:var(--muted);font-size:12px">Unscored</span>'}</td>
@@ -792,9 +793,9 @@ async function loadFlashcards() {
   const tbody = document.getElementById('flashTableBody');
   if (!allFlashSets.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">No sets yet.</td></tr>'; return; }
   tbody.innerHTML = allFlashSets.map(s => `<tr>
-    <td style="font-weight:600">${s.title}</td>
+    <td style="font-weight:600">${escHtml(s.title)}</td>
     <td>Week ${s.week}</td>
-    <td style="color:var(--muted)">${s.topic || '—'}</td>
+    <td style="color:var(--muted)">${escHtml(s.topic || '—')}</td>
     <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openCardEditor('${s._id}','${s.title.replace(/'/g,'')}')">Edit Cards</button></td>
     <td>${s.published ? '<span class="badge-pub">Published</span>' : '<span class="badge-draft">Draft</span>'}</td>
     <td style="display:flex;gap:6px">
@@ -874,8 +875,8 @@ async function loadCards() {
   if (!allCards.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty">No cards yet. Add one!</td></tr>'; return; }
   tbody.innerHTML = allCards.map((c, i) => `<tr>
     <td style="color:var(--muted)">${i + 1}</td>
-    <td>${c.question}</td>
-    <td style="color:var(--muted)">${c.correctAnswer}</td>
+    <td>${escHtml(c.question)}</td>
+    <td style="color:var(--muted)">${escHtml(c.correctAnswer)}</td>
     <td style="display:flex;gap:6px">
       <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openEditCard('${c._id}')">Edit</button>
       <button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="deleteCard('${c._id}')">Del</button>
@@ -947,7 +948,7 @@ async function loadAttendance() {
     <td>${fmtDate(s.classDate)}</td>
     <td>Week ${s.week}</td>
     <td>${s.day}</td>
-    <td style="color:var(--muted);font-size:13px">${s.topic || '—'}</td>
+    <td style="color:var(--muted);font-size:13px">${escHtml(s.topic || '—')}</td>
     <td style="color:var(--green);font-weight:600">${s.presentStudents?.length || 0}</td>
     <td style="color:var(--red);font-weight:600">${s.absentStudents?.length || 0}</td>
     <td>${s.isOpen ? '<span style="color:var(--green);font-weight:600;font-size:12px">Open</span>' : '<span style="color:var(--muted);font-size:12px">Closed</span>'}</td>
@@ -1020,8 +1021,8 @@ async function loadCurriculum() {
   tbody.innerHTML = allCurriculum.map(c => `<tr>
     <td>Week ${c.week}</td>
     <td>${c.day}</td>
-    <td style="font-weight:600">${c.topic}</td>
-    <td style="color:var(--muted);font-size:13px">${c.objectives || '—'}</td>
+    <td style="font-weight:600">${escHtml(c.topic)}</td>
+    <td style="color:var(--muted);font-size:13px">${escHtml(c.objectives || '—')}</td>
     <td style="display:flex;gap:6px">
       <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openEditCurriculum('${c._id}')">Edit</button>
       <button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="deleteCurriculum('${c._id}')">Del</button>
@@ -1107,9 +1108,9 @@ function renderStudentTable(students) {
     return;
   }
   tbody.innerHTML = students.map(s => `<tr>
-    <td style="font-weight:600">${s.fullName}</td>
-    <td style="color:var(--muted);font-size:13px">${s.email}</td>
-    <td>${s.track || '—'}</td>
+    <td style="font-weight:600">${escHtml(s.fullName)}</td>
+    <td style="color:var(--muted);font-size:13px">${escHtml(s.email)}</td>
+    <td>${escHtml(s.track || '—')}</td>
     <td><span style="font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600;background:${s.status==='Active'?'rgba(34,197,94,0.15)':'rgba(239,68,68,0.12)'};color:${s.status==='Active'?'var(--green)':'var(--red)'}">${s.status}</span></td>
     <td style="color:var(--muted);font-size:13px">${fmtDate(s.createdAt)}</td>
   </tr>`).join('');
@@ -1139,8 +1140,8 @@ async function loadNotifications() {
     if (!items.length) { list.innerHTML = '<div class="notif-empty">No notifications yet.</div>'; return; }
     list.innerHTML = items.map(n => `
       <div class="notif-item ${n.read ? '' : 'unread'}" onclick="readNotif('${n._id}',this)">
-        <div class="notif-title">${n.title || 'Notification'}</div>
-        <div class="notif-msg">${n.message || ''}</div>
+        <div class="notif-title">${escHtml(n.title || 'Notification')}</div>
+        <div class="notif-msg">${escHtml(n.message || '')}</div>
         <div class="notif-time">${fmtDate(n.createdAt)}</div>
       </div>`).join('');
   } catch { /* ignore */ }
