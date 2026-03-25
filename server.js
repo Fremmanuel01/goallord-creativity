@@ -25,13 +25,15 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.paystack.co", "https://unpkg.com", "https://prod.spline.design", "https://cdn.jsdelivr.net"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:", "https://js.paystack.co", "https://unpkg.com", "https://prod.spline.design", "https://cdn.jsdelivr.net"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             imgSrc: ["'self'", "data:", "https:", "blob:"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-            connectSrc: ["'self'", "https://api.anthropic.com", "https://api.brevo.com", "https://prod.spline.design", "wss:", "ws:"],
+            connectSrc: ["'self'", "blob:", "https://api.anthropic.com", "https://api.brevo.com", "https://prod.spline.design", "wss:", "ws:"],
             frameSrc: ["'self'", "https://js.paystack.co", "https://prod.spline.design"],
             mediaSrc: ["'self'", "blob:", "data:"],
+            workerSrc: ["'self'", "blob:"],
+            childSrc: ["'self'", "blob:"],
             objectSrc: ["'none'"],
             baseUri: ["'self'"],
             formAction: ["'self'"],
