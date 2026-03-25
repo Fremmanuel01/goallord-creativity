@@ -22,8 +22,31 @@ app.use(cors({
     credentials: true
 }));
 app.use(helmet({
-    contentSecurityPolicy: false, // disable CSP since we use inline scripts/styles
-    crossOriginEmbedderPolicy: false
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.paystack.co", "https://unpkg.com", "https://prod.spline.design", "https://cdn.jsdelivr.net"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            imgSrc: ["'self'", "data:", "https:", "blob:"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+            connectSrc: ["'self'", "https://api.anthropic.com", "https://api.brevo.com", "https://prod.spline.design", "wss:", "ws:"],
+            frameSrc: ["'self'", "https://js.paystack.co", "https://prod.spline.design"],
+            mediaSrc: ["'self'", "blob:", "data:"],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"],
+            formAction: ["'self'"],
+            frameAncestors: ["'self'"]
+        }
+    },
+    crossOriginEmbedderPolicy: false,
+    permissionsPolicy: {
+        features: {
+            camera: ["'none'"],
+            microphone: ["'none'"],
+            geolocation: ["'none'"],
+            payment: ["'self'"]
+        }
+    }
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
