@@ -2053,14 +2053,24 @@
       <div id="cms-hero">
         <div class="card" style="padding:28px;max-width:720px">
           <h3 style="margin-bottom:20px;font-size:15px;color:var(--muted)">Hero Section</h3>
+
           <div class="form-group" style="margin-bottom:16px">
-            <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Headline</label>
-            <input class="form-input" type="text" id="heroHeadline" placeholder="We Build Brands That Get Noticed.">
+            <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Eyebrow Text</label>
+            <input class="form-input" type="text" id="heroEyebrow" placeholder="Web Agency — Onitsha, Nigeria">
           </div>
           <div class="form-group" style="margin-bottom:16px">
-            <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Sub-line</label>
+            <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Headline <span style="font-size:10px;opacity:.5">(use &lt;br&gt; for line breaks, &lt;span&gt; for orange text)</span></label>
+            <input class="form-input" type="text" id="heroHeadline" placeholder='We Build<br>Brands That<br><span>Get Noticed.</span>'>
+          </div>
+          <div class="form-group" style="margin-bottom:16px">
+            <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Description</label>
             <input class="form-input" type="text" id="heroSubline" placeholder="Websites, visuals, and digital strategies…">
           </div>
+          <div class="form-group" style="margin-bottom:16px">
+            <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Social Proof Text</label>
+            <input class="form-input" type="text" id="heroProofText" placeholder="50+ projects delivered · 98% client satisfaction">
+          </div>
+
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
             <div>
               <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">CTA 1 Text</label>
@@ -2079,6 +2089,35 @@
               <input class="form-input" type="text" id="heroCta2Url">
             </div>
           </div>
+
+          <h4 style="margin-bottom:12px;font-size:13px;color:var(--muted);border-top:1px solid var(--border);padding-top:16px">Stats Bar</h4>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
+            <div>
+              <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:4px">Stat 1 Number</label>
+              <input class="form-input" type="text" id="heroStat1Num" placeholder="50+">
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:4px">Stat 2 Number</label>
+              <input class="form-input" type="text" id="heroStat2Num" placeholder="98%">
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:4px">Stat 3 Number</label>
+              <input class="form-input" type="text" id="heroStat3Num" placeholder="5+">
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:4px">Stat 1 Label</label>
+              <input class="form-input" type="text" id="heroStat1Label" placeholder="Projects Delivered">
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:4px">Stat 2 Label</label>
+              <input class="form-input" type="text" id="heroStat2Label" placeholder="Client Satisfaction">
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:4px">Stat 3 Label</label>
+              <input class="form-input" type="text" id="heroStat3Label" placeholder="Years Experience">
+            </div>
+          </div>
+
           <button class="btn btn-primary" onclick="saveHero()">Save Hero</button>
           <span id="heroSaveMsg" style="margin-left:12px;font-size:13px;color:var(--success);display:none">Saved!</span>
         </div>
@@ -4390,20 +4429,36 @@ async function deleteTeamMember(id) {
 async function loadHero() {
   const d = await loadCmsSection('hero');
   if (!d) return;
-  document.getElementById('heroHeadline').value  = d.headline  || '';
-  document.getElementById('heroSubline').value   = d.subline   || '';
-  document.getElementById('heroCta1Text').value  = d.cta1?.text || '';
-  document.getElementById('heroCta1Url').value   = d.cta1?.url  || '';
-  document.getElementById('heroCta2Text').value  = d.cta2?.text || '';
-  document.getElementById('heroCta2Url').value   = d.cta2?.url  || '';
+  document.getElementById('heroEyebrow').value   = d.eyebrow   || '';
+  document.getElementById('heroHeadline').value   = d.headline  || '';
+  document.getElementById('heroSubline').value    = d.subline   || '';
+  document.getElementById('heroProofText').value  = d.proofText || '';
+  document.getElementById('heroCta1Text').value   = d.cta1?.text || '';
+  document.getElementById('heroCta1Url').value    = d.cta1?.url  || '';
+  document.getElementById('heroCta2Text').value   = d.cta2?.text || '';
+  document.getElementById('heroCta2Url').value    = d.cta2?.url  || '';
+  document.getElementById('heroStat1Num').value   = d.stat1Num   || '';
+  document.getElementById('heroStat1Label').value = d.stat1Label || '';
+  document.getElementById('heroStat2Num').value   = d.stat2Num   || '';
+  document.getElementById('heroStat2Label').value = d.stat2Label || '';
+  document.getElementById('heroStat3Num').value   = d.stat3Num   || '';
+  document.getElementById('heroStat3Label').value = d.stat3Label || '';
 }
 
 async function saveHero() {
   const data = {
-    headline: document.getElementById('heroHeadline').value,
-    subline:  document.getElementById('heroSubline').value,
+    eyebrow:    document.getElementById('heroEyebrow').value,
+    headline:   document.getElementById('heroHeadline').value,
+    subline:    document.getElementById('heroSubline').value,
+    proofText:  document.getElementById('heroProofText').value,
     cta1: { text: document.getElementById('heroCta1Text').value, url: document.getElementById('heroCta1Url').value },
-    cta2: { text: document.getElementById('heroCta2Text').value, url: document.getElementById('heroCta2Url').value }
+    cta2: { text: document.getElementById('heroCta2Text').value, url: document.getElementById('heroCta2Url').value },
+    stat1Num:   document.getElementById('heroStat1Num').value,
+    stat1Label: document.getElementById('heroStat1Label').value,
+    stat2Num:   document.getElementById('heroStat2Num').value,
+    stat2Label: document.getElementById('heroStat2Label').value,
+    stat3Num:   document.getElementById('heroStat3Num').value,
+    stat3Label: document.getElementById('heroStat3Label').value
   };
   const ok = await saveCmsSection('hero', data);
   if (ok) {

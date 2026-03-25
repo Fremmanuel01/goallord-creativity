@@ -625,38 +625,38 @@
                         <div class="col-md-7 col-lg-6">
                             <p class="gl-hero-eyebrow effectFade fadeUp">
                                 <span class="br-dot"></span>
-                                Web Agency — Onitsha, Nigeria
+                                <span id="glHeroEyebrow">Web Agency — Onitsha, Nigeria</span>
                             </p>
-                            <h1 class="gl-hero-headline effectFade fadeUp">
+                            <h1 class="gl-hero-headline effectFade fadeUp" id="glHeroHeadline">
                                 We Build<br>Brands That<br><span>Get Noticed.</span>
                             </h1>
                             <div class="gl-hero-divider effectFade fadeUp"></div>
-                            <p class="gl-hero-desc effectFade fadeUp">
+                            <p class="gl-hero-desc effectFade fadeUp" id="glHeroDesc">
                                 Websites, visuals, and digital strategies for bold Nigerian businesses ready to grow.
                             </p>
                             <div class="effectFade fadeUp" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
-                                <a href="#contactScroll" class="tf-btn style-fill"><span class="text-caption fw-medium">START A PROJECT</span></a>
-                                <a href="#workScroll" class="tf-btn style-troke"><span class="text-caption fw-medium">VIEW PORTFOLIO</span></a>
+                                <a href="#contactScroll" id="glHeroCta1" class="tf-btn style-fill"><span class="text-caption fw-medium">START A PROJECT</span></a>
+                                <a href="#workScroll" id="glHeroCta2" class="tf-btn style-troke"><span class="text-caption fw-medium">VIEW PORTFOLIO</span></a>
                             </div>
                             <div class="gl-hero-social-proof effectFade fadeUp">
                                 <span class="gl-hero-stars" aria-label="5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
-                                <span class="gl-hero-proof-text">50+ projects delivered &middot; 98% client satisfaction</span>
+                                <span class="gl-hero-proof-text" id="glHeroProof">50+ projects delivered &middot; 98% client satisfaction</span>
                             </div>
                             <!-- Stats bar -->
-                            <div class="gl-hero-stats effectFade">
+                            <div class="gl-hero-stats effectFade" id="glHeroStats">
                                 <div class="gl-hero-stat">
-                                    <span class="gl-hero-stat-num">50+</span>
-                                    <span class="gl-hero-stat-label">Projects<br>Delivered</span>
+                                    <span class="gl-hero-stat-num" id="glStat1Num">50+</span>
+                                    <span class="gl-hero-stat-label" id="glStat1Label">Projects<br>Delivered</span>
                                 </div>
                                 <div class="gl-hero-stat-divider"></div>
                                 <div class="gl-hero-stat">
-                                    <span class="gl-hero-stat-num">98%</span>
-                                    <span class="gl-hero-stat-label">Client<br>Satisfaction</span>
+                                    <span class="gl-hero-stat-num" id="glStat2Num">98%</span>
+                                    <span class="gl-hero-stat-label" id="glStat2Label">Client<br>Satisfaction</span>
                                 </div>
                                 <div class="gl-hero-stat-divider"></div>
                                 <div class="gl-hero-stat">
-                                    <span class="gl-hero-stat-num">5+</span>
-                                    <span class="gl-hero-stat-label">Years<br>Experience</span>
+                                    <span class="gl-hero-stat-num" id="glStat3Num">5+</span>
+                                    <span class="gl-hero-stat-label" id="glStat3Label">Years<br>Experience</span>
                                 </div>
                             </div>
                         </div>
@@ -667,6 +667,34 @@
             </div>
         </div>
         <!-- /Hero Banner -->
+        <script>
+        (function(){
+            fetch('/api/content/hero').then(function(r){return r.json()}).then(function(res){
+                var d = res && res.data;
+                if (!d) return;
+                if (d.eyebrow)  document.getElementById('glHeroEyebrow').textContent = d.eyebrow;
+                if (d.headline) document.getElementById('glHeroHeadline').innerHTML  = d.headline;
+                if (d.subline)  document.getElementById('glHeroDesc').textContent    = d.subline;
+                if (d.proofText) document.getElementById('glHeroProof').textContent  = d.proofText;
+                if (d.cta1) {
+                    var c1 = document.getElementById('glHeroCta1');
+                    if (d.cta1.text) c1.querySelector('span').textContent = d.cta1.text;
+                    if (d.cta1.url)  c1.href = d.cta1.url;
+                }
+                if (d.cta2) {
+                    var c2 = document.getElementById('glHeroCta2');
+                    if (d.cta2.text) c2.querySelector('span').textContent = d.cta2.text;
+                    if (d.cta2.url)  c2.href = d.cta2.url;
+                }
+                if (d.stat1Num)   document.getElementById('glStat1Num').textContent   = d.stat1Num;
+                if (d.stat1Label) document.getElementById('glStat1Label').innerHTML   = d.stat1Label;
+                if (d.stat2Num)   document.getElementById('glStat2Num').textContent   = d.stat2Num;
+                if (d.stat2Label) document.getElementById('glStat2Label').innerHTML   = d.stat2Label;
+                if (d.stat3Num)   document.getElementById('glStat3Num').textContent   = d.stat3Num;
+                if (d.stat3Label) document.getElementById('glStat3Label').innerHTML   = d.stat3Label;
+            }).catch(function(){});
+        })();
+        </script>
 
         <!-- Client Marquee -->
         <div class="gl-marquee-section">
