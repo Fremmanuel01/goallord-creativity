@@ -1,14 +1,22 @@
 const router = require('express').Router();
 const CheckIn = require('../models/CheckIn');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requirePermission } = require('../middleware/auth');
 
 // List check-ins (filter by user, date)
-router.get('/', requireAuth, async (req, res) => {
+// Staff can always see their own; seeing all requires checkins permission
+router.get('/', requireAuth, requirePermission('checkins'), async (req, res) => {
     try {
         const filter = {};
         if (req.query.user) filter.user = req.query.user;
         if (req.query.date) filter.date = req.query.date;
         if (req.query.mine) filter.user = req.user.id;
+
+        // Staff without explicit admin role see only their own check-ins
+        // unless they are viewing the team feed (admin sees all)
+        if (req.user.role !== 'admin' && !req.query.user && !req.query.mine) {
+            filter.user = req.user.id;
+        }
+
         const checkins = await CheckIn.find(filter)
             .populate('user', 'name email')
             .sort({ date: -1, createdAt: -1 })
@@ -20,7 +28,7 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // Create or update today's check-in
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', requireAuth, requirePermission('checkins'), async (req, res) => {
     try {
         const { yesterday, today, blockers } = req.body;
         const date = new Date().toISOString().slice(0, 10);
@@ -37,7 +45,7 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 // Delete
-router.delete('/:id', requireAuth, async (req, res) => {
+router.delete('/:id', requireAuth, requirePermission('checkins'), async (req, res) => {
     try {
         const checkin = await CheckIn.findByIdAndDelete(req.params.id);
         if (!checkin) return res.status(404).json({ error: 'Not found' });

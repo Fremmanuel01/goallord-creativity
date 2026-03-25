@@ -31,4 +31,16 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-module.exports = { requireAuth, optionalAuth, requireAdmin };
+// Check a specific permission — admins always pass, staff checked against permissions
+function requirePermission(permKey) {
+  return (req, res, next) => {
+    if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+    // Admins bypass all permission checks
+    if (req.user.role === 'admin') return next();
+    // Staff must have the permission enabled
+    if (req.user.permissions && req.user.permissions[permKey]) return next();
+    return res.status(403).json({ error: 'You do not have permission to access this resource' });
+  };
+}
+
+module.exports = { requireAuth, optionalAuth, requireAdmin, requirePermission };

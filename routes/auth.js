@@ -19,12 +19,21 @@ router.post('/login', async (req, res) => {
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
 
     const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role, name: user.name },
+      { id: user._id, email: user.email, role: user.role, name: user.name, permissions: user.permissions },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        permissions: user.permissions
+      }
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -47,7 +56,7 @@ async function seedAdmin() {
 // GET /api/auth/users — list all users (for assignee dropdowns)
 router.get('/users', requireAuth, async (req, res) => {
   try {
-    const users = await User.find({}, 'name email role createdAt').sort({ name: 1 });
+    const users = await User.find({}, 'name email role permissions createdAt').sort({ name: 1 });
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -57,7 +66,7 @@ router.get('/users', requireAuth, async (req, res) => {
 // POST /api/auth/register — create a staff/admin account (admin only)
 router.post('/register', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, permissions } = req.body;
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Name, email and password are required' });
     }
@@ -68,9 +77,20 @@ router.post('/register', requireAuth, requireAdmin, async (req, res) => {
     if (existing) return res.status(409).json({ error: 'A user with that email already exists' });
 
     const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email: email.toLowerCase(), password: hash, role: userRole });
+    const userData = { name, email: email.toLowerCase(), password: hash, role: userRole };
+    if (permissions && typeof permissions === 'object') {
+      userData.permissions = permissions;
+    }
+    const user = await User.create(userData);
 
-    res.status(201).json({ _id: user._id, name: user.name, email: user.email, role: user.role, createdAt: user.createdAt });
+    res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      permissions: user.permissions,
+      createdAt: user.createdAt
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -79,12 +99,18 @@ router.post('/register', requireAuth, requireAdmin, async (req, res) => {
 // PATCH /api/auth/users/:id — update a user (admin only)
 router.patch('/users/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, permissions } = req.body;
     const updates = {};
     if (name) updates.name = name;
     if (email) updates.email = email.toLowerCase();
     if (role && ['admin', 'staff'].includes(role)) updates.role = role;
     if (password) updates.password = await bcrypt.hash(password, 10);
+    if (permissions && typeof permissions === 'object') {
+      // Set each permission key individually so Mongoose merges correctly
+      for (const [key, val] of Object.entries(permissions)) {
+        updates[`permissions.${key}`] = !!val;
+      }
+    }
 
     const user = await User.findByIdAndUpdate(req.params.id, updates, { new: true }).select('-password');
     if (!user) return res.status(404).json({ error: 'User not found' });

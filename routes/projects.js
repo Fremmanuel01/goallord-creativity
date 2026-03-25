@@ -1,13 +1,22 @@
 const router = require('express').Router();
 const Project = require('../models/Project');
 const Task    = require('../models/Task');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requirePermission } = require('../middleware/auth');
 
-// List all projects
-router.get('/', requireAuth, async (req, res) => {
+// List all projects (staff: only projects they are a member of)
+router.get('/', requireAuth, requirePermission('projects'), async (req, res) => {
     try {
         const filter = {};
         if (req.query.status) filter.status = req.query.status;
+
+        // Staff only see projects they are a member of or created
+        if (req.user.role !== 'admin') {
+            filter.$or = [
+                { members: req.user.id },
+                { createdBy: req.user.id }
+            ];
+        }
+
         const projects = await Project.find(filter)
             .populate('members', 'name email')
             .populate('createdBy', 'name')
@@ -27,12 +36,22 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // Single project
-router.get('/:id', requireAuth, async (req, res) => {
+router.get('/:id', requireAuth, requirePermission('projects'), async (req, res) => {
     try {
         const project = await Project.findById(req.params.id)
             .populate('members', 'name email')
             .populate('createdBy', 'name');
         if (!project) return res.status(404).json({ error: 'Not found' });
+
+        // Staff can only view projects they belong to
+        if (req.user.role !== 'admin') {
+            const isMember = project.members.some(m => m._id.toString() === req.user.id);
+            const isCreator = project.createdBy && project.createdBy._id.toString() === req.user.id;
+            if (!isMember && !isCreator) {
+                return res.status(403).json({ error: 'You do not have access to this project' });
+            }
+        }
+
         res.json(project);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -40,7 +59,7 @@ router.get('/:id', requireAuth, async (req, res) => {
 });
 
 // Create
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', requireAuth, requirePermission('projects'), async (req, res) => {
     try {
         const { name, client, description, status, priority, deadline, members, color } = req.body;
         const project = await Project.create({
@@ -56,7 +75,7 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 // Update
-router.patch('/:id', requireAuth, async (req, res) => {
+router.patch('/:id', requireAuth, requirePermission('projects'), async (req, res) => {
     try {
         const project = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
             .populate('members', 'name email');
@@ -68,7 +87,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
 });
 
 // Delete (and its tasks)
-router.delete('/:id', requireAuth, async (req, res) => {
+router.delete('/:id', requireAuth, requirePermission('projects'), async (req, res) => {
     try {
         const project = await Project.findByIdAndDelete(req.params.id);
         if (!project) return res.status(404).json({ error: 'Not found' });

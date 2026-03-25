@@ -1083,15 +1083,11 @@
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.65);
-    backdrop-filter: blur(4px);
     z-index: 1000;
-    display: none;
     align-items: center;
     justify-content: center;
     padding: 20px;
   }
-
-  .modal-overlay.open { display: flex; }
 
   .modal {
     background: var(--card);
@@ -1101,16 +1097,10 @@
     max-width: 620px;
     max-height: 90vh;
     overflow-y: auto;
-    animation: slideIn 0.2s ease;
     box-shadow: 0 25px 60px rgba(0,0,0,0.5);
   }
 
   .modal-lg { max-width: 700px; }
-
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(-16px) scale(0.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
 
   .modal-header {
     padding: 20px 24px;
@@ -1438,6 +1428,252 @@
   @media (max-width: 768px) {
     .kanban-board { flex-direction: row; overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .kanban-column { min-width: 260px; }
+  }
+
+  /* ─── PREMIUM ANIMATIONS ─────────────────────────────── */
+
+  /* Modal entrance/exit animations */
+  .modal-overlay {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    transition: opacity 0.35s ease, backdrop-filter 0.35s ease;
+    pointer-events: none;
+  }
+  .modal-overlay.open {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+    pointer-events: auto;
+  }
+
+  .modal-overlay .modal,
+  .modal-overlay .modal-box {
+    opacity: 0;
+    transform: translateY(24px) scale(0.95);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+    animation: none;
+  }
+  .modal-overlay.open .modal,
+  .modal-overlay.open .modal-box {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  .modal-overlay.modal-closing {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  .modal-overlay.modal-closing .modal,
+  .modal-overlay.modal-closing .modal-box {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+
+  /* Override default display:none / display:flex with visibility for transitions */
+  .modal-overlay {
+    display: flex !important;
+    visibility: hidden;
+  }
+  .modal-overlay.open {
+    visibility: visible;
+  }
+  .modal-overlay.modal-closing {
+    visibility: visible;
+  }
+
+  /* Step-by-step form reveal */
+  .form-step {
+    opacity: 0;
+    transform: translateY(20px);
+    max-height: 0;
+    overflow: hidden;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.4s ease,
+                max-height 0.4s ease;
+    pointer-events: none;
+  }
+  .form-step.step-visible {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 300px;
+    pointer-events: auto;
+  }
+  .form-step.step-all {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: none;
+    pointer-events: auto;
+    transition: none;
+  }
+
+  /* Step progress bar */
+  .step-progress {
+    width: 100%;
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .step-progress-bar {
+    height: 100%;
+    background: var(--orange);
+    border-radius: 3px;
+    transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 0%;
+  }
+
+  /* Continue micro-button */
+  .step-continue-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 14px;
+    margin-top: 8px;
+    background: var(--orange);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  .step-visible .step-continue-btn {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.15s;
+  }
+  .step-continue-btn:active {
+    transform: scale(0.95);
+  }
+
+  /* Card entrance animations */
+  .pm-card-enter {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  .pm-card-enter.pm-visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+                transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Kanban card entrance */
+  .kanban-card-enter {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  .kanban-card-enter.pm-visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+                transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Status badge pulse animation */
+  .badge-pulse {
+    animation: badgePulse 0.3s ease;
+  }
+  @keyframes badgePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+  }
+
+  /* Check-in success animation */
+  .checkin-success-glow {
+    border-color: var(--success) !important;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.25), 0 0 60px rgba(34, 197, 94, 0.08) !important;
+    transition: border-color 0.4s ease, box-shadow 0.4s ease;
+  }
+  .checkin-success-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(23, 26, 33, 0.92);
+    border-radius: 12px;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .checkin-success-overlay.visible {
+    opacity: 1;
+  }
+  .checkin-success-overlay svg {
+    transform: scale(0);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .checkin-success-overlay.visible svg {
+    transform: scale(1);
+  }
+
+  /* Kanban column hover glow */
+  .kanban-column {
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+  .kanban-column:hover {
+    border-color: rgba(214, 106, 31, 0.2);
+    box-shadow: 0 0 24px rgba(214, 106, 31, 0.06);
+  }
+
+  /* Kanban card hover lift */
+  .kanban-card {
+    transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+  }
+  .kanban-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border-color: rgba(255,255,255,0.08);
+  }
+
+  /* Page transition */
+  .page.active {
+    animation: pageEnter 0.35s ease-out;
+  }
+  @keyframes pageEnter {
+    from { opacity: 0; transform: translateX(12px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Micro-interactions: Button press */
+  .btn {
+    transition: all var(--transition), transform 0.15s ease;
+  }
+  .btn:active {
+    transform: scale(0.97);
+  }
+
+  /* Input focus glow */
+  .form-input {
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  .form-input:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(214, 106, 31, 0.15);
+  }
+
+  /* Card hover border transition */
+  .card {
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  .card:hover {
+    border-color: rgba(255,255,255,0.06);
+  }
+
+  /* Checkbox pulse */
+  .checkbox-pulse {
+    animation: checkPulse 0.3s ease;
+  }
+  @keyframes checkPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
   }
 </style>
 </head>
@@ -2081,49 +2317,64 @@
           <button class="modal-close" onclick="closeModal('projectModal')">✕</button>
         </div>
         <div class="modal-body">
-          <div class="modal-form">
+          <div class="step-progress" id="projStepProgress"><div class="step-progress-bar" id="projStepProgressBar"></div></div>
+          <div class="modal-form" id="projFormSteps">
             <input type="hidden" id="projEditId">
-            <div class="form-group">
-              <label>Project Name *</label>
-              <input class="form-input" type="text" id="projName" placeholder="e.g. Holy Rosary Website Redesign">
-            </div>
-            <div class="modal-form-row">
+            <div class="form-step" data-step="1">
               <div class="form-group">
-                <label>Client</label>
-                <input class="form-input" type="text" id="projClient" placeholder="e.g. Holy Rosary Hospital">
+                <label>Project Name *</label>
+                <input class="form-input step-input" type="text" id="projName" placeholder="e.g. Holy Rosary Website Redesign" data-next-step="2">
               </div>
-              <div class="form-group">
-                <label>Deadline</label>
-                <input class="form-input" type="date" id="projDeadline">
-              </div>
+              <button type="button" class="step-continue-btn" onclick="revealProjStep(2)">Continue</button>
             </div>
-            <div class="modal-form-row">
-              <div class="form-group">
-                <label>Status</label>
-                <select class="form-input" id="projStatus">
-                  <option value="not-started">Not Started</option>
-                  <option value="in-progress">In Progress</option>
-                  <option value="review">In Review</option>
-                  <option value="completed">Completed</option>
-                </select>
+            <div class="form-step" data-step="2">
+              <div class="modal-form-row">
+                <div class="form-group">
+                  <label>Client</label>
+                  <input class="form-input step-input" type="text" id="projClient" placeholder="e.g. Holy Rosary Hospital" data-next-step="3">
+                </div>
+                <div class="form-group">
+                  <label>Deadline</label>
+                  <input class="form-input step-input" type="date" id="projDeadline" data-next-step="3">
+                </div>
               </div>
-              <div class="form-group">
-                <label>Priority</label>
-                <select class="form-input" id="projPriority">
-                  <option value="low">Low</option>
-                  <option value="medium" selected>Medium</option>
-                  <option value="high">High</option>
-                  <option value="urgent">Urgent</option>
-                </select>
+              <button type="button" class="step-continue-btn" onclick="revealProjStep(3)">Continue</button>
+            </div>
+            <div class="form-step" data-step="3">
+              <div class="modal-form-row">
+                <div class="form-group">
+                  <label>Status</label>
+                  <select class="form-input step-input" id="projStatus" data-next-step="4">
+                    <option value="not-started">Not Started</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="review">In Review</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Priority</label>
+                  <select class="form-input step-input" id="projPriority" data-next-step="4">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
+                </div>
               </div>
+              <button type="button" class="step-continue-btn" onclick="revealProjStep(4)">Continue</button>
             </div>
-            <div class="form-group">
-              <label>Description</label>
-              <textarea class="form-input" id="projDesc" rows="3" placeholder="Brief project description..."></textarea>
+            <div class="form-step" data-step="4">
+              <div class="form-group">
+                <label>Description</label>
+                <textarea class="form-input step-input" id="projDesc" rows="3" placeholder="Brief project description..." data-next-step="5"></textarea>
+              </div>
+              <button type="button" class="step-continue-btn" onclick="revealProjStep(5)">Continue</button>
             </div>
-            <div class="form-group">
-              <label>Color</label>
-              <input class="form-input" type="color" id="projColor" value="#D66A1F" style="height:40px;padding:4px">
+            <div class="form-step" data-step="5">
+              <div class="form-group">
+                <label>Color</label>
+                <input class="form-input" type="color" id="projColor" value="#D66A1F" style="height:40px;padding:4px">
+              </div>
             </div>
           </div>
         </div>
@@ -2168,48 +2419,60 @@
           <button class="modal-close" onclick="closeModal('taskModal')">✕</button>
         </div>
         <div class="modal-body">
-          <div class="modal-form">
+          <div class="step-progress" id="taskStepProgress"><div class="step-progress-bar" id="taskStepProgressBar"></div></div>
+          <div class="modal-form" id="taskFormSteps">
             <input type="hidden" id="taskEditId">
             <input type="hidden" id="taskProjectId">
-            <div class="form-group">
-              <label>Task Title *</label>
-              <input class="form-input" type="text" id="taskTitle" placeholder="e.g. Design homepage mockup">
+            <div class="form-step" data-step="1">
+              <div class="form-group">
+                <label>Task Title *</label>
+                <input class="form-input step-input" type="text" id="taskTitle" placeholder="e.g. Design homepage mockup" data-next-step="2">
+              </div>
+              <button type="button" class="step-continue-btn" onclick="revealTaskStep(2)">Continue</button>
             </div>
-            <div class="modal-form-row">
-              <div class="form-group">
-                <label>Assignee</label>
-                <select class="form-input" id="taskAssignee">
-                  <option value="">Unassigned</option>
-                </select>
+            <div class="form-step" data-step="2">
+              <div class="modal-form-row">
+                <div class="form-group">
+                  <label>Assignee</label>
+                  <select class="form-input step-input" id="taskAssignee" data-next-step="3">
+                    <option value="">Unassigned</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Due Date</label>
+                  <input class="form-input step-input" type="date" id="taskDueDate" data-next-step="3">
+                </div>
               </div>
-              <div class="form-group">
-                <label>Due Date</label>
-                <input class="form-input" type="date" id="taskDueDate">
-              </div>
+              <button type="button" class="step-continue-btn" onclick="revealTaskStep(3)">Continue</button>
             </div>
-            <div class="modal-form-row">
-              <div class="form-group">
-                <label>Status</label>
-                <select class="form-input" id="taskStatus">
-                  <option value="todo">To Do</option>
-                  <option value="in-progress">In Progress</option>
-                  <option value="review">Review</option>
-                  <option value="done">Done</option>
-                </select>
+            <div class="form-step" data-step="3">
+              <div class="modal-form-row">
+                <div class="form-group">
+                  <label>Status</label>
+                  <select class="form-input step-input" id="taskStatus" data-next-step="4">
+                    <option value="todo">To Do</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="review">Review</option>
+                    <option value="done">Done</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Priority</label>
+                  <select class="form-input step-input" id="taskPriority" data-next-step="4">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
+                </div>
               </div>
-              <div class="form-group">
-                <label>Priority</label>
-                <select class="form-input" id="taskPriority">
-                  <option value="low">Low</option>
-                  <option value="medium" selected>Medium</option>
-                  <option value="high">High</option>
-                  <option value="urgent">Urgent</option>
-                </select>
-              </div>
+              <button type="button" class="step-continue-btn" onclick="revealTaskStep(4)">Continue</button>
             </div>
-            <div class="form-group">
-              <label>Description</label>
-              <textarea class="form-input" id="taskDesc" rows="2" placeholder="Details..."></textarea>
+            <div class="form-step" data-step="4">
+              <div class="form-group">
+                <label>Description (optional)</label>
+                <textarea class="form-input" id="taskDesc" rows="2" placeholder="Details..."></textarea>
+              </div>
             </div>
           </div>
         </div>
@@ -2240,7 +2503,10 @@
       </div>
 
       <!-- Today's Check-in Form -->
-      <div class="card" style="padding:24px;margin-bottom:24px;max-width:640px">
+      <div class="card" id="checkinFormCard" style="padding:24px;margin-bottom:24px;max-width:640px;position:relative;overflow:hidden">
+        <div class="checkin-success-overlay" id="checkinSuccessOverlay">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="30" stroke="var(--success)" stroke-width="3"/><path d="M20 33l8 8 16-16" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
         <h3 style="font-size:15px;margin-bottom:16px;color:var(--text)">Today's Check-in</h3>
         <div class="modal-form">
           <div class="form-group">
@@ -2423,10 +2689,27 @@
             </div>
             <div class="form-group" style="margin-bottom:14px">
               <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Role</label>
-              <select class="form-input" id="staffRole">
+              <select class="form-input" id="staffRole" onchange="togglePermissionsPanel()">
                 <option value="staff">Staff</option>
                 <option value="admin">Admin</option>
               </select>
+            </div>
+            <div id="permissionsPanel" style="margin-bottom:14px">
+              <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:10px">Permissions</label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="perm_projects" checked style="accent-color:var(--orange)"> Projects</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="perm_tasks" checked style="accent-color:var(--orange)"> Tasks</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="perm_checkins" checked style="accent-color:var(--orange)"> Check-ins</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="perm_cms" style="accent-color:var(--orange)"> Website CMS</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="perm_blog" style="accent-color:var(--orange)"> Blog</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="perm_analytics" style="accent-color:var(--orange)"> Analytics</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="perm_clients" style="accent-color:var(--orange)"> Clients</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="perm_store" style="accent-color:var(--orange)"> Store</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="perm_affiliate" style="accent-color:var(--orange)"> Affiliate Links</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="perm_settings" style="accent-color:var(--orange)"> Settings</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="perm_applicants" style="accent-color:var(--orange)"> Applicants</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="perm_academy" style="accent-color:var(--orange)"> Academy</label>
+              </div>
             </div>
           </div>
           <div class="modal-footer" style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:16px">
@@ -4410,15 +4693,21 @@ function initCharts() {
 // ─── MODAL HELPERS ───────────────────────────────────────
 function openModal(id) {
   const overlay = document.getElementById(id);
+  overlay.classList.remove('modal-closing');
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
 function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-  document.body.style.overflow = '';
+  const overlay = document.getElementById(id);
+  overlay.classList.add('modal-closing');
+  overlay.classList.remove('open');
+  setTimeout(() => {
+    overlay.classList.remove('modal-closing');
+    document.body.style.overflow = '';
+  }, 350);
   editProductId = null;
-  document.getElementById('addProductModalTitle').textContent = 'Add Product';
+  try { document.getElementById('addProductModalTitle').textContent = 'Add Product'; } catch(e) {}
 }
 
 // Close modal on overlay click
@@ -4434,6 +4723,90 @@ document.addEventListener('keydown', e => {
     document.querySelectorAll('.modal-overlay.open').forEach(o => closeModal(o.id));
   }
 });
+
+// ─── STEP-BY-STEP FORM LOGIC ─────────────────────────────
+function initStepForm(containerId, progressBarId, totalSteps, isEdit) {
+  const container = document.getElementById(containerId);
+  const steps = container.querySelectorAll('.form-step');
+  const progressBar = document.getElementById(progressBarId);
+
+  steps.forEach(s => {
+    s.classList.remove('step-visible', 'step-all');
+  });
+
+  if (isEdit) {
+    // Show all steps at once when editing
+    steps.forEach(s => s.classList.add('step-all'));
+    if (progressBar) progressBar.style.width = '100%';
+    return;
+  }
+
+  // Sequential reveal: show only step 1
+  const step1 = container.querySelector('[data-step="1"]');
+  if (step1) {
+    requestAnimationFrame(() => {
+      step1.classList.add('step-visible');
+    });
+  }
+  if (progressBar) progressBar.style.width = (1 / totalSteps * 100) + '%';
+
+  // Add Enter key listeners to step inputs
+  container.querySelectorAll('.step-input').forEach(input => {
+    input.removeEventListener('keydown', stepInputKeyHandler);
+    input.addEventListener('keydown', stepInputKeyHandler);
+  });
+}
+
+function stepInputKeyHandler(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const nextStep = parseInt(e.target.dataset.nextStep);
+    if (nextStep) {
+      const container = e.target.closest('.modal-form');
+      if (container.id === 'projFormSteps') revealProjStep(nextStep);
+      else if (container.id === 'taskFormSteps') revealTaskStep(nextStep);
+    }
+  }
+}
+
+let projCurrentStep = 1;
+const projTotalSteps = 5;
+
+function revealProjStep(stepNum) {
+  if (stepNum <= projCurrentStep) return;
+  projCurrentStep = stepNum;
+  const container = document.getElementById('projFormSteps');
+  const step = container.querySelector('[data-step="' + stepNum + '"]');
+  if (step) {
+    requestAnimationFrame(() => {
+      step.classList.add('step-visible');
+      // Focus the first input in the new step
+      const firstInput = step.querySelector('.form-input');
+      if (firstInput) setTimeout(() => firstInput.focus(), 300);
+    });
+  }
+  const progressBar = document.getElementById('projStepProgressBar');
+  if (progressBar) progressBar.style.width = (stepNum / projTotalSteps * 100) + '%';
+}
+
+let taskCurrentStep = 1;
+const taskTotalSteps = 4;
+
+function revealTaskStep(stepNum) {
+  if (stepNum <= taskCurrentStep) return;
+  taskCurrentStep = stepNum;
+  const container = document.getElementById('taskFormSteps');
+  const step = container.querySelector('[data-step="' + stepNum + '"]');
+  if (step) {
+    requestAnimationFrame(() => {
+      step.classList.add('step-visible');
+      const firstInput = step.querySelector('.form-input');
+      if (firstInput) setTimeout(() => firstInput.focus(), 300);
+    });
+  }
+  const progressBar = document.getElementById('taskStepProgressBar');
+  if (progressBar) progressBar.style.width = (stepNum / taskTotalSteps * 100) + '%';
+}
 
 // ─── INIT ────────────────────────────────────────────────
 (function init() {
@@ -4478,6 +4851,105 @@ function glLogout() {
   localStorage.removeItem('gl_token');
   localStorage.removeItem('gl_user');
   window.location.href = 'login.html';
+}
+
+// ── RBAC: Apply Permissions ──────────────────────────────────
+const PERM_PAGE_MAP = {
+  projects:   ['projects'],
+  tasks:      ['mytasks'],
+  checkins:   ['checkins'],
+  cms:        ['website'],
+  blog:       [],
+  analytics:  ['analytics'],
+  clients:    ['clients'],
+  store:      ['store', 'orders'],
+  affiliate:  ['affiliate'],
+  settings:   ['settings'],
+  applicants: ['applicants'],
+  academy:    ['students', 'batches', 'lecturers', 'attendance', 'payments']
+};
+
+const NAV_LABEL_RULES = {
+  'Project Management': ['projects', 'tasks', 'checkins'],
+  'Commerce':           ['store'],
+  'Academy':            ['academy'],
+  'Website':            ['cms', 'affiliate'],
+  'System':             ['analytics', 'settings']
+};
+
+function applyPermissions() {
+  try {
+    const user = JSON.parse(localStorage.getItem('gl_user') || '{}');
+    if (!user.role) return;
+
+    // Admin sees everything
+    if (user.role === 'admin') {
+      document.querySelectorAll('.nav-item[data-page]').forEach(el => el.style.display = '');
+      document.querySelectorAll('.nav-label').forEach(el => el.style.display = '');
+      return;
+    }
+
+    const perms = user.permissions || {};
+
+    // Build set of allowed data-page values
+    const allowedPages = new Set(['overview', 'contacts']);
+    for (const [permKey, pages] of Object.entries(PERM_PAGE_MAP)) {
+      if (perms[permKey]) {
+        pages.forEach(p => allowedPages.add(p));
+      }
+    }
+
+    // Hide/show nav items
+    document.querySelectorAll('.nav-item[data-page]').forEach(el => {
+      const page = el.dataset.page;
+      el.style.display = allowedPages.has(page) ? '' : 'none';
+    });
+
+    // Hide/show nav labels based on whether any child perm is active
+    document.querySelectorAll('.nav-label').forEach(labelEl => {
+      const labelText = labelEl.textContent.trim();
+      const rulePerms = NAV_LABEL_RULES[labelText];
+      if (!rulePerms) return; // Main, Website labels — always show
+      const anyActive = rulePerms.some(pk => perms[pk]);
+      labelEl.style.display = anyActive ? '' : 'none';
+    });
+
+    // If current page is not allowed, navigate to overview or mytasks
+    const cur = document.querySelector('.nav-item.active');
+    if (cur && cur.style.display === 'none') {
+      navigate(perms.tasks ? 'mytasks' : 'overview');
+    }
+  } catch(e) {
+    console.error('applyPermissions error:', e);
+  }
+}
+
+// Run on page load
+applyPermissions();
+
+function togglePermissionsPanel() {
+  const panel = document.getElementById('permissionsPanel');
+  const role = document.getElementById('staffRole').value;
+  if (panel) panel.style.display = role === 'admin' ? 'none' : '';
+}
+
+function getPermissionsFromModal() {
+  const keys = ['projects','tasks','checkins','cms','blog','analytics','clients','store','affiliate','settings','applicants','academy'];
+  const perms = {};
+  keys.forEach(k => {
+    const cb = document.getElementById('perm_' + k);
+    perms[k] = cb ? cb.checked : false;
+  });
+  return perms;
+}
+
+function setPermissionsInModal(perms) {
+  const keys = ['projects','tasks','checkins','cms','blog','analytics','clients','store','affiliate','settings','applicants','academy'];
+  const defaults = { projects: true, tasks: true, checkins: true };
+  keys.forEach(k => {
+    const cb = document.getElementById('perm_' + k);
+    if (cb) cb.checked = perms ? !!perms[k] : !!defaults[k];
+  });
 }
 
 // ── Admin Notifications Bell ──────────────────────────────────
@@ -5084,6 +5556,14 @@ function priorityDot(p) {
 async function cycleTaskStatus(taskId, currentStatus, context) {
   const idx = taskStatusCycle.indexOf(currentStatus);
   const next = taskStatusCycle[(idx + 1) % taskStatusCycle.length];
+  // Pulse the badge that was clicked
+  if (event && event.target) {
+    const badge = event.target.closest('.badge');
+    if (badge) {
+      badge.classList.add('badge-pulse');
+      badge.addEventListener('animationend', () => badge.classList.remove('badge-pulse'), { once: true });
+    }
+  }
   try {
     await apiFetch('/api/tasks/' + taskId, { method: 'PATCH', body: JSON.stringify({ status: next }) });
     if (context === 'project') {
@@ -5180,7 +5660,7 @@ function renderProjects() {
     const pct = p.taskCount ? Math.round((p.tasksDone / p.taskCount) * 100) : 0;
     const deadline = p.deadline ? new Date(p.deadline).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
     const overdue = p.deadline && new Date(p.deadline) < new Date() && p.status !== 'completed';
-    return '<div class="card" style="padding:0;overflow:hidden;border-radius:12px;cursor:pointer" onclick="openProjectDetail(\''+p._id+'\')">' +
+    return '<div class="card pm-card-enter" style="padding:0;overflow:hidden;border-radius:12px;cursor:pointer" onclick="openProjectDetail(\''+p._id+'\')">' +
       '<div style="height:4px;background:'+(p.color||'var(--orange)')+'"></div>' +
       '<div style="padding:18px 20px">' +
         '<div style="display:flex;justify-content:space-between;align-items:start;gap:8px">' +
@@ -5202,6 +5682,14 @@ function renderProjects() {
         '</div>' +
       '</div></div>';
   }).join('');
+
+  // Staggered card entrance animation
+  requestAnimationFrame(() => {
+    const cards = grid.querySelectorAll('.pm-card-enter');
+    cards.forEach((card, i) => {
+      setTimeout(() => card.classList.add('pm-visible'), 60 * i);
+    });
+  });
 }
 
 function openProjectModal(id) {
@@ -5228,6 +5716,8 @@ function openProjectModal(id) {
     document.getElementById('projDesc').value = '';
     document.getElementById('projColor').value = '#D66A1F';
   }
+  projCurrentStep = 1;
+  initStepForm('projFormSteps', 'projStepProgressBar', projTotalSteps, !!id);
   openModal('projectModal');
 }
 
@@ -5349,6 +5839,8 @@ async function openTaskModal(taskId) {
     document.getElementById('taskPriority').value = 'medium';
     document.getElementById('taskDesc').value = '';
   }
+  taskCurrentStep = 1;
+  initStepForm('taskFormSteps', 'taskStepProgressBar', taskTotalSteps, !!taskId);
   openModal('taskModal');
 }
 
@@ -5420,7 +5912,7 @@ async function loadMyTasks() {
         '<div class="kanban-column-body">' +
           (tasks.length ? tasks.map(t => {
             const di = dueDateInfo(t.dueDate, t.status);
-            return '<div class="kanban-card">' +
+            return '<div class="kanban-card kanban-card-enter">' +
               '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
                 (t.project ? '<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:'+(t.project.color||'var(--orange)')+';color:#fff;white-space:nowrap">'+t.project.name+'</span>' : '') +
                 priorityDot(t.priority) +
@@ -5433,6 +5925,14 @@ async function loadMyTasks() {
         '</div>' +
       '</div>';
     }).join('');
+
+    // Staggered kanban card entrance
+    requestAnimationFrame(() => {
+      const cards = container.querySelectorAll('.kanban-card-enter');
+      cards.forEach((card, i) => {
+        setTimeout(() => card.classList.add('pm-visible'), 60 * i);
+      });
+    });
   } catch(e) { console.error(e); }
 }
 
@@ -5494,9 +5994,15 @@ async function submitCheckIn() {
   try {
     const data = await apiFetch('/api/checkins', { method: 'POST', body: JSON.stringify({ yesterday, today, blockers }) });
     if (data) {
-      const msg = document.getElementById('ciSaveMsg');
-      msg.style.display = 'inline';
-      setTimeout(() => msg.style.display = 'none', 2500);
+      // Success animation
+      const card = document.getElementById('checkinFormCard');
+      const overlay = document.getElementById('checkinSuccessOverlay');
+      card.classList.add('checkin-success-glow');
+      overlay.classList.add('visible');
+      setTimeout(() => {
+        overlay.classList.remove('visible');
+        card.classList.remove('checkin-success-glow');
+      }, 2000);
       loadCheckIns();
     }
   } catch(e) { alert(e.message); }
@@ -6585,6 +7091,7 @@ function openStaffModal(userId) {
   document.getElementById('staffPassword').value = '';
   document.getElementById('staffRole').value = 'staff';
   document.getElementById('staffPwdHint').textContent = '';
+  setPermissionsInModal(null); // reset to defaults
 
   if (userId) {
     const user = allStaffUsers.find(u => u._id === userId);
@@ -6596,11 +7103,13 @@ function openStaffModal(userId) {
     document.getElementById('staffModalTitle').textContent = 'Edit User';
     document.getElementById('staffPwdHint').textContent = '(leave blank to keep current)';
     document.getElementById('staffSaveBtn').textContent = 'Update';
+    setPermissionsInModal(user.permissions);
   } else {
     document.getElementById('staffModalTitle').textContent = 'Add Staff';
     document.getElementById('staffSaveBtn').textContent = 'Create';
   }
 
+  togglePermissionsPanel();
   openModal('staffModal');
 }
 
@@ -6610,6 +7119,7 @@ async function saveStaffUser() {
   const email = document.getElementById('staffEmail').value.trim();
   const password = document.getElementById('staffPassword').value;
   const role = document.getElementById('staffRole').value;
+  const permissions = role === 'staff' ? getPermissionsFromModal() : undefined;
 
   if (!name || !email) {
     showToast('Name and email are required', 'error');
@@ -6624,6 +7134,7 @@ async function saveStaffUser() {
     if (id) {
       const body = { name, email, role };
       if (password) body.password = password;
+      if (permissions) body.permissions = permissions;
       const res = await apiFetch('/api/auth/users/' + id, {
         method: 'PATCH',
         body: JSON.stringify(body)
@@ -6638,9 +7149,11 @@ async function saveStaffUser() {
         showToast('Password is required for new users', 'error');
         return;
       }
+      const body = { name, email, password, role };
+      if (permissions) body.permissions = permissions;
       const res = await apiFetch('/api/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ name, email, password, role })
+        body: JSON.stringify(body)
       });
       if (res && res.error) {
         showToast(res.error, 'error');
