@@ -4248,9 +4248,9 @@ let teamMembers = [];
 
 async function loadTeam() {
   try {
-    const res = await apiFetch('/api/team');
-    if (!res.ok) return;
-    teamMembers = await res.json();
+    const data = await apiFetch('/api/team');
+    if (!data) return;
+    teamMembers = Array.isArray(data) ? data : [];
     renderTeamGrid();
   } catch (e) { console.error('loadTeam', e); }
 }
@@ -4365,13 +4365,12 @@ async function saveTeamMember() {
   try {
     const url = id ? '/api/team/' + id : '/api/team';
     const method = id ? 'PATCH' : 'POST';
-    const res = await apiFetch(url, { method, headers: { ...apiHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    if (res.ok) {
+    const data = await apiFetch(url, { method, body: JSON.stringify(body) });
+    if (data && data._id) {
       closeTeamModal();
       loadTeam();
     } else {
-      const err = await res.json();
-      alert(err.error || 'Failed to save');
+      alert(data?.error || 'Failed to save');
     }
   } catch (e) { alert('Error: ' + e.message); }
   finally { btn.disabled = false; btn.textContent = id ? 'Update Member' : 'Save Member'; }
@@ -4381,8 +4380,8 @@ async function deleteTeamMember(id) {
   const m = teamMembers.find(x => x._id === id);
   if (!confirm('Delete ' + (m?.name || 'this member') + '?')) return;
   try {
-    const res = await apiFetch('/api/team/' + id, { method: 'DELETE', headers: apiHeaders() });
-    if (res.ok) loadTeam();
+    const data = await apiFetch('/api/team/' + id, { method: 'DELETE' });
+    if (data) loadTeam();
     else alert('Failed to delete');
   } catch (e) { alert('Error: ' + e.message); }
 }
