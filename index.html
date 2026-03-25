@@ -700,8 +700,8 @@
         <div class="gl-marquee-section">
             <div class="gl-marquee-label">TRUSTED BY</div>
             <div class="gl-marquee-track-wrap">
-                <div class="gl-marquee-track">
-                    <!-- Set 1 -->
+                <div class="gl-marquee-track" id="glMarqueeTrack">
+                    <!-- Fallback logos — replaced by API data when available -->
                     <div class="gl-marquee-item"><img src="assets/images/brand/brand-1.svg" alt="Client"></div>
                     <div class="gl-marquee-item"><img src="assets/images/brand/brand-2.svg" alt="Client"></div>
                     <div class="gl-marquee-item"><img src="assets/images/brand/brand-3.svg" alt="Client"></div>
@@ -712,7 +712,6 @@
                     <div class="gl-marquee-item"><img src="assets/images/brand/brand-8.svg" alt="Client"></div>
                     <div class="gl-marquee-item"><img src="assets/images/brand/brand-9.svg" alt="Client"></div>
                     <div class="gl-marquee-item"><img src="assets/images/brand/brand-10.svg" alt="Client"></div>
-                    <!-- Set 2 — duplicate for seamless loop -->
                     <div class="gl-marquee-item"><img src="assets/images/brand/brand-1.svg" alt="Client"></div>
                     <div class="gl-marquee-item"><img src="assets/images/brand/brand-2.svg" alt="Client"></div>
                     <div class="gl-marquee-item"><img src="assets/images/brand/brand-3.svg" alt="Client"></div>
@@ -726,6 +725,19 @@
                 </div>
             </div>
         </div>
+        <script>
+        (function(){
+            fetch('/api/logos/public').then(function(r){return r.json()}).then(function(logos){
+                if (!logos || !logos.length) return;
+                var html = '';
+                // Set 1
+                logos.forEach(function(l){ html += '<div class="gl-marquee-item"><img src="'+l.image+'" alt="'+(l.name||'Client')+'"></div>'; });
+                // Set 2 — duplicate for seamless loop
+                logos.forEach(function(l){ html += '<div class="gl-marquee-item"><img src="'+l.image+'" alt="'+(l.name||'Client')+'"></div>'; });
+                document.getElementById('glMarqueeTrack').innerHTML = html;
+            }).catch(function(){});
+        })();
+        </script>
         <!-- /Client Marquee -->
 
         <!-- Selected Work -->
