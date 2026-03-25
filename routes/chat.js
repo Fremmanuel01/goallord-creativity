@@ -2,6 +2,14 @@ const express  = require('express');
 const https    = require('https');
 const router   = express.Router();
 const Conversation = require('../models/Conversation');
+const rateLimit = require('express-rate-limit');
+const xss = require('xss');
+
+const chatLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 20,
+    message: { error: 'Too many messages. Please slow down.' }
+});
 
 const SYSTEM_PROMPT = `You are GoallordAI, the official AI assistant for Goallord Creativity Limited — a full-service web design and development agency based in Onitsha, Anambra State, Nigeria.
 
@@ -68,13 +76,23 @@ function callClaude(messages) {
 }
 
 // POST /api/chat  — visitor sends a message
-router.post('/', async (req, res) => {
+router.post('/', chatLimiter, async (req, res) => {
   const { messages, sessionId, visitorPage, visitorName, visitorEmail } = req.body;
   if (!messages || !Array.isArray(messages) || !sessionId) {
     return res.status(400).json({ error: 'Invalid payload' });
   }
 
+  // Validate message content length
+  const lastMsg = messages[messages.length - 1];
+  if (lastMsg?.content && lastMsg.content.length > 500) {
+    return res.status(400).json({ error: 'Message is too long (max 500 characters).' });
+  }
+
   const io = req.app.get('io');
+
+  // Sanitize visitor identity
+  const safeVisitorName  = xss((visitorName  || '').trim());
+  const safeVisitorEmail = (visitorEmail || '').toLowerCase().trim();
 
   try {
     // Upsert conversation
@@ -83,20 +101,19 @@ router.post('/', async (req, res) => {
       convo = new Conversation({
         sessionId,
         visitorPage:  visitorPage  || '/',
-        visitorName:  visitorName  || '',
-        visitorEmail: visitorEmail || '',
+        visitorName:  safeVisitorName,
+        visitorEmail: safeVisitorEmail,
         messages: []
       });
     } else {
       // Fill in identity if not already captured
-      if (!convo.visitorName  && visitorName)  convo.visitorName  = visitorName;
-      if (!convo.visitorEmail && visitorEmail) convo.visitorEmail = visitorEmail;
+      if (!convo.visitorName  && safeVisitorName)  convo.visitorName  = safeVisitorName;
+      if (!convo.visitorEmail && safeVisitorEmail) convo.visitorEmail = safeVisitorEmail;
     }
 
-    // Save latest user message
-    const lastMsg = messages[messages.length - 1];
+    // Save latest user message (sanitized)
     if (lastMsg?.role === 'user') {
-      convo.messages.push({ role: 'user', content: lastMsg.content });
+      convo.messages.push({ role: 'user', content: xss(lastMsg.content) });
       convo.unreadByAgent += 1;
     }
 

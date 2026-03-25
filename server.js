@@ -6,18 +6,34 @@ const path       = require('path');
 const http       = require('http');
 const { Server } = require('socket.io');
 const jwt        = require('jsonwebtoken');
+const helmet     = require('helmet');
+const rateLimit  = require('express-rate-limit');
 
 const app        = express();
 const httpServer = http.createServer(app);
-const io         = new Server(httpServer, { cors: { origin: '*' } });
+const io         = new Server(httpServer, { cors: { origin: ['https://goallordcreativity.com', 'https://www.goallordcreativity.com', 'http://localhost:3000'] } });
 
 // ─── Share io with routes ──────────────────────────────────────
 app.set('io', io);
 
 // ─── MIDDLEWARE ───────────────────────────────────────────────
-app.use(cors());
+app.use(cors({
+    origin: ['https://goallordcreativity.com', 'https://www.goallordcreativity.com', 'http://localhost:3000'],
+    credentials: true
+}));
+app.use(helmet({
+    contentSecurityPolicy: false, // disable CSP since we use inline scripts/styles
+    crossOriginEmbedderPolicy: false
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// ─── GLOBAL API RATE LIMITER ─────────────────────────────────
+app.use('/api/', rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // 100 requests per 15 min
+    message: { error: 'Too many requests, please try again later.' }
+}));
 
 // ─── AFFILIATE REDIRECT (must be before static) ───────────────
 app.use('/go', require('./routes/go'));

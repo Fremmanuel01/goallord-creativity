@@ -7,11 +7,11 @@ const replySchema = new mongoose.Schema({
 });
 
 const contactSchema = new mongoose.Schema({
-  name:    { type: String, required: true },
-  email:   { type: String, required: true, lowercase: true, trim: true },
+  name:    { type: String, required: true, trim: true, maxlength: 100 },
+  email:   { type: String, required: true, lowercase: true, trim: true, maxlength: 150, match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
   service: { type: String, default: '' },
   budget:  { type: String, default: '' },
-  message: { type: String, default: '' },
+  message: { type: String, default: '', maxlength: 2000 },
   source:  { type: String, default: 'Contact Form' },
   status:  { type: String, enum: ['New', 'Read', 'Replied'], default: 'New' },
   replies: [replySchema]

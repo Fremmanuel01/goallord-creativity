@@ -9,8 +9,20 @@ const Payment   = require('../models/Payment');
 const { requireAuth } = require('../middleware/auth');
 const { sendMail }    = require('../utils/mailer');
 const { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail } = require('../utils/emailTemplates');
+const rateLimit = require('express-rate-limit');
+const xss = require('xss');
 
 const router = express.Router();
+
+const applyLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 3,
+    message: { error: 'Too many applications. Please try again later.' }
+});
+
+function isValidEmail(email) {
+    return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/.test(email);
+}
 
 // POST /api/applicants/upload-photo — public (applicant uploads profile photo before submission)
 router.post('/upload-photo', async (req, res) => {
@@ -60,10 +72,37 @@ function generatePassword() {
 }
 
 // POST /api/applicants — public (apply form)
-router.post('/', async (req, res) => {
+router.post('/', applyLimiter, async (req, res) => {
   try {
-    const emailLower = (req.body.email || '').toLowerCase().trim();
-    if (!emailLower) return res.status(400).json({ error: 'Email address is required.' });
+    // Honeypot check
+    if (req.body.website) return res.status(200).json({ message: 'Application received!' });
+
+    // Extract fields explicitly (no spread)
+    const { fullName, email, phone, location, track, experience, schedule, howFound, goal, why, background, profilePhoto } = req.body;
+
+    // Validate required fields
+    if (!fullName || fullName.trim().length < 2) return res.status(400).json({ error: 'Full name is required.' });
+    if (!email) return res.status(400).json({ error: 'Email is required.' });
+    if (!isValidEmail(email)) return res.status(400).json({ error: 'Invalid email address.' });
+    if (phone && !/^[\d\s\-\+\(\)]{7,20}$/.test(phone)) return res.status(400).json({ error: 'Invalid phone number.' });
+
+    // Sanitize all text fields
+    const sanitized = {
+        fullName: xss(fullName.trim()),
+        email: email.toLowerCase().trim(),
+        phone: xss((phone || '').trim()),
+        location: xss((location || '').trim()),
+        track: xss((track || '').trim()),
+        experience: xss((experience || '').trim()),
+        schedule: xss((schedule || '').trim()),
+        howFound: xss((howFound || '').trim()),
+        goal: xss((goal || '').trim()),
+        why: xss((why || '').trim()),
+        background: xss((background || '').trim()),
+        profilePhoto: profilePhoto || ''
+    };
+
+    const emailLower = sanitized.email;
 
     // Block if already a student
     const existingStudent = await Student.findOne({ email: emailLower });
@@ -89,7 +128,7 @@ router.post('/', async (req, res) => {
     const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
 
     const applicant = await Applicant.create({
-      ...req.body,
+      ...sanitized,
       emailVerifyToken:   token,
       emailVerifyExpires: expires
     });
