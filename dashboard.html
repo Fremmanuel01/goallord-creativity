@@ -3230,6 +3230,7 @@
         <button class="btn btn-ghost"   id="cmsTab-testimonials"  onclick="showCmsTab('testimonials')">Testimonials</button>
         <button class="btn btn-ghost"   id="cmsTab-team"          onclick="showCmsTab('team')">Team</button>
         <button class="btn btn-ghost"   id="cmsTab-logos"         onclick="showCmsTab('logos')">Client Logos</button>
+        <button class="btn btn-ghost"   id="cmsTab-academy"       onclick="showCmsTab('academy')">Academy</button>
       </div>
 
       <!-- Hero Editor -->
@@ -3430,6 +3431,95 @@
           <button class="btn btn-primary" onclick="openLogoEditor(null)">+ Add Logo</button>
         </div>
         <div id="logosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px"></div>
+      </div>
+
+      <!-- Academy CMS -->
+      <div id="cms-academy" style="display:none">
+        <div class="card" style="padding:28px;max-width:800px">
+          <h3 style="margin-bottom:20px;font-size:15px;color:var(--muted)">Academy Settings</h3>
+
+          <div class="form-group" style="margin-bottom:16px">
+            <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Hero Headline</label>
+            <input class="form-input" type="text" id="acHeroHeadline" placeholder="Launch Your Career in Web Design & Development">
+          </div>
+          <div class="form-group" style="margin-bottom:16px">
+            <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Hero Subtext</label>
+            <textarea class="form-input" id="acHeroSubtext" rows="3" placeholder="Hands-on, practical training..."></textarea>
+          </div>
+          <div class="form-group" style="margin-bottom:16px">
+            <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Next Batch Date</label>
+            <input class="form-input" type="text" id="acNextBatch" placeholder="Contact us for next batch date">
+          </div>
+
+          <h4 style="margin:20px 0 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--border);padding-top:16px">Tuition</h4>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">In-Person Price</label>
+              <input class="form-input" type="number" id="acTuitionInPerson" placeholder="150000">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">In-Person Installment Note</label>
+              <input class="form-input" type="text" id="acTuitionInstallment" placeholder="3 monthly payments of...">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Online Price</label>
+              <input class="form-input" type="number" id="acTuitionOnline" placeholder="80000">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Online Note</label>
+              <input class="form-input" type="text" id="acTuitionOnlineNote" placeholder="One-time payment">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Duration</label>
+              <input class="form-input" type="text" id="acTuitionDuration" placeholder="12 weeks">
+            </div>
+          </div>
+
+          <h4 style="margin:20px 0 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--border);padding-top:16px">Schedule</h4>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Weekday</label>
+              <input class="form-input" type="text" id="acScheduleWeekday" placeholder="Tue / Wed / Thu, 4-7PM">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Weekend</label>
+              <input class="form-input" type="text" id="acScheduleWeekend" placeholder="Saturday, 10AM-3PM">
+            </div>
+          </div>
+
+          <h4 style="margin:20px 0 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--border);padding-top:16px">Stats</h4>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;margin-bottom:16px">
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Students Trained</label>
+              <input class="form-input" type="number" id="acStatStudents" placeholder="50">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Job Rate %</label>
+              <input class="form-input" type="number" id="acStatJobRate" placeholder="85">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Program Weeks</label>
+              <input class="form-input" type="number" id="acStatWeeks" placeholder="12">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Batches Run</label>
+              <input class="form-input" type="number" id="acStatBatches" placeholder="5">
+            </div>
+          </div>
+
+          <h4 style="margin:20px 0 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--border);padding-top:16px">Tracks</h4>
+          <div id="acTracksContainer"></div>
+          <button class="btn btn-ghost" onclick="addAcademyTrack()" style="margin-top:10px;font-size:12px">+ Add Track</button>
+
+          <h4 style="margin:20px 0 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--border);padding-top:16px">FAQs</h4>
+          <div id="acFaqsContainer"></div>
+          <button class="btn btn-ghost" onclick="addAcademyFaq()" style="margin-top:10px;font-size:12px">+ Add FAQ</button>
+
+          <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:20px">
+            <button class="btn btn-primary" onclick="saveAcademyCms()">Save Academy Settings</button>
+            <span id="acSaveMsg" style="margin-left:12px;font-size:13px;color:var(--success);display:none">Saved!</span>
+          </div>
+        </div>
       </div>
 
       <!-- Logo Modal -->
@@ -5635,7 +5725,7 @@ async function saveCmsSection(section, data) {
 }
 
 function showCmsTab(tab) {
-  ['hero','portfolio','blog','testimonials','team','logos'].forEach(t => {
+  ['hero','portfolio','blog','testimonials','team','logos','academy'].forEach(t => {
     document.getElementById('cms-' + t).style.display       = t === tab ? '' : 'none';
     document.getElementById('cmsTab-' + t).className        = t === tab ? 'btn btn-primary' : 'btn btn-ghost';
   });
@@ -5645,6 +5735,184 @@ function showCmsTab(tab) {
   if (tab === 'testimonials') loadTestimonials();
   if (tab === 'team')         loadTeam();
   if (tab === 'logos')        loadLogos();
+  if (tab === 'academy')      loadAcademyCms();
+}
+
+// ─── ACADEMY CMS ─────────────────────────────────────────────
+let _academyData = null;
+
+async function loadAcademyCms() {
+  try {
+    const data = await apiFetch('/api/academy/settings');
+    if (!data) return;
+    _academyData = data;
+    document.getElementById('acHeroHeadline').value = data.heroHeadline || '';
+    document.getElementById('acHeroSubtext').value = data.heroSubtext || '';
+    document.getElementById('acNextBatch').value = data.nextBatchDate || '';
+    if (data.tuition) {
+      document.getElementById('acTuitionInPerson').value = data.tuition.inPerson || '';
+      document.getElementById('acTuitionInstallment').value = data.tuition.inPersonInstallment || '';
+      document.getElementById('acTuitionOnline').value = data.tuition.online || '';
+      document.getElementById('acTuitionOnlineNote').value = data.tuition.onlineNote || '';
+      document.getElementById('acTuitionDuration').value = data.tuition.duration || '';
+    }
+    if (data.schedule) {
+      document.getElementById('acScheduleWeekday').value = data.schedule.weekday || '';
+      document.getElementById('acScheduleWeekend').value = data.schedule.weekend || '';
+    }
+    if (data.stats) {
+      document.getElementById('acStatStudents').value = data.stats.students || '';
+      document.getElementById('acStatJobRate').value = data.stats.jobRate || '';
+      document.getElementById('acStatWeeks').value = data.stats.programWeeks || '';
+      document.getElementById('acStatBatches').value = data.stats.batchesRun || '';
+    }
+    renderAcademyTracks(data.tracks || []);
+    renderAcademyFaqs(data.faqs || []);
+  } catch (e) { console.error('loadAcademyCms', e); }
+}
+
+function renderAcademyTracks(tracks) {
+  const c = document.getElementById('acTracksContainer');
+  c.innerHTML = tracks.map((t, i) => `
+    <div class="card" style="padding:16px;margin-bottom:12px;position:relative">
+      <button onclick="removeAcademyTrack(${i})" style="position:absolute;top:8px;right:8px;background:none;border:none;color:#f87171;cursor:pointer;font-size:16px">&times;</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Name</label>
+          <input class="form-input ac-track-name" value="${(t.name||'').replace(/"/g,'&quot;')}" placeholder="Track name">
+        </div>
+        <div>
+          <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Duration</label>
+          <input class="form-input ac-track-duration" value="${(t.duration||'').replace(/"/g,'&quot;')}" placeholder="12 Weeks">
+        </div>
+        <div>
+          <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Icon</label>
+          <select class="form-input ac-track-icon">
+            <option value="code" ${t.icon==='code'?'selected':''}>Code (Web Design)</option>
+            <option value="globe" ${t.icon==='globe'?'selected':''}>Globe (WordPress)</option>
+            <option value="search" ${t.icon==='search'?'selected':''}>Search (Marketing)</option>
+            <option value="palette" ${t.icon==='palette'?'selected':''}>Palette (Brand)</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Description</label>
+        <textarea class="form-input ac-track-desc" rows="2">${(t.description||'').replace(/</g,'&lt;')}</textarea>
+      </div>
+      <div>
+        <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Topics (comma-separated)</label>
+        <input class="form-input ac-track-topics" value="${(t.topics||[]).join(', ')}" placeholder="Topic 1, Topic 2">
+      </div>
+    </div>
+  `).join('');
+}
+
+function addAcademyTrack() {
+  const tracks = collectAcademyTracks();
+  tracks.push({ name: '', description: '', duration: '12 Weeks', topics: [], icon: 'code' });
+  renderAcademyTracks(tracks);
+}
+
+function removeAcademyTrack(idx) {
+  const tracks = collectAcademyTracks();
+  tracks.splice(idx, 1);
+  renderAcademyTracks(tracks);
+}
+
+function collectAcademyTracks() {
+  const names = document.querySelectorAll('.ac-track-name');
+  const descs = document.querySelectorAll('.ac-track-desc');
+  const durs = document.querySelectorAll('.ac-track-duration');
+  const icons = document.querySelectorAll('.ac-track-icon');
+  const tops = document.querySelectorAll('.ac-track-topics');
+  const tracks = [];
+  names.forEach((n, i) => {
+    tracks.push({
+      name: n.value,
+      description: descs[i].value,
+      duration: durs[i].value,
+      icon: icons[i].value,
+      topics: tops[i].value.split(',').map(s => s.trim()).filter(Boolean)
+    });
+  });
+  return tracks;
+}
+
+function renderAcademyFaqs(faqs) {
+  const c = document.getElementById('acFaqsContainer');
+  c.innerHTML = faqs.map((f, i) => `
+    <div class="card" style="padding:14px;margin-bottom:10px;position:relative">
+      <button onclick="removeAcademyFaq(${i})" style="position:absolute;top:8px;right:8px;background:none;border:none;color:#f87171;cursor:pointer;font-size:16px">&times;</button>
+      <div style="margin-bottom:8px">
+        <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Question</label>
+        <input class="form-input ac-faq-q" value="${(f.question||'').replace(/"/g,'&quot;')}" placeholder="Question">
+      </div>
+      <div>
+        <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Answer</label>
+        <textarea class="form-input ac-faq-a" rows="2">${(f.answer||'').replace(/</g,'&lt;')}</textarea>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addAcademyFaq() {
+  const faqs = collectAcademyFaqs();
+  faqs.push({ question: '', answer: '' });
+  renderAcademyFaqs(faqs);
+}
+
+function removeAcademyFaq(idx) {
+  const faqs = collectAcademyFaqs();
+  faqs.splice(idx, 1);
+  renderAcademyFaqs(faqs);
+}
+
+function collectAcademyFaqs() {
+  const qs = document.querySelectorAll('.ac-faq-q');
+  const as = document.querySelectorAll('.ac-faq-a');
+  const faqs = [];
+  qs.forEach((q, i) => {
+    faqs.push({ question: q.value, answer: as[i].value });
+  });
+  return faqs;
+}
+
+async function saveAcademyCms() {
+  const body = {
+    heroHeadline: document.getElementById('acHeroHeadline').value,
+    heroSubtext: document.getElementById('acHeroSubtext').value,
+    nextBatchDate: document.getElementById('acNextBatch').value,
+    tuition: {
+      inPerson: Number(document.getElementById('acTuitionInPerson').value) || 0,
+      inPersonInstallment: document.getElementById('acTuitionInstallment').value,
+      online: Number(document.getElementById('acTuitionOnline').value) || 0,
+      onlineNote: document.getElementById('acTuitionOnlineNote').value,
+      duration: document.getElementById('acTuitionDuration').value
+    },
+    schedule: {
+      weekday: document.getElementById('acScheduleWeekday').value,
+      weekend: document.getElementById('acScheduleWeekend').value
+    },
+    stats: {
+      students: Number(document.getElementById('acStatStudents').value) || 0,
+      jobRate: Number(document.getElementById('acStatJobRate').value) || 0,
+      programWeeks: Number(document.getElementById('acStatWeeks').value) || 0,
+      batchesRun: Number(document.getElementById('acStatBatches').value) || 0
+    },
+    tracks: collectAcademyTracks(),
+    faqs: collectAcademyFaqs()
+  };
+  try {
+    const res = await apiFetch('/api/academy/settings', {
+      method: 'PUT',
+      body: JSON.stringify(body)
+    });
+    if (res) {
+      const msg = document.getElementById('acSaveMsg');
+      msg.style.display = 'inline';
+      setTimeout(() => msg.style.display = 'none', 3000);
+    }
+  } catch (e) { console.error('saveAcademyCms', e); }
 }
 
 // ─── CLIENT LOGOS MANAGEMENT ─────────────────────────────────

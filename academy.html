@@ -14,14 +14,14 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://goallordcreativity.com/academy.html">
-    <meta property="og:title" content="Goallord Academy — Learn Web Design &amp; Development in Nigeria">
+    <meta property="og:title" content="Goallord Academy &mdash; Learn Web Design &amp; Development in Nigeria">
     <meta property="og:description" content="The Goallord Academy trains the next generation of web designers and developers in Onitsha. Join 50+ alumni who launched careers in tech.">
     <meta property="og:image" content="https://goallordcreativity.com/assets/images/logo/og-image.jpg">
     <meta property="og:site_name" content="Goallord Creativity Limited">
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@goallordcreates">
-    <meta name="twitter:title" content="Goallord Academy — Learn Web Design &amp; Development in Nigeria">
+    <meta name="twitter:title" content="Goallord Academy &mdash; Learn Web Design &amp; Development in Nigeria">
     <meta name="twitter:description" content="The Goallord Academy trains the next generation of web designers and developers in Onitsha. 50+ alumni.">
     <meta name="twitter:image" content="https://goallordcreativity.com/assets/images/logo/og-image.jpg">
     <!-- Schema -->
@@ -110,110 +110,50 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <style>
-        /* Portal Dropdown */
-        .portal-wrap { position: relative; }
-        .portal-toggle {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 10px 18px; background: transparent;
-            border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;
-            color: #A0A6B3; font-size: 11px; font-weight: 700;
-            letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer;
-            transition: border-color 0.2s, color 0.2s; white-space: nowrap;
-        }
-        .portal-toggle:hover { border-color: var(--gl-orange); color: #F4F6FA; }
-        .portal-toggle .caret { font-size: 8px; transition: transform 0.2s; display: inline-block; }
-        .portal-toggle.open .caret { transform: rotate(180deg); }
-        .portal-menu {
-            display: none; position: absolute; top: calc(100% + 10px); right: 0;
-            background: #171A21; border: 1px solid #2A2F3A; border-radius: 10px;
-            padding: 8px; min-width: 210px; z-index: 9999;
-            box-shadow: 0 24px 48px rgba(0,0,0,0.5);
-        }
-        .portal-menu.open { display: block; }
-        .portal-menu a {
-            display: flex; align-items: center; gap: 10px;
-            padding: 11px 14px; border-radius: 7px; text-decoration: none;
-            color: #A0A6B3; font-size: 13px; font-weight: 600;
-            transition: background 0.15s, color 0.15s;
-        }
-        .portal-menu a:hover { background: rgba(255,255,255,0.05); color: #F4F6FA; }
-        .portal-menu a .pm-icon {
-            width: 30px; height: 30px; border-radius: 6px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 14px; flex-shrink: 0;
-        }
-        .portal-menu a.pm-student .pm-icon { background: rgba(30,75,255,0.15); }
-        .portal-menu a.pm-lecturer .pm-icon { background: rgba(214,106,31,0.12); }
-        .portal-menu a.pm-admin .pm-icon { background: rgba(255,255,255,0.06); }
-        .portal-menu .pm-divider { height: 1px; background: #2A2F3A; margin: 6px 8px; }
-        .portal-menu .pm-label {
-            font-size: 10px; color: #4a5060; letter-spacing: 1.5px;
-            text-transform: uppercase; padding: 4px 14px 2px; font-weight: 700;
-        }
-
-        /* Enrolled Banner in Hero */
-        .enrolled-bar {
-            display: inline-flex; align-items: center; gap: 10px;
-            background: rgba(30,75,255,0.08); border: 1px solid rgba(30,75,255,0.2);
-            border-radius: 8px; padding: 10px 16px; margin-top: 28px;
-            text-decoration: none; transition: border-color 0.2s, background 0.2s;
-        }
-        .enrolled-bar:hover { border-color: rgba(30,75,255,0.4); background: rgba(30,75,255,0.12); }
-        .enrolled-bar .eb-dot {
-            width: 8px; height: 8px; background: #4a7fff; border-radius: 50%;
-            flex-shrink: 0; animation: pulse-dot 2s infinite;
-        }
-        @keyframes pulse-dot {
-            0%,100% { opacity:1; transform:scale(1); }
-            50% { opacity:0.5; transform:scale(0.8); }
-        }
-        .enrolled-bar .eb-text { font-size: 13px; color: #A0A6B3; }
-        .enrolled-bar .eb-text strong { color: #6a9fff; font-weight: 600; }
-        .enrolled-bar .eb-arrow { color: #4a7fff; font-size: 13px; }
-
-        /* Portal Access Section */
-        .section-portal-access { background: var(--gl-bg, #0F1115); }
-        .portal-card {
-            border: 1px solid #2A2F3A; border-radius: 12px;
-            padding: 32px 28px; height: 100%;
-            transition: border-color 0.25s, transform 0.25s;
-            display: flex; flex-direction: column;
-        }
-        .portal-card:hover { transform: translateY(-4px); }
-        .portal-card.pc-student { border-color: rgba(30,75,255,0.3); background: rgba(30,75,255,0.04); }
-        .portal-card.pc-student:hover { border-color: rgba(30,75,255,0.6); }
-        .portal-card.pc-lecturer { border-color: rgba(214,106,31,0.3); background: rgba(214,106,31,0.04); }
-        .portal-card.pc-lecturer:hover { border-color: rgba(214,106,31,0.6); }
-        .portal-card.pc-admin { border-color: rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); }
-        .portal-card.pc-admin:hover { border-color: rgba(255,255,255,0.18); }
-        .portal-card .pc-icon {
-            width: 48px; height: 48px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 22px; margin-bottom: 20px; flex-shrink: 0;
-        }
-        .pc-student .pc-icon { background: rgba(30,75,255,0.15); }
-        .pc-lecturer .pc-icon { background: rgba(214,106,31,0.15); }
-        .pc-admin .pc-icon { background: rgba(255,255,255,0.06); }
-        .portal-card h5 { margin-bottom: 8px; }
-        .portal-card p { color: #A0A6B3; font-size: 14px; line-height: 1.6; margin-bottom: 20px; flex: 1; }
-        .portal-card .pc-features { list-style: none; padding: 0; margin: 0 0 24px; display: flex; flex-direction: column; gap: 8px; }
-        .portal-card .pc-features li { font-size: 13px; color: #A0A6B3; display: flex; align-items: center; gap: 8px; }
-        .portal-card .pc-features li::before { content: '✓'; font-size: 11px; flex-shrink: 0; }
-        .pc-student .pc-features li::before { color: #4a7fff; }
-        .pc-lecturer .pc-features li::before { color: var(--gl-orange); }
-        .pc-admin .pc-features li::before { color: #6a7080; }
-        .btn-portal {
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            padding: 13px 20px; border-radius: 8px; text-decoration: none;
-            font-size: 12px; font-weight: 700; letter-spacing: 1.2px;
-            text-transform: uppercase; transition: opacity 0.2s, transform 0.1s;
-            width: 100%; text-align: center;
-        }
-        .btn-portal:hover { opacity: 0.85; transform: scale(0.98); }
-        .btn-portal.bp-blue { background: #1E4BFF; color: #fff; }
-        .btn-portal.bp-orange { background: var(--gl-orange); color: #fff; }
-        .btn-portal.bp-ghost { background: transparent; color: #A0A6B3; border: 1px solid #2A2F3A; }
-        .btn-portal.bp-ghost:hover { color: #F4F6FA; border-color: #4a5060; }
+        /* Academy Page Styles */
+        .ac-glass { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; backdrop-filter: blur(12px); }
+        .ac-stat-card { padding: 28px 24px; text-align: center; transition: border-color 0.3s, transform 0.3s; }
+        .ac-stat-card:hover { border-color: rgba(214,106,31,0.3); transform: translateY(-2px); }
+        .ac-stat-num { font-size: 2.4rem; font-weight: 700; color: #F4F6FA; line-height: 1; }
+        .ac-stat-label { font-size: 12px; color: #A0A6B3; letter-spacing: 1px; text-transform: uppercase; margin-top: 8px; font-weight: 600; }
+        .ac-track-card { padding: 32px 28px; height: 100%; display: flex; flex-direction: column; transition: border-color 0.3s, transform 0.3s; }
+        .ac-track-card:hover { border-color: rgba(214,106,31,0.4); transform: translateY(-4px); }
+        .ac-track-icon { width: 56px; height: 56px; border-radius: 14px; background: rgba(214,106,31,0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; flex-shrink: 0; }
+        .ac-track-icon svg { width: 28px; height: 28px; stroke: #D66A1F; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+        .ac-duration-badge { display: inline-block; padding: 4px 12px; background: rgba(214,106,31,0.1); border: 1px solid rgba(214,106,31,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #D66A1F; text-transform: uppercase; margin-bottom: 16px; }
+        .ac-topic-tag { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; font-size: 12px; color: #A0A6B3; margin: 3px 3px 3px 0; }
+        .ac-instructor-card { display: flex; align-items: flex-start; gap: 20px; padding: 28px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .ac-instructor-card:last-child { border-bottom: none; }
+        .ac-instructor-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 2px solid rgba(214,106,31,0.2); }
+        .ac-feature-card { padding: 28px 24px; height: 100%; transition: border-color 0.3s, transform 0.3s; }
+        .ac-feature-card:hover { border-color: rgba(214,106,31,0.3); transform: translateY(-2px); }
+        .ac-feature-icon { width: 48px; height: 48px; border-radius: 12px; background: rgba(214,106,31,0.08); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+        .ac-feature-icon svg { width: 24px; height: 24px; stroke: #D66A1F; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+        .ac-testimonial-card { padding: 32px 28px; height: 100%; display: flex; flex-direction: column; position: relative; }
+        .ac-testimonial-card .ac-quote-icon { color: #D66A1F; opacity: 0.4; margin-bottom: 16px; }
+        .ac-testimonial-card .ac-quote-text { font-size: 15px; line-height: 1.8; color: #c5c8d0; flex: 1; margin-bottom: 20px; font-style: italic; }
+        .ac-testimonial-card .ac-quote-author { font-weight: 600; color: #F4F6FA; font-size: 14px; }
+        .ac-testimonial-card .ac-quote-track { font-size: 12px; color: #D66A1F; margin-top: 4px; }
+        .ac-pricing-card { padding: 36px 32px; height: 100%; display: flex; flex-direction: column; transition: border-color 0.3s, transform 0.3s; }
+        .ac-pricing-card:hover { transform: translateY(-4px); }
+        .ac-pricing-card.featured { border-color: rgba(214,106,31,0.4); background: linear-gradient(135deg, rgba(214,106,31,0.06) 0%, rgba(255,255,255,0.02) 100%); }
+        .ac-pricing-card .ac-price { font-size: 2.2rem; font-weight: 700; color: #F4F6FA; }
+        .ac-pricing-card .ac-price-note { font-size: 13px; color: #D66A1F; font-weight: 600; margin-top: 8px; padding: 8px 14px; background: rgba(214,106,31,0.08); border: 1px solid rgba(214,106,31,0.15); border-radius: 6px; text-align: center; }
+        .ac-pricing-card .ac-includes li { font-size: 14px; color: #A0A6B3; padding: 6px 0; display: flex; align-items: center; gap: 8px; }
+        .ac-pricing-card .ac-includes li::before { content: '//'; color: #D66A1F; font-weight: 700; font-size: 12px; }
+        .ac-faq-wrap { max-width: 800px; margin: 0 auto; }
+        .ac-faq-item { border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; margin-bottom: 10px; background: rgba(255,255,255,0.02); overflow: hidden; }
+        .ac-faq-q { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; cursor: pointer; font-weight: 600; color: #F4F6FA; font-size: 1rem; gap: 16px; transition: color 0.2s; }
+        .ac-faq-q:hover { color: #D66A1F; }
+        .ac-faq-q svg { flex-shrink: 0; transition: transform 0.3s; }
+        .ac-faq-a { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+        .ac-faq-a p { color: #A0A6B3; line-height: 1.7; padding: 0 24px 20px; font-size: 0.95rem; }
+        .ac-faq-item.open .ac-faq-a { max-height: 300px; }
+        .ac-faq-item.open .ac-faq-q svg { transform: rotate(180deg); }
+        .ac-schedule-card { padding: 20px 24px; display: flex; align-items: center; gap: 16px; }
+        .ac-schedule-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(214,106,31,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .ac-schedule-icon svg { width: 20px; height: 20px; stroke: #D66A1F; fill: none; stroke-width: 1.5; }
+        .ac-next-batch { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: rgba(214,106,31,0.08); border: 1px solid rgba(214,106,31,0.2); border-radius: 6px; font-size: 13px; color: #D66A1F; font-weight: 600; margin-top: 20px; }
 
         /* Mobile portal links in offcanvas */
         .mb-portal-links { padding: 20px 0 0; border-top: 1px solid #2A2F3A; margin-top: 16px; }
@@ -259,202 +199,103 @@
                     <p class="text-caption">WAT <span class="clock"></span></p>
                 </div></div>
                 <div class="col-6 col-sm-3 col-md-3 d-flex justify-content-end align-items-center gap-2">
-                    <!-- Portal dropdown (desktop) -->
-                    <div class="portal-wrap d-none d-lg-block">
-                        <button class="portal-toggle" id="portalToggleBtn" onclick="togglePortal(event)" aria-haspopup="true" aria-expanded="false">
-                            PORTAL <span class="caret">▾</span>
-                        </button>
-                        <div class="portal-menu" id="portalMenu" role="menu">
-                            <p class="pm-label">STUDENT & STAFF</p>
-                            <a href="student-login.html" class="pm-student" role="menuitem">
-                                <span class="pm-icon">🎓</span>
-                                <span><strong>Student Portal</strong><br><small style="font-weight:400;font-size:11px;color:#4a5060;">Attendance &amp; payments</small></span>
-                            </a>
-                            <a href="lecturer-login.html" class="pm-lecturer" role="menuitem">
-                                <span class="pm-icon">📚</span>
-                                <span><strong>Lecturer Portal</strong><br><small style="font-weight:400;font-size:11px;color:#4a5060;">Classes &amp; records</small></span>
-                            </a>
-                            <div class="pm-divider"></div>
-                            <p class="pm-label">ADMINISTRATION</p>
-                            <a href="login.html" class="pm-admin" role="menuitem">
-                                <span class="pm-icon">⚙️</span>
-                                <span><strong>Admin Dashboard</strong><br><small style="font-weight:400;font-size:11px;color:#4a5060;">System access</small></span>
-                            </a>
-                        </div>
-                    </div>
                     <a href="apply.html" class="tf-btn style-fill d-none d-lg-inline-flex text-caption fw-medium">APPLY NOW</a>
                     <button type="button" class="btn-mobile-menu open-mb-menu text-caption text-white link" style="white-space:nowrap;gap:6px;flex-shrink:0"><i class="icon icon-menu"></i> MENU</button>
                 </div>
             </div></div></div>
         </header>
 
-        <!-- Hero -->
+        <!-- 1. HERO -->
         <section class="flat-spacing" style="padding-top: 120px;">
             <div class="container">
-                <div class="row align-items-end">
+                <div class="row align-items-center">
                     <div class="col-lg-7">
                         <h6 class="mini-title text-caption text-white-64 effectFade fadeUp">GOALLORD ACADEMY</h6>
-                        <h1 class="text-display-2 fw-semibold letter-space--3 effectFade fadeUp mt-3">Launch Your Career in<br>Web Design &amp; Development</h1>
-                        <!-- Already enrolled link -->
-                        <a href="student-login.html" class="enrolled-bar effectFade fadeUp" style="display:inline-flex;">
-                            <span class="eb-dot"></span>
-                            <span class="eb-text">Already enrolled? <strong>Sign in to your Student Portal</strong></span>
-                            <span class="eb-arrow">→</span>
-                        </a>
-                    </div>
-                    <div class="col-lg-4 offset-lg-1">
-                        <p class="text-white-64 effectFade fadeRight" style="line-height: 1.7;">Hands-on, practical training in Onitsha, Nigeria. Learn web design, WordPress development, and digital marketing from real practitioners — not textbooks.</p>
-                        <div class="mt-4 d-flex flex-wrap gap-3 effectFade fadeRight">
+                        <h1 class="text-display-2 fw-semibold letter-space--3 effectFade fadeUp mt-3" id="ac-hero-headline">Launch Your Career in<br>Web Design &amp; Development</h1>
+                        <p class="text-white-64 mt-4 effectFade fadeUp" style="line-height: 1.7; max-width: 520px;" id="ac-hero-subtext">Hands-on, practical training in Onitsha, Nigeria. Learn web design, WordPress development, and digital marketing from real practitioners &mdash; not textbooks.</p>
+                        <div class="mt-4 effectFade fadeUp">
                             <a href="apply.html" class="tf-btn style-fill"><span class="text-caption fw-medium">APPLY NOW</span></a>
-                            <a href="#portal-access" class="tf-btn style-troke"><span class="text-caption fw-medium">PORTAL LOGIN</span></a>
+                        </div>
+                        <div class="ac-next-batch effectFade fadeUp" id="ac-next-batch">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D66A1F" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span>Next batch: Contact us for next batch date</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-5 mt-5 mt-lg-0">
+                        <div class="row g-3" id="ac-stats-grid">
+                            <div class="col-6">
+                                <div class="ac-glass ac-stat-card effectFade fadeUp">
+                                    <p class="ac-stat-num" id="ac-stat-students">50+</p>
+                                    <p class="ac-stat-label">Students Trained</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="ac-glass ac-stat-card effectFade fadeUp">
+                                    <p class="ac-stat-num" id="ac-stat-jobrate">85%</p>
+                                    <p class="ac-stat-label">Job Placement</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="ac-glass ac-stat-card effectFade fadeUp">
+                                    <p class="ac-stat-num" id="ac-stat-weeks">12</p>
+                                    <p class="ac-stat-label">Program Weeks</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="ac-glass ac-stat-card effectFade fadeUp">
+                                    <p class="ac-stat-num" id="ac-stat-batches">5+</p>
+                                    <p class="ac-stat-label">Batches Run</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="br-line mt-5"></div>
             </div>
         </section>
 
-        <!-- Stats -->
-        <section class="flat-spacing">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-3 col-6">
-                        <div class="wg-indicator mb-md-0">
-                            <p class="indicate-title text-body-1"><span class="text-primary">//</span> Students Trained</p>
-                            <p class="indicate-counter wg-counter text-display-1 fw-medium"><span class="odometer" data-number="50">10</span><span class="text-primary">+</span></p>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-6">
-                        <div class="wg-indicator mb-md-0">
-                            <p class="indicate-title text-body-1"><span class="text-primary">//</span> Job Placement Rate</p>
-                            <p class="indicate-counter wg-counter text-display-1 fw-medium"><span class="odometer" data-number="85">10</span><span class="text-primary">%</span></p>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-6">
-                        <div class="wg-indicator mb-md-0">
-                            <p class="indicate-title text-body-1"><span class="text-primary">//</span> Programme Length</p>
-                            <p class="indicate-counter wg-counter text-display-1 fw-medium"><span class="odometer" data-number="12">1</span><span class="text-primary"> wks</span></p>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-6">
-                        <div class="wg-indicator mb-0">
-                            <p class="indicate-title text-body-1"><span class="text-primary">//</span> Years Running</p>
-                            <p class="indicate-counter wg-counter text-display-1 fw-medium"><span class="odometer" data-number="5">1</span><span class="text-primary">+</span></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Programmes -->
+        <!-- 2. TRACKS GRID -->
         <section class="flat-spacing">
             <div class="container">
                 <div class="s-header">
                     <h2 class="text-display-2 fw-semibold letter-space--3 effectFade fadeUp">Choose Your Track</h2>
                 </div>
-                <div class="row mt-5">
-                    <div class="col-md-4 mb-4">
-                        <div class="wg-process effectFade fadeUp" style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 32px 28px; height:100%; display:flex; flex-direction:column;">
-                            <p class="text-primary text-caption fw-medium letter-space--1">WEB DESIGN TRACK — 12 WEEKS</p>
-                            <h4 class="letter-space--2 mt-2 mb-3">Web Design</h4>
-                            <p class="text-white-64 mb-4" style="line-height:1.7;">Master Figma, HTML/CSS, and responsive design. Build 4 real portfolio projects. Graduate with a portfolio that gets you hired.</p>
-                            <div class="br-line mb-4"></div>
-                            <ul class="tf-list vertical mb-auto">
-                                <li class="letter-space--1"><span class="text-primary">//</span> Figma &amp; UI Design</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> HTML &amp; CSS Fundamentals</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Responsive Web Design</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> GSAP Animations</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Portfolio Project</li>
-                            </ul>
-                            <a href="apply.html?track=web-design" class="tf-btn style-fill mt-4 w-100"><span class="text-caption fw-medium">APPLY NOW</span></a>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-4">
-                        <div class="wg-process effectFade fadeUp" style="background: var(--gl-card); border: 1px solid var(--gl-orange); border-radius: 8px; padding: 32px 28px; height:100%; display:flex; flex-direction:column;">
-                            <p class="text-primary text-caption fw-medium letter-space--1">WORDPRESS TRACK — 12 WEEKS</p>
-                            <h4 class="letter-space--2 mt-2 mb-3">WordPress Developer</h4>
-                            <p class="text-white-64 mb-4" style="line-height:1.7;">Build professional WordPress sites and WooCommerce stores from scratch. Learn to charge clients and run your own web business.</p>
-                            <div class="br-line mb-4" style="background: var(--gl-orange);"></div>
-                            <ul class="tf-list vertical mb-auto">
-                                <li class="letter-space--1"><span class="text-primary">//</span> WordPress Setup</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Theme Development</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> WooCommerce</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> SEO Fundamentals</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Client Management</li>
-                            </ul>
-                            <a href="apply.html?track=wordpress" class="tf-btn style-fill mt-4 w-100"><span class="text-caption fw-medium">APPLY NOW</span></a>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-4">
-                        <div class="wg-process effectFade fadeUp" style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 32px 28px; height:100%; display:flex; flex-direction:column;">
-                            <p class="text-primary text-caption fw-medium letter-space--1">DIGITAL MARKETING TRACK — 12 WEEKS</p>
-                            <h4 class="letter-space--2 mt-2 mb-3">Digital Marketing</h4>
-                            <p class="text-white-64 mb-4" style="line-height:1.7;">Learn SEO, Google Ads, social media strategy, and analytics. Get certified and start generating results for businesses.</p>
-                            <div class="br-line mb-4"></div>
-                            <ul class="tf-list vertical mb-auto">
-                                <li class="letter-space--1"><span class="text-primary">//</span> SEO Strategy</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Google Ads</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Social Media Marketing</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Analytics &amp; Reporting</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Content Strategy</li>
-                            </ul>
-                            <a href="apply.html?track=digital-marketing" class="tf-btn style-fill mt-4 w-100"><span class="text-caption fw-medium">APPLY NOW</span></a>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-4">
-                        <div class="wg-process effectFade fadeUp" style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 32px 28px; height:100%; display:flex; flex-direction:column;">
-                            <p class="text-primary text-caption fw-medium letter-space--1">BRAND IDENTITY TRACK — 12 WEEKS</p>
-                            <h4 class="letter-space--2 mt-2 mb-3">Brand Identity &amp; Graphics</h4>
-                            <p class="text-white-64 mb-4" style="line-height:1.7;">Learn logo design, visual identity systems, brand guidelines, social media graphics, and print design using Adobe Creative Suite and Canva.</p>
-                            <div class="br-line mb-4"></div>
-                            <ul class="tf-list vertical mb-auto">
-                                <li class="letter-space--1"><span class="text-primary">//</span> Logo Design</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Brand Guidelines</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Typography &amp; Color Theory</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Social Media Graphics</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Print Design</li>
-                            </ul>
-                            <a href="apply.html?track=brand-identity" class="tf-btn style-fill mt-4 w-100"><span class="text-caption fw-medium">APPLY NOW</span></a>
-                        </div>
-                    </div>
+                <div class="row mt-5 g-4" id="ac-tracks-grid">
+                    <!-- Tracks loaded dynamically -->
                 </div>
             </div>
         </section>
 
-        <!-- Your Instructors -->
+        <!-- 3. INSTRUCTORS -->
         <section class="flat-spacing">
             <div class="container">
                 <div class="s-header">
                     <h2 class="text-display-2 fw-semibold letter-space--3 effectFade fadeUp">Your Instructors</h2>
                 </div>
-                <div class="row mt-5 g-4">
-                    <div class="col-md-4 effectFade fadeUp">
-                        <div style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 32px 28px; text-align: center; height: 100%;">
-                            <img src="assets/images/section/ceo.webp" alt="Emmanuel Kenechukwu Nwabufo" width="80" height="80" style="border-radius: 50%; object-fit: cover; margin-bottom: 16px;">
+                <div class="ac-glass effectFade fadeUp" style="padding: 12px 32px; margin-top: 40px; max-width: 800px;">
+                    <div class="ac-instructor-card">
+                        <img src="assets/images/section/ceo.webp" alt="Emmanuel Kenechukwu Nwabufo" class="ac-instructor-img">
+                        <div>
                             <h5 class="letter-space--2 mb-1">Emmanuel K. Nwabufo</h5>
-                            <p class="text-primary text-caption fw-medium letter-space--1 mb-2">Founder &amp; Lead Instructor</p>
-                            <p class="text-caption text-white-64 mb-3">Teaches: Web Design, Custom Development</p>
-                            <div class="br-line mb-3"></div>
+                            <p class="text-white-64 text-caption mb-1">Founder &amp; Lead Instructor</p>
+                            <p style="color: #D66A1F; font-size: 13px; font-weight: 600; margin-bottom: 10px;">Teaches: Web Design, Custom Development</p>
                             <p class="text-white-64" style="font-size: 14px; line-height: 1.7;">5+ years building websites and web apps for businesses across Nigeria and internationally. Founded Goallord in 2020.</p>
                         </div>
                     </div>
-                    <div class="col-md-4 effectFade fadeUp">
-                        <div style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 32px 28px; text-align: center; height: 100%;">
-                            <img src="assets/images/team members/Mr Ifeanyi.webp" alt="Nnaemego Ifeanyi" width="80" height="80" style="border-radius: 50%; object-fit: cover; margin-bottom: 16px;">
+                    <div class="ac-instructor-card">
+                        <img src="assets/images/team members/Mr Ifeanyi.webp" alt="Nnaemego Ifeanyi" class="ac-instructor-img">
+                        <div>
                             <h5 class="letter-space--2 mb-1">Nnaemego Ifeanyi</h5>
-                            <p class="text-primary text-caption fw-medium letter-space--1 mb-2">Senior Developer &amp; Instructor</p>
-                            <p class="text-caption text-white-64 mb-3">Teaches: WordPress, Web Applications</p>
-                            <div class="br-line mb-3"></div>
+                            <p class="text-white-64 text-caption mb-1">Senior Developer &amp; Instructor</p>
+                            <p style="color: #D66A1F; font-size: 13px; font-weight: 600; margin-bottom: 10px;">Teaches: WordPress, Web Applications</p>
                             <p class="text-white-64" style="font-size: 14px; line-height: 1.7;">Full-stack developer specializing in WordPress and React. Has built 20+ production websites.</p>
                         </div>
                     </div>
-                    <div class="col-md-4 effectFade fadeUp">
-                        <div style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 32px 28px; text-align: center; height: 100%;">
-                            <img src="assets/images/team members/Kosi.webp" alt="Felicitas K. Ogbachalu" width="80" height="80" style="border-radius: 50%; object-fit: cover; margin-bottom: 16px;">
+                    <div class="ac-instructor-card">
+                        <img src="assets/images/team members/Kosi.webp" alt="Felicitas K. Ogbachalu" class="ac-instructor-img">
+                        <div>
                             <h5 class="letter-space--2 mb-1">Felicitas K. Ogbachalu</h5>
-                            <p class="text-primary text-caption fw-medium letter-space--1 mb-2">WordPress Developer &amp; Instructor</p>
-                            <p class="text-caption text-white-64 mb-3">Teaches: WordPress Track</p>
-                            <div class="br-line mb-3"></div>
+                            <p class="text-white-64 text-caption mb-1">WordPress Developer &amp; Instructor</p>
+                            <p style="color: #D66A1F; font-size: 13px; font-weight: 600; margin-bottom: 10px;">Teaches: WordPress Track</p>
                             <p class="text-white-64" style="font-size: 14px; line-height: 1.7;">WordPress specialist with experience building sites for schools, churches, and businesses.</p>
                         </div>
                     </div>
@@ -462,338 +303,202 @@
             </div>
         </section>
 
-        <!-- Why Train With Us -->
-        <section class="flat-spacing" style="background: var(--gl-card);">
+        <!-- 4. WHY GOALLORD ACADEMY -->
+        <section class="flat-spacing" style="background: linear-gradient(180deg, rgba(214,106,31,0.02) 0%, transparent 100%);">
             <div class="container">
                 <div class="s-header">
                     <h2 class="text-display-2 fw-semibold letter-space--3 effectFade fadeUp">Why Goallord Academy?</h2>
                 </div>
-                <div class="row mt-5">
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="effectFade fadeUp">
-                            <p class="text-primary fw-medium letter-space--1 text-caption mb-2">// 01</p>
+                <div class="row mt-5 g-4">
+                    <div class="col-md-6 col-lg-4">
+                        <div class="ac-glass ac-feature-card effectFade fadeUp">
+                            <div class="ac-feature-icon">
+                                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                            </div>
                             <h5 class="letter-space--2 mb-2">Learn by Building</h5>
-                            <p class="text-white-64">Real projects — not just watching videos. Every module ends with something you can show a client.</p>
+                            <p class="text-white-64" style="line-height:1.7;">Real projects &mdash; not just watching videos. Every module ends with something you can show a client.</p>
                         </div>
                     </div>
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="effectFade fadeUp">
-                            <p class="text-primary fw-medium letter-space--1 text-caption mb-2">// 02</p>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="ac-glass ac-feature-card effectFade fadeUp">
+                            <div class="ac-feature-icon">
+                                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
                             <h5 class="letter-space--2 mb-2">Industry Practitioners</h5>
-                            <p class="text-white-64">Taught by people actively doing the work — not academics reading from textbooks.</p>
+                            <p class="text-white-64" style="line-height:1.7;">Taught by people actively doing the work &mdash; not academics reading from textbooks.</p>
                         </div>
                     </div>
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="effectFade fadeUp">
-                            <p class="text-primary fw-medium letter-space--1 text-caption mb-2">// 03</p>
-                            <h5 class="letter-space--2 mb-2">Small Cohorts</h5>
-                            <p class="text-white-64">Personal attention and real feedback. We cap cohorts so no one gets left behind.</p>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="ac-glass ac-feature-card effectFade fadeUp">
+                            <div class="ac-feature-icon">
+                                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                            </div>
+                            <h5 class="letter-space--2 mb-2">Small Cohorts (10-15)</h5>
+                            <p class="text-white-64" style="line-height:1.7;">Personal attention and real feedback. We cap cohorts so no one gets left behind.</p>
                         </div>
                     </div>
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="effectFade fadeUp">
-                            <p class="text-primary fw-medium letter-space--1 text-caption mb-2">// 04</p>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="ac-glass ac-feature-card effectFade fadeUp">
+                            <div class="ac-feature-icon">
+                                <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 13l3-3 2 2 5-5"/></svg>
+                            </div>
                             <h5 class="letter-space--2 mb-2">Recognised Certificate</h5>
-                            <p class="text-white-64">Certificate of completion recognised by employers across Nigeria and beyond.</p>
+                            <p class="text-white-64" style="line-height:1.7;">Certificate of completion recognised by employers across Nigeria and beyond.</p>
                         </div>
                     </div>
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="effectFade fadeUp">
-                            <p class="text-primary fw-medium letter-space--1 text-caption mb-2">// 05</p>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="ac-glass ac-feature-card effectFade fadeUp">
+                            <div class="ac-feature-icon">
+                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                            </div>
                             <h5 class="letter-space--2 mb-2">Alumni Network</h5>
-                            <p class="text-white-64">Access to job board, referrals, and 50+ alumni after you graduate.</p>
+                            <p class="text-white-64" style="line-height:1.7;">Access to job board, referrals, and 50+ alumni after you graduate.</p>
                         </div>
                     </div>
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="effectFade fadeUp">
-                            <p class="text-primary fw-medium letter-space--1 text-caption mb-2">// 06</p>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="ac-glass ac-feature-card effectFade fadeUp">
+                            <div class="ac-feature-icon">
+                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            </div>
                             <h5 class="letter-space--2 mb-2">Flexible Schedule</h5>
-                            <p class="text-white-64">Weekday classes: Tue/Wed/Thu, 4:00 PM – 7:00 PM. Weekend classes: Saturday, 10:00 AM – 3:00 PM. In-person at No. 1 Mission Road, Onitsha.</p>
+                            <p class="text-white-64" style="line-height:1.7;">Weekday and weekend class options to fit your lifestyle. In-person at No. 1 Mission Road, Onitsha.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Testimonials -->
-        <section class="section-testimonial flat-spacing">
-            <h6 class="mini-title text-caption text-white-64 text-center">WHAT OUR STUDENTS SAY</h6>
-            <div dir="ltr" class="swiper tf-swiper swiper-testimonial" data-preview="2.59" data-tablet="2.2" data-mobile-sm="1.5" data-mobile="1.2"
-                data-loop="true" data-center="true" data-space-lg="40" data-space-md="30" data-space="15" data-init="1">
-                <div class="swiper-wrapper">
-                    <div class="swiper-slide">
-                        <div class="testimonial-v01">
-                            <div class="tes-author">
-                                <div class="author_image"><img loading="lazy" width="437" height="328" src="assets/images/section/tes-1.jpg" alt="Ngozi Udemba"></div>
-                                <div class="author_info">
-                                    <h6 class="info__name text-body-1 letter-space--1">Ngozi Udemba</h6>
-                                    <p class="info__duty">WordPress Track Graduate</p>
-                                </div>
-                            </div>
-                            <div class="br-line"></div>
-                            <p class="tes-text text-body-1">"I joined the WordPress track knowing nothing about code. By week 6 I built my first client website. Two months after graduating, I landed a &#8358;200,000 project redesigning a school's website."</p>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="testimonial-v01">
-                            <div class="tes-author">
-                                <div class="author_image"><img loading="lazy" width="437" height="328" src="assets/images/section/tes-2.jpg" alt="Obinna Eze"></div>
-                                <div class="author_info">
-                                    <h6 class="info__name text-body-1 letter-space--1">Obinna Eze</h6>
-                                    <p class="info__duty">Digital Marketing Track Graduate</p>
-                                </div>
-                            </div>
-                            <div class="br-line"></div>
-                            <p class="tes-text text-body-1">"The class size was small enough that Emmanuel personally reviewed my work every session. I went from zero to managing Google Ads campaigns for 3 businesses within 4 months of graduating."</p>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="testimonial-v01">
-                            <div class="tes-author">
-                                <div class="author_image"><img loading="lazy" width="437" height="328" src="assets/images/section/tes-3.jpg" alt="Amara Okonkwo"></div>
-                                <div class="author_info">
-                                    <h6 class="info__name text-body-1 letter-space--1">Amara Okonkwo</h6>
-                                    <p class="info__duty">Web Design Track Graduate</p>
-                                </div>
-                            </div>
-                            <div class="br-line"></div>
-                            <p class="tes-text text-body-1">"I was skeptical about paying &#8358;150,000 for training. Best investment I have made. I now earn more per month freelancing than I did at my old 9-to-5."</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="group-btn-slider">
-                    <div class="nav-prev-swiper lh-1"><i class="icon icon-arrow-caret-left fs-8"></i></div>
-                    <div class="sw-dot-default tf-sw-pagination"></div>
-                    <div class="nav-next-swiper lh-1"><i class="icon icon-arrow-caret-right fs-8"></i></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Portal Access Section (hidden for non-enrolled visitors) -->
-        <section id="portal-access" class="section-portal-access flat-spacing" style="display:none">
-            <div class="container">
-                <div class="s-header">
-                    <div>
-                        <h6 class="mini-title text-caption text-white-64 effectFade fadeUp mb-3">ALREADY ENROLLED?</h6>
-                        <h2 class="text-display-2 fw-semibold letter-space--3 effectFade fadeUp">Access Your Portal</h2>
-                    </div>
-                    <p class="text-white-64 effectFade fadeRight" style="max-width:360px; line-height:1.7;">Students and staff can sign in to their dedicated portals to track progress, manage classes, and stay up to date.</p>
-                </div>
-                <div class="row mt-5">
-                    <!-- Student Portal -->
-                    <div class="col-md-4 mb-4">
-                        <div class="portal-card pc-student effectFade fadeUp">
-                            <div class="pc-icon">🎓</div>
-                            <p class="text-primary text-caption fw-medium letter-space--1 mb-2">STUDENT PORTAL</p>
-                            <h5 class="letter-space--2 mb-2">Student Dashboard</h5>
-                            <p>View your attendance records, track monthly payment status, check your programme progress, and receive announcements from your instructors.</p>
-                            <ul class="pc-features">
-                                <li>Attendance history &amp; records</li>
-                                <li>Payment status &amp; receipts</li>
-                                <li>Programme progress overview</li>
-                                <li>Instructor announcements</li>
-                            </ul>
-                            <a href="student-login.html" class="btn-portal bp-blue">
-                                <span>🎓</span> Sign In as Student
-                            </a>
-                        </div>
-                    </div>
-                    <!-- Lecturer Portal -->
-                    <div class="col-md-4 mb-4">
-                        <div class="portal-card pc-lecturer effectFade fadeUp">
-                            <div class="pc-icon">📚</div>
-                            <p class="text-primary text-caption fw-medium letter-space--1 mb-2">LECTURER PORTAL</p>
-                            <h5 class="letter-space--2 mb-2">Lecturer Dashboard</h5>
-                            <p>Manage your class schedule, record student attendance, post lesson notes, and monitor your cohort's progress through the programme.</p>
-                            <ul class="pc-features">
-                                <li>Record &amp; manage attendance</li>
-                                <li>View assigned cohorts</li>
-                                <li>Post lesson content</li>
-                                <li>Student progress tracking</li>
-                            </ul>
-                            <a href="lecturer-login.html" class="btn-portal bp-orange">
-                                <span>📚</span> Sign In as Lecturer
-                            </a>
-                        </div>
-                    </div>
-                    <!-- Admin -->
-                    <div class="col-md-4 mb-4">
-                        <div class="portal-card pc-admin effectFade fadeUp">
-                            <div class="pc-icon">⚙️</div>
-                            <p style="color:#4a5060;" class="text-caption fw-medium letter-space--1 mb-2">ADMINISTRATION</p>
-                            <h5 class="letter-space--2 mb-2">Admin Dashboard</h5>
-                            <p style="color:#4a5060;">Restricted access for academy administrators. Manage applications, students, payments, orders, and system settings.</p>
-                            <ul class="pc-features" style="opacity:0.5;">
-                                <li>Manage applicants &amp; students</li>
-                                <li>Process payments &amp; receipts</li>
-                                <li>Oversee all cohorts</li>
-                                <li>System configuration</li>
-                            </ul>
-                            <a href="login.html" class="btn-portal bp-ghost">
-                                <span>⚙️</span> Admin Access Only
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Tuition -->
-        <section class="section-pricing flat-spacing">
+        <!-- 5. TESTIMONIALS -->
+        <section class="flat-spacing">
             <div class="container">
                 <div class="s-header justify-content-center">
-                    <h2 class="text-display-2 letter-space--3 effectFade fadeUp">Tuition Fees</h2>
+                    <h6 class="mini-title text-caption text-white-64 effectFade fadeUp">WHAT OUR STUDENTS SAY</h6>
                 </div>
-                <div class="tf-grid-layout md-col-2" style="max-width: 800px; margin: 0 auto;">
-                    <div class="wg-plan">
-                        <div class="br-line"></div>
-                        <p class="plan-name letter-space--1 fw-medium">In-Person</p>
-                        <h4 class="plan-price">₦150,000 <span class="text-body-2 fw-normal text-white-64 letter-space--1">total · 12 weeks</span></h4>
-                        <p class="plan-desc text-white-64" style="line-height:1.8;">Onitsha classroom. 12 weeks hands-on training with live labs and mentoring.</p>
-                        <p style="background:rgba(214,106,31,0.1); border:1px solid rgba(214,106,31,0.3); border-radius:6px; padding:10px 14px; font-size:13px; color:#D66A1F; font-weight:600; margin-bottom:16px; text-align:center;">Pay in 3 monthly installments of ₦50,000</p>
-                        <a href="apply.html" class="btn-action tf-btn style-troke w-100"><span class="text-caption fw-medium">APPLY NOW</span></a>
-                        <ul class="benefit-list tf-list vertical">
-                            <li class="benefit_title text-white-64">What's included:</li>
-                            <li><span>//</span> Classroom + labs</li>
-                            <li><span>//</span> Certificate</li>
-                            <li><span>//</span> Job placement support</li>
-                            <li><span>//</span> Alumni network access</li>
-                            <li><span>//</span> 1-on-1 mentoring</li>
-                            <li><span>//</span> Installment payment option</li>
-                        </ul>
+                <div class="row mt-5 g-4">
+                    <div class="col-md-4 effectFade fadeUp">
+                        <div class="ac-glass ac-testimonial-card">
+                            <div class="ac-quote-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M11 7.5v4c0 2.5-1.5 4.5-4 5.5l-1-2c1.5-.5 2.5-1.5 3-3H7V7.5h4zm7 0v4c0 2.5-1.5 4.5-4 5.5l-1-2c1.5-.5 2.5-1.5 3-3h-2V7.5h4z"/></svg>
+                            </div>
+                            <p class="ac-quote-text">"I joined the WordPress track knowing nothing about code. By week 6 I built my first client website. Two months after graduating, I landed a &#8358;200,000 project redesigning a school's website."</p>
+                            <p class="ac-quote-author">Ngozi Udemba</p>
+                            <p class="ac-quote-track">WordPress Track Graduate</p>
+                        </div>
                     </div>
-                    <div class="wg-plan style-2">
-                        <div class="bg-img bg-img_1 d-xl-block"></div>
-                        <div class="bg-img bg-img_2"><img loading="lazy" width="416" height="625" src="assets/images/item/bg-2.png" alt=""></div>
-                        <div class="br-line bg-primary"></div>
-                        <p class="plan-name letter-space--1 fw-medium">Online</p>
-                        <h4 class="plan-price"><span><span class="text-primary">₦</span>80,000</span> <span class="text-body-2 fw-normal text-white-64 letter-space--1">one-time · 12 weeks</span></h4>
-                        <p class="plan-desc text-white-64">Flexible schedule. Recorded + live sessions for students outside Onitsha.</p>
-                        <p style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:10px 14px; font-size:13px; color:#A0A6B3; font-weight:600; margin-bottom:16px; text-align:center;">One-time payment — no installments</p>
-                        <a href="apply.html" class="btn-action tf-btn style-fill w-100 animate-btn animate-dark"><span class="text-caption fw-medium">APPLY NOW</span></a>
-                        <ul class="benefit-list tf-list vertical">
-                            <li class="benefit_title text-white-64">What's included:</li>
-                            <li><span class="text-primary">//</span> Recorded + live sessions</li>
-                            <li><span class="text-primary">//</span> Flexible schedule</li>
-                            <li><span class="text-primary">//</span> Certificate</li>
-                            <li><span class="text-primary">//</span> Alumni network access</li>
-                            <li><span class="text-primary">//</span> Community support</li>
-                        </ul>
+                    <div class="col-md-4 effectFade fadeUp">
+                        <div class="ac-glass ac-testimonial-card">
+                            <div class="ac-quote-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M11 7.5v4c0 2.5-1.5 4.5-4 5.5l-1-2c1.5-.5 2.5-1.5 3-3H7V7.5h4zm7 0v4c0 2.5-1.5 4.5-4 5.5l-1-2c1.5-.5 2.5-1.5 3-3h-2V7.5h4z"/></svg>
+                            </div>
+                            <p class="ac-quote-text">"The class size was small enough that Emmanuel personally reviewed my work every session. I went from zero to managing Google Ads campaigns for 3 businesses within 4 months of graduating."</p>
+                            <p class="ac-quote-author">Obinna Eze</p>
+                            <p class="ac-quote-track">Digital Marketing Track Graduate</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 effectFade fadeUp">
+                        <div class="ac-glass ac-testimonial-card">
+                            <div class="ac-quote-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M11 7.5v4c0 2.5-1.5 4.5-4 5.5l-1-2c1.5-.5 2.5-1.5 3-3H7V7.5h4zm7 0v4c0 2.5-1.5 4.5-4 5.5l-1-2c1.5-.5 2.5-1.5 3-3h-2V7.5h4z"/></svg>
+                            </div>
+                            <p class="ac-quote-text">"I was skeptical about paying &#8358;150,000 for training. Best investment I have made. I now earn more per month freelancing than I did at my old 9-to-5."</p>
+                            <p class="ac-quote-author">Amara Okonkwo</p>
+                            <p class="ac-quote-track">Web Design Track Graduate</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- FAQ Section -->
-        <section class="flat-spacing">
-            <style>
-                .gl-faq-item { border-bottom: 1px solid var(--gl-border, #2A2F3A); padding: 20px 0; cursor: pointer; }
-                .gl-faq-q { display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: #F4F6FA; font-size: 1.05rem; gap: 16px; }
-                .gl-faq-q svg { flex-shrink: 0; transition: transform 0.3s; }
-                .gl-faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
-                .gl-faq-a p { color: rgba(164,166,179,0.8); line-height: 1.7; padding-top: 12px; font-size: 0.95rem; }
-                .gl-faq-item.open .gl-faq-a { max-height: 200px; }
-                .gl-faq-item.open svg { transform: rotate(180deg); }
-            </style>
+        <!-- 6. TUITION -->
+        <section class="flat-spacing" id="ac-tuition-section">
             <div class="container">
-                <div class="s-header">
+                <div class="s-header justify-content-center">
+                    <h2 class="text-display-2 fw-semibold letter-space--3 effectFade fadeUp">Tuition Fees</h2>
+                </div>
+                <div class="row mt-5 g-4 justify-content-center" style="max-width: 860px; margin-left: auto; margin-right: auto;">
+                    <div class="col-md-6 effectFade fadeUp">
+                        <div class="ac-glass ac-pricing-card">
+                            <p class="text-caption fw-medium letter-space--1 text-white-64 mb-2">IN-PERSON</p>
+                            <p class="ac-price" id="ac-price-inperson">&#8358;150,000</p>
+                            <p class="text-white-64" style="font-size: 13px; margin-top: 4px;"><span id="ac-tuition-duration">12 weeks</span> programme</p>
+                            <p class="ac-price-note" id="ac-price-installment">Pay in 3 monthly payments of &#8358;50,000</p>
+                            <ul class="ac-includes list-unstyled mt-4 mb-4" style="flex: 1;">
+                                <li>Classroom + live labs</li>
+                                <li>Certificate of completion</li>
+                                <li>Job placement support</li>
+                                <li>Alumni network access</li>
+                                <li>1-on-1 mentoring</li>
+                                <li>Installment payment option</li>
+                            </ul>
+                            <a href="apply.html" class="tf-btn style-troke w-100"><span class="text-caption fw-medium">APPLY NOW</span></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6 effectFade fadeUp">
+                        <div class="ac-glass ac-pricing-card featured">
+                            <p class="text-caption fw-medium letter-space--1" style="color: #D66A1F; margin-bottom: 8px;">ONLINE</p>
+                            <p class="ac-price" id="ac-price-online">&#8358;80,000</p>
+                            <p class="text-white-64" style="font-size: 13px; margin-top: 4px;"><span id="ac-tuition-duration2">12 weeks</span> programme</p>
+                            <p class="ac-price-note" id="ac-price-online-note" style="color: #A0A6B3; background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1);">One-time payment</p>
+                            <ul class="ac-includes list-unstyled mt-4 mb-4" style="flex: 1;">
+                                <li>Recorded + live sessions</li>
+                                <li>Flexible schedule</li>
+                                <li>Certificate of completion</li>
+                                <li>Alumni network access</li>
+                                <li>Community support</li>
+                            </ul>
+                            <a href="apply.html" class="tf-btn style-fill w-100"><span class="text-caption fw-medium">APPLY NOW</span></a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Schedule -->
+                <div class="row mt-4 g-3 justify-content-center" style="max-width: 860px; margin-left: auto; margin-right: auto;">
+                    <div class="col-md-6 effectFade fadeUp">
+                        <div class="ac-glass ac-schedule-card">
+                            <div class="ac-schedule-icon">
+                                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-caption fw-medium text-white-64 mb-1">WEEKDAY CLASSES</p>
+                                <p style="color: #F4F6FA; font-weight: 600;" id="ac-schedule-weekday">Tue / Wed / Thu, 4:00 PM &ndash; 7:00 PM</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 effectFade fadeUp">
+                        <div class="ac-glass ac-schedule-card">
+                            <div class="ac-schedule-icon">
+                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-caption fw-medium text-white-64 mb-1">WEEKEND CLASSES</p>
+                                <p style="color: #F4F6FA; font-weight: 600;" id="ac-schedule-weekend">Saturday, 10:00 AM &ndash; 3:00 PM</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. FAQ ACCORDION -->
+        <section class="flat-spacing">
+            <div class="container">
+                <div class="s-header justify-content-center">
                     <h2 class="text-display-2 fw-semibold letter-space--3 effectFade fadeUp">Frequently Asked Questions</h2>
                 </div>
-                <div style="max-width: 800px; margin: 40px auto 0;">
-
-                    <div class="gl-faq-item" onclick="this.classList.toggle('open')">
-                        <div class="gl-faq-q">
-                            <span>When does the next batch start?</span>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                        </div>
-                        <div class="gl-faq-a">
-                            <p>We run new batches every 3 months. Contact us or follow our social media for the next start date.</p>
-                        </div>
-                    </div>
-
-                    <div class="gl-faq-item" onclick="this.classList.toggle('open')">
-                        <div class="gl-faq-q">
-                            <span>What if I miss a class?</span>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                        </div>
-                        <div class="gl-faq-a">
-                            <p>All sessions are recorded. You can catch up through our student portal. But we encourage attendance since the value is in live interaction and feedback.</p>
-                        </div>
-                    </div>
-
-                    <div class="gl-faq-item" onclick="this.classList.toggle('open')">
-                        <div class="gl-faq-q">
-                            <span>Can I switch tracks mid-course?</span>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                        </div>
-                        <div class="gl-faq-a">
-                            <p>Yes, within the first 2 weeks. After that, we recommend completing your current track first.</p>
-                        </div>
-                    </div>
-
-                    <div class="gl-faq-item" onclick="this.classList.toggle('open')">
-                        <div class="gl-faq-q">
-                            <span>Is there a refund policy?</span>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                        </div>
-                        <div class="gl-faq-a">
-                            <p>If you withdraw within the first week, we refund 80% of your fees. After the first week, fees are non-refundable but you can defer to the next batch.</p>
-                        </div>
-                    </div>
-
-                    <div class="gl-faq-item" onclick="this.classList.toggle('open')">
-                        <div class="gl-faq-q">
-                            <span>What happens after graduation?</span>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                        </div>
-                        <div class="gl-faq-a">
-                            <p>You get a certificate, access to our alumni network, job referrals, and ongoing mentorship. We also connect you with freelance opportunities.</p>
-                        </div>
-                    </div>
-
-                    <div class="gl-faq-item" onclick="this.classList.toggle('open')">
-                        <div class="gl-faq-q">
-                            <span>Do I need a laptop?</span>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                        </div>
-                        <div class="gl-faq-a">
-                            <p>Yes, for in-person training you need your own laptop. For online, any computer with a browser works.</p>
-                        </div>
-                    </div>
-
-                    <div class="gl-faq-item" onclick="this.classList.toggle('open')">
-                        <div class="gl-faq-q">
-                            <span>Can I pay in installments?</span>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                        </div>
-                        <div class="gl-faq-a">
-                            <p>Yes. In-person training (&#8358;150,000) can be paid in 3 monthly installments of &#8358;50,000. Online training (&#8358;80,000) is a one-time payment.</p>
-                        </div>
-                    </div>
-
-                    <div class="gl-faq-item" onclick="this.classList.toggle('open')">
-                        <div class="gl-faq-q">
-                            <span>What's the class size?</span>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                        </div>
-                        <div class="gl-faq-a">
-                            <p>We keep batches small, usually 10-15 students per track. This ensures everyone gets personal attention and feedback.</p>
-                        </div>
-                    </div>
-
+                <div class="ac-faq-wrap mt-5" id="ac-faq-container">
+                    <!-- FAQs loaded dynamically -->
                 </div>
             </div>
         </section>
 
-        <!-- CTA -->
+        <!-- 8. CTA -->
         <section class="section-cta flat-spacing">
             <div class="bg-img"><img loading="lazy" width="1440" height="1081" src="assets/images/item/bg-3.png" alt=""></div>
             <div class="container text-center">
                 <h2 class="text-display-2 letter-space--3 effectFade fadeUp">Ready to Start Your Tech Career?</h2>
-                <p class="text-white-64 mt-3 mb-5 effectFade fadeUp">Applications are open for the next intake. Limited spots available — apply today.</p>
+                <p class="text-white-64 mt-3 mb-5 effectFade fadeUp">Applications are open for the next intake. Limited spots available &mdash; apply today.</p>
                 <div class="d-flex justify-content-center flex-wrap gap-3 effectFade fadeUp">
                     <a href="apply.html" class="tf-btn style-fill"><span class="text-caption fw-medium">APPLY NOW</span></a>
-                    <a href="student-login.html" class="tf-btn style-troke"><span class="text-caption fw-medium">STUDENT PORTAL</span></a>
+                    <a href="contact.html" class="tf-btn style-troke"><span class="text-caption fw-medium">CONTACT US</span></a>
                 </div>
             </div>
         </section>
@@ -827,7 +532,7 @@
             <div class="footer-bottom"><div class="container">
                 <div class="img-agency"><svg class="effectFade fadeZoom" viewBox="0 0 1293 269" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" aria-label="Goallord Creativity Limited"><defs><filter id="gl-liq" x="-5%" y="-30%" width="110%" height="160%"><feTurbulence type="turbulence" baseFrequency="0.008 0.018" numOctaves="2" result="noise"><animate attributeName="baseFrequency" values="0.008 0.018;0.015 0.028;0.010 0.020;0.008 0.018" dur="14s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1"/></feTurbulence><feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G"/></filter><linearGradient id="gl-wm" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1293" y2="0"><stop offset="0%" stop-color="white" stop-opacity="0.03"/><stop offset="28%" stop-color="white" stop-opacity="0.07"/><stop offset="50%" stop-color="#D66A1F" stop-opacity="0.20"/><stop offset="72%" stop-color="white" stop-opacity="0.07"/><stop offset="100%" stop-color="white" stop-opacity="0.03"/><animateTransform attributeName="gradientTransform" type="translate" from="-1293 0" to="1293 0" dur="9s" repeatCount="indefinite"/></linearGradient></defs><text x="50%" y="72%" dominant-baseline="middle" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, &apos;SF Pro Display&apos;, &apos;Segoe UI&apos;, Helvetica, Arial, sans-serif" font-size="200" font-weight="800" letter-spacing="-8" fill="url(#gl-wm)" filter="url(#gl-liq)">GOALLORD</text></svg></div>
                 <div class="bottom">
-                    <p class="text-nocopy text-caption fw-medium letter-space--1">© 2026 GOALLORD CREATIVITY LIMITED — ONITSHA, NIGERIA</p>
+                    <p class="text-nocopy text-caption fw-medium letter-space--1">&copy; 2026 GOALLORD CREATIVITY LIMITED &mdash; ONITSHA, NIGERIA</p>
                     <a href="#" class="action-go-top tf-link-icon link text-caption fw-medium letter-space--1">BACK TO TOP <i class="icon icon-arrow-long-right"></i></a>
                 </div>
             </div></div>
@@ -853,12 +558,12 @@
                     <p>PORTAL LOGIN</p>
                     <div class="mb-portal-row">
                         <a href="student-login.html" class="mb-portal-link close-mb-menu">
-                            <span class="mpl-icon">🎓</span>
-                            <span>Student Portal — View attendance &amp; payments</span>
+                            <span class="mpl-icon">&#127891;</span>
+                            <span>Student Portal &mdash; View attendance &amp; payments</span>
                         </a>
                         <a href="lecturer-login.html" class="mb-portal-link close-mb-menu">
-                            <span class="mpl-icon">📚</span>
-                            <span>Lecturer Portal — Manage classes</span>
+                            <span class="mpl-icon">&#128218;</span>
+                            <span>Lecturer Portal &mdash; Manage classes</span>
                         </a>
                     </div>
                 </div>
@@ -883,44 +588,95 @@
     <script src="assets/js/main.js"></script>
 
     <script>
-        // Portal dropdown toggle
-        function togglePortal(e) {
-            e.stopPropagation();
-            var btn = document.getElementById('portalToggleBtn');
-            var menu = document.getElementById('portalMenu');
-            var isOpen = menu.classList.contains('open');
-            menu.classList.toggle('open', !isOpen);
-            btn.classList.toggle('open', !isOpen);
-            btn.setAttribute('aria-expanded', String(!isOpen));
-        }
+    // SVG icons for tracks
+    var trackIcons = {
+        code: '<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/><polyline points="8 10 5 12 8 14"/><polyline points="16 10 19 12 16 14"/><line x1="13" y1="8" x2="11" y2="16"/></svg>',
+        globe: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
+        search: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><path d="M8 11h6"/><path d="M11 8v6"/></svg>',
+        palette: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.96-4.49-9-10-9z"/><circle cx="6.5" cy="11.5" r="1.5"/><circle cx="9.5" cy="7.5" r="1.5"/><circle cx="14.5" cy="7.5" r="1.5"/><circle cx="17.5" cy="11.5" r="1.5"/></svg>'
+    };
 
-        // Close portal dropdown on outside click
-        document.addEventListener('click', function(e) {
-            var wrap = document.querySelector('.portal-wrap');
-            if (wrap && !wrap.contains(e.target)) {
-                document.getElementById('portalMenu').classList.remove('open');
-                document.getElementById('portalToggleBtn').classList.remove('open');
-                document.getElementById('portalToggleBtn').setAttribute('aria-expanded', 'false');
+    function formatNaira(n) {
+        return '\u20A6' + Number(n).toLocaleString();
+    }
+
+    // Load academy data from API
+    fetch('/api/academy/settings')
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+            if (!data) return;
+
+            // Hero
+            if (data.heroHeadline) {
+                document.getElementById('ac-hero-headline').innerHTML = data.heroHeadline.replace(/\n/g, '<br>');
             }
-        });
-
-        // Show portal section only for enrolled students
-        (function() {
-            var token = localStorage.getItem('gl_student_token') || localStorage.getItem('gl_lecturer_token') || localStorage.getItem('gl_admin_token');
-            if (token) {
-                var portal = document.getElementById('portal-access');
-                if (portal) portal.style.display = '';
+            if (data.heroSubtext) {
+                document.getElementById('ac-hero-subtext').textContent = data.heroSubtext;
             }
-        })();
+            if (data.nextBatchDate) {
+                document.getElementById('ac-next-batch').querySelector('span').textContent = 'Next batch: ' + data.nextBatchDate;
+            }
 
-        // Smooth scroll for anchor links
-        document.querySelectorAll('a[href="#portal-access"]').forEach(function(link) {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                var target = document.getElementById('portal-access');
-                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            });
-        });
+            // Stats
+            if (data.stats) {
+                document.getElementById('ac-stat-students').textContent = data.stats.students + '+';
+                document.getElementById('ac-stat-jobrate').textContent = data.stats.jobRate + '%';
+                document.getElementById('ac-stat-weeks').textContent = data.stats.programWeeks;
+                document.getElementById('ac-stat-batches').textContent = data.stats.batchesRun + '+';
+            }
+
+            // Tracks
+            if (data.tracks && data.tracks.length) {
+                var grid = document.getElementById('ac-tracks-grid');
+                grid.innerHTML = data.tracks.map(function(t, i) {
+                    var iconSvg = trackIcons[t.icon] || trackIcons.code;
+                    var topicTags = (t.topics || []).map(function(tp) {
+                        return '<span class="ac-topic-tag">' + tp + '</span>';
+                    }).join('');
+                    var slug = t.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                    return '<div class="col-md-6 col-lg-6">' +
+                        '<div class="ac-glass ac-track-card effectFade fadeUp">' +
+                        '<div class="ac-track-icon">' + iconSvg + '</div>' +
+                        '<span class="ac-duration-badge">' + (t.duration || '12 Weeks') + '</span>' +
+                        '<h4 class="letter-space--2 mb-3">' + t.name + '</h4>' +
+                        '<p class="text-white-64 mb-4" style="line-height:1.7;">' + (t.description || '') + '</p>' +
+                        '<div class="mb-4">' + topicTags + '</div>' +
+                        '<a href="apply.html?track=' + slug + '" class="tf-btn style-fill mt-auto w-100"><span class="text-caption fw-medium">APPLY NOW</span></a>' +
+                        '</div></div>';
+                }).join('');
+            }
+
+            // Tuition
+            if (data.tuition) {
+                document.getElementById('ac-price-inperson').innerHTML = formatNaira(data.tuition.inPerson);
+                document.getElementById('ac-price-online').innerHTML = formatNaira(data.tuition.online);
+                document.getElementById('ac-price-installment').textContent = data.tuition.inPersonInstallment || '';
+                document.getElementById('ac-price-online-note').textContent = data.tuition.onlineNote || '';
+                document.getElementById('ac-tuition-duration').textContent = data.tuition.duration || '12 weeks';
+                document.getElementById('ac-tuition-duration2').textContent = data.tuition.duration || '12 weeks';
+            }
+
+            // Schedule
+            if (data.schedule) {
+                document.getElementById('ac-schedule-weekday').textContent = data.schedule.weekday || '';
+                document.getElementById('ac-schedule-weekend').textContent = data.schedule.weekend || '';
+            }
+
+            // FAQs
+            if (data.faqs && data.faqs.length) {
+                var faqContainer = document.getElementById('ac-faq-container');
+                faqContainer.innerHTML = data.faqs.map(function(f) {
+                    return '<div class="ac-faq-item effectFade fadeUp">' +
+                        '<div class="ac-faq-q" onclick="this.parentElement.classList.toggle(\'open\')">' +
+                        '<span>' + f.question + '</span>' +
+                        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>' +
+                        '</div>' +
+                        '<div class="ac-faq-a"><p>' + f.answer + '</p></div>' +
+                        '</div>';
+                }).join('');
+            }
+        })
+        .catch(function(err) { console.error('Academy data load error:', err); });
     </script>
 <script>
 (function(){

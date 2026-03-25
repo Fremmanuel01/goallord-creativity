@@ -160,6 +160,7 @@ app.use('/api/checkins',      require('./routes/checkins'));
 app.use('/api/reminders',     require('./routes/reminders'));
 app.use('/api/affiliate',     require('./routes/affiliate'));
 app.use('/api/analytics',    require('./routes/analytics'));
+app.use('/api/academy',      require('./routes/academy'));
 
 // ─── SOCKET.IO ────────────────────────────────────────────────
 io.on('connection', socket => {
@@ -232,5 +233,6 @@ async function seedAll() {
   const { seedProducts }   = require('./routes/products');
   const { seedContent }    = require('./routes/content');
   const { seedBlogPosts }  = require('./routes/blog');
-  await Promise.all([seedAdmin(), seedProducts(), seedContent(), seedBlogPosts()]);
+  const { seedAcademySettings } = require('./routes/academy');
+  await Promise.all([seedAdmin(), seedProducts(), seedContent(), seedBlogPosts(), seedAcademySettings()]);
 }
