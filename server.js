@@ -35,7 +35,8 @@ app.use(helmet({
             objectSrc: ["'none'"],
             baseUri: ["'self'"],
             formAction: ["'self'"],
-            frameAncestors: ["'self'"]
+            frameAncestors: ["'self'"],
+            scriptSrcAttr: ["'unsafe-inline'"]
         }
     },
     crossOriginEmbedderPolicy: false,
