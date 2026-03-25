@@ -44,5 +44,15 @@ async function seedAdmin() {
   console.log('Admin user seeded');
 }
 
+// GET /api/auth/users — list all users (for assignee dropdowns)
+router.get('/users', requireAuth, async (req, res) => {
+  try {
+    const users = await User.find({}, 'name email role').sort({ name: 1 });
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
 module.exports.seedAdmin = seedAdmin;
