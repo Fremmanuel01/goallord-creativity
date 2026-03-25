@@ -2293,7 +2293,10 @@
     <div class="page" id="page-projects">
       <div class="section-header">
         <h2>Projects</h2>
-        <button class="btn btn-primary" onclick="openProjectModal(null)">+ New Project</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="sendRemindersNow()" id="sendRemindersBtn">Send Reminders</button>
+          <button class="btn btn-primary" onclick="openProjectModal(null)">+ New Project</button>
+        </div>
       </div>
 
       <div class="filter-bar" style="margin-bottom:20px">
@@ -5639,6 +5642,19 @@ function relativeTime(dateStr) {
 }
 
 // ── Projects ──
+async function sendRemindersNow() {
+  const btn = document.getElementById('sendRemindersBtn');
+  btn.disabled = true; btn.textContent = 'Sending...';
+  try {
+    const data = await apiFetch('/api/reminders/send', { method: 'POST' });
+    btn.textContent = 'Sent!';
+    setTimeout(() => { btn.textContent = 'Send Reminders'; btn.disabled = false; }, 2500);
+  } catch(e) {
+    alert('Failed: ' + e.message);
+    btn.textContent = 'Send Reminders'; btn.disabled = false;
+  }
+}
+
 async function loadProjects() {
   try {
     const status = document.getElementById('projectStatusFilter')?.value || '';
