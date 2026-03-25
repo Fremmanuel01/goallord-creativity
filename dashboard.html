@@ -6956,7 +6956,7 @@ async function loadPortfolio() {
       <!-- Image Preview -->
       <div style="position:relative;height:180px;background:var(--bg);overflow:hidden;cursor:pointer" onclick="document.getElementById('pfUpload-${i}').click()">
         ${item.image
-          ? `<img src="${item.image}" style="width:100%;height:100%;object-fit:cover" alt="${item.title||''}">`
+          ? `<img src="${item.image}" style="width:100%;height:100%;object-fit:cover" alt="${escHtml(item.title||'')}">`
           : `<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:8px">
                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                <span style="font-size:12px">Click to upload image</span>
@@ -6972,21 +6972,21 @@ async function loadPortfolio() {
       <div style="padding:16px">
         <div style="margin-bottom:10px">
           <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.5px">PROJECT TITLE</label>
-          <input class="form-input" style="margin-top:4px;font-size:15px;font-weight:600" value="${item.title||''}" placeholder="e.g. FoodCart Nigeria" onchange="updatePortfolioField(${i},'title',this.value)">
+          <input class="form-input" style="margin-top:4px;font-size:15px;font-weight:600" value="${escHtml(item.title||'')}" placeholder="e.g. FoodCart Nigeria" onchange="updatePortfolioField(${i},'title',this.value)">
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
           <div>
             <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.5px">CATEGORY / TAGS</label>
-            <input class="form-input" style="margin-top:4px" value="${item.category||''}" placeholder="E-commerce, WordPress" onchange="updatePortfolioField(${i},'category',this.value)">
+            <input class="form-input" style="margin-top:4px" value="${escHtml(item.category||'')}" placeholder="E-commerce, WordPress" onchange="updatePortfolioField(${i},'category',this.value)">
           </div>
           <div>
             <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.5px">PROJECT URL</label>
-            <input class="form-input" style="margin-top:4px" value="${item.url||''}" placeholder="https://..." onchange="updatePortfolioField(${i},'url',this.value)">
+            <input class="form-input" style="margin-top:4px" value="${escHtml(item.url||'')}" placeholder="https://..." onchange="updatePortfolioField(${i},'url',this.value)">
           </div>
         </div>
         <div style="margin-bottom:14px">
           <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.5px">DESCRIPTION</label>
-          <input class="form-input" style="margin-top:4px" value="${item.description||''}" placeholder="Short project description" onchange="updatePortfolioField(${i},'description',this.value)">
+          <input class="form-input" style="margin-top:4px" value="${escHtml(item.description||'')}" placeholder="Short project description" onchange="updatePortfolioField(${i},'description',this.value)">
         </div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-primary" style="flex:1" onclick="savePortfolioItem(${i}, this)">Save</button>
@@ -8142,7 +8142,7 @@ async function openContact(id) {
     repliesEl.innerHTML = '<div style="margin-bottom:12px;"><span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Previous Replies</span>' +
       c.replies.map(r => `<div style="margin-top:8px;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:10px 12px;">
         <p style="margin:0;font-size:13px;line-height:1.6;">${escHtml(r.body)}</p>
-        <p style="margin:6px 0 0;font-size:11px;color:var(--text-muted);">${r.sentBy} · ${new Date(r.sentAt).toLocaleString()}</p>
+        <p style="margin:6px 0 0;font-size:11px;color:var(--text-muted);">${escHtml(r.sentBy)} · ${new Date(r.sentAt).toLocaleString()}</p>
       </div>`).join('') + '</div>';
   } else {
     repliesEl.innerHTML = '';

@@ -53,7 +53,8 @@ router.get('/:slug', async (req, res) => {
 // ── POST /api/blog  — create (admin) ──────────────────────────────────────
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const post = await BlogPost.create(req.body);
+    const { title, slug, excerpt, content, coverImage, category, tags, author, authorAvatar, readTime, featured, published, hasAffiliate, affiliateCta } = req.body;
+    const post = await BlogPost.create({ title, slug, excerpt, content, coverImage, category, tags, author, authorAvatar, readTime, featured, published, hasAffiliate, affiliateCta });
     res.status(201).json(post);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -63,7 +64,10 @@ router.post('/', requireAuth, async (req, res) => {
 // ── PUT /api/blog/:slug  — update (admin) ─────────────────────────────────
 router.put('/:slug', requireAuth, async (req, res) => {
   try {
-    const post = await BlogPost.findOneAndUpdate({ slug: req.params.slug }, req.body, { new: true });
+    const { title, slug, excerpt, content, coverImage, category, tags, author, authorAvatar, readTime, featured, published, publishedAt, hasAffiliate, affiliateCta } = req.body;
+    const allowed = { title, slug, excerpt, content, coverImage, category, tags, author, authorAvatar, readTime, featured, published, publishedAt, hasAffiliate, affiliateCta };
+    Object.keys(allowed).forEach(k => allowed[k] === undefined && delete allowed[k]);
+    const post = await BlogPost.findOneAndUpdate({ slug: req.params.slug }, allowed, { new: true });
     if (!post) return res.status(404).json({ error: 'Post not found' });
     res.json(post);
   } catch (err) {

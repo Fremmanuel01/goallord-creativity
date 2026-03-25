@@ -294,8 +294,13 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
 // GET /api/applicants/:id/payment-info — public (payment page fetches this)
 router.get('/:id/payment-info', async (req, res) => {
   try {
-    const applicant = await Applicant.findById(req.params.id).select('fullName email track emailVerified applicationFeePaid');
-    if (!applicant) return res.status(404).json({ error: 'Application not found' });
+    const { token } = req.query;
+    const query = { _id: req.params.id };
+    if (token) query.emailVerifyToken = token;
+    else return res.status(401).json({ error: 'Verification token required' });
+
+    const applicant = await Applicant.findOne(query).select('fullName email track emailVerified applicationFeePaid');
+    if (!applicant) return res.status(404).json({ error: 'Not found or invalid token' });
     if (!applicant.emailVerified) return res.status(403).json({ error: 'Email not verified' });
     res.json({
       fullName:           applicant.fullName,
@@ -442,7 +447,8 @@ router.get('/', requireAuth, async (req, res) => {
     if (status) filter.status = status;
     if (track)  filter.track  = track;
     if (search) {
-      const re = new RegExp(search, 'i');
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const re = new RegExp(escaped, 'i');
       filter.$or = [{ fullName: re }, { email: re }, { phone: re }];
     }
     const skip = (Number(page) - 1) * Number(limit);

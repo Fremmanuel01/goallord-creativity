@@ -13,7 +13,7 @@ router.get('/', requireAuth, requirePermission('tasks'), async (req, res) => {
         if (req.query.status)   filter.status    = req.query.status;
         if (req.query.mine)     filter.assignee  = req.user.id;
         if (req.query.priority) filter.priority  = req.query.priority;
-        if (req.query.search)   filter.title     = { $regex: req.query.search, $options: 'i' };
+        if (req.query.search)   filter.title     = { $regex: req.query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
         if (req.query.dueBefore || req.query.dueAfter) {
             filter.dueDate = {};
             if (req.query.dueBefore) filter.dueDate.$lte = new Date(req.query.dueBefore);

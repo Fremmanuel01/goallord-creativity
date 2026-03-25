@@ -78,7 +78,8 @@ router.get('/', requireAuth, async (req, res) => {
     const filter = {};
     if (status) filter.status = status;
     if (search) {
-      const re = new RegExp(search, 'i');
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const re = new RegExp(escaped, 'i');
       filter.$or = [{ name: re }, { email: re }, { message: re }];
     }
     const skip = (Number(page) - 1) * Number(limit);
@@ -113,7 +114,7 @@ router.post('/:id/reply', requireAuth, async (req, res) => {
     const contact = await Contact.findById(req.params.id);
     if (!contact) return res.status(404).json({ error: 'Not found' });
 
-    contact.replies.push({ body, sentBy: req.user.name || 'Admin' });
+    contact.replies.push({ body: xss(body.trim()), sentBy: req.user.name || 'Admin' });
     contact.status = 'Replied';
     await contact.save();
 

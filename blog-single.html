@@ -570,7 +570,27 @@
           ci.alt = post.title || '';
 
           // ── Body ───────────────────────────────────────────────────
-          document.getElementById('postBody').innerHTML = post.content || '<p class="text-white-64">Content coming soon.</p>';
+          function sanitizeHTML(html) {
+              var div = document.createElement('div');
+              div.innerHTML = html;
+              // Remove dangerous elements
+              var dangerous = div.querySelectorAll('script,iframe,object,embed,form,link,meta,base');
+              dangerous.forEach(function(el) { el.remove(); });
+              // Remove on* event handlers from all elements
+              div.querySelectorAll('*').forEach(function(el) {
+                  Array.from(el.attributes).forEach(function(attr) {
+                      if (attr.name.startsWith('on') || attr.value.startsWith('javascript:')) {
+                          el.removeAttribute(attr.name);
+                      }
+                  });
+                  // Remove javascript: hrefs
+                  if (el.tagName === 'A' && el.href && el.href.toLowerCase().startsWith('javascript:')) {
+                      el.removeAttribute('href');
+                  }
+              });
+              return div.innerHTML;
+          }
+          document.getElementById('postBody').innerHTML = sanitizeHTML(post.content || '<p class="text-white-64">Content coming soon.</p>');
 
           // ── Share buttons ──────────────────────────────────────────
           var encodedUrl   = encodeURIComponent(pageUrl);

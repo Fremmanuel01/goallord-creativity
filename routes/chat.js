@@ -78,14 +78,17 @@ function callClaude(messages) {
 // POST /api/chat  — visitor sends a message
 router.post('/', chatLimiter, async (req, res) => {
   const { messages, sessionId, visitorPage, visitorName, visitorEmail } = req.body;
-  if (!messages || !Array.isArray(messages) || !sessionId) {
+  if (!messages || !Array.isArray(messages) || messages.length === 0 || !sessionId) {
     return res.status(400).json({ error: 'Invalid payload' });
   }
 
-  // Validate message content length
+  // Validate message content
   const lastMsg = messages[messages.length - 1];
-  if (lastMsg?.content && lastMsg.content.length > 500) {
-    return res.status(400).json({ error: 'Message is too long (max 500 characters).' });
+  if (!lastMsg || !lastMsg.content || typeof lastMsg.content !== 'string') {
+    return res.status(400).json({ error: 'Invalid message format' });
+  }
+  if (lastMsg.content.length > 500) {
+    return res.status(400).json({ error: 'Message too long (max 500 characters)' });
   }
 
   const io = req.app.get('io');

@@ -121,7 +121,9 @@ router.patch('/me/photo', requireStudent, async (req, res) => {
 });
 
 // ── POST /api/students/forgot-password — public ─────────────────
-router.post('/forgot-password', async (req, res) => {
+const rateLimit = require('express-rate-limit');
+const resetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 3, message: { error: 'Too many reset attempts. Try again later.' } });
+router.post('/forgot-password', resetLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     const student = await Student.findOne({ email: email?.toLowerCase() });
@@ -178,7 +180,8 @@ router.get('/', requireLecturer, async (req, res) => {
     if (status) filter.status = status;
     if (batch)  filter.batch  = batch;
     if (search) {
-      const re = new RegExp(search, 'i');
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const re = new RegExp(escaped, 'i');
       filter.$or = [{ fullName: re }, { email: re }, { phone: re }];
     }
     const skip = (Number(page) - 1) * Number(limit);

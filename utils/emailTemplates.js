@@ -1,3 +1,5 @@
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
 function verificationEmail({ fullName, verifyUrl }) {
   return `<!DOCTYPE html>
 <html>
@@ -18,7 +20,7 @@ function verificationEmail({ fullName, verifyUrl }) {
         <!-- Body -->
         <tr><td style="padding:40px;">
           <h2 style="color:#F4F6FA;font-size:24px;margin:0 0 16px;">Verify Your Email Address</h2>
-          <p style="color:#A0A6B3;font-size:15px;line-height:1.6;margin:0 0 12px;">Hi ${fullName},</p>
+          <p style="color:#A0A6B3;font-size:15px;line-height:1.6;margin:0 0 12px;">Hi ${esc(fullName)},</p>
           <p style="color:#A0A6B3;font-size:15px;line-height:1.6;margin:0 0 32px;">
             Thank you for applying to Goallord Creativity Academy! To complete your application, please verify your email address by clicking the button below.
           </p>
@@ -70,7 +72,7 @@ function acceptanceEmail({ fullName, track, duration, email, password, loginUrl 
         </td></tr>
         <!-- Body -->
         <tr><td style="padding:40px;">
-          <p style="color:#A0A6B3;font-size:15px;line-height:1.6;margin:0 0 12px;">Hi ${fullName},</p>
+          <p style="color:#A0A6B3;font-size:15px;line-height:1.6;margin:0 0 12px;">Hi ${esc(fullName)},</p>
           <p style="color:#A0A6B3;font-size:15px;line-height:1.6;margin:0 0 24px;">
             We are thrilled to inform you that your application to Goallord Creativity Academy has been reviewed and <strong style="color:#F4F6FA;">accepted</strong>. Welcome to the programme!
           </p>
@@ -84,11 +86,11 @@ function acceptanceEmail({ fullName, track, duration, email, password, loginUrl 
               <table width="100%">
                 <tr>
                   <td style="padding:6px 0;color:#A0A6B3;font-size:14px;width:140px;">Track:</td>
-                  <td style="padding:6px 0;color:#F4F6FA;font-size:14px;font-weight:600;">${track}</td>
+                  <td style="padding:6px 0;color:#F4F6FA;font-size:14px;font-weight:600;">${esc(track)}</td>
                 </tr>
                 <tr>
                   <td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Duration:</td>
-                  <td style="padding:6px 0;color:#F4F6FA;font-size:14px;font-weight:600;">${duration}</td>
+                  <td style="padding:6px 0;color:#F4F6FA;font-size:14px;font-weight:600;">${esc(duration)}</td>
                 </tr>
                 <tr>
                   <td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Location:</td>
@@ -120,11 +122,11 @@ function acceptanceEmail({ fullName, track, duration, email, password, loginUrl 
                 </tr>
                 <tr>
                   <td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Email:</td>
-                  <td style="padding:6px 0;color:#F4F6FA;font-size:14px;font-weight:600;">${email}</td>
+                  <td style="padding:6px 0;color:#F4F6FA;font-size:14px;font-weight:600;">${esc(email)}</td>
                 </tr>
                 <tr>
                   <td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Password:</td>
-                  <td style="padding:6px 0;color:#F4F6FA;font-size:14px;font-weight:700;font-family:monospace;background:#171A21;padding:8px 12px;border-radius:4px;">${password}</td>
+                  <td style="padding:6px 0;color:#F4F6FA;font-size:14px;font-weight:700;font-family:monospace;background:#171A21;padding:8px 12px;border-radius:4px;">${esc(password)}</td>
                 </tr>
               </table>
               <p style="color:#A0A6B3;font-size:12px;margin:16px 0 0;line-height:1.6;">
@@ -169,10 +171,10 @@ function adminNewApplicationEmail({ fullName, email, phone, track, dashboardUrl 
           <table width="100%" style="background:#0F1115;border-radius:8px;border:1px solid #2A2F3A;">
             <tr><td style="padding:20px 24px;">
               <table width="100%">
-                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;width:120px;">Name:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;font-weight:600;">${fullName}</td></tr>
-                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Email:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;">${email}</td></tr>
-                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Phone:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;">${phone || '—'}</td></tr>
-                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Track:</td><td style="padding:6px 0;color:#D66A1F;font-size:14px;font-weight:600;">${track || 'Not selected'}</td></tr>
+                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;width:120px;">Name:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;font-weight:600;">${esc(fullName)}</td></tr>
+                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Email:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;">${esc(email)}</td></tr>
+                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Phone:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;">${esc(phone || '—')}</td></tr>
+                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Track:</td><td style="padding:6px 0;color:#D66A1F;font-size:14px;font-weight:600;">${esc(track || 'Not selected')}</td></tr>
               </table>
             </td></tr>
           </table>
@@ -206,10 +208,10 @@ function adminAcceptanceNotificationEmail({ fullName, email, track, studentId, d
           <table width="100%" style="background:#0F1115;border-radius:8px;border:1px solid #2A2F3A;">
             <tr><td style="padding:20px 24px;">
               <table width="100%">
-                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;width:120px;">Name:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;font-weight:600;">${fullName}</td></tr>
-                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Email:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;">${email}</td></tr>
-                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Track:</td><td style="padding:6px 0;color:#D66A1F;font-size:14px;font-weight:600;">${track}</td></tr>
-                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Student ID:</td><td style="padding:6px 0;color:#F4F6FA;font-size:13px;font-family:monospace;">${studentId}</td></tr>
+                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;width:120px;">Name:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;font-weight:600;">${esc(fullName)}</td></tr>
+                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Email:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;">${esc(email)}</td></tr>
+                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Track:</td><td style="padding:6px 0;color:#D66A1F;font-size:14px;font-weight:600;">${esc(track)}</td></tr>
+                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Student ID:</td><td style="padding:6px 0;color:#F4F6FA;font-size:13px;font-family:monospace;">${esc(studentId)}</td></tr>
               </table>
             </td></tr>
           </table>
@@ -242,7 +244,7 @@ function passwordResetEmail({ fullName, resetUrl, role }) {
         </td></tr>
         <tr><td style="padding:40px;">
           <h2 style="color:#F4F6FA;font-size:22px;margin:0 0 16px;">Reset Your Password</h2>
-          <p style="color:#A0A6B3;font-size:15px;line-height:1.6;margin:0 0 12px;">Hi ${fullName},</p>
+          <p style="color:#A0A6B3;font-size:15px;line-height:1.6;margin:0 0 12px;">Hi ${esc(fullName)},</p>
           <p style="color:#A0A6B3;font-size:15px;line-height:1.6;margin:0 0 32px;">
             We received a request to reset your ${roleLabel} Portal password. Click the button below to set a new password. This link expires in <strong style="color:#F4F6FA;">1 hour</strong>.
           </p>
@@ -301,8 +303,8 @@ function receiptEmail({ receiptNumber, date, recipientName, recipientEmail, desc
         <tr><td style="padding:40px;">
           <!-- Bill To -->
           <h3 style="color:#A0A6B3;font-size:11px;letter-spacing:1px;margin:0 0 12px;text-transform:uppercase;">Bill To</h3>
-          <p style="color:#F4F6FA;font-size:16px;font-weight:600;margin:0 0 4px;">${recipientName}</p>
-          <p style="color:#A0A6B3;font-size:14px;margin:0 0 32px;">${recipientEmail}</p>
+          <p style="color:#F4F6FA;font-size:16px;font-weight:600;margin:0 0 4px;">${esc(recipientName)}</p>
+          <p style="color:#A0A6B3;font-size:14px;margin:0 0 32px;">${esc(recipientEmail)}</p>
 
           <!-- Items Table -->
           <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #2A2F3A;border-radius:8px;overflow:hidden;margin-bottom:32px;">
@@ -314,7 +316,7 @@ function receiptEmail({ receiptNumber, date, recipientName, recipientEmail, desc
             </thead>
             <tbody>
               <tr style="border-top:1px solid #2A2F3A;">
-                <td style="padding:14px 16px;color:#F4F6FA;font-size:14px;">${description}</td>
+                <td style="padding:14px 16px;color:#F4F6FA;font-size:14px;">${esc(description)}</td>
                 <td style="padding:14px 16px;color:#F4F6FA;font-size:14px;font-weight:600;text-align:right;">${formattedAmount}</td>
               </tr>
               <tr style="background:#0F1115;border-top:1px solid #2A2F3A;">
@@ -333,11 +335,11 @@ function receiptEmail({ receiptNumber, date, recipientName, recipientEmail, desc
               <table width="100%">
                 <tr>
                   <td style="padding:5px 0;color:#A0A6B3;font-size:13px;width:130px;">Method:</td>
-                  <td style="padding:5px 0;color:#F4F6FA;font-size:13px;font-weight:600;">${method}</td>
+                  <td style="padding:5px 0;color:#F4F6FA;font-size:13px;font-weight:600;">${esc(method)}</td>
                 </tr>
                 <tr>
                   <td style="padding:5px 0;color:#A0A6B3;font-size:13px;">Reference:</td>
-                  <td style="padding:5px 0;color:#F4F6FA;font-size:13px;font-family:monospace;">${reference}</td>
+                  <td style="padding:5px 0;color:#F4F6FA;font-size:13px;font-family:monospace;">${esc(reference)}</td>
                 </tr>
               </table>
             </td></tr>
@@ -346,7 +348,7 @@ function receiptEmail({ receiptNumber, date, recipientName, recipientEmail, desc
           <!-- Footer message -->
           <p style="color:#A0A6B3;font-size:13px;line-height:1.6;margin:0;border-top:1px solid #2A2F3A;padding-top:24px;text-align:center;">
             Thank you for your payment.<br>
-            <strong style="color:#F4F6FA;">${issuedBy}</strong>
+            <strong style="color:#F4F6FA;">${esc(issuedBy)}</strong>
           </p>
         </td></tr>
         <!-- Footer -->
@@ -381,7 +383,7 @@ function paymentReminderEmail({ fullName, category, amountDue, dueDate, isOverdu
         <p style="margin:4px 0 0;color:rgba(255,255,255,0.8);font-size:13px;">Goallord Creativity Academy</p>
       </td></tr>
       <tr><td style="padding:32px;">
-        <p style="color:#F4F6FA;font-size:15px;margin:0 0 16px;">Hi <strong>${fullName}</strong>,</p>
+        <p style="color:#F4F6FA;font-size:15px;margin:0 0 16px;">Hi <strong>${esc(fullName)}</strong>,</p>
         <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 24px;">${bodyText}</p>
         <div style="text-align:center;margin:24px 0;">
           <a href="${loginUrl}" style="display:inline-block;background:${headerBg};color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">Pay Now</a>
@@ -405,7 +407,7 @@ function suspensionEmail({ fullName, loginUrl }) {
         <p style="margin:4px 0 0;color:rgba(255,255,255,0.8);font-size:13px;">Goallord Creativity Academy</p>
       </td></tr>
       <tr><td style="padding:32px;">
-        <p style="color:#F4F6FA;font-size:15px;margin:0 0 16px;">Hi <strong>${fullName}</strong>,</p>
+        <p style="color:#F4F6FA;font-size:15px;margin:0 0 16px;">Hi <strong>${esc(fullName)}</strong>,</p>
         <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 24px;">Your student account has been <strong>suspended</strong> due to an overdue payment that remains unpaid. You will not be able to access your student dashboard until the outstanding balance is settled.</p>
         <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 24px;">Please log in to your student portal and make your payment immediately to reactivate your account.</p>
         <div style="text-align:center;margin:24px 0;">
@@ -426,12 +428,12 @@ function graduationEmail({ fullName, batchName, track, loginUrl }) {
   <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;">
     <table width="560" cellpadding="0" cellspacing="0" style="background:#171A21;border-radius:12px;border:1px solid #2A2F3A;overflow:hidden;">
       <tr><td style="background:linear-gradient(135deg,#1E4BFF 0%,#D66A1F 100%);padding:24px 32px;">
-        <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700;">🎓 Congratulations, ${fullName}!</h1>
+        <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700;">🎓 Congratulations, ${esc(fullName)}!</h1>
         <p style="margin:4px 0 0;color:rgba(255,255,255,0.85);font-size:13px;">Goallord Creativity Academy</p>
       </td></tr>
       <tr><td style="padding:32px;">
-        <p style="color:#F4F6FA;font-size:15px;margin:0 0 16px;">Hi <strong>${fullName}</strong>,</p>
-        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 16px;">We are incredibly proud to announce that you have successfully <strong>graduated</strong> from the <strong>${track}</strong> program at Goallord Creativity Academy${batchName ? ' — <strong>' + batchName + '</strong>' : ''}.</p>
+        <p style="color:#F4F6FA;font-size:15px;margin:0 0 16px;">Hi <strong>${esc(fullName)}</strong>,</p>
+        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 16px;">We are incredibly proud to announce that you have successfully <strong>graduated</strong> from the <strong>${esc(track)}</strong> program at Goallord Creativity Academy${batchName ? ' — <strong>' + esc(batchName) + '</strong>' : ''}.</p>
         <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 24px;">Your dedication, hard work, and creativity throughout this journey have been outstanding. You are now equipped with the skills to build an amazing career. Go forth and create!</p>
         <div style="text-align:center;margin:24px 0;">
           <a href="${loginUrl}" style="display:inline-block;background:#D66A1F;color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">View Your Dashboard</a>
@@ -455,7 +457,7 @@ function reactivationEmail({ fullName, loginUrl }) {
         <p style="margin:4px 0 0;color:rgba(255,255,255,0.8);font-size:13px;">Goallord Creativity Academy</p>
       </td></tr>
       <tr><td style="padding:32px;">
-        <p style="color:#F4F6FA;font-size:15px;margin:0 0 16px;">Hi <strong>${fullName}</strong>,</p>
+        <p style="color:#F4F6FA;font-size:15px;margin:0 0 16px;">Hi <strong>${esc(fullName)}</strong>,</p>
         <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 24px;">Great news — your outstanding payment has been confirmed and your student account is now <strong>fully reactivated</strong>. You can log in and resume your studies.</p>
         <div style="text-align:center;margin:24px 0;">
           <a href="${loginUrl}" style="display:inline-block;background:#22c55e;color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">Log In Now</a>
@@ -482,19 +484,19 @@ function adminContactEmail({ name, email, service, budget, message, dashboardUrl
         <table width="100%" cellpadding="0" cellspacing="0">
           <tr><td style="padding:8px 0;border-bottom:1px solid #2A2F3A;">
             <span style="color:#A0A6B3;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">From</span>
-            <p style="margin:4px 0 0;color:#F4F6FA;font-size:15px;font-weight:600;">${name} &lt;${email}&gt;</p>
+            <p style="margin:4px 0 0;color:#F4F6FA;font-size:15px;font-weight:600;">${esc(name)} &lt;${esc(email)}&gt;</p>
           </td></tr>
           ${service ? `<tr><td style="padding:8px 0;border-bottom:1px solid #2A2F3A;">
             <span style="color:#A0A6B3;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Service Needed</span>
-            <p style="margin:4px 0 0;color:#F4F6FA;font-size:14px;">${service}</p>
+            <p style="margin:4px 0 0;color:#F4F6FA;font-size:14px;">${esc(service)}</p>
           </td></tr>` : ''}
           ${budget ? `<tr><td style="padding:8px 0;border-bottom:1px solid #2A2F3A;">
             <span style="color:#A0A6B3;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Budget</span>
-            <p style="margin:4px 0 0;color:#F4F6FA;font-size:14px;">${budget}</p>
+            <p style="margin:4px 0 0;color:#F4F6FA;font-size:14px;">${esc(budget)}</p>
           </td></tr>` : ''}
           <tr><td style="padding:16px 0 0;">
             <span style="color:#A0A6B3;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Message</span>
-            <p style="margin:8px 0 0;color:#F4F6FA;font-size:14px;line-height:1.6;background:#0F1115;padding:14px;border-radius:8px;">${message}</p>
+            <p style="margin:8px 0 0;color:#F4F6FA;font-size:14px;line-height:1.6;background:#0F1115;padding:14px;border-radius:8px;">${esc(message)}</p>
           </td></tr>
         </table>
         <div style="margin-top:24px;text-align:center;">
@@ -513,7 +515,7 @@ function contactAutoReplyEmail({ name }) {
   <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;">
     <table width="560" cellpadding="0" cellspacing="0" style="background:#171A21;border-radius:12px;border:1px solid #2A2F3A;overflow:hidden;">
       <tr><td style="background:#D66A1F;padding:24px 32px;">
-        <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;">Thanks for reaching out, ${name}!</h1>
+        <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;">Thanks for reaching out, ${esc(name)}!</h1>
       </td></tr>
       <tr><td style="padding:32px;">
         <p style="color:#F4F6FA;font-size:15px;line-height:1.7;margin:0 0 16px;">We've received your message and will get back to you within <strong>24–48 hours</strong>.</p>
@@ -536,8 +538,8 @@ function contactReplyEmail({ name, replyBody }) {
         <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;">Reply from Goallord Creativity</h1>
       </td></tr>
       <tr><td style="padding:32px;">
-        <p style="color:#F4F6FA;font-size:15px;margin:0 0 8px;">Hi ${name},</p>
-        <div style="color:#F4F6FA;font-size:14px;line-height:1.7;background:#0F1115;padding:14px;border-radius:8px;margin:16px 0;">${replyBody.replace(/\n/g, '<br>')}</div>
+        <p style="color:#F4F6FA;font-size:15px;margin:0 0 8px;">Hi ${esc(name)},</p>
+        <div style="color:#F4F6FA;font-size:14px;line-height:1.7;background:#0F1115;padding:14px;border-radius:8px;margin:16px 0;">${esc(replyBody).replace(/\n/g, '<br>')}</div>
         <hr style="border:none;border-top:1px solid #2A2F3A;margin:24px 0;">
         <p style="color:#A0A6B3;font-size:12px;margin:0;">— Goallord Creativity Team &nbsp;·&nbsp; <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;">hello@goallordcreativity.com</a></p>
       </td></tr>
