@@ -48,6 +48,10 @@ app.use(helmet({
         }
     }
 }));
+app.use((req, res, next) => {
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(self)');
+    next();
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
