@@ -52,6 +52,20 @@ router.get('/:id', requireAuth, requirePermission('tasks'), async (req, res) => 
 router.post('/', requireAuth, requirePermission('tasks'), async (req, res) => {
     try {
         const { title, description, project, assignee, status, priority, dueDate } = req.body;
+
+        // Input validation
+        if (!title || typeof title !== 'string' || !title.trim()) {
+            return res.status(400).json({ error: 'Title is required and must be a string' });
+        }
+        const validStatuses = ['todo', 'in-progress', 'review', 'done'];
+        if (status && !validStatuses.includes(status)) {
+            return res.status(400).json({ error: 'Invalid status. Must be one of: ' + validStatuses.join(', ') });
+        }
+        const validPriorities = ['low', 'medium', 'high', 'urgent'];
+        if (priority && !validPriorities.includes(priority)) {
+            return res.status(400).json({ error: 'Invalid priority. Must be one of: ' + validPriorities.join(', ') });
+        }
+
         const task = await Task.create({
             title, description,
             project: project || null,
@@ -74,6 +88,16 @@ router.post('/', requireAuth, requirePermission('tasks'), async (req, res) => {
 // Update
 router.patch('/:id', requireAuth, requirePermission('tasks'), async (req, res) => {
     try {
+        // Permission check: admin or task assignee/creator
+        if (req.user.role !== 'admin') {
+            const existing = await Task.findById(req.params.id);
+            if (!existing) return res.status(404).json({ error: 'Not found' });
+            if (existing.assignee && existing.assignee.toString() !== req.user.id &&
+                existing.createdBy && existing.createdBy.toString() !== req.user.id) {
+                return res.status(403).json({ error: 'You can only update your own tasks' });
+            }
+        }
+
         const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
             .populate('assignee', 'name email')
             .populate('project', 'name color');
@@ -87,6 +111,16 @@ router.patch('/:id', requireAuth, requirePermission('tasks'), async (req, res) =
 // Delete
 router.delete('/:id', requireAuth, requirePermission('tasks'), async (req, res) => {
     try {
+        // Permission check: admin or task assignee/creator
+        if (req.user.role !== 'admin') {
+            const existing = await Task.findById(req.params.id);
+            if (!existing) return res.status(404).json({ error: 'Not found' });
+            if (existing.assignee && existing.assignee.toString() !== req.user.id &&
+                existing.createdBy && existing.createdBy.toString() !== req.user.id) {
+                return res.status(403).json({ error: 'You can only delete your own tasks' });
+            }
+        }
+
         const task = await Task.findByIdAndDelete(req.params.id);
         if (!task) return res.status(404).json({ error: 'Not found' });
         res.json({ message: 'Task deleted' });

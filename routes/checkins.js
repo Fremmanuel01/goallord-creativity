@@ -31,6 +31,12 @@ router.get('/', requireAuth, requirePermission('checkins'), async (req, res) => 
 router.post('/', requireAuth, requirePermission('checkins'), async (req, res) => {
     try {
         const { yesterday, today, blockers } = req.body;
+
+        // Input validation: at least yesterday or today must have content
+        if ((!yesterday || !yesterday.trim()) && (!today || !today.trim())) {
+            return res.status(400).json({ error: 'At least one of "yesterday" or "today" must have content' });
+        }
+
         const date = new Date().toISOString().slice(0, 10);
         const checkin = await CheckIn.findOneAndUpdate(
             { user: req.user.id, date },

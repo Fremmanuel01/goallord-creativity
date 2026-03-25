@@ -5177,6 +5177,15 @@ function apiHeaders() {
 async function apiFetch(path, opts = {}) {
   const res = await fetch(path, { headers: apiHeaders(), ...opts });
   if (res.status === 401) { glLogout(); return null; }
+  if (!res.ok) {
+    let errMsg = 'Request failed (' + res.status + ')';
+    try {
+      const errBody = await res.json();
+      if (errBody && errBody.error) errMsg = errBody.error;
+    } catch(e) { /* could not parse error body */ }
+    showToast(errMsg, 'error');
+    return null;
+  }
   return res.json();
 }
 
@@ -5767,6 +5776,9 @@ async function loadReminderSettings() {
 }
 
 async function saveReminderSettings() {
+  const btn = document.querySelector('[onclick="saveReminderSettings()"]') || document.querySelector('.reminder-save-btn');
+  const btnOrigText = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
   try {
     const body = {
       frequency: parseInt(document.getElementById('reminderFrequency').value) || 2,
@@ -5777,6 +5789,8 @@ async function saveReminderSettings() {
     showToast('Reminder settings saved', 'success');
   } catch(e) {
     showToast('Failed to save settings: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = btnOrigText; }
   }
 }
 
@@ -5937,7 +5951,9 @@ async function saveProject() {
   };
 
   const btn = document.getElementById('projSaveBtn');
+  const btnOrigText = btn.textContent;
   btn.disabled = true;
+  btn.textContent = 'Saving...';
   try {
     const url = id ? '/api/projects/' + id : '/api/projects';
     const method = id ? 'PATCH' : 'POST';
@@ -5945,9 +5961,9 @@ async function saveProject() {
     if (data && (data._id || data.name)) {
       closeModal('projectModal');
       loadProjects();
-    } else { alert(data?.error || 'Failed to save'); }
-  } catch(e) { alert('Error: ' + e.message); }
-  finally { btn.disabled = false; }
+    } else if (data) { showToast(data.error || 'Failed to save', 'error'); }
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = btnOrigText; }
 }
 
 async function deleteProject(id) {
@@ -6060,7 +6076,9 @@ async function saveTask() {
   };
 
   const btn = document.getElementById('taskSaveBtn');
+  const btnOrigText = btn.textContent;
   btn.disabled = true;
+  btn.textContent = 'Saving...';
   try {
     const url = id ? '/api/tasks/' + id : '/api/tasks';
     const method = id ? 'PATCH' : 'POST';
@@ -6069,9 +6087,9 @@ async function saveTask() {
       closeModal('taskModal');
       loadProjectTasks(currentProjectId);
       loadProjects();
-    } else { alert(data?.error || 'Failed'); }
-  } catch(e) { alert(e.message); }
-  finally { btn.disabled = false; }
+    } else if (data) { showToast(data.error || 'Failed', 'error'); }
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = btnOrigText; }
 }
 
 async function deleteTask(id) {

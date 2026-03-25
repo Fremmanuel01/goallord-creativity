@@ -12,4 +12,8 @@ const projectSchema = new mongoose.Schema({
     createdBy:   { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
 
+projectSchema.index({ status: 1 });
+projectSchema.index({ createdBy: 1 });
+projectSchema.index({ members: 1 });
+
 module.exports = mongoose.model('Project', projectSchema);
