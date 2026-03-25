@@ -2588,6 +2588,14 @@
         <h2>My Tasks</h2>
       </div>
 
+      <!-- Quick add standalone task -->
+      <div style="margin-bottom:20px;max-width:500px">
+        <div style="display:flex;gap:8px">
+          <input class="form-input" type="text" id="quickStandaloneTask" placeholder="Add a quick task and press Enter..." style="flex:1" onkeydown="if(event.key==='Enter')addStandaloneTask()">
+          <button class="btn btn-primary btn-sm" onclick="addStandaloneTask()" style="white-space:nowrap">+ Add</button>
+        </div>
+      </div>
+
       <div id="myTasksList" class="kanban-board"></div>
     </div>
 
@@ -6074,6 +6082,20 @@ async function deleteTask(id) {
 }
 
 // ── My Tasks (Kanban) ──
+async function addStandaloneTask() {
+  const input = document.getElementById('quickStandaloneTask');
+  const title = input.value.trim();
+  if (!title) return;
+  input.disabled = true;
+  try {
+    const user = JSON.parse(localStorage.gl_user || '{}');
+    await apiFetch('/api/tasks', { method: 'POST', body: JSON.stringify({ title, status: 'todo', priority: 'medium', assignee: user.id || user._id }) });
+    input.value = '';
+    loadMyTasks();
+  } catch(e) { alert(e.message); }
+  finally { input.disabled = false; input.focus(); }
+}
+
 async function loadMyTasks() {
   try {
     const tasks = await apiFetch('/api/tasks?mine=1');

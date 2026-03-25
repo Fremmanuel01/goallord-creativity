@@ -53,7 +53,8 @@ router.post('/', requireAuth, requirePermission('tasks'), async (req, res) => {
     try {
         const { title, description, project, assignee, status, priority, dueDate } = req.body;
         const task = await Task.create({
-            title, description, project,
+            title, description,
+            project: project || null,
             assignee: assignee || null,
             status: status || 'todo',
             priority: priority || 'medium',
