@@ -146,201 +146,257 @@
         <!-- /Page Hero -->
 
         <!-- Services -->
-        <section class="section-service-2 overflow-hidden flat-spacing">
-            <div class="bg-image-list">
-                <div class="bg-image">
-                    <img loading="lazy" width="1440" height="938" src="assets/images/section/bg-service-1.jpg" alt="Web Design">
-                    <div class="img-item"><img loading="lazy" width="1440" height="938" src="assets/images/item/overlay.png" alt=""></div>
-                </div>
-                <div class="bg-image">
-                    <img loading="lazy" width="1440" height="938" src="assets/images/section/bg-service-2.jpg" alt="WordPress Development">
-                    <div class="img-item"><img loading="lazy" width="1440" height="938" src="assets/images/item/overlay.png" alt=""></div>
-                </div>
-                <div class="bg-image">
-                    <img loading="lazy" width="1440" height="938" src="assets/images/section/bg-service-3.jpg" alt="Custom Website">
-                    <div class="img-item"><img loading="lazy" width="1440" height="938" src="assets/images/item/overlay.png" alt=""></div>
-                </div>
-                <div class="bg-image">
-                    <img loading="lazy" width="1440" height="938" src="assets/images/section/bg-service-1.jpg" alt="Web Application">
-                    <div class="img-item"><img loading="lazy" width="1440" height="938" src="assets/images/item/overlay.png" alt=""></div>
-                </div>
-                <div class="bg-image">
-                    <img loading="lazy" width="1440" height="938" src="assets/images/section/bg-service-2.jpg" alt="E-commerce">
-                    <div class="img-item"><img loading="lazy" width="1440" height="938" src="assets/images/item/overlay.png" alt=""></div>
-                </div>
-                <div class="bg-image">
-                    <img loading="lazy" width="1440" height="938" src="assets/images/section/bg-service-3.jpg" alt="SEO Digital Marketing">
-                    <div class="img-item"><img loading="lazy" width="1440" height="938" src="assets/images/item/overlay.png" alt=""></div>
-                </div>
-                <div class="bg-image">
-                    <img loading="lazy" width="1440" height="938" src="assets/images/section/bg-service-1.jpg" alt="Brand Identity">
-                    <div class="img-item"><img loading="lazy" width="1440" height="938" src="assets/images/item/overlay.png" alt=""></div>
-                </div>
-            </div>
+        <section class="flat-spacing">
+            <style>
+                .gl-svc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+                @media (max-width: 991px) { .gl-svc-grid { grid-template-columns: 1fr; } }
+
+                .gl-svc-card {
+                    background: rgba(255,255,255,0.03);
+                    border: 1px solid rgba(255,255,255,0.06);
+                    border-radius: 16px;
+                    overflow: hidden;
+                    transition: border-color 0.4s, transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s;
+                    position: relative;
+                }
+                .gl-svc-card:hover {
+                    border-color: rgba(214,106,31,0.35);
+                    transform: translateY(-4px);
+                    box-shadow: 0 20px 60px rgba(214,106,31,0.08);
+                }
+                .gl-svc-card--featured {
+                    grid-column: 1 / -1;
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    min-height: 420px;
+                }
+                @media (max-width: 767px) { .gl-svc-card--featured { grid-template-columns: 1fr; } }
+
+                .gl-svc-card__img {
+                    position: relative;
+                    overflow: hidden;
+                    min-height: 280px;
+                }
+                .gl-svc-card__img img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    display: block;
+                    transition: transform 0.6s cubic-bezier(0.22,1,0.36,1);
+                }
+                .gl-svc-card:hover .gl-svc-card__img img { transform: scale(1.05); }
+
+                .gl-svc-num {
+                    position: absolute;
+                    top: 20px;
+                    left: 20px;
+                    font-size: 11px;
+                    font-weight: 700;
+                    letter-spacing: 1px;
+                    color: var(--primary, #D66A1F);
+                    background: rgba(0,0,0,0.6);
+                    backdrop-filter: blur(8px);
+                    padding: 6px 14px;
+                    border-radius: 20px;
+                    z-index: 2;
+                }
+
+                .gl-svc-card__body {
+                    padding: 32px 28px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                }
+                .gl-svc-card__title {
+                    font-size: 22px;
+                    font-weight: 700;
+                    color: #fff;
+                    margin-bottom: 12px;
+                    line-height: 1.3;
+                    letter-spacing: -0.02em;
+                }
+                .gl-svc-card__desc {
+                    font-size: 15px;
+                    color: rgba(255,255,255,0.55);
+                    line-height: 1.7;
+                    margin-bottom: 20px;
+                }
+                .gl-svc-card__tags {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                    margin-bottom: 24px;
+                }
+                .gl-svc-tag {
+                    font-size: 11px;
+                    font-weight: 600;
+                    letter-spacing: 0.3px;
+                    padding: 5px 12px;
+                    border-radius: 6px;
+                    background: rgba(255,255,255,0.05);
+                    border: 1px solid rgba(255,255,255,0.08);
+                    color: rgba(255,255,255,0.6);
+                    transition: border-color 0.2s, color 0.2s;
+                }
+                .gl-svc-card:hover .gl-svc-tag {
+                    border-color: rgba(214,106,31,0.3);
+                    color: rgba(255,255,255,0.8);
+                }
+                .gl-svc-card__cta {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: var(--primary, #D66A1F);
+                    text-decoration: none;
+                    transition: gap 0.3s;
+                }
+                .gl-svc-card:hover .gl-svc-card__cta { gap: 14px; }
+                .gl-svc-card__cta svg { transition: transform 0.3s; }
+                .gl-svc-card:hover .gl-svc-card__cta svg { transform: translateX(4px); }
+            </style>
             <div class="container">
-                <div class="s-header s-header-scroll">
-                    <h2 class="text-display-2 fw-semibold effectFade fadeUp">All Services</h2>
+                <div class="text-center mb-5">
+                    <h6 class="mini-title text-caption text-white-64 effectFade fadeUp">ALL SERVICES</h6>
+                    <h2 class="text-display-2 fw-semibold letter-space--3 mt-3 effectFade fadeUp">What We Build</h2>
                 </div>
-            </div>
-            <div class="container">
-                <div class="wrap-control position-relative">
 
-                    <!-- Service 1: Web Design -->
-                    <div class="wg-service-2">
-                        <div class="main-image">
-                            <div class="image"><img loading="lazy" width="424" height="530" src="assets/images/section/service-1.jpg" alt="Web Design &amp; UI/UX"></div>
-                            <div class="action tf-btn-2 cs-pointer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+                <div class="gl-svc-grid">
+
+                    <!-- Featured: Web Design -->
+                    <div class="gl-svc-card gl-svc-card--featured effectFade fadeUp">
+                        <div class="gl-svc-card__img">
+                            <span class="gl-svc-num">01</span>
+                            <img loading="lazy" src="assets/images/section/service-1.jpg" alt="Web Design">
                         </div>
-                        <div class="center">
-                            <h5 class="title">Web Design &amp; UI/UX</h5>
-                            <p class="desc">Beautiful, conversion-optimised website designs crafted in Figma. Mobile-first, accessibility-ready, and built around your users and brand.</p>
-                            <div class="br-line d-flex"></div>
-                            <ul class="tf-list vertical">
-                                <li class="letter-space--1"><span class="text-primary">//</span> UI/UX Design</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Wireframing &amp; Prototyping</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Mobile-First Design</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Design Systems</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Accessibility Compliance</li>
-                            </ul>
-                            <a href="contact.html" class="tf-btn">GET A QUOTE</a>
+                        <div class="gl-svc-card__body">
+                            <h3 class="gl-svc-card__title">Web Design &amp; UI/UX</h3>
+                            <p class="gl-svc-card__desc">Conversion-focused design that looks like it belongs on a design award site. Every layout is custom-built for your brand, your audience, and your goals.</p>
+                            <div class="gl-svc-card__tags">
+                                <span class="gl-svc-tag">Custom UI Design</span>
+                                <span class="gl-svc-tag">Responsive Layouts</span>
+                                <span class="gl-svc-tag">User Research</span>
+                                <span class="gl-svc-tag">Prototyping</span>
+                            </div>
+                            <a href="contact.html" class="gl-svc-card__cta">Get a Quote <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
                         </div>
-                        <div class="image-simu"></div>
-                        <div class="image-2"><img loading="lazy" width="212" height="265" src="assets/images/section/service-mini-1.jpg" alt="Web Design Detail"></div>
                     </div>
 
-                    <!-- Service 2: WordPress -->
-                    <div class="wg-service-2">
-                        <div class="main-image">
-                            <div class="image"><img loading="lazy" width="424" height="530" src="assets/images/section/service-2.jpg" alt="WordPress Development"></div>
-                            <div class="action tf-btn-2 cs-pointer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+                    <!-- WordPress -->
+                    <div class="gl-svc-card effectFade fadeUp">
+                        <div class="gl-svc-card__img">
+                            <span class="gl-svc-num">02</span>
+                            <img loading="lazy" src="assets/images/section/service-2.jpg" alt="WordPress">
                         </div>
-                        <div class="center">
-                            <h5 class="title">WordPress Development</h5>
-                            <p class="desc">Custom WordPress websites and WooCommerce stores — fast, secure, and built to be managed without a developer. Perfect for businesses, schools, NGOs, and e-commerce.</p>
-                            <div class="br-line d-flex"></div>
-                            <ul class="tf-list vertical">
-                                <li class="letter-space--1"><span class="text-primary">//</span> Custom Theme Development</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> WooCommerce Stores</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Plugin Integration</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Speed Optimisation</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Security Hardening</li>
-                            </ul>
-                            <a href="contact.html" class="tf-btn">GET A QUOTE</a>
+                        <div class="gl-svc-card__body">
+                            <h3 class="gl-svc-card__title">WordPress Development</h3>
+                            <p class="gl-svc-card__desc">Fast, SEO-ready WordPress sites your team can actually update. Custom themes, WooCommerce, membership plugins.</p>
+                            <div class="gl-svc-card__tags">
+                                <span class="gl-svc-tag">Custom Themes</span>
+                                <span class="gl-svc-tag">WooCommerce</span>
+                                <span class="gl-svc-tag">Speed Optimisation</span>
+                                <span class="gl-svc-tag">Security</span>
+                            </div>
+                            <a href="contact.html" class="gl-svc-card__cta">Get a Quote <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
                         </div>
-                        <div class="image-simu"></div>
-                        <div class="image-2"><img loading="lazy" width="212" height="265" src="assets/images/section/service-mini-2.jpg" alt="WordPress Detail"></div>
                     </div>
 
-                    <!-- Service 3: Custom Website -->
-                    <div class="wg-service-2">
-                        <div class="main-image">
-                            <div class="image"><img loading="lazy" width="424" height="530" src="assets/images/section/service-3.jpg" alt="Custom Website Development"></div>
-                            <div class="action tf-btn-2 cs-pointer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+                    <!-- Custom Website -->
+                    <div class="gl-svc-card effectFade fadeUp">
+                        <div class="gl-svc-card__img">
+                            <span class="gl-svc-num">03</span>
+                            <img loading="lazy" src="assets/images/section/service-3.jpg" alt="Custom Website">
                         </div>
-                        <div class="center">
-                            <h5 class="title">Custom Website Development</h5>
-                            <p class="desc">Hand-coded HTML/CSS/JavaScript websites for clients who want complete control, premium animations, and no platform limitations.</p>
-                            <div class="br-line d-flex"></div>
-                            <ul class="tf-list vertical">
-                                <li class="letter-space--1"><span class="text-primary">//</span> HTML/CSS/JavaScript</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Tailwind CSS</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> GSAP Animations</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> CMS Integration</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Cross-browser Testing</li>
-                            </ul>
-                            <a href="contact.html" class="tf-btn">GET A QUOTE</a>
+                        <div class="gl-svc-card__body">
+                            <h3 class="gl-svc-card__title">Custom Website Development</h3>
+                            <p class="gl-svc-card__desc">Hand-coded HTML/CSS/JavaScript websites for complete control, premium animations, and zero platform limitations.</p>
+                            <div class="gl-svc-card__tags">
+                                <span class="gl-svc-tag">HTML/CSS/JS</span>
+                                <span class="gl-svc-tag">Tailwind CSS</span>
+                                <span class="gl-svc-tag">GSAP Animations</span>
+                                <span class="gl-svc-tag">CMS Integration</span>
+                            </div>
+                            <a href="contact.html" class="gl-svc-card__cta">Get a Quote <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
                         </div>
-                        <div class="image-simu"></div>
                     </div>
 
-                    <!-- Service 4: Web App -->
-                    <div class="wg-service-2">
-                        <div class="main-image">
-                            <div class="image"><img loading="lazy" width="424" height="530" src="assets/images/section/service-1.jpg" alt="Web Application MVP"></div>
-                            <div class="action tf-btn-2 cs-pointer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+                    <!-- Featured: Web Application -->
+                    <div class="gl-svc-card gl-svc-card--featured effectFade fadeUp">
+                        <div class="gl-svc-card__body">
+                            <h3 class="gl-svc-card__title">Web Applications (MVP)</h3>
+                            <p class="gl-svc-card__desc">We turn your idea into a working product. React-powered MVPs with clean architecture, real user flows, and the infrastructure to scale.</p>
+                            <div class="gl-svc-card__tags">
+                                <span class="gl-svc-tag">React / Next.js</span>
+                                <span class="gl-svc-tag">Node.js API</span>
+                                <span class="gl-svc-tag">MongoDB</span>
+                                <span class="gl-svc-tag">User Auth</span>
+                                <span class="gl-svc-tag">Payments</span>
+                            </div>
+                            <a href="contact.html" class="gl-svc-card__cta">Get a Quote <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
                         </div>
-                        <div class="center">
-                            <h5 class="title">Web Application (MVP)</h5>
-                            <p class="desc">We turn your idea into a working product. React-powered MVPs with clean architecture, real user flows, and the infrastructure to scale when you grow.</p>
-                            <div class="br-line d-flex"></div>
-                            <ul class="tf-list vertical">
-                                <li class="letter-space--1"><span class="text-primary">//</span> React / Next.js Frontend</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Node.js REST API</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Database Design</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> User Authentication</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Payment Integration</li>
-                            </ul>
-                            <a href="contact.html" class="tf-btn">GET A QUOTE</a>
+                        <div class="gl-svc-card__img">
+                            <span class="gl-svc-num">04</span>
+                            <img loading="lazy" src="assets/images/section/service-1.jpg" alt="Web Application">
                         </div>
-                        <div class="image-simu"></div>
-                        <div class="image-2"><img loading="lazy" width="212" height="265" src="assets/images/section/service-mini-1.jpg" alt="Web App Detail"></div>
                     </div>
 
-                    <!-- Service 5: E-commerce -->
-                    <div class="wg-service-2">
-                        <div class="main-image">
-                            <div class="image"><img loading="lazy" width="424" height="530" src="assets/images/section/service-2.jpg" alt="E-commerce Shopify"></div>
-                            <div class="action tf-btn-2 cs-pointer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+                    <!-- E-commerce -->
+                    <div class="gl-svc-card effectFade fadeUp">
+                        <div class="gl-svc-card__img">
+                            <span class="gl-svc-num">05</span>
+                            <img loading="lazy" src="assets/images/section/service-2.jpg" alt="E-commerce">
                         </div>
-                        <div class="center">
-                            <h5 class="title">E-commerce (Shopify)</h5>
-                            <p class="desc">Professional Shopify stores designed to sell — with optimised product pages, smooth checkout flows, and integrations for Nigerian and international payment gateways.</p>
-                            <div class="br-line d-flex"></div>
-                            <ul class="tf-list vertical">
-                                <li class="letter-space--1"><span class="text-primary">//</span> Shopify Theme Setup</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Product Catalogue</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Payment Gateways</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Inventory Management</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Shipping Configuration</li>
-                            </ul>
-                            <a href="contact.html" class="tf-btn">GET A QUOTE</a>
+                        <div class="gl-svc-card__body">
+                            <h3 class="gl-svc-card__title">E-commerce (Shopify)</h3>
+                            <p class="gl-svc-card__desc">Professional Shopify stores designed to sell, with optimised product pages, smooth checkout, and Nigerian + international payment gateways.</p>
+                            <div class="gl-svc-card__tags">
+                                <span class="gl-svc-tag">Shopify Setup</span>
+                                <span class="gl-svc-tag">Product Catalogue</span>
+                                <span class="gl-svc-tag">Payment Gateways</span>
+                                <span class="gl-svc-tag">Inventory</span>
+                            </div>
+                            <a href="contact.html" class="gl-svc-card__cta">Get a Quote <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
                         </div>
-                        <div class="image-simu"></div>
-                        <div class="image-2"><img loading="lazy" width="212" height="265" src="assets/images/section/service-mini-2.jpg" alt="E-commerce Detail"></div>
                     </div>
 
-                    <!-- Service 6: SEO & Digital Marketing -->
-                    <div class="wg-service-2">
-                        <div class="main-image">
-                            <div class="image"><img loading="lazy" width="424" height="530" src="assets/images/section/service-3.jpg" alt="SEO &amp; Digital Marketing"></div>
-                            <div class="action tf-btn-2 cs-pointer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+                    <!-- SEO & Marketing -->
+                    <div class="gl-svc-card effectFade fadeUp">
+                        <div class="gl-svc-card__img">
+                            <span class="gl-svc-num">06</span>
+                            <img loading="lazy" src="assets/images/section/service-3.jpg" alt="SEO Digital Marketing">
                         </div>
-                        <div class="center">
-                            <h5 class="title">SEO &amp; Digital Marketing</h5>
-                            <p class="desc">We get your website found. Technical SEO, content strategy, Google Ads, and social media management — targeted at your audience in Nigeria and beyond.</p>
-                            <div class="br-line d-flex"></div>
-                            <ul class="tf-list vertical">
-                                <li class="letter-space--1"><span class="text-primary">//</span> Technical SEO Audit</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> On-Page Optimisation</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Content Strategy</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Google Ads Management</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Monthly Reporting</li>
-                            </ul>
-                            <a href="contact.html" class="tf-btn">GET A QUOTE</a>
+                        <div class="gl-svc-card__body">
+                            <h3 class="gl-svc-card__title">SEO &amp; Digital Marketing</h3>
+                            <p class="gl-svc-card__desc">We get your website found. Technical SEO, content strategy, Google Ads, and social media management targeted at your audience.</p>
+                            <div class="gl-svc-card__tags">
+                                <span class="gl-svc-tag">Technical SEO</span>
+                                <span class="gl-svc-tag">Content Strategy</span>
+                                <span class="gl-svc-tag">Google Ads</span>
+                                <span class="gl-svc-tag">Monthly Reports</span>
+                            </div>
+                            <a href="contact.html" class="gl-svc-card__cta">Get a Quote <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
                         </div>
-                        <div class="image-simu"></div>
                     </div>
 
-                    <!-- Service 7: Media & Content -->
-                    <div class="wg-service-2">
-                        <div class="main-image">
-                            <div class="image"><img loading="lazy" width="424" height="530" src="assets/images/section/service-1.jpg" alt="Media &amp; Content Production"></div>
-                            <div class="action tf-btn-2 cs-pointer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+                    <!-- Featured: Media -->
+                    <div class="gl-svc-card gl-svc-card--featured effectFade fadeUp">
+                        <div class="gl-svc-card__img">
+                            <span class="gl-svc-num">07</span>
+                            <img loading="lazy" src="assets/images/section/service-1.jpg" alt="Media Production">
                         </div>
-                        <div class="center">
-                            <h5 class="title">Media &amp; Content Production</h5>
-                            <p class="desc">Photography, video production, and graphic design to give your brand the visual presence it deserves online and offline.</p>
-                            <div class="br-line d-flex"></div>
-                            <ul class="tf-list vertical">
-                                <li class="letter-space--1"><span class="text-primary">//</span> Brand Photography</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Video Production</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Graphic Design</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Social Media Creatives</li>
-                                <li class="letter-space--1"><span class="text-primary">//</span> Print Design</li>
-                            </ul>
-                            <a href="contact.html" class="tf-btn">GET A QUOTE</a>
+                        <div class="gl-svc-card__body">
+                            <h3 class="gl-svc-card__title">Media &amp; Content Production</h3>
+                            <p class="gl-svc-card__desc">Photography, video production, and graphic design to give your brand the visual presence it deserves online and offline.</p>
+                            <div class="gl-svc-card__tags">
+                                <span class="gl-svc-tag">Brand Photography</span>
+                                <span class="gl-svc-tag">Video Production</span>
+                                <span class="gl-svc-tag">Graphic Design</span>
+                                <span class="gl-svc-tag">Social Media</span>
+                                <span class="gl-svc-tag">Print Design</span>
+                            </div>
+                            <a href="contact.html" class="gl-svc-card__cta">Get a Quote <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
                         </div>
-                        <div class="image-simu"></div>
                     </div>
 
                 </div>
