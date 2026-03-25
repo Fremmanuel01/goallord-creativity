@@ -8,6 +8,13 @@ const taskSchema = new mongoose.Schema({
     status:      { type: String, enum: ['todo','in-progress','review','done'], default: 'todo' },
     priority:    { type: String, enum: ['low','medium','high','urgent'], default: 'medium' },
     dueDate:     { type: Date },
+    estimated:   { type: Number, default: 0 },
+    spent:       { type: Number, default: 0 },
+    comments: [{
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        text: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now }
+    }],
     createdBy:   { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
 

@@ -9,6 +9,8 @@ const projectSchema = new mongoose.Schema({
     deadline:    { type: Date },
     members:     [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     color:       { type: String, default: '#D66A1F' },
+    budget:      { type: Number, default: 0 },
+    spent:       { type: Number, default: 0 },
     createdBy:   { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
 

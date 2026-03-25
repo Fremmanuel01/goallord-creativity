@@ -1622,6 +1622,18 @@
     box-shadow: 0 0 24px rgba(214, 106, 31, 0.06);
   }
 
+  /* Drag-and-drop kanban styles */
+  .kanban-col.drag-over {
+    border: 2px dashed var(--orange);
+    background: rgba(214, 106, 31, 0.05);
+  }
+  .kanban-card[draggable="true"] {
+    cursor: grab;
+  }
+  .kanban-card[draggable="true"]:active {
+    cursor: grabbing;
+  }
+
   /* Kanban card hover lift */
   .kanban-card {
     transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
@@ -2468,7 +2480,17 @@
               <button type="button" class="step-continue-btn" onclick="revealProjStep(5)">Continue</button>
             </div>
             <div class="form-step" data-step="5">
-              <div class="form-group">
+              <div class="modal-form-row">
+                <div class="form-group">
+                  <label>Budget (&#8358;)</label>
+                  <input class="form-input" type="number" id="projBudget" min="0" step="1000" placeholder="0" value="0">
+                </div>
+                <div class="form-group">
+                  <label>Spent (&#8358;)</label>
+                  <input class="form-input" type="number" id="projSpent" min="0" step="1000" placeholder="0" value="0">
+                </div>
+              </div>
+              <div class="form-group" style="margin-top:12px">
                 <label>Color</label>
                 <input class="form-input" type="color" id="projColor" value="#D66A1F" style="height:40px;padding:4px">
               </div>
@@ -2499,6 +2521,8 @@
               <button class="btn btn-primary btn-sm" onclick="openTaskModal(null)">+ Add Task</button>
             </div>
             <p style="font-size:13px;color:var(--muted);margin-top:8px" id="projDetailDesc"></p>
+            <div id="projDetailBudget" style="margin-top:10px;font-size:12px;color:var(--muted)"></div>
+            <div id="projDetailTimeSummary" style="margin-top:6px;font-size:12px;color:var(--muted)"></div>
           </div>
           <div style="padding:20px 24px">
             <input type="text" class="quick-add-task" id="quickAddTaskInput" placeholder="Add a task and press Enter..." onkeydown="if(event.key==='Enter')quickAddTask(this)">
@@ -2570,6 +2594,25 @@
                 <label>Description (optional)</label>
                 <textarea class="form-input" id="taskDesc" rows="2" placeholder="Details..."></textarea>
               </div>
+              <div class="modal-form-row" style="margin-top:12px">
+                <div class="form-group">
+                  <label>Estimated Hours</label>
+                  <input class="form-input" type="number" id="taskEstimated" min="0" step="0.5" placeholder="0" value="0">
+                </div>
+                <div class="form-group">
+                  <label>Hours Spent</label>
+                  <input class="form-input" type="number" id="taskSpent" min="0" step="0.5" placeholder="0" value="0">
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Task Comments Section (only visible when editing) -->
+          <div id="taskCommentsSection" style="display:none;margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+            <h4 style="font-size:13px;color:var(--muted);margin-bottom:12px">Comments</h4>
+            <div id="taskCommentsList" style="max-height:200px;overflow-y:auto;margin-bottom:12px"></div>
+            <div style="display:flex;gap:8px">
+              <input class="form-input" type="text" id="taskCommentInput" placeholder="Write a comment..." style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();postTaskComment(document.getElementById('taskEditId').value)}">
+              <button class="btn btn-primary btn-sm" onclick="postTaskComment(document.getElementById('taskEditId').value)">Post</button>
             </div>
           </div>
         </div>
@@ -2594,6 +2637,23 @@
           <input class="form-input" type="text" id="quickStandaloneTask" placeholder="Add a quick task and press Enter..." style="flex:1" onkeydown="if(event.key==='Enter')addStandaloneTask()">
           <button class="btn btn-primary btn-sm" onclick="addStandaloneTask()" style="white-space:nowrap">+ Add</button>
         </div>
+      </div>
+
+      <!-- Task Search & Filter Bar -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center">
+        <input class="form-input" type="text" id="taskSearchInput" placeholder="Search tasks..." style="flex:1;min-width:180px;max-width:300px" oninput="debouncedLoadMyTasks()">
+        <select class="form-input" id="taskPriorityFilter" style="width:auto;min-width:120px" onchange="loadMyTasks()">
+          <option value="">All Priorities</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="urgent">Urgent</option>
+        </select>
+        <select class="form-input" id="taskDueDateFilter" style="width:auto;min-width:130px" onchange="loadMyTasks()">
+          <option value="">All Dates</option>
+          <option value="week">Due This Week</option>
+          <option value="overdue">Overdue</option>
+        </select>
       </div>
 
       <div id="myTasksList" class="kanban-board"></div>
@@ -5890,6 +5950,14 @@ function renderProjects() {
           '<span>'+p.tasksDone+'/'+p.taskCount+' tasks</span>' +
           '<span style="'+(overdue?'color:var(--danger)':'')+'">'+(overdue?'Overdue: ':'')+deadline+'</span>' +
         '</div>' +
+        (p.budget > 0 ? (function(){
+          var bPct = Math.min(Math.round(((p.spent||0) / p.budget) * 100), 100);
+          var overBudget = (p.spent||0) > p.budget;
+          return '<div style="margin-top:8px;font-size:11px;'+(overBudget?'color:var(--danger)':'color:var(--muted)')+'">&#8358;' + Number(p.spent||0).toLocaleString() + ' / &#8358;' + Number(p.budget).toLocaleString() + '</div>' +
+            '<div style="margin-top:4px;background:rgba(255,255,255,.06);border-radius:4px;height:4px;overflow:hidden">' +
+              '<div style="height:100%;width:'+bPct+'%;background:'+(overBudget?'var(--danger)':'var(--success)')+';border-radius:4px;transition:width .3s"></div>' +
+            '</div>';
+        })() : '') +
         '<div style="display:flex;gap:6px;margin-top:12px">' +
           '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openProjectModal(\''+p._id+'\')" style="font-size:11px">Edit</button>' +
           '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();deleteProject(\''+p._id+'\')" style="font-size:11px;color:var(--danger)">Delete</button>' +
@@ -5920,6 +5988,8 @@ function openProjectModal(id) {
     document.getElementById('projStatus').value = p.status;
     document.getElementById('projPriority').value = p.priority;
     document.getElementById('projDesc').value = p.description || '';
+    document.getElementById('projBudget').value = p.budget || 0;
+    document.getElementById('projSpent').value = p.spent || 0;
     document.getElementById('projColor').value = p.color || '#D66A1F';
   } else {
     document.getElementById('projName').value = '';
@@ -5928,6 +5998,8 @@ function openProjectModal(id) {
     document.getElementById('projStatus').value = 'not-started';
     document.getElementById('projPriority').value = 'medium';
     document.getElementById('projDesc').value = '';
+    document.getElementById('projBudget').value = 0;
+    document.getElementById('projSpent').value = 0;
     document.getElementById('projColor').value = '#D66A1F';
   }
   projCurrentStep = 1;
@@ -5947,6 +6019,8 @@ async function saveProject() {
     status: document.getElementById('projStatus').value,
     priority: document.getElementById('projPriority').value,
     description: document.getElementById('projDesc').value.trim(),
+    budget: parseFloat(document.getElementById('projBudget').value) || 0,
+    spent: parseFloat(document.getElementById('projSpent').value) || 0,
     color: document.getElementById('projColor').value
   };
 
@@ -5985,6 +6059,16 @@ async function openProjectDetail(id) {
   document.getElementById('projDetailStatus').textContent = p.status.replace('-',' ');
   document.getElementById('projDetailClient').textContent = p.client ? 'Client: ' + p.client : '';
   document.getElementById('projDetailDesc').textContent = p.description || '';
+  // Show budget summary in project detail header
+  const budgetEl = document.getElementById('projDetailBudget');
+  if (budgetEl) {
+    if (p.budget > 0) {
+      const overBudget = p.spent > p.budget;
+      budgetEl.innerHTML = 'Budget: <span style="'+(overBudget?'color:var(--danger);font-weight:600':'')+'">&#8358;' + Number(p.spent||0).toLocaleString() + ' / &#8358;' + Number(p.budget).toLocaleString() + '</span>';
+    } else {
+      budgetEl.innerHTML = '';
+    }
+  }
   document.getElementById('projTasksList').innerHTML = '<p style="color:var(--muted)">Loading tasks...</p>';
   openModal('projectDetailModal');
   await loadProjectTasks(id);
@@ -6000,8 +6084,21 @@ async function loadProjectTasks(projectId) {
       container.innerHTML = '<p style="color:var(--muted);font-size:13px">No tasks yet. Type in the box above or click "+ Add Task".</p>';
       return;
     }
+    // Calculate time summary
+    let totalSpent = 0, totalEstimated = 0;
+    list.forEach(t => { totalSpent += (t.spent || 0); totalEstimated += (t.estimated || 0); });
+    const timeSummaryEl = document.getElementById('projDetailTimeSummary');
+    if (timeSummaryEl) {
+      const overTime = totalSpent > totalEstimated && totalEstimated > 0;
+      timeSummaryEl.innerHTML = totalEstimated > 0
+        ? 'Time: <span style="'+(overTime?'color:var(--danger);font-weight:600':'')+'">' + totalSpent + 'h spent / ' + totalEstimated + 'h estimated</span>'
+        : '';
+    }
+
     container.innerHTML = list.map(t => {
       const di = dueDateInfo(t.dueDate, t.status);
+      const timeOverrun = t.spent > t.estimated && t.estimated > 0;
+      const timeStr = t.estimated ? '<span style="font-size:11px;'+(timeOverrun?'color:var(--danger);font-weight:600':'color:var(--muted)')+'">'+t.spent+'h/'+t.estimated+'h</span>' : '';
       return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">' +
         '<input type="checkbox" '+(t.status==='done'?'checked':'')+' onchange="toggleTaskDone(\''+t._id+'\',this.checked)" style="accent-color:var(--orange);width:16px;height:16px">' +
         '<div style="flex:1;min-width:0">' +
@@ -6009,6 +6106,7 @@ async function loadProjectTasks(projectId) {
           '<div style="display:flex;gap:8px;margin-top:3px;font-size:11px">' +
             (t.assignee ? '<span style="color:var(--muted)">'+t.assignee.name+'</span>' : '<span style="color:var(--muted)">Unassigned</span>') +
             (di.text ? '<span style="'+di.cls+'">Due: '+di.text+'</span>' : '') +
+            timeStr +
           '</div>' +
         '</div>' +
         priorityDot(t.priority) +
@@ -6046,6 +6144,11 @@ async function openTaskModal(taskId) {
       document.getElementById('taskStatus').value = t.status;
       document.getElementById('taskPriority').value = t.priority;
       document.getElementById('taskDesc').value = t.description || '';
+      document.getElementById('taskEstimated').value = t.estimated || 0;
+      document.getElementById('taskSpent').value = t.spent || 0;
+      // Show comments section when editing
+      document.getElementById('taskCommentsSection').style.display = 'block';
+      renderTaskComments(t.comments || []);
     } catch(e) {}
   } else {
     document.getElementById('taskTitle').value = '';
@@ -6054,6 +6157,11 @@ async function openTaskModal(taskId) {
     document.getElementById('taskStatus').value = 'todo';
     document.getElementById('taskPriority').value = 'medium';
     document.getElementById('taskDesc').value = '';
+    document.getElementById('taskEstimated').value = 0;
+    document.getElementById('taskSpent').value = 0;
+    // Hide comments for new tasks
+    document.getElementById('taskCommentsSection').style.display = 'none';
+    document.getElementById('taskCommentsList').innerHTML = '';
   }
   taskCurrentStep = 1;
   initStepForm('taskFormSteps', 'taskStepProgressBar', taskTotalSteps, !!taskId);
@@ -6072,7 +6180,9 @@ async function saveTask() {
     dueDate: document.getElementById('taskDueDate').value || null,
     status: document.getElementById('taskStatus').value,
     priority: document.getElementById('taskPriority').value,
-    description: document.getElementById('taskDesc').value.trim()
+    description: document.getElementById('taskDesc').value.trim(),
+    estimated: parseFloat(document.getElementById('taskEstimated').value) || 0,
+    spent: parseFloat(document.getElementById('taskSpent').value) || 0
   };
 
   const btn = document.getElementById('taskSaveBtn');
@@ -6087,6 +6197,7 @@ async function saveTask() {
       closeModal('taskModal');
       loadProjectTasks(currentProjectId);
       loadProjects();
+      loadMyTasks();
     } else if (data) { showToast(data.error || 'Failed', 'error'); }
   } catch(e) { showToast('Error: ' + e.message, 'error'); }
   finally { btn.disabled = false; btn.textContent = btnOrigText; }
@@ -6116,7 +6227,25 @@ async function addStandaloneTask() {
 
 async function loadMyTasks() {
   try {
-    const tasks = await apiFetch('/api/tasks?mine=1');
+    // Build query params with filters
+    let url = '/api/tasks?mine=1';
+    const searchEl = document.getElementById('taskSearchInput');
+    const priorityEl = document.getElementById('taskPriorityFilter');
+    const dueDateEl = document.getElementById('taskDueDateFilter');
+    if (searchEl && searchEl.value.trim()) url += '&search=' + encodeURIComponent(searchEl.value.trim());
+    if (priorityEl && priorityEl.value) url += '&priority=' + priorityEl.value;
+    if (dueDateEl && dueDateEl.value) {
+      const now = new Date();
+      if (dueDateEl.value === 'week') {
+        const endOfWeek = new Date(now);
+        endOfWeek.setDate(now.getDate() + (7 - now.getDay()));
+        url += '&dueAfter=' + now.toISOString().slice(0,10) + '&dueBefore=' + endOfWeek.toISOString().slice(0,10);
+      } else if (dueDateEl.value === 'overdue') {
+        url += '&dueBefore=' + now.toISOString().slice(0,10);
+      }
+    }
+
+    const tasks = await apiFetch(url);
     const list = sortTasks(Array.isArray(tasks) ? tasks : []);
     const container = document.getElementById('myTasksList');
 
@@ -6136,7 +6265,7 @@ async function loadMyTasks() {
 
     container.innerHTML = columns.map(col => {
       const tasks = grouped[col.key];
-      return '<div class="kanban-column">' +
+      return '<div class="kanban-column kanban-col" data-status="'+col.key+'" ondragover="kanbanDragOver(event)" ondragenter="kanbanDragEnter(event)" ondragleave="kanbanDragLeave(event)" ondrop="kanbanDrop(event)">' +
         '<div class="kanban-column-header">' +
           '<span style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+col.color+'"></span> '+col.label+'</span>' +
           '<span class="kanban-count">'+tasks.length+'</span>' +
@@ -6144,10 +6273,13 @@ async function loadMyTasks() {
         '<div class="kanban-column-body">' +
           (tasks.length ? tasks.map(t => {
             const di = dueDateInfo(t.dueDate, t.status);
-            return '<div class="kanban-card kanban-card-enter">' +
+            const timeOverrun = t.spent > t.estimated && t.estimated > 0;
+            const timeStr = t.estimated ? '<span style="font-size:10px;'+(timeOverrun?'color:var(--danger);font-weight:600':'color:var(--muted)')+'">'+t.spent+'h/'+t.estimated+'h</span>' : '';
+            return '<div class="kanban-card kanban-card-enter" draggable="true" data-task-id="'+t._id+'" ondragstart="kanbanDragStart(event)" ondragend="kanbanDragEnd(event)" style="transition:opacity .2s,transform .2s">' +
               '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
                 (t.project ? '<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:'+(t.project.color||'var(--orange)')+';color:#fff;white-space:nowrap">'+t.project.name+'</span>' : '') +
                 priorityDot(t.priority) +
+                timeStr +
                 '<span style="margin-left:auto">' + statusBadge(t.status, { clickable: true, taskId: t._id, context: 'mytasks' }) + '</span>' +
               '</div>' +
               '<p style="font-size:13px;color:var(--text);'+(t.status==='done'?'text-decoration:line-through;opacity:.5':'')+'">'+t.title+'</p>' +
@@ -6171,6 +6303,128 @@ async function loadMyTasks() {
 async function quickToggleTask(id, done) {
   await apiFetch('/api/tasks/' + id, { method: 'PATCH', body: JSON.stringify({ status: done ? 'done' : 'todo' }) });
   loadMyTasks();
+}
+
+// ── Task Comments ──
+function renderTaskComments(comments) {
+  const container = document.getElementById('taskCommentsList');
+  const user = JSON.parse(localStorage.gl_user || '{}');
+  const userId = user.id || user._id || '';
+  if (!comments || !comments.length) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--muted)">No comments yet.</p>';
+    return;
+  }
+  container.innerHTML = comments.map(c => {
+    const name = c.user?.name || 'Unknown';
+    const timeAgo = relativeTime(c.createdAt);
+    const isOwn = c.user && (c.user._id === userId || c.user === userId);
+    return '<div style="padding:8px 0;border-bottom:1px solid var(--border)">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center">' +
+        '<span style="font-size:12px;font-weight:600;color:var(--text)">' + name + ' <span style="font-weight:400;color:var(--muted);margin-left:6px">' + timeAgo + '</span></span>' +
+        (isOwn ? '<button class="btn btn-ghost btn-sm" onclick="deleteTaskComment(\'' + document.getElementById('taskEditId').value + '\',\'' + c._id + '\')" style="font-size:10px;padding:2px 6px;color:var(--danger)" title="Delete">&#x2715;</button>' : '') +
+      '</div>' +
+      '<p style="font-size:13px;color:var(--text);margin-top:4px;white-space:pre-wrap">' + escapeHtml(c.text) + '</p>' +
+    '</div>';
+  }).join('');
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function relativeTime(dateStr) {
+  const now = new Date();
+  const d = new Date(dateStr);
+  const diff = Math.floor((now - d) / 1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+async function postTaskComment(taskId) {
+  if (!taskId) return;
+  const input = document.getElementById('taskCommentInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.disabled = true;
+  try {
+    const data = await apiFetch('/api/tasks/' + taskId + '/comments', { method: 'POST', body: JSON.stringify({ text }) });
+    if (data && data.comments) {
+      renderTaskComments(data.comments);
+      input.value = '';
+      showToast('Comment posted', 'success');
+    }
+  } catch(e) { showToast('Error posting comment', 'error'); }
+  finally { input.disabled = false; input.focus(); }
+}
+
+async function deleteTaskComment(taskId, commentId) {
+  if (!confirm('Delete this comment?')) return;
+  try {
+    const data = await apiFetch('/api/tasks/' + taskId + '/comments/' + commentId, { method: 'DELETE' });
+    if (data && data.comments) {
+      renderTaskComments(data.comments);
+      showToast('Comment deleted', 'success');
+    }
+  } catch(e) { showToast('Error deleting comment', 'error'); }
+}
+
+// ── Drag-and-Drop Kanban ──
+let kanbanDragTaskId = null;
+
+function kanbanDragStart(e) {
+  kanbanDragTaskId = e.target.dataset.taskId;
+  e.target.style.opacity = '0.4';
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', kanbanDragTaskId);
+}
+
+function kanbanDragEnd(e) {
+  e.target.style.opacity = '1';
+  kanbanDragTaskId = null;
+  // Remove all drag-over highlights
+  document.querySelectorAll('.kanban-col.drag-over').forEach(el => el.classList.remove('drag-over'));
+}
+
+function kanbanDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+
+function kanbanDragEnter(e) {
+  e.preventDefault();
+  const col = e.target.closest('.kanban-col');
+  if (col) col.classList.add('drag-over');
+}
+
+function kanbanDragLeave(e) {
+  const col = e.target.closest('.kanban-col');
+  if (col && !col.contains(e.relatedTarget)) col.classList.remove('drag-over');
+}
+
+async function kanbanDrop(e) {
+  e.preventDefault();
+  const col = e.target.closest('.kanban-col');
+  if (!col) return;
+  col.classList.remove('drag-over');
+  const newStatus = col.dataset.status;
+  const taskId = e.dataTransfer.getData('text/plain');
+  if (!taskId || !newStatus) return;
+  try {
+    await apiFetch('/api/tasks/' + taskId, { method: 'PATCH', body: JSON.stringify({ status: newStatus }) });
+    loadMyTasks();
+  } catch(e) { showToast('Failed to move task', 'error'); }
+}
+
+// ── Task Search Debounce ──
+let _taskSearchTimer = null;
+function debouncedLoadMyTasks() {
+  clearTimeout(_taskSearchTimer);
+  _taskSearchTimer = setTimeout(loadMyTasks, 300);
 }
 
 // ── Check-ins ──
