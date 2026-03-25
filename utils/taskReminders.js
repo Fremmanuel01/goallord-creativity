@@ -1,17 +1,6 @@
 const cron = require('node-cron');
-const nodemailer = require('nodemailer');
+const { sendMail } = require('./mailer');
 const Task = require('../models/Task');
-const User = require('../models/User');
-
-const transporter = nodemailer.createTransport({
-    host: 'smtp.hostinger.com',
-    port: 465,
-    secure: true,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
 
 function daysUntil(date) {
     const now = new Date();
@@ -135,8 +124,7 @@ async function sendTaskReminders() {
             const { subject, html } = buildEmail(task, task.assignee, task.project);
 
             try {
-                await transporter.sendMail({
-                    from: `"Goallord Creativity" <${process.env.EMAIL_USER}>`,
+                await sendMail({
                     to: task.assignee.email,
                     subject,
                     html
