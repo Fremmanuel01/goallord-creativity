@@ -2061,6 +2061,35 @@
           <p style="color:var(--muted);font-size:13px">Loading activity...</p>
         </div>
       </div>
+
+      <!-- Project Analytics -->
+      <div style="margin-top:24px">
+        <h3 style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:16px">Project Progress</h3>
+        <div class="stat-grid" id="projectAnalyticsStats" style="margin-bottom:20px">
+          <div class="stat-card"><div class="stat-info"><div class="stat-label">Total Projects</div><div class="stat-value" id="pa-total-projects">--</div></div></div>
+          <div class="stat-card"><div class="stat-info"><div class="stat-label">Active Projects</div><div class="stat-value" id="pa-active-projects">--</div></div></div>
+          <div class="stat-card"><div class="stat-info"><div class="stat-label">Completed</div><div class="stat-value" id="pa-completed-projects">--</div></div></div>
+          <div class="stat-card"><div class="stat-info"><div class="stat-label">Total Tasks</div><div class="stat-value" id="pa-total-tasks">--</div></div></div>
+          <div class="stat-card"><div class="stat-info"><div class="stat-label">Tasks Done</div><div class="stat-value" id="pa-tasks-done">--</div></div></div>
+          <div class="stat-card"><div class="stat-info"><div class="stat-label">Completion Rate</div><div class="stat-value" id="pa-completion-rate">--</div></div></div>
+        </div>
+
+        <!-- Active Project Progress Bars -->
+        <div class="card" style="padding:20px;margin-bottom:20px">
+          <h4 style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px">Active Project Progress</h4>
+          <div id="projectProgressBars" style="display:flex;flex-direction:column;gap:12px">
+            <p style="color:var(--muted);font-size:13px">Loading...</p>
+          </div>
+        </div>
+
+        <!-- Tasks by Status -->
+        <div class="card" style="padding:20px">
+          <h4 style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px">Tasks by Status</h4>
+          <div id="tasksByStatus">
+            <p style="color:var(--muted);font-size:13px">Loading...</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ══════════════════════════════════════════════════
@@ -2296,6 +2325,71 @@
         <div style="display:flex;gap:8px">
           <button class="btn btn-ghost" onclick="sendRemindersNow()" id="sendRemindersBtn">Send Reminders</button>
           <button class="btn btn-primary" onclick="openProjectModal(null)">+ New Project</button>
+        </div>
+      </div>
+
+      <!-- Reminders Panel (collapsible) -->
+      <div class="card" style="margin-bottom:20px;overflow:hidden;border-radius:12px" id="remindersPanel">
+        <div style="padding:16px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="toggleRemindersPanel()">
+          <h4 style="font-size:14px;font-weight:600;color:var(--text);margin:0">Reminder Management</h4>
+          <span id="remindersPanelArrow" style="color:var(--muted);transition:transform .2s;font-size:18px">&#9660;</span>
+        </div>
+        <div id="remindersPanelBody" style="display:none;padding:0 20px 20px">
+          <!-- Settings Row -->
+          <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:20px;padding:16px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid var(--border)">
+            <div style="flex:1;min-width:100px">
+              <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:4px">Frequency (days)</label>
+              <input type="number" class="form-input" id="reminderFrequency" min="1" max="30" value="2" style="width:100%">
+            </div>
+            <div style="flex:1;min-width:100px">
+              <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:4px">Send Time</label>
+              <input type="time" class="form-input" id="reminderSendTime" value="08:00" style="width:100%">
+            </div>
+            <div style="flex:1;min-width:100px;display:flex;align-items:center;gap:8px;padding-bottom:2px">
+              <label style="font-size:11px;color:var(--muted)">Enabled</label>
+              <input type="checkbox" id="reminderEnabled" checked style="width:18px;height:18px;accent-color:var(--orange)">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="saveReminderSettings()" style="height:36px">Save Settings</button>
+          </div>
+
+          <!-- Stats Row -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:20px" id="reminderStatsRow">
+            <div style="padding:12px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700;color:var(--text)" id="rs-total-sent">--</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">Total Sent</div>
+            </div>
+            <div style="padding:12px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700;color:var(--text)" id="rs-sent-today">--</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">Sent Today</div>
+            </div>
+            <div style="padding:12px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700;color:var(--text)" id="rs-recipients">--</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">Recipients</div>
+            </div>
+            <div style="padding:12px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700;color:var(--danger)" id="rs-failed">--</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">Failed</div>
+            </div>
+          </div>
+
+          <!-- Recent Logs Table -->
+          <h5 style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px">Recent Email Logs</h5>
+          <div style="overflow-x:auto">
+            <table class="data-table" id="reminderLogsTable">
+              <thead>
+                <tr>
+                  <th>Recipient</th>
+                  <th>Task</th>
+                  <th>Project</th>
+                  <th>Sent At</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="reminderLogsBody">
+                <tr><td colspan="5" style="text-align:center;color:var(--muted)">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -3996,6 +4090,7 @@ function navigate(page) {
       chartsInitialized = true;
     }
     loadActivityFeed();
+    loadProjectAnalytics();
   }
 
   if (page === 'website') {
@@ -5641,14 +5736,95 @@ function relativeTime(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
 }
 
+// ── Reminder Management ──
+let remindersPanelOpen = false;
+
+function toggleRemindersPanel() {
+  remindersPanelOpen = !remindersPanelOpen;
+  const body = document.getElementById('remindersPanelBody');
+  const arrow = document.getElementById('remindersPanelArrow');
+  body.style.display = remindersPanelOpen ? 'block' : 'none';
+  arrow.style.transform = remindersPanelOpen ? 'rotate(180deg)' : 'rotate(0)';
+  if (remindersPanelOpen) loadRemindersPanel();
+}
+
+async function loadReminderSettings() {
+  try {
+    const data = await apiFetch('/api/reminders/settings');
+    if (!data) return;
+    document.getElementById('reminderFrequency').value = data.frequency || 2;
+    document.getElementById('reminderSendTime').value = data.sendTime || '08:00';
+    document.getElementById('reminderEnabled').checked = data.enabled !== false;
+  } catch(e) { console.error('loadReminderSettings', e); }
+}
+
+async function saveReminderSettings() {
+  try {
+    const body = {
+      frequency: parseInt(document.getElementById('reminderFrequency').value) || 2,
+      sendTime: document.getElementById('reminderSendTime').value || '08:00',
+      enabled: document.getElementById('reminderEnabled').checked
+    };
+    await apiFetch('/api/reminders/settings', { method: 'PUT', body: JSON.stringify(body) });
+    showToast('Reminder settings saved', 'success');
+  } catch(e) {
+    showToast('Failed to save settings: ' + e.message, 'error');
+  }
+}
+
+async function loadReminderStats() {
+  try {
+    const data = await apiFetch('/api/reminders/stats');
+    if (!data) return;
+    document.getElementById('rs-total-sent').textContent = data.totalSent || 0;
+    document.getElementById('rs-sent-today').textContent = data.sentToday || 0;
+    document.getElementById('rs-recipients').textContent = data.uniqueRecipients || 0;
+    document.getElementById('rs-failed').textContent = data.failedCount || 0;
+  } catch(e) { console.error('loadReminderStats', e); }
+}
+
+async function loadReminderLogs() {
+  try {
+    const data = await apiFetch('/api/reminders/logs?limit=20&page=1');
+    if (!data) return;
+    const tbody = document.getElementById('reminderLogsBody');
+    if (!data.logs || !data.logs.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted)">No logs yet</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.logs.map(log => {
+      const sentDate = new Date(log.sentAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+      const statusBg = log.status === 'sent' ? 'var(--success)' : 'var(--danger)';
+      return '<tr>' +
+        '<td style="font-size:12px">' + (log.recipientName || log.recipient) + '</td>' +
+        '<td style="font-size:12px">' + (log.taskTitle || '--') + '</td>' +
+        '<td style="font-size:12px">' + (log.project || '--') + '</td>' +
+        '<td style="font-size:12px">' + sentDate + '</td>' +
+        '<td><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;color:#fff;background:' + statusBg + '">' + log.status + '</span></td>' +
+      '</tr>';
+    }).join('');
+  } catch(e) { console.error('loadReminderLogs', e); }
+}
+
+async function loadRemindersPanel() {
+  loadReminderSettings();
+  loadReminderStats();
+  loadReminderLogs();
+}
+
 // ── Projects ──
 async function sendRemindersNow() {
   const btn = document.getElementById('sendRemindersBtn');
   btn.disabled = true; btn.textContent = 'Sending...';
   try {
     const data = await apiFetch('/api/reminders/send', { method: 'POST' });
-    btn.textContent = 'Sent!';
+    btn.textContent = (data.sent || 0) + ' Sent!';
     setTimeout(() => { btn.textContent = 'Send Reminders'; btn.disabled = false; }, 2500);
+    // Reload stats and logs if panel is open
+    if (remindersPanelOpen) {
+      loadReminderStats();
+      loadReminderLogs();
+    }
   } catch(e) {
     alert('Failed: ' + e.message);
     btn.textContent = 'Send Reminders'; btn.disabled = false;
@@ -7211,6 +7387,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadActivityFeed();
   loadContacts();
   loadStaffUsers();
+  loadProjectAnalytics();
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -8388,6 +8565,77 @@ async function runOverdueCheck() {
     showToast(`Done: ${res.markedOverdue} marked overdue, ${res.remindersSent} reminders sent.`, 'success');
     loadPaymentsPage();
   }
+}
+
+// ── Project Analytics (Overview Page) ──
+async function loadProjectAnalytics() {
+  try {
+    const [projects, tasks] = await Promise.all([
+      apiFetch('/api/projects'),
+      apiFetch('/api/tasks')
+    ]);
+
+    const projList = Array.isArray(projects) ? projects : [];
+    const allTasks = Array.isArray(tasks) ? tasks : [];
+
+    const totalProjects = projList.length;
+    const activeProjects = projList.filter(p => p.status === 'in-progress' || p.status === 'review').length;
+    const completedProjects = projList.filter(p => p.status === 'completed').length;
+    const totalTasks = allTasks.length;
+    const tasksDone = allTasks.filter(t => t.status === 'done').length;
+    const completionRate = totalTasks ? Math.round((tasksDone / totalTasks) * 100) : 0;
+
+    document.getElementById('pa-total-projects').textContent = totalProjects;
+    document.getElementById('pa-active-projects').textContent = activeProjects;
+    document.getElementById('pa-completed-projects').textContent = completedProjects;
+    document.getElementById('pa-total-tasks').textContent = totalTasks;
+    document.getElementById('pa-tasks-done').textContent = tasksDone;
+    document.getElementById('pa-completion-rate').textContent = completionRate + '%';
+
+    // Active project progress bars
+    const activeProjList = projList.filter(p => p.status === 'in-progress' || p.status === 'review');
+    const barsContainer = document.getElementById('projectProgressBars');
+    if (!activeProjList.length) {
+      barsContainer.innerHTML = '<p style="color:var(--muted);font-size:13px">No active projects</p>';
+    } else {
+      barsContainer.innerHTML = activeProjList.map(p => {
+        const pct = p.taskCount ? Math.round((p.tasksDone / p.taskCount) * 100) : 0;
+        const color = p.color || 'var(--orange)';
+        return '<div style="display:flex;align-items:center;gap:12px">' +
+          '<span style="font-size:13px;color:var(--text);min-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + p.name + '</span>' +
+          '<div style="flex:1;background:rgba(255,255,255,.06);border-radius:4px;height:8px;overflow:hidden">' +
+            '<div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:4px;transition:width .4s"></div>' +
+          '</div>' +
+          '<span style="font-size:12px;color:var(--muted);min-width:36px;text-align:right">' + pct + '%</span>' +
+        '</div>';
+      }).join('');
+    }
+
+    // Tasks by status breakdown
+    const statusCounts = { todo: 0, 'in-progress': 0, review: 0, done: 0 };
+    allTasks.forEach(t => { if (statusCounts[t.status] !== undefined) statusCounts[t.status]++; });
+
+    const statusConfig = [
+      { key: 'todo', label: 'To Do', color: '#8892A4' },
+      { key: 'in-progress', label: 'In Progress', color: '#3B82F6' },
+      { key: 'review', label: 'Review', color: '#F59E0B' },
+      { key: 'done', label: 'Done', color: '#22C55E' }
+    ];
+
+    const statusContainer = document.getElementById('tasksByStatus');
+    statusContainer.innerHTML = statusConfig.map(s => {
+      const count = statusCounts[s.key];
+      const pct = totalTasks ? Math.round((count / totalTasks) * 100) : 0;
+      return '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">' +
+        '<span style="font-size:12px;color:var(--muted);min-width:90px">' + s.label + '</span>' +
+        '<div style="flex:1;background:rgba(255,255,255,.06);border-radius:4px;height:10px;overflow:hidden">' +
+          '<div style="height:100%;width:' + pct + '%;background:' + s.color + ';border-radius:4px;transition:width .4s"></div>' +
+        '</div>' +
+        '<span style="font-size:12px;color:var(--text);min-width:50px;text-align:right">' + count + ' (' + pct + '%)</span>' +
+      '</div>';
+    }).join('');
+
+  } catch(e) { console.error('loadProjectAnalytics', e); }
 }
 </script>
 

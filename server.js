@@ -111,12 +111,7 @@ app.use('/api/projects',      require('./routes/projects'));
 app.use('/api/tasks',         require('./routes/tasks'));
 app.use('/api/checkins',      require('./routes/checkins'));
 
-// Manual trigger for task reminders (admin only)
-app.post('/api/reminders/send', require('./middleware/auth').requireAuth, require('./middleware/auth').requireAdmin, async (req, res) => {
-    const { sendTaskReminders } = require('./utils/taskReminders');
-    await sendTaskReminders();
-    res.json({ message: 'Reminders sent' });
-});
+app.use('/api/reminders',     require('./routes/reminders'));
 app.use('/api/affiliate',     require('./routes/affiliate'));
 app.use('/api/analytics',    require('./routes/analytics'));
 

@@ -1,6 +1,10 @@
 const cron = require('node-cron');
 const { sendMail } = require('./mailer');
 const Task = require('../models/Task');
+const ReminderLog = require('../models/ReminderLog');
+const ReminderSettings = require('../models/ReminderSettings');
+
+let currentCronJob = null;
 
 function daysUntil(date) {
     const now = new Date();
@@ -104,6 +108,7 @@ function buildEmail(task, user, project) {
 }
 
 async function sendTaskReminders() {
+    const result = { sent: 0, total: 0 };
     try {
         // Find all tasks that are NOT done and have a due date
         const tasks = await Task.find({
@@ -112,16 +117,18 @@ async function sendTaskReminders() {
             assignee: { $exists: true, $ne: null }
         }).populate('assignee', 'name email').populate('project', 'name color');
 
+        result.total = tasks.length;
+
         if (!tasks.length) {
             console.log('[Reminders] No pending tasks with deadlines');
-            return;
+            return result;
         }
 
-        let sent = 0;
         for (const task of tasks) {
             if (!task.assignee || !task.assignee.email) continue;
 
             const { subject, html } = buildEmail(task, task.assignee, task.project);
+            const projectName = task.project?.name || 'Unassigned';
 
             try {
                 await sendMail({
@@ -129,30 +136,79 @@ async function sendTaskReminders() {
                     subject,
                     html
                 });
-                sent++;
+                result.sent++;
                 console.log(`[Reminders] Sent to ${task.assignee.email}: "${task.title}"`);
+
+                // Log success
+                await ReminderLog.create({
+                    task: task._id,
+                    taskTitle: task.title,
+                    recipient: task.assignee.email,
+                    recipientName: task.assignee.name,
+                    project: projectName,
+                    status: 'sent'
+                });
             } catch (err) {
                 console.error(`[Reminders] Failed to send to ${task.assignee.email}:`, err.message);
+
+                // Log failure
+                await ReminderLog.create({
+                    task: task._id,
+                    taskTitle: task.title,
+                    recipient: task.assignee.email,
+                    recipientName: task.assignee.name,
+                    project: projectName,
+                    status: 'failed',
+                    error: err.message
+                });
             }
         }
-        console.log(`[Reminders] Done — ${sent}/${tasks.length} emails sent`);
+        console.log(`[Reminders] Done — ${result.sent}/${result.total} emails sent`);
     } catch (err) {
         console.error('[Reminders] Error:', err.message);
     }
+    return result;
 }
 
-function startReminderCron() {
-    // Run every 2 days at 8:00 AM (WAT / Africa/Lagos)
-    // Cron: minute hour day-of-month month day-of-week
-    // "0 8 */2 * *" = at 08:00 every 2nd day
-    cron.schedule('0 8 */2 * *', () => {
+function buildCronExpression(settings) {
+    const freq = settings.frequency || 2;
+    const time = settings.sendTime || '08:00';
+    const [hour, minute] = time.split(':').map(Number);
+    // "minute hour */freq * *"
+    return `${minute} ${hour} */${freq} * *`;
+}
+
+function restartCron(settings) {
+    if (currentCronJob) {
+        currentCronJob.stop();
+        currentCronJob = null;
+        console.log('[Reminders] Previous cron stopped');
+    }
+
+    if (!settings || !settings.enabled) {
+        console.log('[Reminders] Reminders disabled — cron not scheduled');
+        return;
+    }
+
+    const expr = buildCronExpression(settings);
+    currentCronJob = cron.schedule(expr, () => {
         console.log('[Reminders] Running scheduled task reminder...');
         sendTaskReminders();
     }, {
         timezone: 'Africa/Lagos'
     });
 
-    console.log('[Reminders] Cron scheduled — every 2 days at 8:00 AM WAT');
+    console.log(`[Reminders] Cron scheduled — every ${settings.frequency} days at ${settings.sendTime} WAT`);
 }
 
-module.exports = { startReminderCron, sendTaskReminders };
+async function startReminderCron() {
+    try {
+        const settings = await ReminderSettings.get();
+        restartCron(settings);
+    } catch (err) {
+        console.error('[Reminders] Failed to load settings, using defaults:', err.message);
+        restartCron({ frequency: 2, enabled: true, sendTime: '08:00' });
+    }
+}
+
+module.exports = { startReminderCron, sendTaskReminders, restartCron };
