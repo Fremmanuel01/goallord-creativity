@@ -3344,6 +3344,27 @@
             <tbody id="blogTableBody"><tr><td colspan="5" style="padding:32px;text-align:center;color:var(--muted)">Loading…</td></tr></tbody>
           </table>
         </div>
+
+        <!-- Blog Comments Management -->
+        <div style="margin-top:32px;border-top:1px solid var(--border);padding-top:24px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+            <h3 style="font-size:15px;color:var(--muted)">Blog Comments</h3>
+            <button class="btn btn-ghost" onclick="loadBlogComments()" style="padding:6px 14px;font-size:12px">Refresh</button>
+          </div>
+          <div class="table-wrapper">
+            <table style="width:100%;border-collapse:collapse">
+              <thead><tr>
+                <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Name</th>
+                <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Email</th>
+                <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Comment</th>
+                <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Post</th>
+                <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Date</th>
+                <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Actions</th>
+              </tr></thead>
+              <tbody id="blogCommentsTableBody"><tr><td colspan="6" style="padding:32px;text-align:center;color:var(--muted)">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <!-- Testimonials Editor -->
@@ -5735,7 +5756,7 @@ function showCmsTab(tab) {
   });
   if (tab === 'hero')         loadHero();
   if (tab === 'portfolio')    loadPortfolio();
-  if (tab === 'blog')         loadBlog();
+  if (tab === 'blog')         { loadBlog(); loadBlogComments(); }
   if (tab === 'testimonials') loadTestimonials();
   if (tab === 'team')         loadTeam();
   if (tab === 'logos')        loadLogos();
@@ -7606,6 +7627,43 @@ function deleteBlogPostBySlug(slug) {
   glConfirm('Delete this post?', 'This cannot be undone.', 'Delete', async () => {
     const res = await apiFetch('/api/blog/' + encodeURIComponent(slug), { method: 'DELETE' });
     if (res && !res.error) { showToast('Post deleted!'); await loadBlog(); }
+    else showToast((res && res.error) || 'Delete failed', 'error');
+  });
+}
+
+// ── Blog Comments Management ──────────────────────────────────────────────
+async function loadBlogComments() {
+  const comments = await apiFetch('/api/blog/comments/all');
+  const tbody = document.getElementById('blogCommentsTableBody');
+  if (!comments || !comments.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:32px;text-align:center;color:var(--muted)">No comments yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = comments.map(c => {
+    const truncated = (c.content || '').length > 80 ? c.content.slice(0, 80) + '...' : c.content;
+    const postTitle = c.post ? (c.post.title || 'Unknown') : 'Deleted post';
+    const date = new Date(c.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+    const escName = (c.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const escEmail = (c.email || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const escContent = (truncated || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const escPost = (postTitle || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `<tr>
+      <td style="padding:10px 14px;font-size:13px;border-bottom:1px solid var(--border)">${escName}</td>
+      <td style="padding:10px 14px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border)">${escEmail}</td>
+      <td style="padding:10px 14px;font-size:13px;border-bottom:1px solid var(--border);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escContent}">${escContent}</td>
+      <td style="padding:10px 14px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border)">${escPost}</td>
+      <td style="padding:10px 14px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border)">${date}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid var(--border)">
+        <button class="btn btn-danger" style="padding:4px 10px;font-size:11px" onclick="deleteBlogComment('${c._id}')">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function deleteBlogComment(id) {
+  glConfirm('Delete this comment?', 'This cannot be undone.', 'Delete', async () => {
+    const res = await apiFetch('/api/blog/comments/' + id, { method: 'DELETE' });
+    if (res && !res.error) { showToast('Comment deleted!'); await loadBlogComments(); }
     else showToast((res && res.error) || 'Delete failed', 'error');
   });
 }

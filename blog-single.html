@@ -384,6 +384,19 @@
         #glStickyCta__btn:hover { opacity:.85; color:#fff; }
         #glStickyCta__close { background:none; border:none; color:rgba(255,255,255,0.4); cursor:pointer; font-size:18px; padding:4px 8px; line-height:1; transition:color .2s; flex-shrink:0; }
         #glStickyCta__close:hover { color:#fff; }
+
+        /* ── Emoji reactions ────────────────────────────────────── */
+        .gl-react-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 18px; border-radius: 24px;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.7); font-size: 14px; cursor: pointer;
+            transition: all 0.2s; font-family: inherit;
+        }
+        .gl-react-btn:hover { background: rgba(214,106,31,0.12); border-color: rgba(214,106,31,0.3); transform: scale(1.05); }
+        .gl-react-btn.reacted { background: rgba(214,106,31,0.15); border-color: rgba(214,106,31,0.4); }
+        .gl-react-btn span.emoji { font-size: 20px; }
+        .gl-react-btn span.count { font-weight: 600; font-size: 13px; }
     </style>
 </head>
 <body class="counter-scroll">
@@ -543,6 +556,47 @@
                         <div class="d-flex flex-wrap align-items-center gap-2 mb-5" id="postTagsWrap">
                             <p class="text-caption text-white-64 letter-space--1 mb-0">TAGGED:</p>
                             <div id="postTags" class="d-flex flex-wrap gap-2"></div>
+                        </div>
+
+                        <!-- Emoji Reactions -->
+                        <div class="gl-reactions mb-5" id="postReactions">
+                            <p class="text-caption text-white-64 letter-space--1 mb-3">REACT TO THIS ARTICLE</p>
+                            <div class="d-flex gap-3 flex-wrap" id="reactionButtons">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Comments Section -->
+                        <div class="mb-5" id="commentSection">
+                            <p class="text-caption text-white-64 letter-space--1 mb-3">COMMENTS <span id="commentCount"></span></p>
+
+                            <!-- Sign-in gate -->
+                            <div id="commentSignIn" style="display:none">
+                                <div style="background:var(--gl-card);border:1px solid var(--gl-border);border-radius:8px;padding:24px;" class="mb-4">
+                                    <p class="fw-medium mb-3">Sign in to comment</p>
+                                    <div class="d-flex gap-3 flex-wrap">
+                                        <input type="text" id="blogUserName" placeholder="Your name" class="form-control" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;padding:10px 14px;border-radius:6px;flex:1;min-width:150px">
+                                        <input type="email" id="blogUserEmail" placeholder="Your email" class="form-control" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;padding:10px 14px;border-radius:6px;flex:1;min-width:150px">
+                                        <button onclick="blogSignIn()" class="tf-btn style-fill" style="flex-shrink:0"><span class="text-caption fw-medium">CONTINUE</span></button>
+                                    </div>
+                                    <p class="text-white-64 mt-2 mb-0" style="font-size:12px">Your email won't be published. Just used to identify your comments.</p>
+                                </div>
+                            </div>
+
+                            <!-- Comment form (shown after sign-in) -->
+                            <div id="commentForm" style="display:none">
+                                <div style="background:var(--gl-card);border:1px solid var(--gl-border);border-radius:8px;padding:24px;" class="mb-4">
+                                    <p class="fw-medium mb-2">Commenting as <span id="commentAsName" style="color:#D66A1F"></span> <a href="javascript:void(0)" onclick="blogSignOut()" style="font-size:12px;color:rgba(255,255,255,.4);margin-left:8px">change</a></p>
+                                    <textarea id="commentContent" placeholder="Write your comment..." rows="3" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;padding:12px 14px;border-radius:6px;width:100%;resize:vertical;font-family:inherit;font-size:14px"></textarea>
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <span class="text-white-64" style="font-size:12px"><span id="commentCharCount">0</span>/2000</span>
+                                        <button onclick="postComment()" id="postCommentBtn" class="tf-btn style-fill"><span class="text-caption fw-medium">POST COMMENT</span></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Comments list -->
+                            <div id="commentsList"></div>
                         </div>
 
                         <!-- Author box -->
@@ -719,6 +773,120 @@
     <script src="assets/js/main.js"></script>
 
     <script>
+    var currentSlug = '';
+
+    // ── Emoji Reactions ──────────────────────────────────────────
+    var emojiMap = { like: '\uD83D\uDC4D', love: '\u2764\uFE0F', fire: '\uD83D\uDD25', clap: '\uD83D\uDC4F', think: '\uD83E\uDD14' };
+
+    function renderReactions(reactions) {
+        var container = document.getElementById('reactionButtons');
+        container.innerHTML = Object.keys(emojiMap).map(function(key) {
+            var reacted = localStorage.getItem('reacted_' + currentSlug + '_' + key);
+            return '<button class="gl-react-btn' + (reacted ? ' reacted' : '') + '" onclick="react(\'' + key + '\')">' +
+                '<span class="emoji">' + emojiMap[key] + '</span>' +
+                '<span class="count">' + (reactions[key] || 0) + '</span></button>';
+        }).join('');
+    }
+
+    function react(emoji) {
+        if (localStorage.getItem('reacted_' + currentSlug + '_' + emoji)) return;
+        fetch('/api/blog/' + currentSlug + '/react', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ emoji: emoji })
+        }).then(function(r) { return r.json(); }).then(function(reactions) {
+            localStorage.setItem('reacted_' + currentSlug + '_' + emoji, '1');
+            renderReactions(reactions);
+        });
+    }
+
+    // ── Comments ─────────────────────────────────────────────────
+    function blogSignIn() {
+        var name = document.getElementById('blogUserName').value.trim();
+        var email = document.getElementById('blogUserEmail').value.trim();
+        if (!name || name.length < 2) return alert('Please enter your name.');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return alert('Please enter a valid email.');
+        localStorage.setItem('gl_blog_name', name);
+        localStorage.setItem('gl_blog_email', email);
+        showCommentForm();
+    }
+
+    function blogSignOut() {
+        localStorage.removeItem('gl_blog_name');
+        localStorage.removeItem('gl_blog_email');
+        document.getElementById('commentSignIn').style.display = '';
+        document.getElementById('commentForm').style.display = 'none';
+    }
+
+    function showCommentForm() {
+        var name = localStorage.getItem('gl_blog_name');
+        if (name) {
+            document.getElementById('commentSignIn').style.display = 'none';
+            document.getElementById('commentForm').style.display = '';
+            document.getElementById('commentAsName').textContent = name;
+        } else {
+            document.getElementById('commentSignIn').style.display = '';
+            document.getElementById('commentForm').style.display = 'none';
+        }
+    }
+
+    function postComment() {
+        var content = document.getElementById('commentContent').value.trim();
+        if (!content) return;
+        var btn = document.getElementById('postCommentBtn');
+        btn.disabled = true;
+        fetch('/api/blog/' + currentSlug + '/comments', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+                name: localStorage.getItem('gl_blog_name'),
+                email: localStorage.getItem('gl_blog_email'),
+                content: content
+            })
+        }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data._id) {
+                document.getElementById('commentContent').value = '';
+                document.getElementById('commentCharCount').textContent = '0';
+                loadComments();
+            } else { alert(data.error || 'Failed to post comment'); }
+        }).catch(function() { alert('Network error'); })
+        .finally(function() { btn.disabled = false; });
+    }
+
+    function loadComments() {
+        fetch('/api/blog/' + currentSlug + '/comments').then(function(r) { return r.json(); }).then(function(comments) {
+            document.getElementById('commentCount').textContent = '(' + comments.length + ')';
+            var list = document.getElementById('commentsList');
+            if (!comments.length) {
+                list.innerHTML = '<p class="text-white-64" style="font-size:14px">No comments yet. Be the first to share your thoughts.</p>';
+                return;
+            }
+            list.innerHTML = comments.map(function(c) {
+                var initials = c.name.split(' ').map(function(w){return w[0]}).join('').toUpperCase().slice(0,2);
+                var colors = ['#D66A1F','#1E4BFF','#22C55E','#F59E0B','#EF4444','#8B5CF6'];
+                var color = colors[c.name.charCodeAt(0) % colors.length];
+                var time = timeAgo(new Date(c.createdAt));
+                return '<div style="display:flex;gap:14px;padding:20px 0;border-bottom:1px solid rgba(255,255,255,0.06)">' +
+                    '<div style="width:40px;height:40px;border-radius:50%;background:'+color+';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff;flex-shrink:0">'+initials+'</div>' +
+                    '<div style="flex:1;min-width:0">' +
+                    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
+                    '<span style="font-weight:600;color:#F4F6FA;font-size:14px">'+escHtml(c.name)+'</span>' +
+                    '<span style="font-size:12px;color:rgba(255,255,255,0.35)">'+time+'</span></div>' +
+                    '<p style="color:rgba(255,255,255,0.7);font-size:14px;line-height:1.7;margin:0">'+escHtml(c.content)+'</p>' +
+                    '</div></div>';
+            }).join('');
+        });
+    }
+
+    function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    function timeAgo(date) {
+        var s = Math.floor((Date.now() - date.getTime()) / 1000);
+        if (s < 60) return 'just now';
+        if (s < 3600) return Math.floor(s/60) + 'm ago';
+        if (s < 86400) return Math.floor(s/3600) + 'h ago';
+        if (s < 604800) return Math.floor(s/86400) + 'd ago';
+        return date.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+    }
+
     (function () {
       var DEFAULT_IMGS = [
         'assets/images/portfolio/img-1.jpg','assets/images/portfolio/img-2.jpg',
@@ -745,6 +913,7 @@
 
       var params = new URLSearchParams(window.location.search);
       var slug   = params.get('slug');
+      currentSlug = slug || '';
 
       if (!slug) {
         document.getElementById('postLoading').style.display = 'none';
@@ -964,6 +1133,11 @@
             stickyCta.dataset.active = '1';
           }
 
+          // ── Reactions & Comments ──────────────────────────────────
+          renderReactions(post.reactions || {});
+          showCommentForm();
+          loadComments();
+
           // ── Related posts ──────────────────────────────────────────
           fetch('/api/blog?limit=4&exclude=' + encodeURIComponent(post.slug))
             .then(function(r){ return r.json(); })
@@ -1011,6 +1185,11 @@
           document.getElementById('postLoading').style.display = 'none';
           document.getElementById('postError').style.display   = 'block';
         });
+
+      // ── Comment character counter ──────────────────────────────────
+      document.getElementById('commentContent').addEventListener('input', function() {
+        document.getElementById('commentCharCount').textContent = this.value.length;
+      });
 
       // ── Newsletter form ──────────────────────────────────────────
       document.getElementById('newsletterForm').addEventListener('submit', function(e) {

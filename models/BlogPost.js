@@ -21,6 +21,13 @@ const blogPostSchema = new mongoose.Schema({
     url:   { type: String, default: '' },
     label: { type: String, default: '' },
   },
+  reactions: {
+    like:  { type: Number, default: 0 },
+    love:  { type: Number, default: 0 },
+    fire:  { type: Number, default: 0 },
+    clap:  { type: Number, default: 0 },
+    think: { type: Number, default: 0 }
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model('BlogPost', blogPostSchema);

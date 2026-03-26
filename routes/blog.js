@@ -1,8 +1,14 @@
 const express  = require('express');
 const BlogPost  = require('../models/BlogPost');
+const BlogComment = require('../models/BlogComment');
 const { requireAuth } = require('../middleware/auth');
+const xss = require('xss');
+const rateLimit = require('express-rate-limit');
 
 const router = express.Router();
+
+const commentLimiter = rateLimit({ windowMs: 60*60*1000, max: 10, message: { error: 'Too many comments. Try again later.' } });
+const reactLimiter = rateLimit({ windowMs: 60*1000, max: 20, message: { error: 'Slow down.' } });
 
 // ── GET /api/blog  — list published posts ──────────────────────────────────
 router.get('/', async (req, res) => {
@@ -22,6 +28,30 @@ router.get('/', async (req, res) => {
     const featured = await BlogPost.findOne({ published: true, featured: true }, '-content').sort({ publishedAt: -1 });
 
     res.json({ posts, featured, total, page, pages: Math.ceil(total / limit) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── GET /api/blog/comments/all — admin: all comments ──────────────────────
+router.get('/comments/all', requireAuth, async (req, res) => {
+  try {
+    const comments = await BlogComment.find()
+        .populate('post', 'title slug')
+        .sort({ createdAt: -1 })
+        .limit(parseInt(req.query.limit) || 100);
+    res.json(comments);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── DELETE /api/blog/comments/:id — admin: delete comment ─────────────────
+router.delete('/comments/:id', requireAuth, async (req, res) => {
+  try {
+    const comment = await BlogComment.findByIdAndDelete(req.params.id);
+    if (!comment) return res.status(404).json({ error: 'Not found' });
+    res.json({ message: 'Comment deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -72,6 +102,64 @@ router.put('/:slug', requireAuth, async (req, res) => {
     res.json(post);
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+// ── GET /api/blog/:slug/comments — public: approved comments ──────────────
+router.get('/:slug/comments', async (req, res) => {
+  try {
+    const post = await BlogPost.findOne({ slug: req.params.slug });
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    const comments = await BlogComment.find({ post: post._id, approved: true }).sort({ createdAt: -1 });
+    res.json(comments);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/blog/:slug/comments — post a comment ───────────────────────
+router.post('/:slug/comments', commentLimiter, async (req, res) => {
+  try {
+    const { name, email, content } = req.body;
+    if (!name || !email || !content) return res.status(400).json({ error: 'Name, email, and comment are required.' });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Invalid email.' });
+    if (content.length > 2000) return res.status(400).json({ error: 'Comment too long (max 2000 characters).' });
+
+    const post = await BlogPost.findOne({ slug: req.params.slug });
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+
+    const crypto = require('crypto');
+    const token = crypto.createHash('sha256').update(email.toLowerCase()).digest('hex').slice(0, 16);
+
+    const comment = await BlogComment.create({
+        post: post._id,
+        name: xss(name.trim()),
+        email: email.toLowerCase().trim(),
+        content: xss(content.trim()),
+        token
+    });
+    res.status(201).json(comment);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ── POST /api/blog/:slug/react — emoji reaction ──────────────────────────
+router.post('/:slug/react', reactLimiter, async (req, res) => {
+  try {
+    const { emoji } = req.body;
+    const valid = ['like', 'love', 'fire', 'clap', 'think'];
+    if (!valid.includes(emoji)) return res.status(400).json({ error: 'Invalid reaction.' });
+
+    const post = await BlogPost.findOneAndUpdate(
+        { slug: req.params.slug },
+        { $inc: { ['reactions.' + emoji]: 1 } },
+        { new: true }
+    );
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    res.json(post.reactions);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
