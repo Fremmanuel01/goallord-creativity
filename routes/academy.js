@@ -18,7 +18,7 @@ router.put('/settings', requireAuth, requireAdmin, async (req, res) => {
         const settings = await AcademySettings.get();
         const fields = [
             'heroHeadline', 'heroSubtext', 'tracks', 'tuition',
-            'schedule', 'stats', 'faqs', 'nextBatchDate'
+            'schedule', 'stats', 'faqs', 'instructors', 'nextBatchDate'
         ];
         fields.forEach(f => {
             if (req.body[f] !== undefined) settings[f] = req.body[f];
@@ -67,6 +67,11 @@ async function seedAcademySettings() {
                 topics: ['Logo Design', 'Brand Guidelines', 'Typography & Color Theory', 'Social Media Graphics', 'Print Design'],
                 icon: 'palette'
             }
+        ],
+        instructors: [
+            { name: 'Emmanuel K. Nwabufo', role: 'Founder & Lead Instructor', photo: 'assets/images/section/ceo.webp', teaches: 'Web Design, Custom Development', bio: '5+ years building websites and web apps for businesses across Nigeria and internationally. Founded Goallord in 2020.' },
+            { name: 'Nnaemego Ifeanyi', role: 'Senior Developer & Instructor', photo: 'assets/images/team members/Mr Ifeanyi.webp', teaches: 'WordPress, Web Applications', bio: 'Full-stack developer specializing in WordPress and React. Has built 20+ production websites.' },
+            { name: 'Felicitas K. Ogbachalu', role: 'WordPress Developer & Instructor', photo: 'assets/images/team members/Kosi.webp', teaches: 'WordPress Track', bio: 'WordPress specialist with experience building sites for schools, churches, and businesses.' }
         ],
         tuition: {
             inPerson: 150000,

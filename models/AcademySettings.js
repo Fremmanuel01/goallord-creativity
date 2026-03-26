@@ -27,6 +27,13 @@ const academySettingsSchema = new mongoose.Schema({
         programWeeks: { type: Number, default: 12 },
         batchesRun: { type: Number, default: 5 }
     },
+    instructors: [{
+        name: { type: String, required: true },
+        role: { type: String },
+        photo: { type: String, default: '' },
+        teaches: { type: String },
+        bio: { type: String }
+    }],
     faqs: [{
         question: String,
         answer: String

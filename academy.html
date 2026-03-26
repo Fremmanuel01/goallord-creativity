@@ -253,6 +253,8 @@
             </div>
         </section>
 
+        <div class="container"><div class="br-line"></div></div>
+
         <!-- 2. TRACKS GRID -->
         <section class="flat-spacing">
             <div class="container">
@@ -265,43 +267,21 @@
             </div>
         </section>
 
+        <div class="container"><div class="br-line"></div></div>
+
         <!-- 3. INSTRUCTORS -->
         <section class="flat-spacing">
             <div class="container">
                 <div class="s-header">
                     <h2 class="text-display-2 fw-semibold letter-space--3 effectFade fadeUp">Your Instructors</h2>
                 </div>
-                <div class="ac-glass effectFade fadeUp" style="padding: 12px 32px; margin-top: 40px; max-width: 800px;">
-                    <div class="ac-instructor-card">
-                        <img src="assets/images/section/ceo.webp" alt="Emmanuel Kenechukwu Nwabufo" class="ac-instructor-img">
-                        <div>
-                            <h5 class="letter-space--2 mb-1">Emmanuel K. Nwabufo</h5>
-                            <p class="text-white-64 text-caption mb-1">Founder &amp; Lead Instructor</p>
-                            <p style="color: #D66A1F; font-size: 13px; font-weight: 600; margin-bottom: 10px;">Teaches: Web Design, Custom Development</p>
-                            <p class="text-white-64" style="font-size: 14px; line-height: 1.7;">5+ years building websites and web apps for businesses across Nigeria and internationally. Founded Goallord in 2020.</p>
-                        </div>
-                    </div>
-                    <div class="ac-instructor-card">
-                        <img src="assets/images/team members/Mr Ifeanyi.webp" alt="Nnaemego Ifeanyi" class="ac-instructor-img">
-                        <div>
-                            <h5 class="letter-space--2 mb-1">Nnaemego Ifeanyi</h5>
-                            <p class="text-white-64 text-caption mb-1">Senior Developer &amp; Instructor</p>
-                            <p style="color: #D66A1F; font-size: 13px; font-weight: 600; margin-bottom: 10px;">Teaches: WordPress, Web Applications</p>
-                            <p class="text-white-64" style="font-size: 14px; line-height: 1.7;">Full-stack developer specializing in WordPress and React. Has built 20+ production websites.</p>
-                        </div>
-                    </div>
-                    <div class="ac-instructor-card">
-                        <img src="assets/images/team members/Kosi.webp" alt="Felicitas K. Ogbachalu" class="ac-instructor-img">
-                        <div>
-                            <h5 class="letter-space--2 mb-1">Felicitas K. Ogbachalu</h5>
-                            <p class="text-white-64 text-caption mb-1">WordPress Developer &amp; Instructor</p>
-                            <p style="color: #D66A1F; font-size: 13px; font-weight: 600; margin-bottom: 10px;">Teaches: WordPress Track</p>
-                            <p class="text-white-64" style="font-size: 14px; line-height: 1.7;">WordPress specialist with experience building sites for schools, churches, and businesses.</p>
-                        </div>
-                    </div>
+                <div class="row mt-5 g-4" id="ac-instructors-grid">
+                    <!-- Instructors loaded dynamically -->
                 </div>
             </div>
         </section>
+
+        <div class="container"><div class="br-line"></div></div>
 
         <!-- 4. WHY GOALLORD ACADEMY -->
         <section class="flat-spacing" style="background: linear-gradient(180deg, rgba(214,106,31,0.02) 0%, transparent 100%);">
@@ -368,6 +348,8 @@
             </div>
         </section>
 
+        <div class="container"><div class="br-line"></div></div>
+
         <!-- 5. TESTIMONIALS -->
         <section class="flat-spacing">
             <div class="container">
@@ -409,13 +391,15 @@
             </div>
         </section>
 
+        <div class="container"><div class="br-line"></div></div>
+
         <!-- 6. TUITION -->
         <section class="flat-spacing" id="ac-tuition-section">
             <div class="container">
                 <div class="s-header justify-content-center">
                     <h2 class="text-display-2 fw-semibold letter-space--3 effectFade fadeUp">Tuition Fees</h2>
                 </div>
-                <div class="row mt-5 g-4 justify-content-center" style="max-width: 860px; margin-left: auto; margin-right: auto;">
+                <div class="row mt-5 g-4 justify-content-center">
                     <div class="col-md-6 effectFade fadeUp">
                         <div class="ac-glass ac-pricing-card">
                             <p class="text-caption fw-medium letter-space--1 text-white-64 mb-2">IN-PERSON</p>
@@ -451,7 +435,7 @@
                     </div>
                 </div>
                 <!-- Schedule -->
-                <div class="row mt-4 g-3 justify-content-center" style="max-width: 860px; margin-left: auto; margin-right: auto;">
+                <div class="row mt-4 g-3 justify-content-center">
                     <div class="col-md-6 effectFade fadeUp">
                         <div class="ac-glass ac-schedule-card">
                             <div class="ac-schedule-icon">
@@ -478,6 +462,8 @@
             </div>
         </section>
 
+        <div class="container"><div class="br-line"></div></div>
+
         <!-- 7. FAQ ACCORDION -->
         <section class="flat-spacing">
             <div class="container">
@@ -489,6 +475,8 @@
                 </div>
             </div>
         </section>
+
+        <div class="container"><div class="br-line"></div></div>
 
         <!-- 8. CTA -->
         <section class="section-cta flat-spacing">
@@ -660,6 +648,23 @@
             if (data.schedule) {
                 document.getElementById('ac-schedule-weekday').textContent = data.schedule.weekday || '';
                 document.getElementById('ac-schedule-weekend').textContent = data.schedule.weekend || '';
+            }
+
+            // Instructors
+            if (data.instructors && data.instructors.length) {
+                var instrGrid = document.getElementById('ac-instructors-grid');
+                instrGrid.innerHTML = data.instructors.map(function(inst) {
+                    return '<div class="col-md-6 col-lg-4 effectFade fadeUp">' +
+                        '<div class="ac-glass" style="padding: 28px 24px; height: 100%;">' +
+                        '<div style="text-align:center; margin-bottom: 16px;">' +
+                        '<img src="' + (inst.photo || 'assets/images/section/placeholder.webp') + '" alt="' + inst.name + '" class="ac-instructor-img" style="width:96px;height:96px;">' +
+                        '</div>' +
+                        '<h5 class="letter-space--2 mb-1 text-center">' + inst.name + '</h5>' +
+                        '<p class="text-white-64 text-caption mb-1 text-center">' + (inst.role || '') + '</p>' +
+                        '<p style="color: #D66A1F; font-size: 13px; font-weight: 600; margin-bottom: 10px; text-align:center;">Teaches: ' + (inst.teaches || '') + '</p>' +
+                        '<p class="text-white-64" style="font-size: 14px; line-height: 1.7;">' + (inst.bio || '') + '</p>' +
+                        '</div></div>';
+                }).join('');
             }
 
             // FAQs

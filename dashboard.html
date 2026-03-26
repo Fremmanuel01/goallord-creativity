@@ -3515,6 +3515,10 @@
           <div id="acFaqsContainer"></div>
           <button class="btn btn-ghost" onclick="addAcademyFaq()" style="margin-top:10px;font-size:12px">+ Add FAQ</button>
 
+          <h4 style="margin:20px 0 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--border);padding-top:16px">Instructors</h4>
+          <div id="academyInstructorsList"></div>
+          <button class="btn btn-ghost" onclick="addAcademyInstructor()" style="margin-top:10px;font-size:12px">+ Add Instructor</button>
+
           <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:20px">
             <button class="btn btn-primary" onclick="saveAcademyCms()">Save Academy Settings</button>
             <span id="acSaveMsg" style="margin-left:12px;font-size:13px;color:var(--success);display:none">Saved!</span>
@@ -5768,6 +5772,7 @@ async function loadAcademyCms() {
     }
     renderAcademyTracks(data.tracks || []);
     renderAcademyFaqs(data.faqs || []);
+    renderAcademyInstructors(data.instructors || []);
   } catch (e) { console.error('loadAcademyCms', e); }
 }
 
@@ -5877,6 +5882,97 @@ function collectAcademyFaqs() {
   return faqs;
 }
 
+function renderAcademyInstructors(instructors) {
+  const c = document.getElementById('academyInstructorsList');
+  c.innerHTML = instructors.map((inst, i) => `
+    <div class="card" style="padding:16px;margin-bottom:12px;position:relative">
+      <button onclick="removeAcademyInstructor(${i})" style="position:absolute;top:8px;right:8px;background:none;border:none;color:#f87171;cursor:pointer;font-size:16px">&times;</button>
+      <div style="display:flex;gap:16px;align-items:flex-start">
+        <div style="flex-shrink:0;text-align:center">
+          <div id="acInstrPhoto${i}" style="width:64px;height:64px;border-radius:50%;overflow:hidden;background:var(--bg);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:8px">
+            ${inst.photo ? `<img src="${inst.photo}" style="width:100%;height:100%;object-fit:cover">` : '<span style="font-size:10px;color:var(--muted)">Photo</span>'}
+          </div>
+          <input type="file" id="acInstrFile${i}" accept="image/*" style="display:none" onchange="uploadInstructorPhoto(${i})">
+          <button class="btn btn-ghost" onclick="document.getElementById('acInstrFile${i}').click()" style="font-size:10px;padding:4px 8px">Upload</button>
+          <input type="hidden" class="ac-instr-photo" value="${(inst.photo||'').replace(/"/g,'&quot;')}">
+        </div>
+        <div style="flex:1">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <div>
+              <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Name</label>
+              <input class="form-input ac-instr-name" value="${(inst.name||'').replace(/"/g,'&quot;')}" placeholder="Instructor name">
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Role</label>
+              <input class="form-input ac-instr-role" value="${(inst.role||'').replace(/"/g,'&quot;')}" placeholder="Lead Instructor">
+            </div>
+          </div>
+          <div style="margin-bottom:10px">
+            <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Teaches</label>
+            <input class="form-input ac-instr-teaches" value="${(inst.teaches||'').replace(/"/g,'&quot;')}" placeholder="Web Design, WordPress">
+          </div>
+          <div>
+            <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Bio</label>
+            <textarea class="form-input ac-instr-bio" rows="2">${(inst.bio||'').replace(/</g,'&lt;')}</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addAcademyInstructor() {
+  const instructors = collectAcademyInstructors();
+  instructors.push({ name: '', role: '', photo: '', teaches: '', bio: '' });
+  renderAcademyInstructors(instructors);
+}
+
+function removeAcademyInstructor(idx) {
+  const instructors = collectAcademyInstructors();
+  instructors.splice(idx, 1);
+  renderAcademyInstructors(instructors);
+}
+
+function collectAcademyInstructors() {
+  const names = document.querySelectorAll('.ac-instr-name');
+  const roles = document.querySelectorAll('.ac-instr-role');
+  const photos = document.querySelectorAll('.ac-instr-photo');
+  const teaches = document.querySelectorAll('.ac-instr-teaches');
+  const bios = document.querySelectorAll('.ac-instr-bio');
+  const instructors = [];
+  names.forEach((n, i) => {
+    instructors.push({
+      name: n.value,
+      role: roles[i].value,
+      photo: photos[i].value,
+      teaches: teaches[i].value,
+      bio: bios[i].value
+    });
+  });
+  return instructors;
+}
+
+async function uploadInstructorPhoto(index) {
+  const fileInput = document.getElementById('acInstrFile' + index);
+  if (!fileInput.files.length) return;
+  const fd = new FormData();
+  fd.append('image', fileInput.files[0]);
+  try {
+    const preview = document.getElementById('acInstrPhoto' + index);
+    preview.innerHTML = '<span style="font-size:10px;color:var(--muted)">Uploading...</span>';
+    const res = await fetch('/api/upload', { method: 'POST', headers: { 'Authorization': 'Bearer ' + localStorage.gl_token }, body: fd });
+    const data = await res.json();
+    if (data.url) {
+      const photoInputs = document.querySelectorAll('.ac-instr-photo');
+      photoInputs[index].value = data.url;
+      preview.innerHTML = '<img src="' + data.url + '" style="width:100%;height:100%;object-fit:cover">';
+    }
+  } catch (e) {
+    console.error('uploadInstructorPhoto', e);
+    document.getElementById('acInstrPhoto' + index).innerHTML = '<span style="font-size:10px;color:#f87171">Failed</span>';
+  }
+}
+
 async function saveAcademyCms() {
   const body = {
     heroHeadline: document.getElementById('acHeroHeadline').value,
@@ -5900,7 +5996,8 @@ async function saveAcademyCms() {
       batchesRun: Number(document.getElementById('acStatBatches').value) || 0
     },
     tracks: collectAcademyTracks(),
-    faqs: collectAcademyFaqs()
+    faqs: collectAcademyFaqs(),
+    instructors: collectAcademyInstructors()
   };
   try {
     const res = await apiFetch('/api/academy/settings', {
