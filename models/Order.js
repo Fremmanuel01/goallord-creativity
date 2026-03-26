@@ -9,6 +9,8 @@ const orderSchema = new mongoose.Schema({
   currency:    { type: String, default: 'USD' },
   category:    { type: String },
   status:      { type: String, enum: ['Paid', 'Pending', 'Refunded'], default: 'Pending' },
+  downloadToken:   { type: String },
+  downloadExpires: { type: Date },
   createdAt:   { type: Date, default: Date.now }
 });
 

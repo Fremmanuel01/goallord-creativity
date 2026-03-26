@@ -706,6 +706,19 @@
                                 document.querySelector('.checkout-card').style.display = 'none';
                                 document.getElementById('checkoutSuccess').classList.add('active');
                                 document.getElementById('successOrderId').textContent = 'Order Reference: ' + response.reference;
+                                // Show download links if available
+                                if (result.downloads && result.downloads.length) {
+                                    var dlHtml = '<div style="margin-top:20px;text-align:left"><p style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Your Downloads</p>';
+                                    result.downloads.forEach(function(dl) {
+                                        if (dl.url) {
+                                            dlHtml += '<a href="' + dl.url + '" style="display:block;padding:12px 16px;background:rgba(232,120,42,0.1);border:1px solid rgba(232,120,42,0.25);border-radius:8px;color:#E8782A;text-decoration:none;font-weight:600;font-size:14px;margin-bottom:8px">' + dl.name + ' — Download</a>';
+                                        } else {
+                                            dlHtml += '<p style="padding:12px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;color:#6b7280;font-size:13px;margin-bottom:8px">' + dl.name + ' — will be sent by email</p>';
+                                        }
+                                    });
+                                    dlHtml += '<p style="color:#4b5563;font-size:11px;margin-top:8px">Download links expire in 72 hours. Check your email for a copy.</p></div>';
+                                    document.getElementById('successOrderId').insertAdjacentHTML('afterend', dlHtml);
+                                }
                                 cart = [];
                                 saveCart();
                                 renderCartItems();

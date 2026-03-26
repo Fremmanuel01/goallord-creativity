@@ -32,9 +32,14 @@ function verifyPaystack(reference) {
 }
 
 // ── Order confirmation email template ──
-function buildOrderConfirmationEmail(name, products, reference, orders) {
+function buildOrderConfirmationEmail(name, downloadLinks, reference, orders) {
     const totalUSD = orders.reduce((s, o) => s + (o.currency === 'NGN' ? o.amount / 1560 : o.amount), 0);
-    const productList = products.map(p => '<li style="padding:8px 0;color:#d1d5db;font-size:14px">' + p + '</li>').join('');
+    const productList = downloadLinks.map(item => {
+        if (item.url) {
+            return '<li style="padding:10px 0;color:#d1d5db;font-size:14px;border-bottom:1px solid #1e2432">' + item.name + '<br><a href="' + item.url + '" style="display:inline-block;margin-top:6px;background:rgba(232,120,42,0.15);border:1px solid rgba(232,120,42,0.3);color:#E8782A;text-decoration:none;padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600">Download File</a><br><span style="font-size:11px;color:#6b7280;margin-top:4px;display:inline-block">Link expires in 72 hours</span></li>';
+        }
+        return '<li style="padding:10px 0;color:#d1d5db;font-size:14px;border-bottom:1px solid #1e2432">' + item.name + '<br><span style="font-size:12px;color:#6b7280">Download will be sent separately by our team</span></li>';
+    }).join('');
     return `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#080a0e;font-family:-apple-system,sans-serif">
 <div style="max-width:560px;margin:0 auto">
@@ -144,30 +149,66 @@ router.post('/verify-payment', async (req, res) => {
             return res.status(400).json({ error: 'Amount mismatch. Expected ' + totalExpected + ' kobo, got ' + paidAmount });
         }
 
-        // Mark orders as paid
-        await Order.updateMany({ _id: { $in: ids } }, { status: 'Paid' });
-
-        // Send confirmation email to buyer
-        const buyer = orders[0];
-        const productNames = [];
+        // Mark orders as paid and generate download tokens
+        const crypto = require('crypto');
+        const downloadLinks = [];
         for (const order of orders) {
+            const token = crypto.randomBytes(32).toString('hex');
+            const expires = new Date(Date.now() + 72 * 60 * 60 * 1000); // 72 hours
+            order.status = 'Paid';
+            order.downloadToken = token;
+            order.downloadExpires = expires;
+            await order.save();
+
             const product = await Product.findById(order.productId);
-            if (product) productNames.push(product.name);
+            if (product && product.downloadUrl) {
+                const host = process.env.HOST || 'https://goallordcreativity.com';
+                downloadLinks.push({
+                    name: product.name,
+                    url: host + '/api/orders/download/' + order._id + '?token=' + token
+                });
+            } else if (product) {
+                downloadLinks.push({ name: product.name, url: null });
+            }
         }
 
+        // Send confirmation email with download links
+        const buyer = orders[0];
         try {
             await sendMail({
                 to: buyer.buyerEmail,
                 subject: 'Order Confirmed — Goallord Creativity',
-                html: buildOrderConfirmationEmail(buyer.buyerName, productNames, verification.data.reference, orders)
+                html: buildOrderConfirmationEmail(buyer.buyerName, downloadLinks, verification.data.reference, orders)
             });
         } catch(emailErr) {
             console.error('Order confirmation email failed:', emailErr.message);
         }
 
-        res.json({ success: true, message: 'Payment verified and confirmed' });
+        res.json({ success: true, message: 'Payment verified and confirmed', downloads: downloadLinks });
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+// GET /api/orders/download/:id — secure download (requires valid token)
+router.get('/download/:id', async (req, res) => {
+    try {
+        const { token } = req.query;
+        if (!token) return res.status(401).send('<h2>Access Denied</h2><p>No download token provided.</p>');
+
+        const order = await Order.findById(req.params.id);
+        if (!order) return res.status(404).send('<h2>Not Found</h2><p>Order not found.</p>');
+        if (order.status !== 'Paid') return res.status(403).send('<h2>Payment Required</h2><p>This order has not been paid.</p>');
+        if (order.downloadToken !== token) return res.status(403).send('<h2>Invalid Token</h2><p>This download link is not valid.</p>');
+        if (order.downloadExpires && order.downloadExpires < new Date()) return res.status(410).send('<h2>Link Expired</h2><p>This download link has expired. Contact hello@goallordcreativity.com for a new link.</p>');
+
+        const product = await Product.findById(order.productId);
+        if (!product || !product.downloadUrl) return res.status(404).send('<h2>No Download Available</h2><p>This product does not have a downloadable file yet. Contact hello@goallordcreativity.com</p>');
+
+        // Redirect to the actual download URL
+        res.redirect(product.downloadUrl);
+    } catch (err) {
+        res.status(500).send('<h2>Error</h2><p>' + err.message + '</p>');
     }
 });
 

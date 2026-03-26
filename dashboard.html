@@ -4250,6 +4250,15 @@
           <input type="hidden" id="prodImage">
         </div>
         <div class="form-group">
+          <label>Downloadable File (ZIP, RAR, etc.)</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input class="form-input" type="text" id="prodDownloadUrl" placeholder="Upload file or paste URL" style="flex:1">
+            <input type="file" id="prodDownloadFile" accept=".zip,.rar,.7z,.tar.gz,.pdf" style="display:none" onchange="uploadProductFile()">
+            <button class="btn btn-ghost" type="button" onclick="document.getElementById('prodDownloadFile').click()" style="font-size:12px;white-space:nowrap">Upload File</button>
+          </div>
+          <p style="font-size:11px;color:var(--muted);margin-top:4px">Only paid customers will receive a secure download link (expires in 72 hours)</p>
+        </div>
+        <div class="form-group">
           <label>Status</label>
           <select class="form-input" id="prodStatus">
             <option value="active">Active</option>
@@ -5017,6 +5026,7 @@ function openEditProduct(id) {
   document.getElementById('prodCurrency').value = p.currency === 'NGN' ? '₦' : '$';
   document.getElementById('prodType').value     = p.type || '';
   document.getElementById('prodDemoUrl').value  = p.demoUrl || '';
+  document.getElementById('prodDownloadUrl').value = p.downloadUrl || '';
   document.getElementById('prodFeatures').value = Array.isArray(p.features) ? p.features.join(', ') : (p.features || '');
   // Load image if exists
   if (p.image) {
@@ -5053,6 +5063,28 @@ async function uploadProductImage() {
   }
 }
 
+async function uploadProductFile() {
+  const file = document.getElementById('prodDownloadFile').files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('image', file); // reuse upload endpoint
+  try {
+    document.getElementById('prodDownloadUrl').value = 'Uploading...';
+    const res = await fetch('/api/upload', { method: 'POST', headers: { 'Authorization': 'Bearer ' + localStorage.gl_token }, body: fd });
+    const data = await res.json();
+    if (data.url) {
+      document.getElementById('prodDownloadUrl').value = data.url;
+      showToast('File uploaded', 'success');
+    } else {
+      document.getElementById('prodDownloadUrl').value = '';
+      showToast(data.error || 'Upload failed', 'error');
+    }
+  } catch(e) {
+    document.getElementById('prodDownloadUrl').value = '';
+    showToast('Upload failed', 'error');
+  }
+}
+
 async function submitProduct() {
   const name     = document.getElementById('prodName').value.trim();
   const category = document.getElementById('prodCategory').value;
@@ -5062,6 +5094,7 @@ async function submitProduct() {
   const desc     = document.getElementById('prodDesc').value.trim();
   const type     = document.getElementById('prodType').value.trim();
   const demoUrl  = document.getElementById('prodDemoUrl').value.trim();
+  const downloadUrl = document.getElementById('prodDownloadUrl').value.trim();
   const features = document.getElementById('prodFeatures').value.trim();
   const isActive = document.getElementById('prodStatus').value === 'active';
   const image    = document.getElementById('prodImage').value;
@@ -5075,14 +5108,14 @@ async function submitProduct() {
   if (editProductId) {
     const data = await apiFetch('/api/products/' + editProductId, {
       method: 'PATCH',
-      body: JSON.stringify({ name, category, price: numericPrice, currency: currencyCode, description: desc, stock, type, demoUrl, features: featuresArr, active: isActive, image })
+      body: JSON.stringify({ name, category, price: numericPrice, currency: currencyCode, description: desc, stock, type, demoUrl, features: featuresArr, active: isActive, image, downloadUrl })
     });
     if (data) showToast('Product updated', 'success');
     editProductId = null;
   } else {
     const data = await apiFetch('/api/products', {
       method: 'POST',
-      body: JSON.stringify({ name, category, price: numericPrice, currency: currencyCode, description: desc, stock, type, demoUrl, features: featuresArr, active: isActive, image })
+      body: JSON.stringify({ name, category, price: numericPrice, currency: currencyCode, description: desc, stock, type, demoUrl, features: featuresArr, active: isActive, image, downloadUrl })
     });
     if (data) showToast('Product created', 'success');
   }
