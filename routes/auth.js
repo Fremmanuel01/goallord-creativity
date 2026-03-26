@@ -91,20 +91,65 @@ router.post('/register', requireAuth, requireAdmin, async (req, res) => {
       await sendMail({
         to: user.email,
         subject: 'Your Goallord Dashboard Account',
-        html: `<div style="font-family:-apple-system,sans-serif;max-width:520px;margin:0 auto;padding:40px 20px;background:#0B0D10;color:#F4F6FA">
-          <h1 style="color:#D66A1F;font-size:22px;margin:0 0 24px">Welcome to Goallord</h1>
-          <p style="font-size:15px;line-height:1.7;color:#ccc">Hi ${user.name.split(' ')[0]},</p>
-          <p style="font-size:15px;line-height:1.7;color:#ccc">Your dashboard account has been created. Here are your login details:</p>
-          <div style="background:#171A21;border:1px solid #2A2F3A;border-radius:8px;padding:20px;margin:20px 0">
-            <p style="margin:0 0 10px;font-size:13px;color:#8892A4">EMAIL</p>
-            <p style="margin:0 0 16px;font-size:16px;font-weight:600">${user.email}</p>
-            <p style="margin:0 0 10px;font-size:13px;color:#8892A4">PASSWORD</p>
-            <p style="margin:0;font-size:16px;font-weight:600;font-family:monospace;background:#0F1115;padding:8px 12px;border-radius:4px">${password}</p>
-          </div>
-          <p style="font-size:14px;line-height:1.7;color:#F59E0B">Please change your password after your first login.</p>
-          <a href="https://goallordcreativity.com/dashboard.html" style="display:inline-block;background:#D66A1F;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:14px;margin-top:16px">Log In to Dashboard</a>
-          <p style="font-size:12px;color:#555;margin-top:32px">Goallord Creativity Limited, No. 1 Mission Road, Onitsha</p>
-        </div>`
+        html: `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#080a0e;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+<div style="max-width:560px;margin:0 auto;padding:0">
+
+  <!-- Top accent bar -->
+  <div style="height:4px;background:linear-gradient(90deg,#E8782A,#FF9F43,#E8782A)"></div>
+
+  <!-- Header -->
+  <div style="background:#0d1017;padding:40px 32px 0;text-align:center">
+    <div style="display:inline-block;background:linear-gradient(135deg,rgba(232,120,42,0.15),rgba(232,120,42,0.05));border:1px solid rgba(232,120,42,0.25);border-radius:50%;width:72px;height:72px;line-height:72px;text-align:center;margin-bottom:20px">
+      <span style="font-size:28px">&#128075;</span>
+    </div>
+    <h1 style="color:#ffffff;font-size:26px;font-weight:700;margin:0 0 8px;letter-spacing:-0.5px">Welcome to Goallord</h1>
+    <p style="color:#6b7280;font-size:14px;margin:0;letter-spacing:0.5px">YOUR DASHBOARD ACCOUNT IS READY</p>
+  </div>
+
+  <!-- Body -->
+  <div style="background:#0d1017;padding:32px 32px 40px">
+    <p style="font-size:16px;line-height:1.7;color:#d1d5db;margin:0 0 24px">Hi <strong style="color:#fff">${user.name.split(' ')[0]}</strong>, your account has been created. Use the credentials below to log in.</p>
+
+    <!-- Credentials card -->
+    <div style="background:#141820;border:1px solid #1e2432;border-radius:12px;overflow:hidden;margin-bottom:24px">
+      <div style="padding:20px 24px;border-bottom:1px solid #1e2432">
+        <p style="margin:0 0 6px;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:1px">Email Address</p>
+        <p style="margin:0;font-size:17px;font-weight:600;color:#fff">${user.email}</p>
+      </div>
+      <div style="padding:20px 24px">
+        <p style="margin:0 0 6px;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:1px">Password</p>
+        <div style="background:#0a0d12;border:1px solid #1e2432;border-radius:8px;padding:12px 16px;margin-top:4px">
+          <code style="font-size:18px;font-weight:700;color:#E8782A;font-family:'SF Mono',Consolas,monospace;letter-spacing:1px">${password}</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Warning -->
+    <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:14px 18px;margin-bottom:28px;display:flex;align-items:start;gap:10px">
+      <span style="font-size:16px;flex-shrink:0;margin-top:1px">&#9888;&#65039;</span>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#fbbf24">Please change your password after your first login for security.</p>
+    </div>
+
+    <!-- CTA Button -->
+    <div style="text-align:center">
+      <a href="https://goallordcreativity.com/login.html" style="display:inline-block;background:linear-gradient(135deg,#E8782A,#FF9F43);color:#fff;text-decoration:none;padding:14px 40px;border-radius:10px;font-weight:700;font-size:15px;letter-spacing:0.3px;box-shadow:0 4px 20px rgba(232,120,42,0.3)">Log In to Dashboard</a>
+    </div>
+
+    <!-- Role badge -->
+    <div style="text-align:center;margin-top:24px">
+      <span style="display:inline-block;background:rgba(232,120,42,0.1);border:1px solid rgba(232,120,42,0.25);color:#E8782A;font-size:11px;font-weight:700;padding:5px 14px;border-radius:20px;letter-spacing:1px;text-transform:uppercase">${user.role} Account</span>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="background:#080a0e;padding:24px 32px;text-align:center;border-top:1px solid #141820">
+    <p style="margin:0 0 4px;font-size:12px;color:#4b5563">Goallord Creativity Limited</p>
+    <p style="margin:0;font-size:11px;color:#374151">No. 1 Mission Road, Onitsha, Anambra State, Nigeria</p>
+  </div>
+
+</div>
+</body></html>`
       });
       console.log('[Auth] Welcome email sent to ' + user.email);
     } catch (emailErr) {

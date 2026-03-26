@@ -42,68 +42,79 @@ function buildEmail(task, user, project) {
             : isToday
                 ? `⏰ Due Today: "${task.title}"`
                 : `📋 Reminder: "${task.title}" — ${days} days left`,
-        html: `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#0B0D10;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<div style="max-width:520px;margin:0 auto;padding:40px 20px">
-    <!-- Header -->
-    <div style="text-align:center;margin-bottom:32px">
-        <h1 style="color:#D66A1F;font-size:22px;font-weight:700;margin:0">GOALLORD</h1>
-        <p style="color:#8892A4;font-size:12px;margin-top:4px;letter-spacing:1px">TASK REMINDER</p>
+        html: `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#080a0e;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+<div style="max-width:560px;margin:0 auto;padding:0">
+
+  <!-- Top accent bar -->
+  <div style="height:4px;background:linear-gradient(90deg,${projectColor},${urgencyColor},${projectColor})"></div>
+
+  <!-- Header -->
+  <div style="background:#0d1017;padding:32px 32px 0;text-align:center">
+    <div style="display:inline-block;background:${urgencyColor}15;border:1px solid ${urgencyColor}30;border-radius:50%;width:64px;height:64px;line-height:64px;text-align:center;margin-bottom:16px">
+      <span style="font-size:26px">${isOverdue ? '&#9888;&#65039;' : isToday ? '&#9200;' : '&#128203;'}</span>
+    </div>
+    <h1 style="color:#ffffff;font-size:22px;font-weight:700;margin:0 0 6px;letter-spacing:-0.5px">Task Reminder</h1>
+    <div style="display:inline-block;background:${urgencyColor}18;border:1px solid ${urgencyColor}35;border-radius:20px;padding:6px 16px;margin-top:8px">
+      <span style="color:${urgencyColor};font-size:13px;font-weight:700;letter-spacing:0.3px">${urgencyText.toUpperCase()}</span>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div style="background:#0d1017;padding:28px 32px 36px">
+    <p style="font-size:16px;line-height:1.7;color:#d1d5db;margin:0 0 24px">Hi <strong style="color:#fff">${user.name.split(' ')[0]}</strong>, you have a task that needs your attention.</p>
+
+    <!-- Task card -->
+    <div style="background:#141820;border:1px solid #1e2432;border-radius:12px;overflow:hidden;margin-bottom:24px">
+      <div style="height:3px;background:${projectColor}"></div>
+      <div style="padding:22px 24px">
+        <h2 style="color:#ffffff;font-size:20px;font-weight:700;margin:0 0 16px;letter-spacing:-0.3px">${task.title}</h2>
+
+        <table style="width:100%;border-collapse:collapse">
+          <tr>
+            <td style="padding:10px 0;border-bottom:1px solid #1e2432;vertical-align:top;width:100px">
+              <p style="color:#6b7280;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin:0">Project</p>
+            </td>
+            <td style="padding:10px 0;border-bottom:1px solid #1e2432;vertical-align:top">
+              <p style="color:#fff;font-size:14px;font-weight:500;margin:0">${projectName}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:10px 0;border-bottom:1px solid #1e2432;vertical-align:top">
+              <p style="color:#6b7280;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin:0">Due Date</p>
+            </td>
+            <td style="padding:10px 0;border-bottom:1px solid #1e2432;vertical-align:top">
+              <p style="color:${urgencyColor};font-size:14px;font-weight:700;margin:0">${dueStr}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:10px 0;vertical-align:top">
+              <p style="color:#6b7280;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin:0">Priority</p>
+            </td>
+            <td style="padding:10px 0;vertical-align:top">
+              <span style="display:inline-block;background:${(priorityColors[task.priority] || '#F59E0B')}18;border:1px solid ${(priorityColors[task.priority] || '#F59E0B')}35;color:${priorityColors[task.priority] || '#F59E0B'};font-size:11px;font-weight:700;padding:3px 12px;border-radius:12px;text-transform:uppercase">${task.priority}</span>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
 
-    <!-- Card -->
-    <div style="background:#171A21;border:1px solid #2A2F3A;border-radius:12px;overflow:hidden">
-        <!-- Project bar -->
-        <div style="height:4px;background:${projectColor}"></div>
+    ${task.description ? `<p style="color:#9ca3af;font-size:14px;margin:0 0 24px;line-height:1.6;padding:14px 18px;background:#141820;border-radius:8px;border-left:3px solid #E8782A">${task.description}</p>` : ''}
 
-        <div style="padding:28px 24px">
-            <!-- Greeting -->
-            <p style="color:#F4F6FA;font-size:16px;margin:0 0 20px">Hi ${user.name.split(' ')[0]},</p>
-
-            <!-- Urgency badge -->
-            <div style="display:inline-block;background:${urgencyColor}20;border:1px solid ${urgencyColor}40;border-radius:20px;padding:6px 14px;margin-bottom:20px">
-                <span style="color:${urgencyColor};font-size:13px;font-weight:600">${urgencyText}</span>
-            </div>
-
-            <!-- Task details -->
-            <div style="background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;padding:18px 20px;margin-bottom:20px">
-                <p style="color:#8892A4;font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin:0 0 8px">Task</p>
-                <h2 style="color:#F4F6FA;font-size:18px;font-weight:600;margin:0 0 14px">${task.title}</h2>
-
-                <div style="display:flex;gap:20px;flex-wrap:wrap">
-                    <div>
-                        <p style="color:#8892A4;font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:0 0 4px">Project</p>
-                        <p style="color:#F4F6FA;font-size:13px;margin:0">${projectName}</p>
-                    </div>
-                    <div>
-                        <p style="color:#8892A4;font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:0 0 4px">Due Date</p>
-                        <p style="color:${urgencyColor};font-size:13px;font-weight:600;margin:0">${dueStr}</p>
-                    </div>
-                    <div>
-                        <p style="color:#8892A4;font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:0 0 4px">Priority</p>
-                        <p style="margin:0"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${priorityColors[task.priority] || '#F59E0B'};margin-right:6px;vertical-align:middle"></span><span style="color:#F4F6FA;font-size:13px;vertical-align:middle">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span></p>
-                    </div>
-                </div>
-            </div>
-
-            ${task.description ? `<p style="color:#8892A4;font-size:13px;margin:0 0 20px;line-height:1.5">${task.description}</p>` : ''}
-
-            <!-- CTA -->
-            <a href="https://goallordcreativity.com/dashboard.html" style="display:inline-block;background:#D66A1F;color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 28px;border-radius:8px">Open Dashboard →</a>
-        </div>
+    <!-- CTA Button -->
+    <div style="text-align:center">
+      <a href="https://goallordcreativity.com/login.html" style="display:inline-block;background:linear-gradient(135deg,#E8782A,#FF9F43);color:#fff;text-decoration:none;padding:14px 40px;border-radius:10px;font-weight:700;font-size:15px;letter-spacing:0.3px;box-shadow:0 4px 20px rgba(232,120,42,0.3)">Open Dashboard</a>
     </div>
+  </div>
 
-    <!-- Footer -->
-    <div style="text-align:center;margin-top:24px">
-        <p style="color:#8892A4;font-size:11px;margin:0">This is an automated reminder from Goallord Creativity.</p>
-        <p style="color:#8892A4;font-size:11px;margin:4px 0 0">Complete your task to stop receiving these reminders.</p>
-    </div>
+  <!-- Footer -->
+  <div style="background:#080a0e;padding:20px 32px;text-align:center;border-top:1px solid #141820">
+    <p style="margin:0 0 4px;font-size:11px;color:#4b5563">Complete your task to stop receiving these reminders.</p>
+    <p style="margin:0;font-size:11px;color:#374151">Goallord Creativity Limited, Onitsha</p>
+  </div>
+
 </div>
-</body>
-</html>`
+</body></html>`
     };
 }
 
