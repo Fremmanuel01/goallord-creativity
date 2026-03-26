@@ -2992,6 +2992,29 @@
         <h2>Settings</h2>
       </div>
 
+      <!-- Change Password -->
+      <div class="card" style="padding:24px;max-width:480px;margin-bottom:24px">
+        <h3 style="font-size:15px;margin-bottom:16px;color:var(--text)">Change Password</h3>
+        <div style="display:grid;gap:12px">
+          <div>
+            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Current Password</label>
+            <input type="password" class="form-input" id="cpCurrent" placeholder="Enter current password">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">New Password</label>
+            <input type="password" class="form-input" id="cpNew" placeholder="At least 6 characters">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Confirm New Password</label>
+            <input type="password" class="form-input" id="cpConfirm" placeholder="Repeat new password">
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <button class="btn btn-primary" onclick="changePassword()" id="cpBtn">Update Password</button>
+            <span id="cpMsg" style="font-size:13px;display:none"></span>
+          </div>
+        </div>
+      </div>
+
       <div class="settings-grid">
         <!-- Academy Settings -->
         <div class="settings-card">
@@ -8315,6 +8338,36 @@ async function uploadTestimonialImage(index, input) {
 //  STAFF ACCOUNT MANAGEMENT
 // ═══════════════════════════════════════════════════════════
 let allStaffUsers = [];
+
+async function changePassword() {
+  const current = document.getElementById('cpCurrent').value;
+  const newPw = document.getElementById('cpNew').value;
+  const confirm = document.getElementById('cpConfirm').value;
+  const msg = document.getElementById('cpMsg');
+  const btn = document.getElementById('cpBtn');
+
+  if (!current || !newPw) { msg.textContent = 'Fill in all fields'; msg.style.color = 'var(--danger)'; msg.style.display = 'inline'; return; }
+  if (newPw.length < 6) { msg.textContent = 'Password must be at least 6 characters'; msg.style.color = 'var(--danger)'; msg.style.display = 'inline'; return; }
+  if (newPw !== confirm) { msg.textContent = 'Passwords do not match'; msg.style.color = 'var(--danger)'; msg.style.display = 'inline'; return; }
+
+  btn.disabled = true; btn.textContent = 'Updating...';
+  try {
+    const data = await apiFetch('/api/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword: current, newPassword: newPw })
+    });
+    if (data && data.message) {
+      msg.textContent = 'Password changed!';
+      msg.style.color = 'var(--success)';
+      msg.style.display = 'inline';
+      document.getElementById('cpCurrent').value = '';
+      document.getElementById('cpNew').value = '';
+      document.getElementById('cpConfirm').value = '';
+      setTimeout(() => { msg.style.display = 'none'; }, 3000);
+    }
+  } catch(e) {}
+  finally { btn.disabled = false; btn.textContent = 'Update Password'; }
+}
 
 async function loadStaffUsers() {
   const data = await apiFetch('/api/auth/users');

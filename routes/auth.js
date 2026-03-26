@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 
+const { sendMail } = require('../utils/mailer');
+
 const router = express.Router();
 
 // POST /api/auth/login
@@ -84,6 +86,30 @@ router.post('/register', requireAuth, requireAdmin, async (req, res) => {
     if (avatar) userData.avatar = avatar;
     const user = await User.create(userData);
 
+    // Send welcome email with credentials
+    try {
+      await sendMail({
+        to: user.email,
+        subject: 'Your Goallord Dashboard Account',
+        html: `<div style="font-family:-apple-system,sans-serif;max-width:520px;margin:0 auto;padding:40px 20px;background:#0B0D10;color:#F4F6FA">
+          <h1 style="color:#D66A1F;font-size:22px;margin:0 0 24px">Welcome to Goallord</h1>
+          <p style="font-size:15px;line-height:1.7;color:#ccc">Hi ${user.name.split(' ')[0]},</p>
+          <p style="font-size:15px;line-height:1.7;color:#ccc">Your dashboard account has been created. Here are your login details:</p>
+          <div style="background:#171A21;border:1px solid #2A2F3A;border-radius:8px;padding:20px;margin:20px 0">
+            <p style="margin:0 0 10px;font-size:13px;color:#8892A4">EMAIL</p>
+            <p style="margin:0 0 16px;font-size:16px;font-weight:600">${user.email}</p>
+            <p style="margin:0 0 10px;font-size:13px;color:#8892A4">PASSWORD</p>
+            <p style="margin:0;font-size:16px;font-weight:600;font-family:monospace;background:#0F1115;padding:8px 12px;border-radius:4px">${password}</p>
+          </div>
+          <p style="font-size:14px;line-height:1.7;color:#F59E0B">Please change your password after your first login.</p>
+          <a href="https://goallordcreativity.com/dashboard.html" style="display:inline-block;background:#D66A1F;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:14px;margin-top:16px">Log In to Dashboard</a>
+          <p style="font-size:12px;color:#555;margin-top:32px">Goallord Creativity Limited, No. 1 Mission Road, Onitsha</p>
+        </div>`
+      });
+    } catch (emailErr) {
+      console.error('Failed to send welcome email:', emailErr.message);
+    }
+
     res.status(201).json({
       _id: user._id,
       name: user.name,
@@ -134,6 +160,32 @@ router.delete('/users/:id', requireAuth, requireAdmin, async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     res.json({ message: 'User deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/auth/change-password — any logged-in user changes their own password
+router.post('/change-password', requireAuth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const valid = await bcrypt.compare(currentPassword, user.password);
+    if (!valid) return res.status(401).json({ error: 'Current password is incorrect' });
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.json({ message: 'Password changed successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
