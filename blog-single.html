@@ -611,51 +611,37 @@
                             </div>
                         </div>
 
-                        <!-- Newsletter signup -->
-                        <div class="gl-newsletter mb-5">
-                            <p class="text-caption text-primary fw-medium letter-space--1 mb-2">STAY IN THE LOOP</p>
-                            <h4 class="letter-space--2 mb-2">Get articles like this in your inbox</h4>
-                            <p class="text-white-64 fs-14 mb-4">No spam. Just practical insights on web design, SEO, and growing a business online in Nigeria. Sent occasionally.</p>
-                            <form id="newsletterForm" class="d-flex gap-2 flex-wrap">
-                                <input type="email" id="newsletterEmail" placeholder="your@email.com" required style="flex:1;min-width:200px;">
-                                <button type="submit" class="tf-btn style-fill flex-shrink-0"><span class="text-caption fw-medium">SUBSCRIBE</span></button>
-                            </form>
-                            <p id="newsletterMsg" class="text-caption mt-2 mb-0" style="display:none;"></p>
-                        </div>
-
-                        <!-- Inline CTA -->
-                        <div style="background:var(--gl-card);border:1px solid var(--gl-border);border-radius:8px;padding:36px 32px;" class="mb-5">
-                            <div class="row align-items-center">
-                                <div class="col-lg-8">
-                                    <h4 class="letter-space--2 mb-2">Ready to talk about your website?</h4>
-                                    <p class="text-white-64 mb-0">Tell us what you need and we'll get back within 24 hours.</p>
-                                </div>
-                                <div class="col-lg-4 mt-3 mt-lg-0 text-lg-end">
-                                    <a href="contact.html" class="tf-btn style-fill"><span class="text-caption fw-medium">START A PROJECT</span></a>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
 
-                    <!-- Sidebar -->
+                    <!-- Sidebar (sticky) -->
                     <div class="col-lg-4 mt-5 mt-lg-0">
-                        <div class="effectFade fadeRight" style="position:sticky;top:120px;">
+                        <div class="effectFade fadeRight" style="position:sticky;top:100px;">
 
-                            <!-- More articles -->
-                            <h6 class="mini-title text-caption text-white-64 mb-4">MORE ARTICLES</h6>
-                            <div class="mb-5" id="postSidebarRelated">
-                                <!-- dynamic -->
+                            <!-- Newsletter signup -->
+                            <div class="gl-newsletter mb-4" style="border-radius:12px;padding:24px;">
+                                <p class="text-caption text-primary fw-medium letter-space--1 mb-2">STAY IN THE LOOP</p>
+                                <h5 class="letter-space--2 mb-2" style="font-size:17px">Get articles like this in your inbox</h5>
+                                <p class="text-white-64 mb-3" style="font-size:13px;line-height:1.6">No spam. Just practical insights on web design, SEO, and growing a business online. Sent occasionally.</p>
+                                <form id="newsletterForm">
+                                    <input type="email" id="newsletterEmail" placeholder="your@email.com" required style="width:100%;margin-bottom:10px;">
+                                    <button type="submit" class="tf-btn style-fill w-100"><span class="text-caption fw-medium">SUBSCRIBE</span></button>
+                                </form>
+                                <p id="newsletterMsg" class="text-caption mt-2 mb-0" style="display:none;"></p>
                             </div>
 
-                            <div class="br-line mb-5"></div>
+                            <!-- CTA card -->
+                            <div style="background:linear-gradient(135deg,rgba(214,106,31,0.1),rgba(214,106,31,0.03));border:1px solid rgba(214,106,31,0.25);border-radius:12px;padding:24px;" class="mb-4">
+                                <h5 class="letter-space--2 mb-2" style="font-size:17px">Ready to talk about your website?</h5>
+                                <p class="text-white-64 mb-3" style="font-size:13px;line-height:1.6">Tell us what you need and we'll get back within 24 hours.</p>
+                                <a href="contact.html" class="tf-btn style-fill w-100 text-center"><span class="text-caption fw-medium">START A PROJECT</span></a>
+                            </div>
 
-                            <!-- Sidebar CTA -->
-                            <div style="background:var(--gl-card);border:1px solid var(--gl-border);border-radius:8px;padding:28px;">
-                                <p class="text-caption text-primary fw-medium letter-space--1 mb-3">WORK WITH US</p>
-                                <h5 class="letter-space--2 mb-3">Need a website that actually works?</h5>
-                                <p class="text-white-64 fs-14 mb-4">Tell us your goals and we'll send a proposal within 24 hours.</p>
-                                <a href="contact.html" class="tf-btn style-fill w-100 text-center"><span class="text-caption fw-medium">GET A FREE QUOTE</span></a>
+                            <div class="br-line mb-4"></div>
+
+                            <!-- More articles -->
+                            <h6 class="mini-title text-caption text-white-64 mb-3">MORE ARTICLES</h6>
+                            <div class="mb-4" id="postSidebarRelated">
+                                <!-- dynamic -->
                             </div>
 
                         </div>
