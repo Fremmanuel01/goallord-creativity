@@ -13,7 +13,8 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const storage = new CloudinaryStorage({
+// Image storage (optimized, 5MB limit)
+const imageStorage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder:          'goallord',
@@ -22,20 +23,49 @@ const storage = new CloudinaryStorage({
   }
 });
 
-const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }  // 5 MB
+const uploadImage = multer({
+  storage: imageStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }
+}).single('image');
+
+// File storage (raw, 50MB limit — for ZIP, RAR, PDF)
+const fileStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder:          'goallord/products',
+    resource_type:   'raw',
+    allowed_formats: ['zip', 'rar', '7z', 'gz', 'pdf', 'doc', 'docx']
+  }
+});
+
+const uploadFile = multer({
+  storage: fileStorage,
+  limits: { fileSize: 50 * 1024 * 1024 }
 }).single('image');
 
 // POST /api/upload — protected, single image
 router.post('/', requireAuth, (req, res) => {
-  upload(req, res, (err) => {
+  uploadImage(req, res, (err) => {
     if (err) {
       console.error('Upload error:', err.message);
       return res.status(400).json({ error: err.message });
     }
     if (!req.file) {
       return res.status(400).json({ error: 'No file received. Make sure the field name is "image".' });
+    }
+    res.json({ url: req.file.path, public_id: req.file.filename });
+  });
+});
+
+// POST /api/upload/file — protected, digital product file (ZIP, RAR, PDF)
+router.post('/file', requireAuth, (req, res) => {
+  uploadFile(req, res, (err) => {
+    if (err) {
+      console.error('File upload error:', err.message);
+      return res.status(400).json({ error: err.message });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file received.' });
     }
     res.json({ url: req.file.path, public_id: req.file.filename });
   });
