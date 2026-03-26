@@ -6,7 +6,7 @@ const Applicant = require('../models/Applicant');
 const Student   = require('../models/Student');
 const Batch     = require('../models/Batch');
 const Payment   = require('../models/Payment');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { sendMail }    = require('../utils/mailer');
 const { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail } = require('../utils/emailTemplates');
 const rateLimit = require('express-rate-limit');
@@ -555,8 +555,8 @@ router.patch('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// DELETE /api/applicants/:id — protected
-router.delete('/:id', requireAuth, async (req, res) => {
+// DELETE /api/applicants/:id — admin only
+router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
     await Applicant.findByIdAndDelete(req.params.id);
     res.json({ success: true });

@@ -2,7 +2,7 @@ const express = require('express');
 const https = require('https');
 const Payment = require('../models/Payment');
 const Student = require('../models/Student');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { requireStudent } = require('../middleware/studentAuth');
 const { sendMail } = require('../utils/mailer');
 const { receiptEmail, paymentReminderEmail, suspensionEmail, reactivationEmail } = require('../utils/emailTemplates');
@@ -129,8 +129,8 @@ router.patch('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// ── DELETE /api/payments/:id — admin ──────────────────────────
-router.delete('/:id', requireAuth, async (req, res) => {
+// ── DELETE /api/payments/:id — admin only ─────────────────────
+router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
     await Payment.findByIdAndDelete(req.params.id);
     res.json({ success: true });

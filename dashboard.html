@@ -4654,6 +4654,7 @@ function renderApplicants(list) {
             ? `<button title="Bank transfer ref: ${a.applicationFeeRef}" style="padding:4px 9px;font-size:11px;font-weight:600;background:#1E4BFF;color:#fff;border:none;border-radius:5px;cursor:pointer;" onclick="confirmApplicantFee('${a.id}','${a.pendingPaymentPlan||'monthly'}')">Confirm Fee ₦</button>`
             : a.applicationFeePaid ? `<span style="font-size:11px;color:#22c55e;font-weight:600;">✓ Fee Paid</span>` : ''
           }
+          ${(JSON.parse(localStorage.getItem('gl_user') || '{}').role === 'admin') ? `<button style="padding:4px 9px;font-size:11px;font-weight:600;background:#ef4444;color:#fff;border:none;border-radius:5px;cursor:pointer;" onclick="deleteApplicant('${a.id}')" title="Delete applicant">Delete</button>` : ''}
         </div>
       </td>
     </tr>`;
@@ -4675,6 +4676,15 @@ async function confirmApplicantFee(id, pendingPlan) {
     }
   } catch(e) {
     showToast('Network error: ' + e.message, 'error');
+  }
+}
+
+async function deleteApplicant(id) {
+  if (!confirm('Delete this applicant permanently?')) return;
+  const data = await apiFetch('/api/applicants/' + id, { method: 'DELETE' });
+  if (data) {
+    showToast('Applicant deleted', 'success');
+    loadApplicantsFromAPI();
   }
 }
 
@@ -9106,9 +9116,19 @@ function renderPayTable(rows) {
         ${isBankPending ? `<button style="padding:5px 10px;font-size:12px;background:#1E4BFF;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick="confirmBankTransfer('${r._id}',${r.amountDue})">Confirm</button>` : ''}
         ${(status === 'overdue' || status === 'pending') && !isPaid ? `<button style="padding:5px 10px;font-size:12px;background:rgba(214,106,31,0.15);color:#D66A1F;border:1px solid rgba(214,106,31,0.3);border-radius:6px;cursor:pointer;font-weight:600;" onclick="sendPaymentReminder('${r._id}')">Remind</button>` : ''}
         ${isPaid ? `<button style="padding:5px 10px;font-size:12px;background:#22c55e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick='openReceipt(${receiptData})'>Receipt</button>` : ''}
+        ${(JSON.parse(localStorage.getItem('gl_user') || '{}').role === 'admin') ? `<button style="padding:5px 10px;font-size:12px;background:#ef4444;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick="deletePayment('${r._id}')">Delete</button>` : ''}
       </td>
     </tr>`;
   }).join('');
+}
+
+async function deletePayment(id) {
+  if (!confirm('Delete this payment record?')) return;
+  const data = await apiFetch('/api/payments/' + id, { method: 'DELETE' });
+  if (data) {
+    showToast('Payment deleted', 'success');
+    loadPaymentsPage();
+  }
 }
 
 function openRecordPayment() {
