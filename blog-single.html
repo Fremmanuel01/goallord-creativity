@@ -337,6 +337,27 @@
             margin: 0;
         }
 
+        /* ── Blog layout grid ───────────────────────────────────── */
+        .gl-blog-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 48px;
+            align-items: start;
+        }
+        .gl-blog-sidebar {
+            position: sticky;
+            top: 100px;
+        }
+        @media (max-width: 991px) {
+            .gl-blog-layout {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+            .gl-blog-sidebar {
+                position: static;
+            }
+        }
+
         @media (max-width: 767px) {
             .gl-article-body { font-size: 16px; }
             .gl-article-body h2 { font-size: 22px; }
@@ -515,8 +536,8 @@
                 </div>
 
                 <!-- Article + Sidebar -->
-                <div class="row">
-                    <div class="col-lg-8 effectFade fadeUp">
+                <div class="gl-blog-layout">
+                    <div class="effectFade fadeUp">
 
                         <!-- Affiliate disclosure (shown when post.hasAffiliate) -->
                         <div id="postAffiliateDisclosure" style="display:none" class="gl-affiliate-disclosure">
@@ -614,8 +635,8 @@
                     </div>
 
                     <!-- Sidebar (sticky) -->
-                    <div class="col-lg-4 mt-5 mt-lg-0">
-                        <div class="effectFade fadeRight" style="position:sticky;top:100px;">
+                    <div class="effectFade fadeRight">
+                        <div class="gl-blog-sidebar">
 
                             <!-- Newsletter signup -->
                             <div class="gl-newsletter mb-4" style="border-radius:12px;padding:24px;">
