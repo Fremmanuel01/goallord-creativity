@@ -1,13 +1,28 @@
 const express = require('express');
 const Client = require('../models/Client');
 const { requireAuth } = require('../middleware/auth');
+const rateLimit = require('express-rate-limit');
+const xss = require('xss');
 
 const router = express.Router();
 
+const clientLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5, message: { error: 'Too many submissions.' } });
+
 // POST /api/clients — public (contact form)
-router.post('/', async (req, res) => {
+router.post('/', clientLimiter, async (req, res) => {
   try {
-    const client = await Client.create(req.body);
+    const { name, email, phone, company, service, budget, timeline, message } = req.body;
+    const client = await Client.create({
+      name:     xss(name || ''),
+      email:    xss(email || ''),
+      phone:    xss(phone || ''),
+      company:  xss(company || ''),
+      service:  xss(service || ''),
+      budget:   xss(budget || ''),
+      timeline: xss(timeline || ''),
+      message:  xss(message || ''),
+      source:   'Contact Form'
+    });
     res.status(201).json({ success: true, id: client._id });
   } catch (err) {
     res.status(400).json({ error: err.message });

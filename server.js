@@ -104,7 +104,14 @@ app.get('/sitemap.xml', async (req, res) => {
 });
 
 // ─── STATIC FILES (serve the website) ────────────────────────
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, '.'), {
+    maxAge: '7d',
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'no-cache');
+        }
+    }
+}));
 
 // ─── PUBLIC CONFIG ────────────────────────────────────────────
 app.get('/api/config/public', (req, res) => {

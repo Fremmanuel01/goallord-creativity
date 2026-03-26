@@ -4493,62 +4493,13 @@
 ═══════════════════════════════════════════════════════ -->
 <script>
 // ─── DATA ───────────────────────────────────────────────
-const APPLICANTS = [
-  { id:1, name:'Chidinma Okafor',    email:'chidinma@email.com',    phone:'+234 803 001 0001', track:'Web Design',        experience:'Beginner',     schedule:'Weekdays Eve',  status:'Pending',  date:'Mar 1 2026'  },
-  { id:2, name:'Emeka Nwosu',        email:'emeka@email.com',        phone:'+234 803 002 0002', track:'WordPress',         experience:'Intermediate', schedule:'Weekends',       status:'Accepted', date:'Feb 28 2026' },
-  { id:3, name:'Adaeze Eze',         email:'adaeze@email.com',       phone:'+234 803 003 0003', track:'Digital Marketing', experience:'Beginner',     schedule:'Flexible',       status:'Pending',  date:'Mar 2 2026'  },
-  { id:4, name:'Olumide Adeyemi',    email:'olumide@email.com',      phone:'+234 803 004 0004', track:'Web Design',        experience:'Basics',       schedule:'Weekdays Morn', status:'Reviewed', date:'Feb 27 2026' },
-  { id:5, name:'Ifeoma Chukwu',      email:'ifeoma@email.com',       phone:'+234 803 005 0005', track:'WordPress',         experience:'Beginner',     schedule:'Weekends',       status:'Accepted', date:'Feb 25 2026' },
-  { id:6, name:'Nnamdi Onwuka',      email:'nnamdi@email.com',       phone:'+234 803 006 0006', track:'Digital Marketing', experience:'Intermediate', schedule:'Flexible',       status:'Rejected', date:'Feb 24 2026' },
-  { id:7, name:'Amaka Obiechina',    email:'amaka@email.com',        phone:'+234 803 007 0007', track:'Web Design',        experience:'Beginner',     schedule:'Weekdays Eve',  status:'Pending',  date:'Mar 3 2026'  },
-  { id:8, name:'Chukwuemeka Eze',    email:'chukwuemeka@email.com',  phone:'+234 803 008 0008', track:'WordPress',         experience:'Beginner',     schedule:'Weekends',       status:'Pending',  date:'Mar 4 2026'  },
-  { id:9, name:'Blessing Obi',       email:'blessing@email.com',     phone:'+234 803 009 0009', track:'Digital Marketing', experience:'Basics',       schedule:'Flexible',       status:'Reviewed', date:'Mar 1 2026'  },
-  { id:10,name:'Kelechi Nwofor',     email:'kelechi@email.com',      phone:'+234 803 010 0010', track:'Web Design',        experience:'Intermediate', schedule:'Weekdays Morn', status:'Accepted', date:'Feb 20 2026' },
-  { id:11,name:'Ngozi Okonkwo',      email:'ngozi@email.com',        phone:'+234 803 011 0011', track:'WordPress',         experience:'Beginner',     schedule:'Weekends',       status:'Pending',  date:'Mar 5 2026'  },
-  { id:12,name:'Tunde Adesanya',     email:'tunde@email.com',        phone:'+234 803 012 0012', track:'Web Design',        experience:'Beginner',     schedule:'Weekdays Eve',  status:'Pending',  date:'Mar 5 2026'  },
-];
+const APPLICANTS = [];
 
-const CLIENTS = [
-  { id:1, name:'FoodCart Nigeria',  email:'foodcart@email.com',   service:'E-commerce',    budget:'₦450,000', status:'In Progress', started:'Jan 10 2026' },
-  { id:2, name:'Apex Consulting',   email:'apex@email.com',        service:'Custom Website', budget:'€2,500',  status:'Completed',   started:'Dec 5 2025'  },
-  { id:3, name:'MedHub Clinic',     email:'medhub@email.com',      service:'Web App',        budget:'€4,000',  status:'In Progress', started:'Feb 1 2026'  },
-  { id:4, name:'Greenleaf Farms',   email:'greenleaf@email.com',   service:'WordPress',      budget:'₦180,000',status:'Pending',     started:'Mar 1 2026'  },
-  { id:5, name:'StyleHouse Lagos',  email:'style@email.com',       service:'E-commerce',     budget:'€3,200',  status:'In Progress', started:'Jan 20 2026' },
-  { id:6, name:'TechBridge Ltd',    email:'techbridge@email.com',  service:'Custom Website', budget:'€5,000',  status:'Completed',   started:'Nov 15 2025' },
-  { id:7, name:'Lagos Realtor',     email:'realtor@email.com',     service:'WordPress',      budget:'₦220,000',status:'Pending',     started:'Mar 3 2026'  },
-  { id:8, name:'SwiftPay Finance',  email:'swiftpay@email.com',    service:'Web App',        budget:'€8,500',  status:'In Progress', started:'Feb 15 2026' },
-];
+const CLIENTS = [];
 
-const PRODUCTS_DEFAULT = [
-  // Application Fees
-  { id:'p1', name:'Web Design Application Fee',        desc:'Academy entry fee for Web Design track',       price:'₦15,000',  category:'Application Fee', stock:'Unlimited', active:true  },
-  { id:'p2', name:'WordPress Application Fee',         desc:'Academy entry fee for WordPress track',        price:'₦15,000',  category:'Application Fee', stock:'Unlimited', active:true  },
-  { id:'p3', name:'Digital Marketing Application Fee', desc:'Academy entry fee for Digital Marketing track',price:'₦10,000',  category:'Application Fee', stock:'Unlimited', active:true  },
-  // Templates
-  { id:'p4', name:'Agency Pro Template',    desc:'Premium multi-page agency website',        price:'€89',  category:'Template', stock:'Digital', active:true  },
-  { id:'p5', name:'Portfolio Elite',         desc:'Minimal portfolio for creatives',          price:'€49',  category:'Template', stock:'Digital', active:true  },
-  { id:'p6', name:'E-Commerce Starter',      desc:'Full WooCommerce-ready store',             price:'€79',  category:'Template', stock:'Digital', active:true  },
-  { id:'p7', name:'Restaurant Plus',         desc:'Restaurant/food business template',        price:'€39',  category:'Template', stock:'Digital', active:true  },
-  { id:'p8', name:'Business Classic',        desc:'Clean corporate business template',        price:'€35',  category:'Template', stock:'Digital', active:false },
-  // Courses
-  { id:'p9',  name:'Complete Web Design Masterclass',   desc:'40+ hours, Figma to code',           price:'€99', category:'Course', stock:'Digital', active:true  },
-  { id:'p10', name:'WordPress Business Course',          desc:'Build & sell WP sites',               price:'€79', category:'Course', stock:'Digital', active:true  },
-  { id:'p11', name:'Digital Marketing Fundamentals',     desc:'SEO, Ads & analytics',                price:'€59', category:'Course', stock:'Digital', active:true  },
-  { id:'p12', name:'Figma UI Design Course',             desc:'UI design from scratch',              price:'€49', category:'Course', stock:'Digital', active:false },
-];
+const PRODUCTS_DEFAULT = [];
 
-const ORDERS = [
-  { id:'#ORD-001', product:'Web Design Application',    buyer:'Tunde Adesanya',   amount:'₦15,000', category:'Application', date:'Mar 5 2026',  status:'Paid'    },
-  { id:'#ORD-002', product:'Agency Pro Template',        buyer:'David Miller',      amount:'€89',     category:'Template',    date:'Mar 4 2026',  status:'Paid'    },
-  { id:'#ORD-003', product:'WordPress Business Course',  buyer:'Sarah Chen',        amount:'€79',     category:'Course',      date:'Mar 3 2026',  status:'Paid'    },
-  { id:'#ORD-004', product:'Portfolio Elite',            buyer:'James Adeola',      amount:'€49',     category:'Template',    date:'Mar 3 2026',  status:'Paid'    },
-  { id:'#ORD-005', product:'Digital Mktg Application',  buyer:'Blessing Obi',      amount:'₦10,000', category:'Application', date:'Mar 1 2026',  status:'Paid'    },
-  { id:'#ORD-006', product:'Web Design Masterclass',     buyer:'Maria Santos',      amount:'€99',     category:'Course',      date:'Mar 1 2026',  status:'Paid'    },
-  { id:'#ORD-007', product:'E-Commerce Starter',         buyer:'Ahmed Hassan',      amount:'€79',     category:'Template',    date:'Feb 28 2026', status:'Paid'    },
-  { id:'#ORD-008', product:'WordPress Application',      buyer:'Chukwuemeka Eze',   amount:'₦15,000', category:'Application', date:'Mar 4 2026',  status:'Paid'    },
-  { id:'#ORD-009', product:'Figma UI Design Course',     buyer:'Emma Wilson',       amount:'€49',     category:'Course',      date:'Feb 27 2026', status:'Pending' },
-  { id:'#ORD-010', product:'Business Classic',           buyer:'Peter Okafor',      amount:'€35',     category:'Template',    date:'Feb 26 2026', status:'Paid'    },
-];
+const ORDERS = [];
 
 // ─── STATE ──────────────────────────────────────────────
 let applicantStatuses = JSON.parse(localStorage.getItem('gl_app_statuses') || '{}');
