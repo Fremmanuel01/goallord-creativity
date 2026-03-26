@@ -31,9 +31,13 @@ const uploadImage = multer({
 // File storage (raw, 50MB limit — for ZIP, RAR, PDF)
 const fileStorage = new CloudinaryStorage({
   cloudinary,
-  params: {
-    folder:          'goallord/products',
-    resource_type:   'raw'
+  params: async (req, file) => {
+    const originalName = file.originalname.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase();
+    return {
+      folder: 'goallord/products',
+      resource_type: 'raw',
+      public_id: originalName + '-' + Date.now()
+    };
   }
 });
 
