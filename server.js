@@ -162,7 +162,7 @@ app.use('/api/team',          require('./routes/team'));
 app.use('/api/logos',         require('./routes/logos'));
 app.use('/api/projects',      require('./routes/projects'));
 app.use('/api/tasks',         require('./routes/tasks'));
-app.use('/api/checkins',      require('./routes/checkins'));
+// app.use('/api/checkins',      require('./routes/checkins')); // removed
 
 app.use('/api/reminders',     require('./routes/reminders'));
 app.use('/api/affiliate',     require('./routes/affiliate'));
