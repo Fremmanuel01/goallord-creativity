@@ -1,6 +1,8 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 const User = require('../models/User');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 
@@ -232,6 +234,77 @@ router.post('/change-password', requireAuth, async (req, res) => {
     await user.save();
 
     res.json({ message: 'Password changed successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/auth/forgot-password — public, rate limited ────────
+const forgotLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 3, message: { error: 'Too many reset attempts. Try again later.' } });
+router.post('/forgot-password', forgotLimiter, async (req, res) => {
+  try {
+    const { email } = req.body;
+    // Always respond OK to prevent email enumeration
+    const user = await User.findOne({ email: email?.toLowerCase() });
+    if (!user) return res.json({ success: true });
+
+    const token   = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    user.resetToken   = token;
+    user.resetExpires = expires;
+    await user.save();
+
+    const host     = process.env.HOST || 'https://goallordcreativity.com';
+    const resetUrl = `${host}/reset-password.html?token=${token}&role=admin`;
+    const firstName = user.name.split(' ')[0];
+
+    await sendMail({
+      to:      user.email,
+      subject: 'Reset your password — Goallord Dashboard',
+      html: `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#080a0e;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+<div style="max-width:560px;margin:0 auto">
+  <div style="height:4px;background:linear-gradient(90deg,#E8782A,#FF9F43,#E8782A)"></div>
+  <div style="background:#0d1017;padding:40px 32px;text-align:center">
+    <div style="display:inline-block;background:rgba(232,120,42,0.12);border:1px solid rgba(232,120,42,0.25);border-radius:50%;width:72px;height:72px;line-height:72px;margin-bottom:20px">
+      <span style="font-size:28px">&#128273;</span>
+    </div>
+    <h1 style="color:#fff;font-size:24px;margin:0 0 8px">Password Reset</h1>
+    <p style="color:#6b7280;font-size:14px;margin:0 0 24px">We received a request to reset your password</p>
+    <p style="color:#d1d5db;font-size:15px;line-height:1.7;text-align:left">Hi <strong style="color:#fff">${firstName}</strong>, click the button below to set a new password. This link expires in 1 hour.</p>
+    <a href="${resetUrl}" style="display:inline-block;background:linear-gradient(135deg,#E8782A,#FF9F43);color:#fff;text-decoration:none;padding:14px 40px;border-radius:10px;font-weight:700;font-size:15px;margin:24px 0;box-shadow:0 4px 20px rgba(232,120,42,0.3)">Reset Password</a>
+    <p style="color:#4b5563;font-size:12px;margin-top:24px">If you didn't request this, ignore this email. Your password won't change.</p>
+  </div>
+  <div style="background:#080a0e;padding:20px 32px;text-align:center;border-top:1px solid #141820">
+    <p style="margin:0;font-size:11px;color:#374151">Goallord Creativity Limited, Onitsha</p>
+  </div>
+</div>
+</body></html>`
+    }).catch(e => console.error('Reset email error:', e.message));
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/auth/reset-password — public, rate limited ─────────
+const resetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, message: { error: 'Too many reset attempts. Try again later.' } });
+router.post('/reset-password', resetLimiter, async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) return res.status(400).json({ error: 'Token and new password are required' });
+    if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+    const user = await User.findOne({ resetToken: token, resetExpires: { $gt: new Date() } });
+    if (!user) return res.status(400).json({ error: 'Invalid or expired reset link' });
+
+    user.password     = await bcrypt.hash(newPassword, 10);
+    user.resetToken   = undefined;
+    user.resetExpires = undefined;
+    await user.save();
+
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

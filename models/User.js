@@ -20,7 +20,9 @@ const userSchema = new mongoose.Schema({
     academy:    { type: Boolean, default: false }
   },
   avatar:    { type: String, default: '' },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  resetToken:   { type: String },
+  resetExpires: { type: Date }
 });
 
 module.exports = mongoose.model('User', userSchema);

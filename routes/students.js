@@ -151,8 +151,9 @@ router.post('/forgot-password', resetLimiter, async (req, res) => {
   }
 });
 
-// ── POST /api/students/reset-password — public ──────────────────
-router.post('/reset-password', async (req, res) => {
+// ── POST /api/students/reset-password — public, rate limited ─────
+const studentResetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, message: { error: 'Too many reset attempts. Try again later.' } });
+router.post('/reset-password', studentResetLimiter, async (req, res) => {
   try {
     const { token, newPassword } = req.body;
     if (!token || !newPassword) return res.status(400).json({ error: 'token and newPassword are required' });

@@ -101,8 +101,10 @@ router.delete('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/lecturers/forgot-password — public ────────────────
-router.post('/forgot-password', async (req, res) => {
+// ── POST /api/lecturers/forgot-password — public, rate limited ───
+const rateLimit = require('express-rate-limit');
+const forgotLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 3, message: { error: 'Too many reset attempts. Try again later.' } });
+router.post('/forgot-password', forgotLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     const lecturer = await Lecturer.findOne({ email: email?.toLowerCase() });
@@ -129,8 +131,9 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-// ── POST /api/lecturers/reset-password — public ─────────────────
-router.post('/reset-password', async (req, res) => {
+// ── POST /api/lecturers/reset-password — public, rate limited ────
+const resetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, message: { error: 'Too many reset attempts. Try again later.' } });
+router.post('/reset-password', resetLimiter, async (req, res) => {
   try {
     const { token, newPassword } = req.body;
     if (!token || !newPassword) return res.status(400).json({ error: 'token and newPassword are required' });
