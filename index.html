@@ -550,6 +550,7 @@
                                     <li class="menu-item"><a href="about.html" class="item-link link text-caption"><span>03 /</span>ABOUT</a></li>
                                     <li class="menu-item"><a href="academy.html" class="item-link link text-caption"><span>04 /</span>ACADEMY</a></li>
                                     <li class="menu-item"><a href="blog.html" class="item-link link text-caption"><span>05 /</span>BLOG</a></li>
+                                    <li class="menu-item"><a href="shop.html" class="item-link link text-caption"><span>06 /</span>SHOP</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -2167,6 +2168,63 @@
             </div>
         </section>
         <!-- /About Us -->
+
+        <div class="container"><div class="br-line"></div></div>
+
+        <!-- Digital Products Section -->
+        <section class="flat-spacing" id="shopPreview">
+            <div class="container">
+                <div class="text-center" style="margin-bottom:60px">
+                    <h6 class="mini-title text-caption text-white-64 effectFade fadeUp">OUR PRODUCTS</h6>
+                    <h2 class="text-display-2 mt-16 effectFade fadeUp">Digital Products</h2>
+                    <p class="text-body-1 text-white-64 mt-16 effectFade fadeUp" style="max-width:520px;margin-left:auto;margin-right:auto;">
+                        Premium templates, plugins, and web applications ready to deploy for your business.
+                    </p>
+                </div>
+                <div id="featuredProductsGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;"></div>
+                <div class="text-center mt-5 effectFade fadeUp">
+                    <a href="shop.html" class="tf-btn style-fill"><span class="text-caption fw-medium">VIEW ALL PRODUCTS</span></a>
+                </div>
+            </div>
+        </section>
+        <style>
+            .fp-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 24px; transition: transform 0.3s, border-color 0.3s; display: flex; flex-direction: column; }
+            .fp-card:hover { transform: translateY(-4px); border-color: rgba(232,120,42,0.3); }
+            .fp-card-cat { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #E8782A; margin-bottom: 10px; }
+            .fp-card-name { font-size: 1rem; font-weight: 700; color: #F4F6FA; margin-bottom: 6px; }
+            .fp-card-type { font-size: 12px; color: #A0A6B3; margin-bottom: 12px; }
+            .fp-card-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+            .fp-card-price { font-size: 1.2rem; font-weight: 800; color: #F4F6FA; }
+            .fp-card-link { font-size: 12px; font-weight: 600; color: #E8782A; text-decoration: none; transition: opacity 0.2s; }
+            .fp-card-link:hover { opacity: 0.8; }
+            @media (max-width: 991px) { #featuredProductsGrid { grid-template-columns: repeat(2,1fr) !important; } }
+            @media (max-width: 575px) { #featuredProductsGrid { grid-template-columns: 1fr !important; } }
+        </style>
+        <script>
+        (function() {
+            fetch('/api/products')
+                .then(function(r) { return r.json(); })
+                .then(function(res) {
+                    var products = (res.data || []).filter(function(p) { return p.category !== 'Application Fee' && p.active !== false; }).slice(0, 4);
+                    var grid = document.getElementById('featuredProductsGrid');
+                    if (!products.length) { grid.style.display = 'none'; return; }
+                    grid.innerHTML = products.map(function(p) {
+                        var price = p.currency === 'NGN' ? '\u20A6' + Number(p.price).toLocaleString() : '$' + Number(p.price).toLocaleString();
+                        return '<div class="fp-card effectFade fadeUp">'
+                            + '<div class="fp-card-cat">' + p.category + '</div>'
+                            + '<div class="fp-card-name">' + p.name + '</div>'
+                            + '<div class="fp-card-type">' + (p.type || '') + '</div>'
+                            + '<div class="fp-card-bottom">'
+                            + '<span class="fp-card-price">' + price + '</span>'
+                            + '<a href="shop.html" class="fp-card-link">View &rarr;</a>'
+                            + '</div></div>';
+                    }).join('');
+                })
+                .catch(function() {});
+        })();
+        </script>
+
+        <div class="container"><div class="br-line"></div></div>
 
         <!-- Team Section -->
         <section class="section-team flat-spacing">

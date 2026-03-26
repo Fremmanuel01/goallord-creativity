@@ -2491,9 +2491,11 @@
 
       <div class="tab-bar">
         <button class="tab-btn active" data-tab="all">All</button>
-        <button class="tab-btn" data-tab="Application Fee">Application Fees</button>
         <button class="tab-btn" data-tab="Template">Templates</button>
+        <button class="tab-btn" data-tab="Plugin">Plugins</button>
+        <button class="tab-btn" data-tab="Web App">Web Apps</button>
         <button class="tab-btn" data-tab="Course">Courses</button>
+        <button class="tab-btn" data-tab="Application Fee">Application Fees</button>
       </div>
 
       <div class="product-grid" id="productGrid"></div>
@@ -4197,15 +4199,17 @@
           <div class="form-group">
             <label>Category</label>
             <select class="form-input" id="prodCategory">
-              <option value="Application Fee">Application Fee</option>
               <option value="Template">Template</option>
+              <option value="Plugin">Plugin</option>
+              <option value="Web App">Web App</option>
               <option value="Course">Course</option>
+              <option value="Application Fee">Application Fee</option>
             </select>
           </div>
           <div class="form-group">
             <label>Currency</label>
             <select class="form-input" id="prodCurrency">
-              <option value="€">€ EUR</option>
+              <option value="$">$ USD</option>
               <option value="₦">₦ NGN</option>
             </select>
           </div>
@@ -4223,6 +4227,20 @@
         <div class="form-group">
           <label>Description</label>
           <input class="form-input" type="text" id="prodDesc" placeholder="Short product description">
+        </div>
+        <div class="modal-form-row">
+          <div class="form-group">
+            <label>Type</label>
+            <input class="form-input" type="text" id="prodType" placeholder="e.g. HTML/CSS, WordPress Plugin, React App">
+          </div>
+          <div class="form-group">
+            <label>Demo URL</label>
+            <input class="form-input" type="text" id="prodDemoUrl" placeholder="https://demo.example.com">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Features (comma-separated)</label>
+          <input class="form-input" type="text" id="prodFeatures" placeholder="e.g. Responsive, Dark Theme, GSAP Animations">
         </div>
         <div class="form-group">
           <label>Status</label>
@@ -4571,6 +4589,8 @@ function catBadge(cat) {
   const map = {
     'Application Fee': 'badge-cat-app',
     'Template':        'badge-cat-tpl',
+    'Plugin':          'badge-cat-plugin',
+    'Web App':         'badge-cat-webapp',
     'Course':          'badge-cat-course',
   };
   return `<span class="badge ${map[cat] || ''}" style="font-size:0.65rem">${cat}</span>`;
@@ -4925,8 +4945,10 @@ function renderProducts() {
     return `<div class="product-card" id="prodcard-${p.id}">
       <div class="product-card-badge">${catBadge(p.category)}</div>
       <div class="product-name">${p.name}</div>
+      ${p.type ? `<div class="product-type" style="font-size:0.72rem;color:var(--orange);margin-bottom:4px">${p.type}</div>` : ''}
       <div class="product-desc">${p.desc}</div>
       <div class="product-price">${p.price}</div>
+      ${p.features ? `<div class="product-features" style="font-size:0.68rem;color:var(--muted);margin-top:4px">${p.features}</div>` : ''}
       <div class="product-meta">${p.stock}</div>
       <div class="product-footer">
         <div class="toggle-wrap">
@@ -4976,9 +4998,12 @@ function openEditProduct(id) {
   document.getElementById('prodStock').value    = p.stock;
   document.getElementById('prodStatus').value   = getProductActive(id) ? 'active' : 'inactive';
   // Parse price
-  const priceRaw = p.price.replace(/[₦€,]/g,'');
+  const priceRaw = p.price.replace(/[₦$€,]/g,'');
   document.getElementById('prodPrice').value    = priceRaw;
-  document.getElementById('prodCurrency').value = p.price.startsWith('₦') ? '₦' : '€';
+  document.getElementById('prodCurrency').value = p.price.startsWith('₦') ? '₦' : '$';
+  document.getElementById('prodType').value     = p.type || '';
+  document.getElementById('prodDemoUrl').value  = p.demoUrl || '';
+  document.getElementById('prodFeatures').value = p.features || '';
   openModal('addProductModal');
 }
 
@@ -4989,6 +5014,9 @@ function submitProduct() {
   const price    = document.getElementById('prodPrice').value;
   const stock    = document.getElementById('prodStock').value.trim() || 'Digital';
   const desc     = document.getElementById('prodDesc').value.trim();
+  const type     = document.getElementById('prodType').value.trim();
+  const demoUrl  = document.getElementById('prodDemoUrl').value.trim();
+  const features = document.getElementById('prodFeatures').value.trim();
   const isActive = document.getElementById('prodStatus').value === 'active';
 
   if (!name || !price) { alert('Please fill in name and price.'); return; }
@@ -4998,13 +5026,13 @@ function submitProduct() {
   if (editProductId) {
     const idx = products.findIndex(p => p.id === editProductId);
     if (idx > -1) {
-      products[idx] = { ...products[idx], name, category, price: formattedPrice, desc, stock };
+      products[idx] = { ...products[idx], name, category, price: formattedPrice, desc, stock, type, demoUrl, features };
       setProductActive(editProductId, isActive);
     }
     editProductId = null;
   } else {
     const newId = 'p' + Date.now();
-    products.push({ id: newId, name, category, price: formattedPrice, desc, stock, active: isActive });
+    products.push({ id: newId, name, category, price: formattedPrice, desc, stock, type, demoUrl, features, active: isActive });
     setProductActive(newId, isActive);
   }
 

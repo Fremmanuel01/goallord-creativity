@@ -65,21 +65,24 @@ async function seedProducts() {
   if (count > 0) return;
 
   const defaults = [
-    // Application Fees
-    { name: 'Web Design Academy Fee',        category: 'Application Fee', price: 25,   currency: 'EUR', description: 'Application fee for Web Design track' },
-    { name: 'WordPress Academy Fee',         category: 'Application Fee', price: 25,   currency: 'EUR', description: 'Application fee for WordPress track' },
-    { name: 'Digital Marketing Academy Fee', category: 'Application Fee', price: 25,   currency: 'EUR', description: 'Application fee for Digital Marketing track' },
+    // Application Fees (for academy — not shown in public store)
+    { name: 'Web Design Academy Fee',        category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for Web Design track' },
+    { name: 'WordPress Academy Fee',         category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for WordPress track' },
+    { name: 'Digital Marketing Academy Fee', category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for Digital Marketing track' },
+
     // Templates
-    { name: 'Agency Pro Template',           category: 'Template',        price: 49,   currency: 'EUR', description: 'Professional agency website template' },
-    { name: 'E-commerce Starter Template',   category: 'Template',        price: 39,   currency: 'EUR', description: 'Ready-to-launch e-commerce template' },
-    { name: 'Portfolio Minimal Template',    category: 'Template',        price: 29,   currency: 'EUR', description: 'Clean minimal portfolio template' },
-    { name: 'Restaurant & Cafe Template',    category: 'Template',        price: 35,   currency: 'EUR', description: 'Beautiful food & hospitality template' },
-    { name: 'Startup SaaS Template',         category: 'Template',        price: 59,   currency: 'EUR', description: 'Modern SaaS landing page template' },
-    // Courses
-    { name: 'Web Design Fundamentals',       category: 'Course',          price: 149,  currency: 'EUR', description: 'Complete web design from scratch' },
-    { name: 'WordPress Mastery Course',      category: 'Course',          price: 129,  currency: 'EUR', description: 'Build any website with WordPress' },
-    { name: 'Digital Marketing Blueprint',   category: 'Course',          price: 179,  currency: 'EUR', description: 'Social media, SEO & paid ads mastery' },
-    { name: 'Brand Identity Design',         category: 'Course',          price: 99,   currency: 'EUR', description: 'Logo, color & brand system design' },
+    { name: 'Agency Pro Template',   category: 'Template', price: 79,  currency: 'USD', type: 'HTML/CSS/JS',    description: 'Premium agency website template with GSAP animations, dark theme, responsive design, and modern layout sections.',     features: ['GSAP Animations', 'Dark Theme', 'Responsive', '15+ Sections', 'Contact Form', 'SEO Optimized'] },
+    { name: 'Portfolio Starter',     category: 'Template', price: 49,  currency: 'USD', type: 'HTML/CSS',       description: 'Clean portfolio template for creatives and designers. Minimal layout with smooth scroll and gallery.',                  features: ['Minimal Design', 'Gallery Grid', 'Smooth Scroll', 'Light & Dark Mode', 'Responsive'] },
+    { name: 'Business Starter',      category: 'Template', price: 59,  currency: 'USD', type: 'WordPress Theme', description: 'Professional business WordPress theme with WooCommerce ready, multiple page templates, and easy customizer.',           features: ['WooCommerce Ready', 'Page Templates', 'Customizer', 'Blog Layout', 'Contact Forms', 'Responsive'] },
+    { name: 'SaaS Launch Kit',       category: 'Template', price: 99,  currency: 'USD', type: 'React/Next.js',  description: 'SaaS landing page template with authentication, dashboard UI, and Stripe integration. Built with Next.js and Tailwind.', features: ['Auth Pages', 'Dashboard UI', 'Stripe Integration', 'Tailwind CSS', 'API Routes', 'Responsive'] },
+
+    // Plugins
+    { name: 'School Portal System',       category: 'Plugin', price: 199, currency: 'USD', type: 'WordPress Plugin', description: 'Complete school management system: student portal, results management, fee payments, attendance tracking, and parent access.',   features: ['Student Portal', 'Results Management', 'Fee Payments', 'Attendance Tracking', 'Parent Access', 'SMS Notifications'] },
+    { name: 'Church Management Plugin',   category: 'Plugin', price: 149, currency: 'USD', type: 'WordPress Plugin', description: 'Full church management: member database, online giving, event calendar, sermon archive, and group management.',               features: ['Member Database', 'Online Giving', 'Event Calendar', 'Sermon Archive', 'Group Management', 'Email Notifications'] },
+
+    // Web Apps
+    { name: 'Hospital Booking System',    category: 'Web App', price: 499, currency: 'USD', type: 'Node.js/React', description: 'Patient appointment booking system with doctor schedules, SMS reminders, admin dashboard, and patient records management.',     features: ['Appointment Booking', 'Doctor Schedules', 'SMS Reminders', 'Admin Dashboard', 'Patient Records', 'Payment Integration'] },
+    { name: 'E-learning Platform',        category: 'Web App', price: 399, currency: 'USD', type: 'Node.js/React', description: 'Complete e-learning platform with course management, video hosting, quizzes, certificates, and integrated payment system.',       features: ['Course Management', 'Video Hosting', 'Quizzes & Exams', 'Certificates', 'Payment Integration', 'Student Dashboard'] },
   ];
 
   await Product.insertMany(defaults);
