@@ -2348,7 +2348,7 @@
           <option value="">All Tracks</option>
           <option value="Web Design">Web Design</option>
           <option value="WordPress">WordPress</option>
-          <option value="Digital Marketing">Digital Marketing</option>
+
         </select>
         <select class="filter-select" id="appStatusFilter">
           <option value="">All Statuses</option>
@@ -3784,7 +3784,6 @@
           <option value="">All Tracks</option>
           <option>Web Design</option>
           <option>WordPress</option>
-          <option>Digital Marketing</option>
           <option>Brand Identity</option>
           <option>Other</option>
         </select>
@@ -4352,7 +4351,7 @@
         <div class="modal-form-row">
           <div class="form-group"><label>Track</label>
             <select class="form-input" id="stu-track">
-              <option>Web Design</option><option>WordPress</option><option>Digital Marketing</option><option>Brand Identity</option><option>Other</option>
+              <option>Web Design</option><option>WordPress</option><option>Brand Identity</option><option>Other</option>
             </select>
           </div>
           <div class="form-group"><label>Batch</label>
@@ -5201,7 +5200,7 @@ function initCharts() {
   window._donutChart = new Chart(doCtx, {
     type: 'doughnut',
     data: {
-      labels: ['Web Design', 'WordPress', 'Digital Marketing'],
+      labels: ['Web Design', 'WordPress', 'Brand Identity'],
       datasets: [{
         data: [22, 18, 7],
         backgroundColor: [
@@ -5696,7 +5695,7 @@ async function updateRevenueChart() {
 }
 
 function updateDonutChart() {
-  const tracks = ['Web Design', 'WordPress', 'Digital Marketing', 'Brand Identity', 'Other'];
+  const tracks = ['Web Design', 'WordPress', 'Brand Identity', 'Other'];
   const counts = tracks.map(t => window.APPLICANTS.filter(a => a.track === t).length);
   const nonZero = tracks.map((t,i) => ({ label: t, count: counts[i] })).filter(x => x.count > 0);
   window._donutChart.data.labels   = nonZero.map(x => x.label);
@@ -9428,7 +9427,6 @@ function showErr(el, msg) {
           <option value="">All Tracks</option>
           <option>Web Design</option>
           <option>WordPress</option>
-          <option>Digital Marketing</option>
           <option>Brand Identity</option>
           <option>Other</option>
         </select>

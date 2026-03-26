@@ -5,7 +5,7 @@ const applicantSchema = new mongoose.Schema({
   email:      { type: String, required: true, lowercase: true, unique: true, trim: true, maxlength: 150, match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
   phone:      { type: String, maxlength: 20 },
   location:   { type: String, maxlength: 200 },
-  track:      { type: String, enum: ['Web Design', 'WordPress', 'Digital Marketing', 'Brand Identity', 'Other'] },
+  track:      { type: String, enum: ['Web Design', 'WordPress', 'Brand Identity', 'Other'] },
   experience: { type: String, maxlength: 1000 },
   schedule:   { type: String, maxlength: 200 },
   howFound:   { type: String, maxlength: 200 },

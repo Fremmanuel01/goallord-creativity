@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const batchSchema = new mongoose.Schema({
   name:      { type: String, required: true, unique: true }, // e.g. "Batch 100"
   number:    { type: Number, required: true, unique: true }, // 100, 101, etc.
-  track:     { type: String, enum: ['Web Design', 'WordPress', 'Digital Marketing', 'Brand Identity', 'Other'] },
+  track:     { type: String, enum: ['Web Design', 'WordPress', 'Brand Identity', 'Other'] },
   isActive:  { type: Boolean, default: false },
   startDate: { type: Date },
   endDate:   { type: Date },

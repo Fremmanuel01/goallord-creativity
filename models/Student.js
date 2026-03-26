@@ -5,7 +5,7 @@ const studentSchema = new mongoose.Schema({
   email:              { type: String, required: true, unique: true, lowercase: true, trim: true, maxlength: 150 },
   password:           { type: String, required: true },
   phone:              { type: String, maxlength: 30 },
-  track:              { type: String, enum: ['Web Design', 'WordPress', 'Digital Marketing', 'Brand Identity', 'Other'], required: true },
+  track:              { type: String, enum: ['Web Design', 'WordPress', 'Brand Identity', 'Other'], required: true },
   batch:              { type: mongoose.Schema.Types.ObjectId, ref: 'Batch' },
   profilePicture:     { type: String, default: '', maxlength: 500 },
   paymentPlan:        { type: String, enum: ['monthly', 'full_upfront'], default: 'monthly' },
