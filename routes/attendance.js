@@ -2,7 +2,7 @@ const express    = require('express');
 const Attendance = require('../models/Attendance');
 const Student    = require('../models/Student');
 const Batch      = require('../models/Batch');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { requireStudent } = require('../middleware/studentAuth');
 const { requireLecturer } = require('../middleware/lecturerAuth');
 
@@ -210,6 +210,17 @@ router.get('/:id', requireAuth, async (req, res) => {
       .populate('absentStudents', 'fullName email track');
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── DELETE /api/attendance/:id — admin only ──────────────────
+router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const record = await Attendance.findByIdAndDelete(req.params.id);
+    if (!record) return res.status(404).json({ error: 'Record not found' });
+    res.json({ message: 'Attendance record deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -8912,9 +8912,21 @@ async function loadAttendancePage() {
       <td style="padding:12px 14px"><span style="color:var(--success);font-weight:700">${r.presentStudents?.length || 0}</span></td>
       <td style="padding:12px 14px"><span style="color:var(--danger);font-weight:700">${r.absentStudents?.length || 0}</span></td>
       <td style="padding:12px 14px;color:var(--muted);font-size:13px">${r.takenBy || 'Admin'}</td>
-      <td style="padding:12px 14px"><button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="viewAttendanceSession('${r._id}')">View</button></td>
+      <td style="padding:12px 14px">
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="viewAttendanceSession('${r._id}')">View</button>
+        ${JSON.parse(localStorage.gl_user || '{}').role === 'admin' ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--danger);margin-left:4px" onclick="deleteAttendance('${r._id}')">Delete</button>` : ''}
+      </td>
     </tr>
   `).join('');
+}
+
+async function deleteAttendance(id) {
+  if (!confirm('Delete this attendance record permanently?')) return;
+  const data = await apiFetch('/api/attendance/' + id, { method: 'DELETE' });
+  if (data) {
+    showToast('Attendance record deleted', 'success');
+    loadAttendancePage();
+  }
 }
 
 function openTakeAttendance() {
