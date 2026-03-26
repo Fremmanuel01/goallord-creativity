@@ -32,7 +32,9 @@ router.get('/:id', async (req, res) => {
 router.post('/', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { name, category, price, currency, description, stock, active, image, type, demoUrl, features, downloadUrl } = req.body;
-    const doc = await Product.create({ name, category, price, currency, description, stock, active, image, type, demoUrl, features, downloadUrl });
+    const cleanCurrency = (currency === '₦' || currency === 'NGN') ? 'NGN' : 'USD';
+    const cleanStock = (stock === 'Digital' || stock === 'Unlimited' || stock === '' || stock === undefined) ? -1 : Number(stock) || -1;
+    const doc = await Product.create({ name, category, price, currency: cleanCurrency, description, stock: cleanStock, active, image, type, demoUrl, features, downloadUrl });
     res.status(201).json(doc);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -47,9 +49,9 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
     if (name !== undefined) updates.name = name;
     if (category !== undefined) updates.category = category;
     if (price !== undefined) updates.price = price;
-    if (currency !== undefined) updates.currency = currency;
+    if (currency !== undefined) updates.currency = (currency === '₦' || currency === 'NGN') ? 'NGN' : 'USD';
     if (description !== undefined) updates.description = description;
-    if (stock !== undefined) updates.stock = stock;
+    if (stock !== undefined) updates.stock = (stock === 'Digital' || stock === 'Unlimited' || stock === '') ? -1 : Number(stock) || -1;
     if (active !== undefined) updates.active = active;
     if (image !== undefined) updates.image = image;
     if (type !== undefined) updates.type = type;

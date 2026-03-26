@@ -33,8 +33,7 @@ const fileStorage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder:          'goallord/products',
-    resource_type:   'raw',
-    allowed_formats: ['zip', 'rar', '7z', 'gz', 'pdf', 'doc', 'docx']
+    resource_type:   'raw'
   }
 });
 
