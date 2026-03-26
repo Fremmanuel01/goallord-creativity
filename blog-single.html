@@ -347,6 +347,15 @@
         .gl-blog-sidebar {
             position: sticky;
             top: 100px;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22,1,0.36,1);
+        }
+        .gl-blog-sidebar.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
         }
         @media (max-width: 991px) {
             .gl-blog-layout {
@@ -1113,7 +1122,9 @@
           // ── Reading progress bar ────────────────────────────────────
           var progressBar  = document.getElementById('readProgress');
           var stickyCta    = document.getElementById('glStickyCta');
+          var blogSidebar  = document.querySelector('.gl-blog-sidebar');
           var ctaShown     = false;
+          var sidebarShown = false;
           window.addEventListener('scroll', function() {
             var body    = document.body;
             var html    = document.documentElement;
@@ -1121,6 +1132,16 @@
             var current = window.scrollY || window.pageYOffset;
             var pct     = total > 0 ? Math.min(100, (current / total) * 100) : 0;
             progressBar.style.width = pct + '%';
+            // Show sidebar after 30% scroll
+            if (blogSidebar) {
+              if (pct >= 30 && !sidebarShown) {
+                blogSidebar.classList.add('visible');
+                sidebarShown = true;
+              } else if (pct < 25 && sidebarShown) {
+                blogSidebar.classList.remove('visible');
+                sidebarShown = false;
+              }
+            }
             // Show sticky CTA after 40% scroll
             if (!ctaShown && pct >= 40 && stickyCta.dataset.active === '1') {
               stickyCta.classList.add('visible');
