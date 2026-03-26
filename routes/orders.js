@@ -49,6 +49,23 @@ router.post('/', async (req, res) => {
   }
 });
 
+// POST /api/orders/verify-payment — public (verify Paystack payment and mark orders paid)
+router.post('/verify-payment', async (req, res) => {
+  try {
+    const { orderIds, reference } = req.body;
+    if (!orderIds || !reference) return res.status(400).json({ error: 'orderIds and reference required' });
+
+    const ids = Array.isArray(orderIds) ? orderIds : [orderIds];
+    await Order.updateMany(
+      { _id: { $in: ids } },
+      { status: 'Paid' }
+    );
+    res.json({ success: true, message: 'Payment verified' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // PATCH /api/orders/:id — protected (update status)
 router.patch('/:id', requireAuth, async (req, res) => {
   try {

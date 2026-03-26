@@ -672,10 +672,14 @@
             }).then(function(r) { return r.json(); });
         });
 
+        var btn = document.querySelector('.btn-paystack');
+        btn.disabled = true; btn.textContent = 'Processing...';
+
         Promise.all(orderPromises).then(function(orders) {
-            // Use first order ID as reference
-            var orderIds = orders.map(function(o) { return o._id || o.id || 'N/A'; });
+            var orderIds = orders.map(function(o) { return o.id || o._id || 'N/A'; });
             var refId = 'GL-' + Date.now();
+
+            btn.textContent = 'Opening payment...';
 
             var handler = PaystackPop.setup({
                 key: 'pk_test_e33ca1fa06a3607557eb50eff500ea50cdee4cba',
@@ -690,33 +694,31 @@
                     ]
                 },
                 callback: function(response) {
-                    // Update all orders to Paid
-                    orderIds.forEach(function(oid) {
-                        fetch('/api/orders/' + oid, {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ status: 'Paid', paymentRef: response.reference })
-                        });
+                    // Verify payment via public endpoint
+                    fetch('/api/orders/verify-payment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderIds: orderIds, reference: response.reference })
+                    }).then(function() {
+                        document.querySelector('.checkout-card').style.display = 'none';
+                        document.getElementById('checkoutSuccess').classList.add('active');
+                        document.getElementById('successOrderId').textContent = 'Order Reference: ' + response.reference;
+                        cart = [];
+                        saveCart();
+                        renderCartItems();
                     });
-
-                    // Show success
-                    document.querySelector('.checkout-card').style.display = 'none';
-                    document.getElementById('checkoutSuccess').classList.add('active');
-                    document.getElementById('successOrderId').textContent = 'Order Reference: ' + response.reference;
-
-                    // Clear cart
-                    cart = [];
-                    saveCart();
-                    renderCartItems();
                 },
                 onClose: function() {
-                    // Payment cancelled — orders remain unpaid
+                    btn.disabled = false;
+                    btn.textContent = 'Pay with Paystack';
                 }
             });
             handler.openIframe();
         }).catch(function(err) {
             console.error('Order creation failed:', err);
             alert('Failed to create order. Please try again.');
+            btn.disabled = false;
+            btn.textContent = 'Pay with Paystack';
         });
     }
 
