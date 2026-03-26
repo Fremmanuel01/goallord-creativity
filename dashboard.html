@@ -4243,6 +4243,13 @@
           <input class="form-input" type="text" id="prodFeatures" placeholder="e.g. Responsive, Dark Theme, GSAP Animations">
         </div>
         <div class="form-group">
+          <label>Product Image</label>
+          <div id="prodImagePreview" style="width:100%;height:120px;border-radius:8px;background:var(--bg);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;overflow:hidden;margin-bottom:8px">No image</div>
+          <input type="file" id="prodImageFile" accept="image/*" style="display:none" onchange="uploadProductImage()">
+          <button class="btn btn-ghost" type="button" onclick="document.getElementById('prodImageFile').click()" style="font-size:12px">Upload Image</button>
+          <input type="hidden" id="prodImage">
+        </div>
+        <div class="form-group">
           <label>Status</label>
           <select class="form-input" id="prodStatus">
             <option value="active">Active</option>
@@ -4926,9 +4933,9 @@ function getProductActive(id) {
   return p ? p.active : true;
 }
 
-function setProductActive(id, val) {
-  productStates[id] = val;
-  localStorage.setItem('gl_prod_states', JSON.stringify(productStates));
+async function setProductActive(id, val) {
+  await apiFetch('/api/products/' + id, { method: 'PATCH', body: JSON.stringify({ active: val }) });
+  renderProducts();
 }
 
 function renderProducts() {
@@ -5004,10 +5011,42 @@ function openEditProduct(id) {
   document.getElementById('prodType').value     = p.type || '';
   document.getElementById('prodDemoUrl').value  = p.demoUrl || '';
   document.getElementById('prodFeatures').value = p.features || '';
+  // Load image if exists
+  if (p.image) {
+    document.getElementById('prodImage').value = p.image;
+    document.getElementById('prodImagePreview').innerHTML = '<img src="' + p.image + '" style="width:100%;height:100%;object-fit:cover">';
+  } else {
+    document.getElementById('prodImage').value = '';
+    document.getElementById('prodImagePreview').innerHTML = 'No image';
+  }
   openModal('addProductModal');
 }
 
-function submitProduct() {
+async function uploadProductImage() {
+  const file = document.getElementById('prodImageFile').files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('image', file);
+  try {
+    document.getElementById('prodImagePreview').innerHTML = '<span style="font-size:11px;color:var(--muted)">Uploading...</span>';
+    const res = await fetch('/api/upload', { method: 'POST', headers: { 'Authorization': 'Bearer ' + localStorage.gl_token }, body: fd });
+    const data = await res.json();
+    if (data.url) {
+      document.getElementById('prodImage').value = data.url;
+      document.getElementById('prodImagePreview').innerHTML = '<img src="' + data.url + '" style="width:100%;height:100%;object-fit:cover">';
+      showToast('Image uploaded', 'success');
+    } else {
+      document.getElementById('prodImagePreview').innerHTML = '<span style="font-size:11px;color:#f87171">Upload failed</span>';
+      showToast(data.error || 'Upload failed', 'error');
+    }
+  } catch(e) {
+    console.error('Product image upload error:', e);
+    document.getElementById('prodImagePreview').innerHTML = '<span style="font-size:11px;color:#f87171">Upload failed</span>';
+    showToast('Upload failed: ' + e.message, 'error');
+  }
+}
+
+async function submitProduct() {
   const name     = document.getElementById('prodName').value.trim();
   const category = document.getElementById('prodCategory').value;
   const currency = document.getElementById('prodCurrency').value;
@@ -5018,28 +5057,35 @@ function submitProduct() {
   const demoUrl  = document.getElementById('prodDemoUrl').value.trim();
   const features = document.getElementById('prodFeatures').value.trim();
   const isActive = document.getElementById('prodStatus').value === 'active';
+  const image    = document.getElementById('prodImage').value;
 
   if (!name || !price) { alert('Please fill in name and price.'); return; }
 
-  const formattedPrice = currency + Number(price).toLocaleString();
+  const numericPrice = Number(price);
+  const currencyCode = currency === '\u20A6' ? 'NGN' : 'USD';
+  const featuresArr = features ? features.split(',').map(f => f.trim()).filter(Boolean) : [];
 
   if (editProductId) {
-    const idx = products.findIndex(p => p.id === editProductId);
-    if (idx > -1) {
-      products[idx] = { ...products[idx], name, category, price: formattedPrice, desc, stock, type, demoUrl, features };
-      setProductActive(editProductId, isActive);
-    }
+    const data = await apiFetch('/api/products/' + editProductId, {
+      method: 'PATCH',
+      body: JSON.stringify({ name, category, price: numericPrice, currency: currencyCode, description: desc, stock, type, demoUrl, features: featuresArr, active: isActive, image })
+    });
+    if (data) showToast('Product updated', 'success');
     editProductId = null;
   } else {
-    const newId = 'p' + Date.now();
-    products.push({ id: newId, name, category, price: formattedPrice, desc, stock, type, demoUrl, features, active: isActive });
-    setProductActive(newId, isActive);
+    const data = await apiFetch('/api/products', {
+      method: 'POST',
+      body: JSON.stringify({ name, category, price: numericPrice, currency: currencyCode, description: desc, stock, type, demoUrl, features: featuresArr, active: isActive, image })
+    });
+    if (data) showToast('Product created', 'success');
   }
 
-  localStorage.setItem('gl_products', JSON.stringify(products));
   closeModal('addProductModal');
   renderProducts();
   document.getElementById('addProductModalTitle').textContent = 'Add Product';
+  // Reset image preview
+  document.getElementById('prodImagePreview').innerHTML = 'No image';
+  document.getElementById('prodImage').value = '';
 }
 
 // Store tab switcher
@@ -5080,14 +5126,34 @@ function renderOrders() {
     <td style="font-weight:700">${o.amount}</td>
     <td>${catBadge(o.category)}</td>
     <td class="muted">${o.date}</td>
-    <td>${badge(o.status)}</td>
     <td>
+      <select onchange="updateOrderStatus('${o._id}', this.value)" style="background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer">
+        <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
+        <option value="Paid" ${o.status === 'Paid' ? 'selected' : ''}>Paid</option>
+        <option value="Refunded" ${o.status === 'Refunded' ? 'selected' : ''}>Refunded</option>
+      </select>
+    </td>
+    <td style="display:flex;gap:6px;align-items:center">
       ${o.status === 'Paid' ? `<button style="padding:5px 10px;font-size:12px;background:#22c55e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick='openReceipt(${rcptData})'>Receipt</button>` : `<button class="btn-icon" title="View" disabled style="opacity:0.4">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
       </button>`}
+      <button class="btn-icon danger" title="Delete Order" onclick="deleteOrder('${o._id}')" style="margin-left:4px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </button>
     </td>
   </tr>`;
   }).join('');
+}
+
+async function updateOrderStatus(id, status) {
+    const data = await apiFetch('/api/orders/' + id, { method: 'PATCH', body: JSON.stringify({ status }) });
+    if (data) { showToast('Order updated', 'success'); loadOrdersFromAPI(); }
+}
+
+async function deleteOrder(id) {
+    if (!confirm('Delete this order?')) return;
+    const data = await apiFetch('/api/orders/' + id, { method: 'DELETE' });
+    if (data) { showToast('Order deleted', 'success'); loadOrdersFromAPI(); }
 }
 
 document.querySelectorAll('.tab-btn[data-ordertab]').forEach(btn => {

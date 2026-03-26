@@ -1,6 +1,6 @@
 const express = require('express');
 const Product = require('../models/Product');
-const { requireAuth, optionalAuth } = require('../middleware/auth');
+const { requireAuth, optionalAuth, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -28,20 +28,36 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/products — protected
-router.post('/', requireAuth, async (req, res) => {
+// POST /api/products — admin only, with field whitelisting
+router.post('/', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const doc = await Product.create(req.body);
+    const { name, category, price, currency, description, stock, active, image, type, demoUrl, features, downloadUrl } = req.body;
+    const doc = await Product.create({ name, category, price, currency, description, stock, active, image, type, demoUrl, features, downloadUrl });
     res.status(201).json(doc);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// PATCH /api/products/:id — protected
-router.patch('/:id', requireAuth, async (req, res) => {
+// PATCH /api/products/:id — admin only, with field whitelisting
+router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const doc = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    const { name, category, price, currency, description, stock, active, image, type, demoUrl, features, downloadUrl } = req.body;
+    const updates = {};
+    if (name !== undefined) updates.name = name;
+    if (category !== undefined) updates.category = category;
+    if (price !== undefined) updates.price = price;
+    if (currency !== undefined) updates.currency = currency;
+    if (description !== undefined) updates.description = description;
+    if (stock !== undefined) updates.stock = stock;
+    if (active !== undefined) updates.active = active;
+    if (image !== undefined) updates.image = image;
+    if (type !== undefined) updates.type = type;
+    if (demoUrl !== undefined) updates.demoUrl = demoUrl;
+    if (features !== undefined) updates.features = features;
+    if (downloadUrl !== undefined) updates.downloadUrl = downloadUrl;
+
+    const doc = await Product.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
   } catch (err) {
@@ -49,8 +65,8 @@ router.patch('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// DELETE /api/products/:id — protected
-router.delete('/:id', requireAuth, async (req, res) => {
+// DELETE /api/products/:id — admin only
+router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
     res.json({ success: true });

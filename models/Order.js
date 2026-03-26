@@ -6,7 +6,7 @@ const orderSchema = new mongoose.Schema({
   buyerName:   { type: String, required: true },
   buyerEmail:  { type: String, required: true, lowercase: true },
   amount:      { type: Number, required: true },
-  currency:    { type: String, default: 'EUR' },
+  currency:    { type: String, default: 'USD' },
   category:    { type: String },
   status:      { type: String, enum: ['Paid', 'Pending', 'Refunded'], default: 'Pending' },
   createdAt:   { type: Date, default: Date.now }

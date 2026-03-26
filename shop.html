@@ -681,39 +681,53 @@
 
             btn.textContent = 'Opening payment...';
 
-            var handler = PaystackPop.setup({
-                key: 'pk_test_e33ca1fa06a3607557eb50eff500ea50cdee4cba',
-                email: email,
-                amount: amountInKobo,
-                currency: 'NGN',
-                ref: refId,
-                metadata: {
-                    custom_fields: [
-                        { display_name: 'Buyer Name', variable_name: 'buyer_name', value: name },
-                        { display_name: 'Order IDs', variable_name: 'order_ids', value: orderIds.join(', ') }
-                    ]
-                },
-                callback: function(response) {
-                    // Verify payment via public endpoint
-                    fetch('/api/orders/verify-payment', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ orderIds: orderIds, reference: response.reference })
-                    }).then(function() {
-                        document.querySelector('.checkout-card').style.display = 'none';
-                        document.getElementById('checkoutSuccess').classList.add('active');
-                        document.getElementById('successOrderId').textContent = 'Order Reference: ' + response.reference;
-                        cart = [];
-                        saveCart();
-                        renderCartItems();
-                    });
-                },
-                onClose: function() {
-                    btn.disabled = false;
-                    btn.textContent = 'Pay with Paystack';
-                }
+            // Fetch Paystack public key from server
+            fetch('/api/orders/paystack-key').then(function(r) { return r.json(); }).then(function(keyData) {
+                var handler = PaystackPop.setup({
+                    key: keyData.key,
+                    email: email,
+                    amount: amountInKobo,
+                    currency: 'NGN',
+                    ref: refId,
+                    metadata: {
+                        custom_fields: [
+                            { display_name: 'Buyer Name', variable_name: 'buyer_name', value: name },
+                            { display_name: 'Order IDs', variable_name: 'order_ids', value: orderIds.join(', ') }
+                        ]
+                    },
+                    callback: function(response) {
+                        // Verify payment via server-side Paystack verification
+                        fetch('/api/orders/verify-payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ orderIds: orderIds, reference: response.reference })
+                        }).then(function(r) { return r.json(); }).then(function(result) {
+                            if (result.success) {
+                                document.querySelector('.checkout-card').style.display = 'none';
+                                document.getElementById('checkoutSuccess').classList.add('active');
+                                document.getElementById('successOrderId').textContent = 'Order Reference: ' + response.reference;
+                                cart = [];
+                                saveCart();
+                                renderCartItems();
+                            } else {
+                                alert('Payment verification failed: ' + (result.error || 'Unknown error'));
+                                btn.disabled = false;
+                                btn.textContent = 'Pay with Paystack';
+                            }
+                        });
+                    },
+                    onClose: function() {
+                        btn.disabled = false;
+                        btn.textContent = 'Pay with Paystack';
+                    }
+                });
+                handler.openIframe();
+            }).catch(function(err) {
+                console.error('Failed to fetch Paystack key:', err);
+                alert('Payment initialization failed. Please try again.');
+                btn.disabled = false;
+                btn.textContent = 'Pay with Paystack';
             });
-            handler.openIframe();
         }).catch(function(err) {
             console.error('Order creation failed:', err);
             alert('Failed to create order. Please try again.');
