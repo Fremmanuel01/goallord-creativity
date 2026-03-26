@@ -106,8 +106,9 @@ router.post('/register', requireAuth, requireAdmin, async (req, res) => {
           <p style="font-size:12px;color:#555;margin-top:32px">Goallord Creativity Limited, No. 1 Mission Road, Onitsha</p>
         </div>`
       });
+      console.log('[Auth] Welcome email sent to ' + user.email);
     } catch (emailErr) {
-      console.error('Failed to send welcome email:', emailErr.message);
+      console.error('[Auth] Failed to send welcome email to ' + user.email + ':', emailErr.message, emailErr.stack);
     }
 
     res.status(201).json({
