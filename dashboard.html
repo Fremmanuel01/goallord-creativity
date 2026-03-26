@@ -2512,15 +2512,15 @@
       <div class="summary-bar">
         <div class="summary-item">
           <div class="s-label">Total Revenue</div>
-          <div class="s-value">€3,240 + ₦490,000</div>
+          <div class="s-value" id="orderRevenue">$0</div>
         </div>
         <div class="summary-item" style="border-left:1px solid var(--border); padding-left:24px">
           <div class="s-label">Total Orders</div>
-          <div class="s-value">47</div>
+          <div class="s-value" id="orderCount">0</div>
         </div>
         <div class="summary-item" style="border-left:1px solid var(--border); padding-left:24px">
           <div class="s-label">Avg. Order</div>
-          <div class="s-value">€69</div>
+          <div class="s-value" id="orderAvg">$0</div>
         </div>
       </div>
 
@@ -4477,7 +4477,7 @@ const CLIENTS = [];
 
 const PRODUCTS_DEFAULT = [];
 
-const ORDERS = [];
+var ORDERS = [];
 
 // ─── STATE ──────────────────────────────────────────────
 let applicantStatuses = JSON.parse(localStorage.getItem('gl_app_statuses') || '{}');
@@ -5056,6 +5056,13 @@ document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
 let orderTab = 'all';
 
 function renderOrders() {
+  // Update stats from real data
+  const paid = ORDERS.filter(o => o.status === 'Paid');
+  const totalUSD = paid.reduce((s, o) => s + (o.currency === 'NGN' ? (o.rawAmount || 0) / 1560 : (o.rawAmount || 0)), 0);
+  document.getElementById('orderRevenue').textContent = '$' + Math.round(totalUSD).toLocaleString();
+  document.getElementById('orderCount').textContent = ORDERS.length;
+  document.getElementById('orderAvg').textContent = ORDERS.length ? '$' + Math.round(totalUSD / (paid.length || 1)) : '$0';
+
   const tbody = document.getElementById('ordersBody');
   const list = orderTab === 'all' ? ORDERS : ORDERS.filter(o => o.status === orderTab);
 
@@ -5107,7 +5114,7 @@ function renderOverviewApplicants() {
 
 function renderOverviewOrders() {
   const tbody = document.querySelector('#recentOrdersTable tbody');
-  const recent = (window.ORDERS || ORDERS).slice(0, 5);
+  const recent = ORDERS.slice(0, 5);
   tbody.innerHTML = recent.map(o => `<tr onclick="navigate('orders')">
     <td style="font-size:0.775rem">${o.product}</td>
     <td class="muted">${o.buyer}</td>
@@ -5627,7 +5634,7 @@ async function loadOverviewStats() {
 async function loadOrdersFromAPI() {
   const data = await apiFetch('/api/orders?limit=500');
   if (!data) return;
-  window.ORDERS = data.data.map(o => ({
+  ORDERS = data.data.map(o => ({
     _id:        o._id,
     id:         '#' + (o.orderId || o._id.slice(-6).toUpperCase()),
     orderId:    o.orderId,
@@ -5638,7 +5645,7 @@ async function loadOrdersFromAPI() {
     buyerEmail: o.buyerEmail,
     rawAmount:  o.amount,
     currency:   o.currency,
-    amount:     (o.currency === 'EUR' ? '€' : '₦') + (o.amount || 0),
+    amount:     (o.currency === 'NGN' ? '₦' : '$') + (o.amount || 0),
     category:   o.category || 'Other',
     date:       new Date(o.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }),
     createdAt:  o.createdAt,
