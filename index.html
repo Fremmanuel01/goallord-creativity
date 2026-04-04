@@ -516,6 +516,15 @@
     <!-- /Scroll Top -->
 
     <!-- Preload -->
+    <!-- Page transition overlay -->
+    <div class="gl-page-transition"></div>
+
+    <!-- Social proof toast -->
+    <div class="gl-toast" id="glToast">
+        <div class="gl-toast-dot"></div>
+        <div class="gl-toast-text" id="glToastText"></div>
+    </div>
+
     <div class="preloader overflow-hidden">
         <div class="site-name"><span>GOALLORD</span></div>
         <div class="preloader-gutters">
@@ -641,6 +650,7 @@
                                 <span class="gl-hero-stars" aria-label="5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
                                 <span class="gl-hero-proof-text" id="glHeroProof">50+ projects delivered &middot; 98% client satisfaction</span>
                             </div>
+                            <p class="gl-hero-tagline" id="glHeroTagline">Crafting digital experiences that turn visitors into customers and brands into movements.</p>
                             <!-- Stats bar -->
                             <div class="gl-hero-stats effectFade" id="glHeroStats">
                                 <div class="gl-hero-stat">
@@ -775,6 +785,23 @@
             </div>
         </div>
         <!-- /Selected Work -->
+
+        <!-- Showreel / Brand Moment -->
+        <section class="gl-reel-section">
+            <div class="gl-reel-bg"></div>
+            <div class="gl-reel-overlay"></div>
+            <div class="gl-reel-lines"></div>
+            <div class="gl-reel-content effectFade fadeUp">
+                <p class="gl-reel-eyebrow">Our Craft</p>
+                <h2 class="gl-reel-title">Design. Build.<br><span>Deliver.</span></h2>
+                <p class="gl-reel-subtitle">From concept to launch — we create digital products that stand apart in a crowded market.</p>
+                <a href="portfolio.html" class="gl-reel-play">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    View Our Work
+                </a>
+            </div>
+        </section>
+        <!-- /Showreel -->
 
         <!-- Why Choose Us -->
         <section class="gl-why-section flat-spacing">
@@ -2564,6 +2591,13 @@
         <!-- Footer -->
         <footer class="tf-footer">
             <div class="container">
+                <div class="gl-footer-cta">
+                    <h2 class="gl-footer-cta-title effectFade fadeUp">Let's build something<br>extraordinary.</h2>
+                    <p class="gl-footer-cta-sub effectFade fadeUp">Ready to stand out? Let's talk about your project.</p>
+                    <a href="contact.html" class="tf-btn style-fill effectFade fadeUp"><span class="text-caption fw-medium">START A PROJECT</span></a>
+                </div>
+            </div>
+            <div class="container">
                 <div class="br-line"></div>
             </div>
             <div class="footer-inner">
@@ -3830,6 +3864,153 @@
         });
     })();
     </script>
+
+<!-- Premium: Preloader letter stagger -->
+<script>
+(function(){
+    var sn = document.querySelector('.preloader .site-name span');
+    if (!sn) return;
+    var text = sn.textContent;
+    sn.innerHTML = '';
+    for (var i = 0; i < text.length; i++) {
+        var letter = document.createElement('span');
+        letter.className = 'gl-preload-letter';
+        letter.textContent = text[i];
+        letter.style.animationDelay = (i * 0.08) + 's';
+        sn.appendChild(letter);
+    }
+})();
+</script>
+
+<!-- Premium: Hero tagline word-by-word reveal -->
+<script>
+(function(){
+    var tagline = document.getElementById('glHeroTagline');
+    if (!tagline) return;
+    var text = tagline.textContent.trim();
+    var words = text.split(/\s+/);
+    tagline.innerHTML = '';
+    words.forEach(function(w) {
+        var span = document.createElement('span');
+        span.className = 'gl-word';
+        span.textContent = w;
+        tagline.appendChild(span);
+    });
+    // Reveal after preloader
+    function reveal() {
+        var wordEls = tagline.querySelectorAll('.gl-word');
+        wordEls.forEach(function(el, i) {
+            setTimeout(function() {
+                el.classList.add('is-visible');
+            }, 800 + i * 80);
+        });
+    }
+    var preloader = document.querySelector('.preloader');
+    if (!preloader) { reveal(); return; }
+    var obs = new MutationObserver(function(muts) {
+        muts.forEach(function(m) {
+            m.removedNodes.forEach(function(n) {
+                if (n === preloader || (n.classList && n.classList.contains('preloader'))) {
+                    obs.disconnect();
+                    setTimeout(reveal, 400);
+                }
+            });
+        });
+    });
+    obs.observe(document.body, { childList: true });
+})();
+</script>
+
+<!-- Premium: Stagger Why Choose Us rows on scroll -->
+<script>
+(function(){
+    if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+    gsap.utils.toArray('.gl-reason-item').forEach(function(item, i) {
+        gsap.from(item, {
+            opacity: 0,
+            y: 30,
+            duration: 0.6,
+            delay: i * 0.1,
+            ease: 'power2.out',
+            scrollTrigger: {
+                trigger: '.gl-reasons',
+                start: 'top 80%',
+                once: true
+            }
+        });
+    });
+})();
+</script>
+
+<!-- Premium: Page transition on link clicks -->
+<script>
+(function(){
+    var overlay = document.querySelector('.gl-page-transition');
+    if (!overlay) return;
+    document.addEventListener('click', function(e) {
+        var link = e.target.closest('a[href]');
+        if (!link) return;
+        var href = link.getAttribute('href');
+        // Skip anchors, external links, js links
+        if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto') || href.startsWith('tel') || link.target === '_blank') return;
+        e.preventDefault();
+        overlay.classList.add('is-entering');
+        setTimeout(function() {
+            window.location.href = href;
+        }, 450);
+    });
+})();
+</script>
+
+<!-- Premium: Magnetic cursor on buttons/links -->
+<script>
+(function(){
+    if (window.matchMedia('(pointer: coarse)').matches) return;
+    var magnets = document.querySelectorAll('.tf-btn, .gl-reel-play, .gl-reason-toggle');
+    magnets.forEach(function(el) {
+        el.classList.add('gl-magnetic');
+        el.addEventListener('mousemove', function(e) {
+            var rect = el.getBoundingClientRect();
+            var x = e.clientX - rect.left - rect.width / 2;
+            var y = e.clientY - rect.top - rect.height / 2;
+            el.style.transform = 'translate(' + (x * 0.2) + 'px, ' + (y * 0.2) + 'px)';
+        });
+        el.addEventListener('mouseleave', function() {
+            el.style.transform = '';
+        });
+    });
+})();
+</script>
+
+<!-- Premium: Social proof toast notification -->
+<script>
+(function(){
+    var toast = document.getElementById('glToast');
+    var toastText = document.getElementById('glToastText');
+    if (!toast || !toastText) return;
+    var proofs = [
+        { name: 'Shanahan University', action: 'launched a new website', time: '2 days ago' },
+        { name: 'St. Charles Borromeo Hospital', action: 'completed a website redesign', time: '5 days ago' },
+        { name: 'All Hallows Seminary', action: 'started a new project', time: '1 week ago' },
+        { name: 'College of Nursing', action: 'went live with their portal', time: '3 days ago' },
+        { name: 'Regina Pacis', action: 'launched their new site', time: '4 days ago' }
+    ];
+    var index = 0;
+    function showToast() {
+        var p = proofs[index % proofs.length];
+        toastText.innerHTML = '<strong>' + p.name + '</strong> ' + p.action + '<span>' + p.time + '</span>';
+        toast.classList.add('is-visible');
+        setTimeout(function() {
+            toast.classList.remove('is-visible');
+        }, 5000);
+        index++;
+    }
+    // First toast after 8 seconds
+    setTimeout(showToast, 8000);
+    // Repeat every 25 seconds
+    setInterval(showToast, 25000);
+})();
+</script>
 
 <script>
 (function(){
