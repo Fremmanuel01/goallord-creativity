@@ -2572,3 +2572,123 @@ canvas.cursor-trail {
     }
 }
 
+/* ============================================================
+   MOBILE UI CLEANUP — April 2026
+   ============================================================ */
+
+/* ── Fix #1: Header right column — flush-right on mobile ───── */
+@media (max-width: 767px) {
+    .tf-header .col-6.col-sm-3.col-md-3 {
+        flex: 0 0 auto;
+        width: auto;
+    }
+}
+
+/* ── Fix #3: Stats bar — stack vertically on small phones ──── */
+@media (max-width: 425px) {
+    .gl-hero-stats {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+    .gl-hero-stat {
+        width: 100%;
+    }
+    .gl-hero-stat-divider {
+        display: none;
+    }
+}
+
+/* ── Fix #4: Hero social proof — wrap on mobile ────────────── */
+@media (max-width: 767px) {
+    .gl-hero-social-proof {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+}
+
+/* ── Fix #5: Selected Works drum — tighter on mobile ───────── */
+@media (max-width: 575px) {
+    .gl-drum-outer {
+        height: 320px;
+        perspective: 450px;
+    }
+    .gl-drum-title { font-size: 16px !important; }
+    .gl-drum-item.is-active .gl-drum-title { font-size: 25px !important; }
+}
+
+/* ── Fix #6: Selected Works nav — hide PORTFOLIO label, center nav ── */
+@media (max-width: 767px) {
+    .gl-portfolio-label {
+        display: none !important;
+    }
+    .content-wrap-2 .group-btn-slider {
+        justify-content: center;
+    }
+    .content-wrap-2 .gl-slide-counter {
+        text-align: center;
+    }
+}
+
+/* ── Fix #7: Why Choose Us — smaller titles on mobile ──────── */
+@media (max-width: 575px) {
+    .gl-reason-title {
+        font-size: clamp(18px, 5vw, 22px) !important;
+    }
+    .gl-reason-proof {
+        display: none !important;
+    }
+}
+
+/* ── Fix #8: Why Choose Us — hide icon on small screens ────── */
+@media (max-width: 575px) {
+    .gl-reason-icon {
+        display: none !important;
+    }
+}
+
+/* ── Fix #9: Process timeline — hide step icons on small screens ── */
+@media (max-width: 575px) {
+    .gl-pstep-icon {
+        display: none !important;
+    }
+    .gl-pstep-top {
+        gap: 0;
+    }
+}
+
+/* ── Fix #10: Testimonial quote mark — smaller on tiny screens ── */
+@media (max-width: 425px) {
+    .gl-tes-qmark {
+        font-size: 60px;
+        top: 2px;
+        left: 12px;
+    }
+    .gl-tes-hero {
+        padding: 28px 18px 22px;
+    }
+    .gl-tes-hero-text {
+        font-size: 0.9375rem;
+    }
+}
+
+/* ── Fix #11: Chat FAB — offset above goTop on mobile ──────── */
+@media (max-width: 767px) {
+    .gl-chat-fab {
+        bottom: 80px;
+    }
+    .gl-chat-panel {
+        bottom: 148px;
+    }
+}
+
+/* ── Fix #13: Marquee logos — smaller on small phones ──────── */
+@media (max-width: 575px) {
+    .gl-marquee-item img {
+        height: 28px;
+    }
+    .gl-marquee-track {
+        gap: 36px;
+    }
+}
+
