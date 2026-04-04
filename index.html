@@ -3973,7 +3973,7 @@
 <script>
 (function(){
     if (window.matchMedia('(pointer: coarse)').matches) return;
-    var magnets = document.querySelectorAll('.tf-btn, .gl-reel-play, .gl-reason-toggle');
+    var magnets = document.querySelectorAll('.gl-hero-r .tf-btn, .gl-reel-play, .gl-reason-toggle, .gl-footer-cta .tf-btn');
     magnets.forEach(function(el) {
         el.classList.add('gl-magnetic');
         el.addEventListener('mousemove', function(e) {
