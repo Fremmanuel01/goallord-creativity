@@ -358,11 +358,21 @@
         /* ── Mobile optimisation ────────────────────────────────── */
         @media (max-width: 767px) {
             .gl-hero-r.section-hero-v1 {
-                min-height: 80vh !important;
-                padding-top: 160px;
-                padding-bottom: 40px;
-                align-items: center;
+                min-height: 100vh !important;
+                height: 100vh;
+                padding-top: 0;
+                padding-bottom: 0;
+                align-items: flex-end;
+                display: flex;
             }
+            /* Content sits at the bottom, robot gets the top */
+            .gl-hero-r .content-wrap {
+                padding-bottom: 64px;
+            }
+            /* Hide divider on mobile — reduces clutter */
+            .gl-hero-divider { display: none; }
+            /* Hide social proof row — stats bar covers it */
+            .gl-hero-social-proof { display: none !important; }
             /* Tighter stats on mobile */
             .gl-hero-stats { margin-top: 20px; padding-top: 18px; }
             .gl-hero-stat-num { font-size: 22px; }
@@ -375,16 +385,16 @@
             }
             /* Eyebrow — readable on mobile */
             .gl-hero-eyebrow { font-size: 12px; }
-            /* Headline */
+            /* Headline — tighter spacing */
             .gl-hero-headline {
                 font-size: clamp(36px, 9.5vw, 52px);
-                margin: 12px 0 14px;
+                margin: 10px 0 12px;
             }
-            /* Description — allow full text on mobile */
+            /* Description — compact */
             .gl-hero-desc {
                 font-size: 14px;
                 line-height: 1.6;
-                margin-bottom: 24px;
+                margin-bottom: 20px;
                 max-width: 100%;
             }
             /* Full-width primary CTA, secondary sits beside it */
@@ -393,12 +403,6 @@
                 justify-content: center;
                 min-width: 0;
             }
-            /* Trust line — brighter on mobile */
-            .gl-hero-trust {
-                color: rgba(255,255,255,0.6);
-                font-size: 12px;
-            }
-            .gl-hero-trust strong { color: rgba(255,255,255,0.85); }
             /* Keep robot visible on mobile */
             .spline-hero-wrapper { transform: translateX(5%); }
             /* Full width on mobile */
@@ -424,7 +428,7 @@
         .gl-scroll-hint {
             display: none;
             position: absolute;
-            bottom: 24px;
+            bottom: 16px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 5;
