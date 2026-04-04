@@ -1,13 +1,13 @@
 const express = require('express');
 const bcrypt  = require('bcryptjs');
 const router  = express.Router();
-const User    = require('../models/User');
+const usersDb = require('../db/users');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 // GET all agents (any authenticated user)
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const agents = await User.find({}, '-password').sort({ createdAt: 1 }).lean();
+    const agents = await usersDb.findAll('id, name, email, role, permissions, avatar, created_at');
     res.json({ agents });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -21,10 +21,11 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
   if (!['admin', 'agent'].includes(role)) return res.status(400).json({ error: 'Role must be admin or agent' });
   try {
     const hash  = await bcrypt.hash(password, 10);
-    const agent = await User.create({ name, email: email.toLowerCase(), password: hash, role: role || 'agent' });
-    res.json({ agent: { id: agent._id, name: agent.name, email: agent.email, role: agent.role } });
+    const agent = await usersDb.create({ name, email: email.toLowerCase(), password: hash, role: role || 'agent' });
+    res.json({ agent: { id: agent.id, name: agent.name, email: agent.email, role: agent.role } });
   } catch (err) {
-    if (err.code === 11000) return res.status(400).json({ error: 'Email already in use' });
+    // Check for unique constraint violation (Supabase returns code 23505)
+    if (err.code === '23505') return res.status(400).json({ error: 'Email already in use' });
     res.status(500).json({ error: err.message });
   }
 });
@@ -38,9 +39,11 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
   if (role && ['admin', 'agent'].includes(role)) update.role = role;
   if (password) update.password = await bcrypt.hash(password, 10);
   try {
-    const agent = await User.findByIdAndUpdate(req.params.id, update, { new: true, select: '-password' });
+    const agent = await usersDb.update(req.params.id, update);
     if (!agent) return res.status(404).json({ error: 'Not found' });
-    res.json({ agent });
+    // Strip password from response
+    const { password: _, ...agentData } = agent;
+    res.json({ agent: agentData });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -50,7 +53,7 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   if (req.params.id === req.user.id) return res.status(400).json({ error: 'Cannot delete your own account' });
   try {
-    await User.findByIdAndDelete(req.params.id);
+    await usersDb.remove(req.params.id);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

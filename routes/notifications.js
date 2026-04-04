@@ -1,6 +1,6 @@
-const express      = require('express');
-const Notification = require('../models/Notification');
-const Student      = require('../models/Student');
+const express         = require('express');
+const notificationsDb = require('../db/notifications');
+const studentsDb      = require('../db/students');
 const { requireLecturer } = require('../middleware/lecturerAuth');
 const { requireStudentAuth } = require('../middleware/studentAuth');
 
@@ -16,11 +16,11 @@ router.get('/', async (req, res) => {
     const jwt = require('jsonwebtoken');
     const decoded = jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET);
 
-    const filter = { recipient: decoded.id };
+    const filter = { recipient_id: decoded.id };
     if (req.query.read !== undefined) filter.read = req.query.read === 'true';
 
-    const docs = await Notification.find(filter).sort({ createdAt: -1 }).limit(50);
-    const unread = await Notification.countDocuments({ recipient: decoded.id, read: false });
+    const docs = await notificationsDb.find(filter, 50);
+    const unread = await notificationsDb.countUnread(decoded.id);
     res.json({ notifications: docs, unread });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -34,7 +34,7 @@ router.patch('/:id/read', async (req, res) => {
     if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'No token' });
     const jwt = require('jsonwebtoken');
     jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET);
-    const doc = await Notification.findByIdAndUpdate(req.params.id, { read: true }, { new: true });
+    const doc = await notificationsDb.markRead(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
   } catch (err) {
@@ -49,7 +49,7 @@ router.patch('/read-all', async (req, res) => {
     if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'No token' });
     const jwt = require('jsonwebtoken');
     const decoded = jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET);
-    await Notification.updateMany({ recipient: decoded.id, read: false }, { read: true });
+    await notificationsDb.markAllRead(decoded.id);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -62,13 +62,13 @@ router.post('/announce', requireLecturer, async (req, res) => {
     const { batchId, title, message } = req.body;
     if (!batchId || !title || !message) return res.status(400).json({ error: 'batchId, title, and message are required' });
 
-    const students = await Student.find({ batch: batchId, status: 'Active' }).select('_id');
+    const students = await studentsDb.findByBatch(batchId);
     if (!students.length) return res.json({ sent: 0 });
 
-    await Notification.insertMany(students.map(s => ({
-      recipient:     s._id,
-      recipientType: 'Student',
-      type:          'announcement',
+    await notificationsDb.insertMany(students.map(s => ({
+      recipient_id:   s.id,
+      recipient_type: 'Student',
+      type:           'announcement',
       title,
       message
     })));
@@ -82,7 +82,12 @@ router.post('/announce', requireLecturer, async (req, res) => {
 // POST /api/notifications — admin sends notification
 router.post('/', requireLecturer, async (req, res) => {
   try {
-    const doc = await Notification.create(req.body);
+    const { recipient, recipientType, type, title, message } = req.body;
+    const doc = await notificationsDb.create({
+      recipient_id: recipient,
+      recipient_type: recipientType,
+      type, title, message
+    });
     res.status(201).json(doc);
   } catch (err) {
     res.status(400).json({ error: err.message });

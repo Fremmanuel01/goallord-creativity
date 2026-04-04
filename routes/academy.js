@@ -1,11 +1,11 @@
 const router = require('express').Router();
-const AcademySettings = require('../models/AcademySettings');
+const academyDb = require('../db/academySettings');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 // GET /api/academy/settings — public
 router.get('/settings', async (req, res) => {
     try {
-        const settings = await AcademySettings.get();
+        const settings = await academyDb.get();
         res.json(settings);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -15,17 +15,25 @@ router.get('/settings', async (req, res) => {
 // PUT /api/academy/settings — admin only
 router.put('/settings', requireAuth, requireAdmin, async (req, res) => {
     try {
-        const settings = await AcademySettings.get();
-        const fields = [
-            'heroHeadline', 'heroSubtext', 'tracks', 'tuition',
-            'schedule', 'stats', 'faqs', 'instructors', 'nextBatchDate'
-        ];
-        fields.forEach(f => {
-            if (req.body[f] !== undefined) settings[f] = req.body[f];
-        });
-        settings.updatedAt = new Date();
-        await settings.save();
-        res.json(settings);
+        const settings = await academyDb.get();
+        const fieldMap = {
+            heroHeadline: 'hero_headline',
+            heroSubtext: 'hero_subtext',
+            tracks: 'tracks',
+            tuition: 'tuition',
+            schedule: 'schedule',
+            stats: 'stats',
+            faqs: 'faqs',
+            instructors: 'instructors',
+            nextBatchDate: 'next_batch_date'
+        };
+        const updates = {};
+        for (const [camel, snake] of Object.entries(fieldMap)) {
+            if (req.body[camel] !== undefined) updates[snake] = req.body[camel];
+        }
+        updates.updated_at = new Date().toISOString();
+        const updated = await academyDb.update(settings.id, updates);
+        res.json(updated);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -33,11 +41,11 @@ router.put('/settings', requireAuth, requireAdmin, async (req, res) => {
 
 // Seed function
 async function seedAcademySettings() {
-    const count = await AcademySettings.countDocuments();
+    const count = await academyDb.count();
     if (count > 0) return;
-    await AcademySettings.create({
-        heroHeadline: 'Launch Your Career in Web Design & Development',
-        heroSubtext: 'Hands-on, practical training in Onitsha, Nigeria. Learn web design, WordPress development, and digital marketing from real practitioners \u2014 not textbooks.',
+    await academyDb.create({
+        hero_headline: 'Launch Your Career in Web Design & Development',
+        hero_subtext: 'Hands-on, practical training in Onitsha, Nigeria. Learn web design, WordPress development, and digital marketing from real practitioners \u2014 not textbooks.',
         tracks: [
             {
                 name: 'Web Design',
@@ -100,7 +108,7 @@ async function seedAcademySettings() {
             { question: 'Can I pay in installments?', answer: 'Yes. In-person training (\u20A6150,000) can be paid in 3 monthly installments of \u20A650,000. Online training (\u20A680,000) is a one-time payment.' },
             { question: "What's the class size?", answer: 'We keep batches small, usually 10-15 students per track. This ensures everyone gets personal attention and feedback.' }
         ],
-        nextBatchDate: 'Contact us for next batch date'
+        next_batch_date: 'Contact us for next batch date'
     });
     console.log('Academy settings seeded');
 }

@@ -2,10 +2,10 @@ const express  = require('express');
 const crypto   = require('crypto');
 const https    = require('https');
 const bcrypt   = require('bcryptjs');
-const Applicant = require('../models/Applicant');
-const Student   = require('../models/Student');
-const Batch     = require('../models/Batch');
-const Payment   = require('../models/Payment');
+const applicantsDb = require('../db/applicants');
+const studentsDb   = require('../db/students');
+const batchesDb    = require('../db/batches');
+const paymentsDb   = require('../db/payments');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { sendMail }    = require('../utils/mailer');
 const { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail } = require('../utils/emailTemplates');
@@ -105,32 +105,43 @@ router.post('/', applyLimiter, async (req, res) => {
     const emailLower = sanitized.email;
 
     // Block if already a student
-    const existingStudent = await Student.findOne({ email: emailLower });
+    const existingStudent = await studentsDb.findByEmail(emailLower);
     if (existingStudent) {
       return res.status(409).json({ error: 'A student account already exists for this email. Please log in at the student portal.' });
     }
 
     // Block if already applied (and not rejected); if rejected, remove old record so they can reapply
-    const existingApplicant = await Applicant.findOne({ email: emailLower });
+    const existingApplicant = await applicantsDb.findByEmail(emailLower);
     if (existingApplicant) {
       if (existingApplicant.status !== 'Rejected') {
         return res.status(409).json({
-          error: existingApplicant.applicationFeePaid
+          error: existingApplicant.application_fee_paid
             ? 'An account already exists for this email. Please log in at the student portal.'
             : 'An application with this email already exists. Check your inbox for the verification link, or contact admin if you need help.'
         });
       }
       // Rejected — remove old record so they can reapply cleanly
-      await Applicant.deleteOne({ _id: existingApplicant._id });
+      await applicantsDb.remove(existingApplicant.id);
     }
 
     const token   = crypto.randomBytes(32).toString('hex');
     const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
 
-    const applicant = await Applicant.create({
-      ...sanitized,
-      emailVerifyToken:   token,
-      emailVerifyExpires: expires
+    const applicant = await applicantsDb.create({
+      full_name:            sanitized.fullName,
+      email:                sanitized.email,
+      phone:                sanitized.phone,
+      location:             sanitized.location,
+      track:                sanitized.track,
+      experience:           sanitized.experience,
+      schedule:             sanitized.schedule,
+      how_found:            sanitized.howFound,
+      goal:                 sanitized.goal,
+      why:                  sanitized.why,
+      background:           sanitized.background,
+      profile_photo:        sanitized.profilePhoto,
+      email_verify_token:   token,
+      email_verify_expires: expires.toISOString()
     });
 
     const host      = process.env.HOST || `${req.protocol}://${req.get('host')}`;
@@ -140,7 +151,7 @@ router.post('/', applyLimiter, async (req, res) => {
       await sendMail({
         to:      applicant.email,
         subject: 'Verify your email — Goallord Creativity Academy',
-        html:    verificationEmail({ fullName: applicant.fullName, verifyUrl })
+        html:    verificationEmail({ fullName: applicant.full_name, verifyUrl })
       });
     } catch (mailErr) {
       console.error('Verification email failed:', mailErr.message);
@@ -150,9 +161,9 @@ router.post('/', applyLimiter, async (req, res) => {
     try {
       await sendMail({
         to:      process.env.EMAIL_FROM,
-        subject: `New application: ${applicant.fullName} — ${applicant.track || 'No track'}`,
+        subject: `New application: ${applicant.full_name} — ${applicant.track || 'No track'}`,
         html:    adminNewApplicationEmail({
-          fullName:     applicant.fullName,
+          fullName:     applicant.full_name,
           email:        applicant.email,
           phone:        applicant.phone,
           track:        applicant.track,
@@ -163,7 +174,7 @@ router.post('/', applyLimiter, async (req, res) => {
       console.error('Admin notification failed:', mailErr.message);
     }
 
-    res.status(201).json({ success: true, id: applicant._id, emailSent: true });
+    res.status(201).json({ success: true, id: applicant.id, emailSent: true });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -172,10 +183,15 @@ router.post('/', applyLimiter, async (req, res) => {
 // GET /api/applicants/verify/:token — public (email verification link)
 router.get('/verify/:token', async (req, res) => {
   try {
-    const applicant = await Applicant.findOne({
-      emailVerifyToken:   req.params.token,
-      emailVerifyExpires: { $gt: new Date() }
-    });
+    // Find applicant by verify token that hasn't expired
+    const { data: applicants } = await require('../lib/supabase')
+      .from('applicants')
+      .select('*')
+      .eq('email_verify_token', req.params.token)
+      .gt('email_verify_expires', new Date().toISOString())
+      .limit(1);
+
+    const applicant = applicants && applicants[0];
 
     if (!applicant) {
       return res.status(400).send(`<!DOCTYPE html>
@@ -187,13 +203,14 @@ h2{color:#D66A1F;margin:0 0 16px}p{color:#A0A6B3;margin:0 0 24px}a{color:#D66A1F
 <a href="/apply.html">Back to Apply</a></div></body></html>`);
     }
 
-    applicant.emailVerified      = true;
-    applicant.emailVerifyToken   = undefined;
-    applicant.emailVerifyExpires = undefined;
-    await applicant.save();
+    await applicantsDb.update(applicant.id, {
+      email_verified:       true,
+      email_verify_token:   null,
+      email_verify_expires: null
+    });
 
     // Redirect to payment page
-    return res.redirect(`/apply-payment.html?id=${applicant._id}`);
+    return res.redirect(`/apply-payment.html?id=${applicant.id}`);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -206,35 +223,35 @@ h2{color:#D66A1F;margin:0 0 16px}p{color:#A0A6B3;margin:0 0 24px}a{color:#D66A1F
 async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
   const plainPassword = generatePassword();
   const hashed        = await bcrypt.hash(plainPassword, 12);
-  const activeBatch   = await Batch.findOne({ isActive: true }).select('_id');
-  const method        = opts.method    || (applicant.applicationFeeRef ? 'Bank Transfer' : 'Paystack');
-  const reference     = opts.reference || applicant.applicationFeeRef || '';
+  const activeBatch   = await batchesDb.findActive();
+  const method        = opts.method    || (applicant.application_fee_ref ? 'Bank Transfer' : 'Paystack');
+  const reference     = opts.reference || applicant.application_fee_ref || '';
 
-  const student = await Student.create({
-    fullName:           applicant.fullName,
-    email:              applicant.email,
-    password:           hashed,
-    phone:              applicant.phone || '',
-    track:              applicant.track || 'Other',
-    batch:              activeBatch ? activeBatch._id : undefined,
-    status:             'Active',
-    applicantRef:       applicant._id,
-    applicationFeePaid: true,
-    paymentPlan:        paymentPlan === 'full' ? 'full_upfront' : 'monthly',
-    profilePicture:     applicant.profilePhoto || ''
+  const student = await studentsDb.create({
+    full_name:           applicant.full_name,
+    email:               applicant.email,
+    password:            hashed,
+    phone:               applicant.phone || '',
+    track:               applicant.track || 'Other',
+    batch_id:            activeBatch ? activeBatch.id : null,
+    status:              'Active',
+    applicant_ref:       applicant.id,
+    application_fee_paid: true,
+    payment_plan:        paymentPlan === 'full' ? 'full_upfront' : 'monthly',
+    profile_picture:     applicant.profile_photo || ''
   });
 
   // Application fee — always paid
   const appFee = Number(process.env.APPLICATION_FEE) || 20000;
-  await Payment.create({
-    student:    student._id,
-    batch:      activeBatch ? activeBatch._id : undefined,
-    category:   'application_fee',
-    amountDue:  appFee,
-    amountPaid: appFee,
+  await paymentsDb.create({
+    student_id:  student.id,
+    batch_id:    activeBatch ? activeBatch.id : null,
+    category:    'application_fee',
+    amount_due:  appFee,
+    amount_paid: appFee,
     method, reference,
-    recordedBy: 'System',
-    paidAt:     new Date()
+    recorded_by: 'System',
+    paid_at:     new Date().toISOString()
   });
 
   // Tuition payment records
@@ -244,29 +261,29 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
 
   if (paymentPlan === 'full') {
     // Full tuition — paid upfront in same transaction
-    await Payment.create({
-      student: student._id, batch: activeBatch ? activeBatch._id : undefined,
-      category: 'full_tuition_payment', amountDue: fullFee,
-      amountPaid: opts.tuitionPaid ? fullFee : 0,
+    await paymentsDb.create({
+      student_id: student.id, batch_id: activeBatch ? activeBatch.id : null,
+      category: 'full_tuition_payment', amount_due: fullFee,
+      amount_paid: opts.tuitionPaid ? fullFee : 0,
       method:    opts.tuitionPaid ? method : '',
       reference: opts.tuitionPaid ? reference : '',
-      paidAt:    opts.tuitionPaid ? new Date() : undefined,
-      dueDate:   new Date(now.getFullYear(), now.getMonth() + 1, 1),
-      recordedBy: 'System'
+      paid_at:   opts.tuitionPaid ? new Date().toISOString() : null,
+      due_date:  new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString(),
+      recorded_by: 'System'
     });
   } else {
     // Monthly — 1st instalment paid now, 2nd and 3rd pending
     for (let i = 1; i <= 3; i++) {
       const isFirst = i === 1;
-      await Payment.create({
-        student: student._id, batch: activeBatch ? activeBatch._id : undefined,
-        category: `tuition_month_${i}`, amountDue: monthlyFee,
-        amountPaid: (opts.tuitionPaid && isFirst) ? monthlyFee : 0,
+      await paymentsDb.create({
+        student_id: student.id, batch_id: activeBatch ? activeBatch.id : null,
+        category: `tuition_month_${i}`, amount_due: monthlyFee,
+        amount_paid: (opts.tuitionPaid && isFirst) ? monthlyFee : 0,
         method:    (opts.tuitionPaid && isFirst) ? method : '',
         reference: (opts.tuitionPaid && isFirst) ? reference : '',
-        paidAt:    (opts.tuitionPaid && isFirst) ? new Date() : undefined,
-        dueDate:   new Date(now.getFullYear(), now.getMonth() + i, 1),
-        recordedBy: 'System'
+        paid_at:   (opts.tuitionPaid && isFirst) ? new Date().toISOString() : null,
+        due_date:  new Date(now.getFullYear(), now.getMonth() + i, 1).toISOString(),
+        recorded_by: 'System'
       });
     }
   }
@@ -279,13 +296,13 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
   await sendMail({
     to:      applicant.email,
     subject: `Welcome to Goallord Creativity Academy — Your Login Details`,
-    html:    acceptanceEmail({ fullName: applicant.fullName, track: applicant.track || 'Other', duration, email: applicant.email, password: plainPassword, loginUrl })
+    html:    acceptanceEmail({ fullName: applicant.full_name, track: applicant.track || 'Other', duration, email: applicant.email, password: plainPassword, loginUrl })
   }).catch(e => console.error('Acceptance email failed:', e.message));
 
   await sendMail({
     to:      process.env.EMAIL_FROM,
-    subject: `New Student Enrolled: ${applicant.fullName} — ${applicant.track || 'Other'}`,
-    html:    adminAcceptanceNotificationEmail({ fullName: applicant.fullName, email: applicant.email, track: applicant.track || 'Other', studentId: student._id.toString(), dashboardUrl: `${host}/dashboard.html` })
+    subject: `New Student Enrolled: ${applicant.full_name} — ${applicant.track || 'Other'}`,
+    html:    adminAcceptanceNotificationEmail({ fullName: applicant.full_name, email: applicant.email, track: applicant.track || 'Other', studentId: student.id.toString(), dashboardUrl: `${host}/dashboard.html` })
   }).catch(e => console.error('Admin notification failed:', e.message));
 
   return student;
@@ -295,18 +312,17 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
 router.get('/:id/payment-info', async (req, res) => {
   try {
     const { token } = req.query;
-    const query = { _id: req.params.id };
-    if (token) query.emailVerifyToken = token;
-    else return res.status(401).json({ error: 'Verification token required' });
+    if (!token) return res.status(401).json({ error: 'Verification token required' });
 
-    const applicant = await Applicant.findOne(query).select('fullName email track emailVerified applicationFeePaid');
-    if (!applicant) return res.status(404).json({ error: 'Not found or invalid token' });
-    if (!applicant.emailVerified) return res.status(403).json({ error: 'Email not verified' });
+    // Find applicant by id and verify token
+    const applicant = await applicantsDb.findById(req.params.id);
+    if (!applicant || applicant.email_verify_token !== token) return res.status(404).json({ error: 'Not found or invalid token' });
+    if (!applicant.email_verified) return res.status(403).json({ error: 'Email not verified' });
     res.json({
-      fullName:           applicant.fullName,
+      fullName:           applicant.full_name,
       email:              applicant.email,
       track:              applicant.track,
-      applicationFeePaid: applicant.applicationFeePaid
+      applicationFeePaid: applicant.application_fee_paid
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -319,10 +335,10 @@ router.post('/:id/pay-application', async (req, res) => {
     const { reference, paymentPlan } = req.body;
     if (!reference || !paymentPlan) return res.status(400).json({ error: 'reference and paymentPlan are required' });
 
-    const applicant = await Applicant.findById(req.params.id);
+    const applicant = await applicantsDb.findById(req.params.id);
     if (!applicant) return res.status(404).json({ error: 'Application not found' });
-    if (!applicant.emailVerified) return res.status(403).json({ error: 'Email not verified' });
-    if (applicant.applicationFeePaid) return res.status(400).json({ error: 'Application fee already paid' });
+    if (!applicant.email_verified) return res.status(403).json({ error: 'Email not verified' });
+    if (applicant.application_fee_paid) return res.status(400).json({ error: 'Application fee already paid' });
 
     // Verify with Paystack
     const psData = await new Promise((resolve, reject) => {
@@ -354,10 +370,11 @@ router.post('/:id/pay-application', async (req, res) => {
       return res.status(400).json({ error: `Amount paid (₦${amountPaid.toLocaleString()}) is less than required total (₦${totalExpected.toLocaleString()})` });
 
     // Mark fee paid
-    applicant.applicationFeePaid = true;
-    applicant.applicationFeeRef  = reference;
-    applicant.status             = 'Accepted';
-    await applicant.save();
+    await applicantsDb.update(applicant.id, {
+      application_fee_paid: true,
+      application_fee_ref:  reference,
+      status:               'Accepted'
+    });
 
     // Create student account — tuition also marked paid in same transaction
     const student = await createStudentFromApplicant(applicant, paymentPlan, {
@@ -365,15 +382,16 @@ router.post('/:id/pay-application', async (req, res) => {
     });
 
     // Fetch app fee payment for receipt number
-    const appFeePayment = await Payment.findOne({ student: student._id, category: 'application_fee' });
+    const studentPayments = await paymentsDb.findByStudent(student.id);
+    const appFeePayment = studentPayments.find(p => p.category === 'application_fee');
 
     res.json({
       success: true,
-      studentId: student._id,
+      studentId: student.id,
       receipt: {
-        receiptNumber:   appFeePayment ? appFeePayment.receiptNumber   : '',
-        receiptIssuedAt: appFeePayment ? appFeePayment.receiptIssuedAt : new Date(),
-        name:         applicant.fullName,
+        receiptNumber:   appFeePayment ? appFeePayment.receipt_number   : '',
+        receiptIssuedAt: appFeePayment ? appFeePayment.receipt_issued_at : new Date(),
+        name:         applicant.full_name,
         email:        applicant.email,
         appFee,
         tuitionAmount: tuitionNow,
@@ -394,14 +412,15 @@ router.post('/:id/bank-transfer-fee', async (req, res) => {
     const { reference, paymentPlan } = req.body;
     if (!reference || !paymentPlan) return res.status(400).json({ error: 'reference and paymentPlan are required' });
 
-    const applicant = await Applicant.findById(req.params.id);
+    const applicant = await applicantsDb.findById(req.params.id);
     if (!applicant) return res.status(404).json({ error: 'Application not found' });
-    if (!applicant.emailVerified) return res.status(403).json({ error: 'Email not verified' });
-    if (applicant.applicationFeePaid) return res.status(400).json({ error: 'Application fee already paid' });
+    if (!applicant.email_verified) return res.status(403).json({ error: 'Email not verified' });
+    if (applicant.application_fee_paid) return res.status(400).json({ error: 'Application fee already paid' });
 
-    applicant.applicationFeeRef  = reference;
-    applicant.pendingPaymentPlan = paymentPlan;
-    await applicant.save();
+    await applicantsDb.update(applicant.id, {
+      application_fee_ref:  reference,
+      pending_payment_plan: paymentPlan
+    });
 
     res.json({ success: true, message: 'Transfer reference submitted. Admin will confirm within 24 hours and you\'ll receive login details by email.' });
   } catch (err) {
@@ -412,27 +431,28 @@ router.post('/:id/bank-transfer-fee', async (req, res) => {
 // POST /api/applicants/:id/confirm-fee — admin: confirm bank transfer, create student
 router.post('/:id/confirm-fee', requireAuth, async (req, res) => {
   try {
-    const applicant = await Applicant.findById(req.params.id);
+    const applicant = await applicantsDb.findById(req.params.id);
     if (!applicant) return res.status(404).json({ error: 'Application not found' });
-    if (applicant.applicationFeePaid) return res.status(400).json({ error: 'Fee already confirmed' });
-    if (!applicant.applicationFeeRef) return res.status(400).json({ error: 'No bank transfer reference on record' });
+    if (applicant.application_fee_paid) return res.status(400).json({ error: 'Fee already confirmed' });
+    if (!applicant.application_fee_ref) return res.status(400).json({ error: 'No bank transfer reference on record' });
 
-    const paymentPlan = req.body.paymentPlan || applicant.pendingPaymentPlan || 'monthly';
+    const paymentPlan = req.body.paymentPlan || applicant.pending_payment_plan || 'monthly';
 
-    applicant.applicationFeePaid = true;
-    applicant.status             = 'Accepted';
-    await applicant.save();
+    await applicantsDb.update(applicant.id, {
+      application_fee_paid: true,
+      status:               'Accepted'
+    });
 
-    const existing = await Student.findOne({ email: applicant.email });
+    const existing = await studentsDb.findByEmail(applicant.email);
     if (existing) return res.status(400).json({ error: 'Student account already exists for this email' });
 
     // Bank transfer covers full amount (app fee + tuition) — mark both as paid
     const student = await createStudentFromApplicant(applicant, paymentPlan, {
       tuitionPaid: true,
-      reference:   applicant.applicationFeeRef,
+      reference:   applicant.application_fee_ref,
       method:      'Bank Transfer'
     });
-    res.json({ success: true, studentId: student._id });
+    res.json({ success: true, studentId: student.id });
   } catch (err) {
     console.error('confirm-fee error:', err);
     res.status(500).json({ error: err.message });
@@ -446,17 +466,29 @@ router.get('/', requireAuth, async (req, res) => {
     const filter = {};
     if (status) filter.status = status;
     if (track)  filter.track  = track;
+
+    // For search, applicantsDb.find doesn't have a built-in search param,
+    // so we use supabase or filter to handle it
+    let result;
     if (search) {
+      const supabase = require('../lib/supabase');
       const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const re = new RegExp(escaped, 'i');
-      filter.$or = [{ fullName: re }, { email: re }, { phone: re }];
+      let q = supabase.from('applicants').select('*', { count: 'exact' });
+      for (const [key, val] of Object.entries(filter)) {
+        q = q.eq(key, val);
+      }
+      q = q.or(`full_name.ilike.%${escaped}%,email.ilike.%${escaped}%,phone.ilike.%${escaped}%`);
+      q = q.order('created_at', { ascending: false });
+      const skip = (Number(page) - 1) * Number(limit);
+      q = q.range(skip, skip + Number(limit) - 1);
+      const { data, error, count } = await q;
+      if (error) throw error;
+      result = { data: data || [], count };
+    } else {
+      result = await applicantsDb.find({ filter, page: Number(page), limit: Number(limit) });
     }
-    const skip = (Number(page) - 1) * Number(limit);
-    const [docs, total] = await Promise.all([
-      Applicant.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
-      Applicant.countDocuments(filter)
-    ]);
-    res.json({ data: docs, total, page: Number(page) });
+
+    res.json({ data: result.data, total: result.count, page: Number(page) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -465,7 +497,7 @@ router.get('/', requireAuth, async (req, res) => {
 // GET /api/applicants/:id — protected
 router.get('/:id', requireAuth, async (req, res) => {
   try {
-    const doc = await Applicant.findById(req.params.id);
+    const doc = await applicantsDb.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
   } catch (err) {
@@ -481,30 +513,30 @@ router.patch('/:id', requireAuth, async (req, res) => {
     if (status !== undefined) update.status = status;
     if (notes  !== undefined) update.notes  = notes;
 
-    const doc = await Applicant.findByIdAndUpdate(req.params.id, update, { new: true });
+    const doc = await applicantsDb.update(req.params.id, update);
     if (!doc) return res.status(404).json({ error: 'Not found' });
 
     // Auto-create student account and send acceptance email
     if (status === 'Accepted') {
-      const existing = await Student.findOne({ email: doc.email });
+      const existing = await studentsDb.findByEmail(doc.email);
       if (!existing) {
         const plainPassword = generatePassword();
         const hashed        = await bcrypt.hash(plainPassword, 12);
 
         // Assign to the current active batch
-        const activeBatch = await Batch.findOne({ isActive: true }).select('_id');
+        const activeBatch = await batchesDb.findActive();
 
-        const student = await Student.create({
-          fullName:          doc.fullName,
-          email:             doc.email,
-          password:          hashed,
-          phone:             doc.phone || '',
-          track:             doc.track || 'Other',
-          batch:             activeBatch ? activeBatch._id : undefined,
-          status:            'Active',
-          applicantRef:      doc._id,
-          applicationFeePaid: true,
-          profilePicture:    doc.profilePhoto || ''
+        const student = await studentsDb.create({
+          full_name:          doc.full_name,
+          email:              doc.email,
+          password:           hashed,
+          phone:              doc.phone || '',
+          track:              doc.track || 'Other',
+          batch_id:           activeBatch ? activeBatch.id : null,
+          status:             'Active',
+          applicant_ref:      doc.id,
+          application_fee_paid: true,
+          profile_picture:    doc.profile_photo || ''
         });
 
         const host     = process.env.HOST || 'https://goallordcreativity.com';
@@ -516,7 +548,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
             to:      doc.email,
             subject: `You've been accepted — Goallord Creativity Academy`,
             html:    acceptanceEmail({
-              fullName: doc.fullName,
+              fullName: doc.full_name,
               track:    doc.track || 'Other',
               duration,
               email:    doc.email,
@@ -532,12 +564,12 @@ router.patch('/:id', requireAuth, async (req, res) => {
         try {
           await sendMail({
             to:      process.env.EMAIL_FROM,
-            subject: `Accepted: ${doc.fullName} — ${doc.track || 'Other'}`,
+            subject: `Accepted: ${doc.full_name} — ${doc.track || 'Other'}`,
             html:    adminAcceptanceNotificationEmail({
-              fullName:     doc.fullName,
+              fullName:     doc.full_name,
               email:        doc.email,
               track:        doc.track || 'Other',
-              studentId:    student._id.toString(),
+              studentId:    student.id.toString(),
               dashboardUrl: `${host}/dashboard.html`
             })
           });
@@ -545,7 +577,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
           console.error('Admin acceptance notification failed:', mailErr.message);
         }
 
-        return res.json({ ...doc.toObject(), studentCreated: true, studentId: student._id });
+        return res.json({ ...doc, studentCreated: true, studentId: student.id });
       }
     }
 
@@ -558,7 +590,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
 // DELETE /api/applicants/:id — admin only
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
-    await Applicant.findByIdAndDelete(req.params.id);
+    await applicantsDb.remove(req.params.id);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -1,7 +1,6 @@
-const express    = require('express');
-const Attendance = require('../models/Attendance');
-const Student    = require('../models/Student');
-const Batch      = require('../models/Batch');
+const express      = require('express');
+const attendanceDb = require('../db/attendance');
+const studentsDb   = require('../db/students');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { requireStudent } = require('../middleware/studentAuth');
 const { requireLecturer } = require('../middleware/lecturerAuth');
@@ -12,24 +11,43 @@ const router = express.Router();
 router.get('/me', requireStudent, async (req, res) => {
   try {
     const studentId = req.student.id;
-    const records = await Attendance.find({
-      $or: [{ presentStudents: studentId }, { absentStudents: studentId }]
-    }).sort({ classDate: -1 }).populate('batch', 'name number');
+    const records = await attendanceDb.getStudentAttendance(studentId);
 
     const history = records.map(r => ({
-      _id:       r._id,
-      classDate: r.classDate,
+      id:        r.id,
+      classDate: r.class_date,
       batch:     r.batch,
       week:      r.week,
       day:       r.day,
       topic:     r.topic,
-      present:   r.presentStudents.some(id => id.toString() === studentId),
+      present:   true, // getStudentAttendance returns records where student appears
       notes:     r.notes
     }));
 
-    const totalClasses = history.length;
-    const totalPresent = history.filter(h => h.present).length;
-    res.json({ data: history, totalClasses, totalPresent });
+    // We need to check present/absent status from the junction table
+    const allRecords = await attendanceDb.getStudentAttendance(studentId);
+    const supabase = require('../lib/supabase');
+    const { data: studentRecords } = await supabase
+      .from('attendance_students')
+      .select('attendance_id, status')
+      .eq('student_id', studentId);
+    const statusMap = {};
+    (studentRecords || []).forEach(sr => { statusMap[sr.attendance_id] = sr.status; });
+
+    const historyWithStatus = records.map(r => ({
+      id:        r.id,
+      classDate: r.class_date,
+      batch:     r.batch,
+      week:      r.week,
+      day:       r.day,
+      topic:     r.topic,
+      present:   statusMap[r.id] === 'present',
+      notes:     r.notes
+    }));
+
+    const totalClasses = historyWithStatus.length;
+    const totalPresent = historyWithStatus.filter(h => h.present).length;
+    res.json({ data: historyWithStatus, totalClasses, totalPresent });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -39,11 +57,10 @@ router.get('/me', requireStudent, async (req, res) => {
 router.get('/open', requireStudent, async (req, res) => {
   try {
     const studentId = req.student.id;
-    const student = await Student.findById(studentId).select('batch');
-    if (!student || !student.batch) return res.json({ session: null });
+    const student = await studentsDb.findById(studentId, { fields: 'id, batch_id' });
+    if (!student || !student.batch_id) return res.json({ session: null });
 
-    const session = await Attendance.findOne({ batch: student.batch, isOpen: true })
-      .select('_id week day topic classDate');
+    const session = await attendanceDb.findOpenSession(student.batch_id);
     res.json({ session: session || null });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -55,27 +72,11 @@ router.get('/', requireAuth, async (req, res) => {
   try {
     const { batch, week, month, page = 1, limit = 50 } = req.query;
     const filter = {};
-    if (batch) filter.batch = batch;
-    if (week)  filter.week  = Number(week);
-    if (month) {
-      const start = new Date(month + '-01');
-      const end   = new Date(start);
-      end.setMonth(end.getMonth() + 1);
-      filter.classDate = { $gte: start, $lt: end };
-    }
-    const skip = (Number(page) - 1) * Number(limit);
-    const [docs, total] = await Promise.all([
-      Attendance.find(filter)
-        .sort({ classDate: -1 })
-        .skip(skip)
-        .limit(Number(limit))
-        .populate('batch', 'name number')
-        .populate('takenBy', 'fullName')
-        .populate('presentStudents', 'fullName email')
-        .populate('absentStudents', 'fullName email'),
-      Attendance.countDocuments(filter)
-    ]);
-    res.json({ data: docs, total, page: Number(page) });
+    if (batch) filter.batch_id = batch;
+    if (week)  filter.week     = Number(week);
+
+    const result = await attendanceDb.find({ filter, page: Number(page), limit: Number(limit) });
+    res.json({ data: result.data, total: result.count, page: Number(page) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -90,30 +91,26 @@ router.post('/', requireLecturer, async (req, res) => {
     }
 
     // Get all active students in this batch
-    const allStudents = await Student.find({ batch: batchId, status: 'Active' }).select('_id');
-    const allIds = allStudents.map(s => s._id.toString());
+    const allStudents = await studentsDb.findByBatch(batchId);
+    const allIds = allStudents.map(s => s.id);
     const presentSet = new Set(presentStudentIds.map(String));
     const absentIds = allIds.filter(id => !presentSet.has(id));
 
-    const record = await Attendance.findOneAndUpdate(
-      { batch: batchId, week: Number(week), day },
-      {
-        batch:           batchId,
-        week:            Number(week),
-        day,
-        classDate:       new Date(classDate),
-        topic:           topic || '',
-        presentStudents: presentStudentIds,
-        absentStudents:  absentIds,
-        takenBy:         req.user.id,
-        notes:           notes || ''
-      },
-      { new: true, upsert: true }
-    );
+    const record = await attendanceDb.upsert({
+      batch_id:         batchId,
+      week:             Number(week),
+      day,
+      class_date:       new Date(classDate).toISOString(),
+      topic:            topic || '',
+      present_students: presentStudentIds,
+      absent_students:  absentIds,
+      taken_by:         req.user.id,
+      notes:            notes || ''
+    });
 
     res.json({
       success:      true,
-      sessionId:    record._id,
+      sessionId:    record.id,
       presentCount: presentStudentIds.length,
       absentCount:  absentIds.length
     });
@@ -125,11 +122,7 @@ router.post('/', requireLecturer, async (req, res) => {
 // ── PATCH /api/attendance/:id/open — open self-mark window ────
 router.patch('/:id/open', requireLecturer, async (req, res) => {
   try {
-    const doc = await Attendance.findByIdAndUpdate(
-      req.params.id,
-      { isOpen: true, sessionOpenedAt: new Date() },
-      { new: true }
-    );
+    const doc = await attendanceDb.update(req.params.id, { is_open: true, session_opened_at: new Date().toISOString() });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
   } catch (err) {
@@ -140,11 +133,7 @@ router.patch('/:id/open', requireLecturer, async (req, res) => {
 // ── PATCH /api/attendance/:id/close — close self-mark window ──
 router.patch('/:id/close', requireLecturer, async (req, res) => {
   try {
-    const doc = await Attendance.findByIdAndUpdate(
-      req.params.id,
-      { isOpen: false, sessionClosedAt: new Date() },
-      { new: true }
-    );
+    const doc = await attendanceDb.update(req.params.id, { is_open: false, session_closed_at: new Date().toISOString() });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
   } catch (err) {
@@ -156,16 +145,12 @@ router.patch('/:id/close', requireLecturer, async (req, res) => {
 router.post('/:id/self-mark', requireStudent, async (req, res) => {
   try {
     const studentId = req.student.id;
-    const session = await Attendance.findById(req.params.id);
+    const session = await attendanceDb.findById(req.params.id);
     if (!session) return res.status(404).json({ error: 'Session not found' });
-    if (!session.isOpen) return res.status(403).json({ error: 'Attendance window is closed' });
+    if (!session.is_open) return res.status(403).json({ error: 'Attendance window is closed' });
 
-    // Add to present, remove from absent if already there
-    if (!session.presentStudents.some(id => id.toString() === studentId)) {
-      session.presentStudents.push(studentId);
-    }
-    session.absentStudents = session.absentStudents.filter(id => id.toString() !== studentId);
-    await session.save();
+    // Add to present, remove from absent using markStudent
+    await attendanceDb.markStudent(req.params.id, studentId, 'present');
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -176,20 +161,27 @@ router.post('/:id/self-mark', requireStudent, async (req, res) => {
 router.get('/student/:studentId', requireAuth, async (req, res) => {
   try {
     const { studentId } = req.params;
-    const records = await Attendance.find({
-      $or: [{ presentStudents: studentId }, { absentStudents: studentId }]
-    }).sort({ classDate: -1 }).populate('batch', 'name number').populate('takenBy', 'fullName');
+    const records = await attendanceDb.getStudentAttendance(studentId);
+
+    // Get status for this student from junction table
+    const supabase = require('../lib/supabase');
+    const { data: studentRecords } = await supabase
+      .from('attendance_students')
+      .select('attendance_id, status')
+      .eq('student_id', studentId);
+    const statusMap = {};
+    (studentRecords || []).forEach(sr => { statusMap[sr.attendance_id] = sr.status; });
 
     const history = records.map(r => ({
-      _id:       r._id,
-      classDate: r.classDate,
+      id:        r.id,
+      classDate: r.class_date,
       batch:     r.batch,
       week:      r.week,
       day:       r.day,
       topic:     r.topic,
-      present:   r.presentStudents.some(id => id.toString() === studentId),
+      present:   statusMap[r.id] === 'present',
       notes:     r.notes,
-      takenBy:   r.takenBy
+      takenBy:   r.taken_by
     }));
 
     const totalClasses = history.length;
@@ -203,11 +195,7 @@ router.get('/student/:studentId', requireAuth, async (req, res) => {
 // ── GET /api/attendance/:id — session detail ──────────────────
 router.get('/:id', requireAuth, async (req, res) => {
   try {
-    const doc = await Attendance.findById(req.params.id)
-      .populate('batch', 'name number track')
-      .populate('takenBy', 'fullName email')
-      .populate('presentStudents', 'fullName email track')
-      .populate('absentStudents', 'fullName email track');
+    const doc = await attendanceDb.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
   } catch (err) {
@@ -218,8 +206,7 @@ router.get('/:id', requireAuth, async (req, res) => {
 // ── DELETE /api/attendance/:id — admin only ──────────────────
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const record = await Attendance.findByIdAndDelete(req.params.id);
-    if (!record) return res.status(404).json({ error: 'Record not found' });
+    await attendanceDb.remove(req.params.id);
     res.json({ message: 'Attendance record deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });

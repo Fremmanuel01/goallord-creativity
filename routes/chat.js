@@ -1,7 +1,7 @@
 const express  = require('express');
 const https    = require('https');
 const router   = express.Router();
-const Conversation = require('../models/Conversation');
+const conversationsDb = require('../db/conversations');
 const rateLimit = require('express-rate-limit');
 const xss = require('xss');
 
@@ -99,46 +99,51 @@ router.post('/', chatLimiter, async (req, res) => {
 
   try {
     // Upsert conversation
-    let convo = await Conversation.findOne({ sessionId });
+    let convo = await conversationsDb.findBySessionId(sessionId);
     if (!convo) {
-      convo = new Conversation({
-        sessionId,
-        visitorPage:  visitorPage  || '/',
-        visitorName:  safeVisitorName,
-        visitorEmail: safeVisitorEmail,
-        messages: []
+      convo = await conversationsDb.create({
+        session_id:    sessionId,
+        visitor_page:  visitorPage  || '/',
+        visitor_name:  safeVisitorName,
+        visitor_email: safeVisitorEmail
       });
+      convo.messages = [];
     } else {
       // Fill in identity if not already captured
-      if (!convo.visitorName  && safeVisitorName)  convo.visitorName  = safeVisitorName;
-      if (!convo.visitorEmail && safeVisitorEmail) convo.visitorEmail = safeVisitorEmail;
+      const updates = {};
+      if (!convo.visitor_name  && safeVisitorName)  updates.visitor_name  = safeVisitorName;
+      if (!convo.visitor_email && safeVisitorEmail) updates.visitor_email = safeVisitorEmail;
+      if (Object.keys(updates).length > 0) {
+        await conversationsDb.update(convo.id, updates);
+        Object.assign(convo, updates);
+      }
     }
 
     // Save latest user message (sanitized)
     if (lastMsg?.role === 'user') {
-      convo.messages.push({ role: 'user', content: xss(lastMsg.content) });
-      convo.unreadByAgent += 1;
+      await conversationsDb.addMessage(convo.id, { role: 'user', content: xss(lastMsg.content) });
+      await conversationsDb.incrementUnread(convo.id);
     }
 
     // If a human agent has taken over — check if they've gone idle (5 min with no reply)
     if (convo.mode === 'human') {
-      const lastAgentMsg = [...(convo.messages || [])].reverse().find(m => m.role === 'agent');
+      const lastAgentMsg = await conversationsDb.getLastAgentMessage(convo.id);
       const lastActivity = lastAgentMsg
         ? new Date(lastAgentMsg.timestamp || 0)
-        : new Date(convo.updatedAt || convo.createdAt || 0);
+        : new Date(convo.updated_at || convo.created_at || 0);
       const idleMs = Date.now() - lastActivity.getTime();
 
       if (idleMs > 5 * 60 * 1000) {
         // Agent has been idle 5+ min — revert to AI silently
+        await conversationsDb.update(convo.id, { mode: 'ai' });
         convo.mode = 'ai';
         if (io) io.to('agents').emit('mode:changed', { sessionId, mode: 'ai' });
         // Fall through to AI response below
       } else {
-        await convo.save();
         if (io) io.to('agents').emit('visitor:message', {
           sessionId,
-          visitorName:  convo.visitorName  || '',
-          visitorEmail: convo.visitorEmail || '',
+          visitorName:  convo.visitor_name  || '',
+          visitorEmail: convo.visitor_email || '',
           message: { role: 'user', content: lastMsg.content, timestamp: new Date() }
         });
         return res.json({ reply: null, mode: 'human' });
@@ -147,15 +152,14 @@ router.post('/', chatLimiter, async (req, res) => {
 
     // AI mode — call Claude
     const reply = await callClaude(messages);
-    convo.messages.push({ role: 'assistant', content: reply });
-    await convo.save();
+    await conversationsDb.addMessage(convo.id, { role: 'assistant', content: reply });
 
     // Notify dashboard in real-time
     if (io) {
       io.to('agents').emit('visitor:message', {
         sessionId,
-        visitorName:  convo.visitorName  || '',
-        visitorEmail: convo.visitorEmail || '',
+        visitorName:  convo.visitor_name  || '',
+        visitorEmail: convo.visitor_email || '',
         message: { role: 'user', content: lastMsg.content, timestamp: new Date() }
       });
       io.to('agents').emit('ai:reply', {
@@ -163,11 +167,12 @@ router.post('/', chatLimiter, async (req, res) => {
         message: { role: 'assistant', content: reply, timestamp: new Date() }
       });
       // New conversation notification
-      if (convo.messages.length <= 2) {
+      const refreshedConvo = await conversationsDb.findBySessionId(sessionId);
+      if (refreshedConvo && (refreshedConvo.messages || []).length <= 2) {
         io.to('agents').emit('new:conversation', {
           sessionId,
-          visitorName:  convo.visitorName  || '',
-          visitorEmail: convo.visitorEmail || '',
+          visitorName:  convo.visitor_name  || '',
+          visitorEmail: convo.visitor_email || '',
           preview: lastMsg.content,
           timestamp: new Date()
         });

@@ -2,13 +2,13 @@ const express  = require('express');
 const bcrypt   = require('bcryptjs');
 const crypto   = require('crypto');
 const jwt      = require('jsonwebtoken');
-const Student  = require('../models/Student');
+const studentsDb = require('../db/students');
+const notificationsDb = require('../db/notifications');
 const { requireAuth }       = require('../middleware/auth');
 const { requireStudent }    = require('../middleware/studentAuth');
 const { requireLecturer }   = require('../middleware/lecturerAuth');
 const { sendMail }          = require('../utils/mailer');
 const { passwordResetEmail, graduationEmail } = require('../utils/emailTemplates');
-const Notification = require('../models/Notification');
 
 const router = express.Router();
 
@@ -18,23 +18,23 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
-    const student = await Student.findOne({ email: email.toLowerCase() });
+    const student = await studentsDb.findByEmail(email.toLowerCase());
     if (!student) return res.status(401).json({ error: 'Invalid credentials' });
     if (student.status === 'Suspended') return res.status(403).json({ error: 'Account suspended. Contact admin.' });
-    if (!student.applicationFeePaid) return res.status(403).json({ error: 'Application fee not paid. Please complete payment to access your dashboard.', paymentRequired: true });
+    if (!student.application_fee_paid) return res.status(403).json({ error: 'Application fee not paid. Please complete payment to access your dashboard.', paymentRequired: true });
 
     const match = await bcrypt.compare(password, student.password);
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
 
     const token = jwt.sign(
-      { id: student._id, email: student.email, name: student.fullName, role: 'student', track: student.track },
+      { id: student.id, email: student.email, name: student.full_name, role: 'student', track: student.track },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
     res.json({
       token,
-      student: { id: student._id, fullName: student.fullName, email: student.email, track: student.track, status: student.status }
+      student: { id: student.id, fullName: student.full_name, email: student.email, track: student.track, status: student.status }
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -44,9 +44,11 @@ router.post('/login', async (req, res) => {
 // ── GET /api/students/me — student auth ────────────────────────
 router.get('/me', requireStudent, async (req, res) => {
   try {
-    const student = await Student.findById(req.student.id).select('-password -resetToken -resetExpires').populate('batch', 'name number');
+    const student = await studentsDb.findById(req.student.id, { populate: 'batch' });
     if (!student) return res.status(404).json({ error: 'Student not found' });
-    res.json(student);
+    // Remove sensitive fields
+    const { password, reset_token, reset_expires, ...safe } = student;
+    res.json(safe);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -57,10 +59,11 @@ router.patch('/me', requireStudent, async (req, res) => {
   try {
     const { fullName, phone } = req.body;
     const update = {};
-    if (fullName) update.fullName = fullName.trim();
+    if (fullName) update.full_name = fullName.trim();
     if (phone !== undefined) update.phone = phone.trim();
-    const student = await Student.findByIdAndUpdate(req.student.id, update, { new: true }).select('-password -resetToken -resetExpires');
-    res.json(student);
+    const student = await studentsDb.update(req.student.id, update);
+    const { password, reset_token, reset_expires, ...safe } = student;
+    res.json(safe);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -73,12 +76,12 @@ router.patch('/me/password', requireStudent, async (req, res) => {
     if (!currentPassword || !newPassword) return res.status(400).json({ error: 'currentPassword and newPassword are required' });
     if (newPassword.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' });
 
-    const student = await Student.findById(req.student.id);
+    const student = await studentsDb.findById(req.student.id);
     const match = await bcrypt.compare(currentPassword, student.password);
     if (!match) return res.status(401).json({ error: 'Current password is incorrect' });
 
-    student.password = await bcrypt.hash(newPassword, 12);
-    await student.save();
+    const hashed = await bcrypt.hash(newPassword, 12);
+    await studentsDb.update(req.student.id, { password: hashed });
     res.json({ success: true });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -108,12 +111,9 @@ router.patch('/me/photo', requireStudent, async (req, res) => {
     upload(req, res, async (err) => {
       if (err) return res.status(400).json({ error: err.message });
       if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-      const student = await Student.findByIdAndUpdate(
-        req.student.id,
-        { profilePicture: req.file.path },
-        { new: true }
-      ).select('-password -resetToken -resetExpires');
-      res.json({ url: req.file.path, student });
+      const student = await studentsDb.update(req.student.id, { profile_picture: req.file.path });
+      const { password, reset_token, reset_expires, ...safe } = student;
+      res.json({ url: req.file.path, student: safe });
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -126,15 +126,16 @@ const resetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 3, message: { er
 router.post('/forgot-password', resetLimiter, async (req, res) => {
   try {
     const { email } = req.body;
-    const student = await Student.findOne({ email: email?.toLowerCase() });
+    const student = await studentsDb.findByEmail(email?.toLowerCase());
     // Always respond OK to prevent email enumeration
     if (!student) return res.json({ success: true });
 
     const token   = crypto.randomBytes(32).toString('hex');
     const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-    student.resetToken   = token;
-    student.resetExpires = expires;
-    await student.save();
+    await studentsDb.update(student.id, {
+      reset_token:   token,
+      reset_expires: expires.toISOString()
+    });
 
     const host     = process.env.HOST || 'https://goallordcreativity.com';
     const resetUrl = `${host}/reset-password.html?token=${token}&role=student`;
@@ -142,7 +143,7 @@ router.post('/forgot-password', resetLimiter, async (req, res) => {
     await sendMail({
       to:      student.email,
       subject: 'Reset your password — Goallord Academy',
-      html:    passwordResetEmail({ fullName: student.fullName, resetUrl, role: 'student' })
+      html:    passwordResetEmail({ fullName: student.full_name, resetUrl, role: 'student' })
     }).catch(e => console.error('Reset email error:', e.message));
 
     res.json({ success: true });
@@ -159,13 +160,15 @@ router.post('/reset-password', studentResetLimiter, async (req, res) => {
     if (!token || !newPassword) return res.status(400).json({ error: 'token and newPassword are required' });
     if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
 
-    const student = await Student.findOne({ resetToken: token, resetExpires: { $gt: new Date() } });
+    const student = await studentsDb.findByResetToken(token);
     if (!student) return res.status(400).json({ error: 'Reset link is invalid or has expired' });
 
-    student.password     = await bcrypt.hash(newPassword, 12);
-    student.resetToken   = undefined;
-    student.resetExpires = undefined;
-    await student.save();
+    const hashed = await bcrypt.hash(newPassword, 12);
+    await studentsDb.update(student.id, {
+      password:      hashed,
+      reset_token:   null,
+      reset_expires: null
+    });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -179,17 +182,15 @@ router.get('/', requireLecturer, async (req, res) => {
     const filter = {};
     if (track)  filter.track  = track;
     if (status) filter.status = status;
-    if (batch)  filter.batch  = batch;
-    if (search) {
-      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const re = new RegExp(escaped, 'i');
-      filter.$or = [{ fullName: re }, { email: re }, { phone: re }];
-    }
-    const skip = (Number(page) - 1) * Number(limit);
-    const [docs, total] = await Promise.all([
-      Student.find(filter).select('-password').populate('batch', 'name number').sort({ enrolledAt: -1 }).skip(skip).limit(Number(limit)),
-      Student.countDocuments(filter)
-    ]);
+    if (batch)  filter.batch_id  = batch;
+
+    const { data: docs, count: total } = await studentsDb.find({
+      filter,
+      search: search || undefined,
+      populate: 'batch',
+      page: Number(page),
+      limit: Number(limit)
+    });
     res.json({ data: docs, total, page: Number(page) });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -203,12 +204,21 @@ router.post('/', requireAuth, async (req, res) => {
     if (!fullName || !email || !password || !track) {
       return res.status(400).json({ error: 'fullName, email, password and track are required' });
     }
-    const existing = await Student.findOne({ email: email.toLowerCase() });
+    const existing = await studentsDb.findByEmail(email.toLowerCase());
     if (existing) return res.status(409).json({ error: 'A student with this email already exists' });
 
     const hash = await bcrypt.hash(password, 10);
-    const student = await Student.create({ fullName, email, password: hash, phone, track, batch, applicantRef, notes });
-    res.status(201).json({ success: true, id: student._id, email: student.email });
+    const student = await studentsDb.create({
+      full_name: fullName,
+      email: email.toLowerCase(),
+      password: hash,
+      phone: phone || '',
+      track,
+      batch_id: batch || null,
+      applicant_ref: applicantRef || null,
+      notes: notes || ''
+    });
+    res.status(201).json({ success: true, id: student.id, email: student.email });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -217,9 +227,10 @@ router.post('/', requireAuth, async (req, res) => {
 // ── GET /api/students/:id — admin: single ──────────────────────
 router.get('/:id', requireAuth, async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id).select('-password').populate('batch', 'name number');
+    const student = await studentsDb.findById(req.params.id, { populate: 'batch' });
     if (!student) return res.status(404).json({ error: 'Not found' });
-    res.json(student);
+    const { password, ...safe } = student;
+    res.json(safe);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -230,17 +241,18 @@ router.patch('/:id', requireAuth, async (req, res) => {
   try {
     const { fullName, email, phone, track, batch, status, notes } = req.body;
     const update = {};
-    if (fullName !== undefined) update.fullName = fullName;
+    if (fullName !== undefined) update.full_name = fullName;
     if (email   !== undefined) update.email    = email.toLowerCase();
     if (phone   !== undefined) update.phone    = phone;
     if (track   !== undefined) update.track    = track;
-    if (batch   !== undefined) update.batch    = batch || null;
+    if (batch   !== undefined) update.batch_id = batch || null;
     if (status  !== undefined) update.status   = status;
     if (notes   !== undefined) update.notes    = notes;
 
-    const student = await Student.findByIdAndUpdate(req.params.id, update, { new: true }).select('-password');
+    const student = await studentsDb.update(req.params.id, update);
     if (!student) return res.status(404).json({ error: 'Not found' });
-    res.json(student);
+    const { password, ...safe } = student;
+    res.json(safe);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -249,31 +261,30 @@ router.patch('/:id', requireAuth, async (req, res) => {
 // ── POST /api/students/:id/graduate — admin ────────────────────
 router.post('/:id/graduate', requireAuth, async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id).populate('batch', 'name');
+    const student = await studentsDb.findById(req.params.id, { populate: 'batch' });
     if (!student) return res.status(404).json({ error: 'Not found' });
     if (student.status === 'Graduated') return res.status(400).json({ error: 'Student is already graduated' });
 
-    student.status = 'Graduated';
-    await student.save();
+    await studentsDb.update(req.params.id, { status: 'Graduated' });
 
     const loginUrl = (process.env.HOST || 'https://goallordcreativity.com') + '/student-login.html';
 
     sendMail({
       to:      student.email,
       subject: 'Congratulations on your graduation! — Goallord Creativity Academy',
-      html:    graduationEmail({ fullName: student.fullName, batchName: student.batch?.name, track: student.track, loginUrl })
+      html:    graduationEmail({ fullName: student.full_name, batchName: student.batch?.name, track: student.track, loginUrl })
     }).catch(e => console.error('Graduation email failed:', e.message));
 
-    Notification.create({
-      recipient:     student._id,
-      recipientType: 'Student',
-      type:          'graduation',
-      title:         'Congratulations! You have graduated',
-      message:       `You have successfully completed the ${student.track} program at Goallord Creativity Academy. We are proud of your achievement!`,
-      link:          loginUrl
+    notificationsDb.create({
+      recipient_id:   student.id,
+      recipient_type: 'Student',
+      type:           'graduation',
+      title:          'Congratulations! You have graduated',
+      message:        `You have successfully completed the ${student.track} program at Goallord Creativity Academy. We are proud of your achievement!`,
+      link:           loginUrl
     }).catch(e => console.error('Graduation notification failed:', e.message));
 
-    res.json({ success: true, student: { id: student._id, status: student.status } });
+    res.json({ success: true, student: { id: student.id, status: 'Graduated' } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -282,12 +293,11 @@ router.post('/:id/graduate', requireAuth, async (req, res) => {
 // ── POST /api/students/:id/reactivate — admin ──────────────────
 router.post('/:id/reactivate', requireAuth, async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id);
+    const student = await studentsDb.findById(req.params.id);
     if (!student) return res.status(404).json({ error: 'Not found' });
     if (student.status !== 'Suspended') return res.status(400).json({ error: 'Student is not suspended' });
 
-    student.status = 'Active';
-    await student.save();
+    await studentsDb.update(req.params.id, { status: 'Active' });
 
     const loginUrl = (process.env.HOST || 'https://goallordcreativity.com') + '/student-login.html';
 
@@ -295,19 +305,19 @@ router.post('/:id/reactivate', requireAuth, async (req, res) => {
     sendMail({
       to:      student.email,
       subject: 'Account reactivated — Goallord Creativity Academy',
-      html:    reactivationEmail({ fullName: student.fullName, loginUrl })
+      html:    reactivationEmail({ fullName: student.full_name, loginUrl })
     }).catch(e => console.error('Reactivation email failed:', e.message));
 
-    Notification.create({
-      recipient:     student._id,
-      recipientType: 'Student',
-      type:          'account_reactivated',
-      title:         'Account Reactivated',
-      message:       'Your account has been manually reactivated by an admin. Welcome back!',
-      link:          loginUrl
+    notificationsDb.create({
+      recipient_id:   student.id,
+      recipient_type: 'Student',
+      type:           'account_reactivated',
+      title:          'Account Reactivated',
+      message:        'Your account has been manually reactivated by an admin. Welcome back!',
+      link:           loginUrl
     }).catch(e => console.error('Reactivation notification failed:', e.message));
 
-    res.json({ success: true, student: { id: student._id, status: student.status } });
+    res.json({ success: true, student: { id: student.id, status: 'Active' } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -319,7 +329,7 @@ router.post('/:id/reset-password', requireAuth, async (req, res) => {
     const { newPassword } = req.body;
     if (!newPassword || newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
     const hash = await bcrypt.hash(newPassword, 10);
-    await Student.findByIdAndUpdate(req.params.id, { password: hash });
+    await studentsDb.update(req.params.id, { password: hash });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -329,7 +339,7 @@ router.post('/:id/reset-password', requireAuth, async (req, res) => {
 // ── DELETE /api/students/:id — admin ───────────────────────────
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
-    await Student.findByIdAndDelete(req.params.id);
+    await studentsDb.remove(req.params.id);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

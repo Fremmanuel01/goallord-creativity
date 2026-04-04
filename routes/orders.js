@@ -1,7 +1,7 @@
 const express = require('express');
 const https = require('https');
-const Order = require('../models/Order');
-const Product = require('../models/Product');
+const ordersDb   = require('../db/orders');
+const productsDb = require('../db/products');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { sendMail } = require('../utils/mailer');
 const { receiptEmail } = require('../utils/emailTemplates');
@@ -76,12 +76,8 @@ router.get('/', requireAuth, async (req, res) => {
     const { status, page = 1, limit = 50 } = req.query;
     const filter = {};
     if (status) filter.status = status;
-    const skip = (Number(page) - 1) * Number(limit);
-    const [docs, total] = await Promise.all([
-      Order.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)).populate('productId', 'name category'),
-      Order.countDocuments(filter)
-    ]);
-    res.json({ data: docs, total, page: Number(page) });
+    const result = await ordersDb.find({ filter, populate: 'product', page: Number(page), limit: Number(limit) });
+    res.json({ data: result.data, total: result.count, page: Number(page) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -100,20 +96,20 @@ router.post('/', orderLimiter, async (req, res) => {
         if (buyerName.length > 100) return res.status(400).json({ error: 'Name too long' });
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyerEmail)) return res.status(400).json({ error: 'Invalid email' });
 
-        const product = await Product.findById(productId);
+        const product = await productsDb.findById(productId);
         if (!product) return res.status(404).json({ error: 'Product not found' });
         if (!product.active) return res.status(400).json({ error: 'Product is not available' });
 
-        const order = await Order.create({
-            productId,
-            buyerName: xss(buyerName.trim()),
-            buyerEmail: buyerEmail.toLowerCase().trim(),
+        const order = await ordersDb.create({
+            product_id: productId,
+            buyer_name: xss(buyerName.trim()),
+            buyer_email: buyerEmail.toLowerCase().trim(),
             amount: product.price,  // ALWAYS use DB price, never client
             currency: product.currency,
             category: product.category,
             status: 'Pending'
         });
-        res.status(201).json({ success: true, orderId: order.orderId, id: order._id, amount: product.price, currency: product.currency });
+        res.status(201).json({ success: true, orderId: order.order_id, id: order.id, amount: product.price, currency: product.currency });
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
@@ -133,7 +129,8 @@ router.post('/verify-payment', async (req, res) => {
 
         // Get orders and verify amount
         const ids = Array.isArray(orderIds) ? orderIds : [orderIds];
-        const orders = await Order.find({ _id: { $in: ids } });
+        const result = await ordersDb.find({ inFilter: { id: ids } });
+        const orders = result.data;
         if (!orders.length) return res.status(404).json({ error: 'Orders not found' });
 
         // Calculate expected amount in kobo (orders are in USD, convert to NGN at 1560)
@@ -155,17 +152,18 @@ router.post('/verify-payment', async (req, res) => {
         for (const order of orders) {
             const token = crypto.randomBytes(32).toString('hex');
             const expires = new Date(Date.now() + 72 * 60 * 60 * 1000); // 72 hours
-            order.status = 'Paid';
-            order.downloadToken = token;
-            order.downloadExpires = expires;
-            await order.save();
+            await ordersDb.update(order.id, {
+                status: 'Paid',
+                download_token: token,
+                download_expires: expires.toISOString()
+            });
 
-            const product = await Product.findById(order.productId);
-            if (product && product.downloadUrl) {
+            const product = await productsDb.findById(order.product_id);
+            if (product && product.download_url) {
                 const host = process.env.HOST || 'https://goallordcreativity.com';
                 downloadLinks.push({
                     name: product.name,
-                    url: host + '/api/orders/download/' + order._id + '?token=' + token
+                    url: host + '/api/orders/download/' + order.id + '?token=' + token
                 });
             } else if (product) {
                 downloadLinks.push({ name: product.name, url: null });
@@ -176,9 +174,9 @@ router.post('/verify-payment', async (req, res) => {
         const buyer = orders[0];
         try {
             await sendMail({
-                to: buyer.buyerEmail,
-                subject: 'Order Confirmed — Goallord Creativity',
-                html: buildOrderConfirmationEmail(buyer.buyerName, downloadLinks, verification.data.reference, orders)
+                to: buyer.buyer_email,
+                subject: 'Order Confirmed \u2014 Goallord Creativity',
+                html: buildOrderConfirmationEmail(buyer.buyer_name, downloadLinks, verification.data.reference, orders)
             });
         } catch(emailErr) {
             console.error('Order confirmation email failed:', emailErr.message);
@@ -196,17 +194,17 @@ router.get('/download/:id', async (req, res) => {
         const { token } = req.query;
         if (!token) return res.status(401).send('<h2>Access Denied</h2><p>No download token provided.</p>');
 
-        const order = await Order.findById(req.params.id);
+        const order = await ordersDb.findById(req.params.id);
         if (!order) return res.status(404).send('<h2>Not Found</h2><p>Order not found.</p>');
         if (order.status !== 'Paid') return res.status(403).send('<h2>Payment Required</h2><p>This order has not been paid.</p>');
-        if (order.downloadToken !== token) return res.status(403).send('<h2>Invalid Token</h2><p>This download link is not valid.</p>');
-        if (order.downloadExpires && order.downloadExpires < new Date()) return res.status(410).send('<h2>Link Expired</h2><p>This download link has expired. Contact hello@goallordcreativity.com for a new link.</p>');
+        if (order.download_token !== token) return res.status(403).send('<h2>Invalid Token</h2><p>This download link is not valid.</p>');
+        if (order.download_expires && new Date(order.download_expires) < new Date()) return res.status(410).send('<h2>Link Expired</h2><p>This download link has expired. Contact hello@goallordcreativity.com for a new link.</p>');
 
-        const product = await Product.findById(order.productId);
-        if (!product || !product.downloadUrl) return res.status(404).send('<h2>No Download Available</h2><p>This product does not have a downloadable file yet. Contact hello@goallordcreativity.com</p>');
+        const product = await productsDb.findById(order.product_id);
+        if (!product || !product.download_url) return res.status(404).send('<h2>No Download Available</h2><p>This product does not have a downloadable file yet. Contact hello@goallordcreativity.com</p>');
 
         // Redirect to the actual download URL
-        res.redirect(product.downloadUrl);
+        res.redirect(product.download_url);
     } catch (err) {
         res.status(500).send('<h2>Error</h2><p>' + err.message + '</p>');
     }
@@ -216,7 +214,7 @@ router.get('/download/:id', async (req, res) => {
 router.patch('/:id', requireAuth, async (req, res) => {
   try {
     const { status } = req.body;
-    const doc = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    const doc = await ordersDb.update(req.params.id, { status });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
   } catch (err) {
@@ -226,33 +224,36 @@ router.patch('/:id', requireAuth, async (req, res) => {
 
 // DELETE /api/orders/:id — admin only
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
-    const order = await Order.findByIdAndDelete(req.params.id);
-    if (!order) return res.status(404).json({ error: 'Not found' });
-    res.json({ message: 'Order deleted' });
+    try {
+        await ordersDb.remove(req.params.id);
+        res.json({ message: 'Order deleted' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // POST /api/orders/:id/email-receipt — protected (email receipt to buyer)
 router.post('/:id/email-receipt', requireAuth, async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate('productId', 'name');
+    const order = await ordersDb.findById(req.params.id);
     if (!order) return res.status(404).json({ error: 'Not found' });
 
     const currencySymbol = order.currency === 'EUR' ? '\u20AC' : order.currency === 'NGN' ? '\u20A6' : '$';
-    const receiptNum = 'ORD-' + (order.orderId || order._id.toString().slice(-8).toUpperCase());
+    const receiptNum = 'ORD-' + (order.order_id || order.id.toString().slice(-8).toUpperCase());
 
     await sendMail({
-      to: order.buyerEmail,
+      to: order.buyer_email,
       subject: `Order Receipt ${receiptNum} \u2014 Goallord Creativity`,
       html: receiptEmail({
         receiptNumber: receiptNum,
-        date: order.createdAt || new Date(),
-        recipientName: order.buyerName,
-        recipientEmail: order.buyerEmail,
-        description: order.productId?.name || 'Digital Product',
+        date: order.created_at || new Date(),
+        recipientName: order.buyer_name,
+        recipientEmail: order.buyer_email,
+        description: order.product?.name || 'Digital Product',
         amount: order.amount,
         currency: currencySymbol,
         method: 'Online',
-        reference: order.orderId || order._id.toString().slice(-8).toUpperCase(),
+        reference: order.order_id || order.id.toString().slice(-8).toUpperCase(),
         issuedBy: 'Goallord Creativity Limited'
       })
     });

@@ -1,5 +1,5 @@
 const express = require('express');
-const Product = require('../models/Product');
+const productsDb = require('../db/products');
 const { requireAuth, optionalAuth, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
@@ -10,7 +10,7 @@ router.get('/', optionalAuth, async (req, res) => {
     const filter = req.user ? {} : { active: true };
     const { category } = req.query;
     if (category) filter.category = category;
-    const docs = await Product.find(filter).sort({ createdAt: -1 });
+    const docs = await productsDb.findAll(filter);
     res.json({ data: docs });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -20,7 +20,7 @@ router.get('/', optionalAuth, async (req, res) => {
 // GET /api/products/:id
 router.get('/:id', async (req, res) => {
   try {
-    const doc = await Product.findById(req.params.id);
+    const doc = await productsDb.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
   } catch (err) {
@@ -32,9 +32,9 @@ router.get('/:id', async (req, res) => {
 router.post('/', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { name, category, price, currency, description, stock, active, image, type, demoUrl, features, downloadUrl } = req.body;
-    const cleanCurrency = (currency === '₦' || currency === 'NGN') ? 'NGN' : 'USD';
+    const cleanCurrency = (currency === '\u20A6' || currency === 'NGN') ? 'NGN' : 'USD';
     const cleanStock = (stock === 'Digital' || stock === 'Unlimited' || stock === '' || stock === undefined) ? -1 : Number(stock) || -1;
-    const doc = await Product.create({ name, category, price, currency: cleanCurrency, description, stock: cleanStock, active, image, type, demoUrl, features, downloadUrl });
+    const doc = await productsDb.create({ name, category, price, currency: cleanCurrency, description, stock: cleanStock, active, image, type, demo_url: demoUrl, features, download_url: downloadUrl });
     res.status(201).json(doc);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -49,17 +49,17 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
     if (name !== undefined) updates.name = name;
     if (category !== undefined) updates.category = category;
     if (price !== undefined) updates.price = price;
-    if (currency !== undefined) updates.currency = (currency === '₦' || currency === 'NGN') ? 'NGN' : 'USD';
+    if (currency !== undefined) updates.currency = (currency === '\u20A6' || currency === 'NGN') ? 'NGN' : 'USD';
     if (description !== undefined) updates.description = description;
     if (stock !== undefined) updates.stock = (stock === 'Digital' || stock === 'Unlimited' || stock === '') ? -1 : Number(stock) || -1;
     if (active !== undefined) updates.active = active;
     if (image !== undefined) updates.image = image;
     if (type !== undefined) updates.type = type;
-    if (demoUrl !== undefined) updates.demoUrl = demoUrl;
+    if (demoUrl !== undefined) updates.demo_url = demoUrl;
     if (features !== undefined) updates.features = features;
-    if (downloadUrl !== undefined) updates.downloadUrl = downloadUrl;
+    if (downloadUrl !== undefined) updates.download_url = downloadUrl;
 
-    const doc = await Product.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true });
+    const doc = await productsDb.update(req.params.id, updates);
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
   } catch (err) {
@@ -70,7 +70,7 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
 // DELETE /api/products/:id — admin only
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
-    await Product.findByIdAndDelete(req.params.id);
+    await productsDb.remove(req.params.id);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -79,14 +79,14 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
 
 // Seed default products
 async function seedProducts() {
-  const count = await Product.countDocuments();
+  const count = await productsDb.count();
   if (count > 0) return;
 
   const defaults = [
     // Application Fees (for academy — not shown in public store)
-    { name: 'Web Design Academy Fee',        category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for Web Design track' },
-    { name: 'WordPress Academy Fee',         category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for WordPress track' },
-    { name: 'Digital Marketing Academy Fee', category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for Digital Marketing track' },
+    { name: 'Web Design Academy Fee',        category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for Web Design track', type: '', features: [], demo_url: '', download_url: '' },
+    { name: 'WordPress Academy Fee',         category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for WordPress track', type: '', features: [], demo_url: '', download_url: '' },
+    { name: 'Digital Marketing Academy Fee', category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for Digital Marketing track', type: '', features: [], demo_url: '', download_url: '' },
 
     // Templates
     { name: 'Agency Pro Template',   category: 'Template', price: 79,  currency: 'USD', type: 'HTML/CSS/JS',    description: 'Premium agency website template with GSAP animations, dark theme, responsive design, and modern layout sections.',     features: ['GSAP Animations', 'Dark Theme', 'Responsive', '15+ Sections', 'Contact Form', 'SEO Optimized'] },
@@ -103,7 +103,7 @@ async function seedProducts() {
     { name: 'E-learning Platform',        category: 'Web App', price: 399, currency: 'USD', type: 'Node.js/React', description: 'Complete e-learning platform with course management, video hosting, quizzes, certificates, and integrated payment system.',       features: ['Course Management', 'Video Hosting', 'Quizzes & Exams', 'Certificates', 'Payment Integration', 'Student Dashboard'] },
   ];
 
-  await Product.insertMany(defaults);
+  await productsDb.insertMany(defaults);
   console.log('Products seeded');
 }
 

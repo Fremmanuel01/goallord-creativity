@@ -1,6 +1,6 @@
-const router = require('express').Router();
-const Task = require('../models/Task');
-const Project = require('../models/Project');
+const router     = require('express').Router();
+const tasksDb    = require('../db/tasks');
+const projectsDb = require('../db/projects');
 const { requireAuth, requirePermission } = require('../middleware/auth');
 
 // List tasks (filter by project, assignee, status)
@@ -8,28 +8,18 @@ const { requireAuth, requirePermission } = require('../middleware/auth');
 router.get('/', requireAuth, requirePermission('tasks'), async (req, res) => {
     try {
         const filter = {};
-        if (req.query.project)  filter.project  = req.query.project;
-        if (req.query.assignee) filter.assignee  = req.query.assignee;
-        if (req.query.status)   filter.status    = req.query.status;
-        if (req.query.mine)     filter.assignee  = req.user.id;
-        if (req.query.priority) filter.priority  = req.query.priority;
-        if (req.query.search)   filter.title     = { $regex: req.query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
-        if (req.query.dueBefore || req.query.dueAfter) {
-            filter.dueDate = {};
-            if (req.query.dueBefore) filter.dueDate.$lte = new Date(req.query.dueBefore);
-            if (req.query.dueAfter)  filter.dueDate.$gte = new Date(req.query.dueAfter);
-        }
+        if (req.query.project)  filter.project_id  = req.query.project;
+        if (req.query.assignee) filter.assignee_id  = req.query.assignee;
+        if (req.query.status)   filter.status       = req.query.status;
+        if (req.query.mine)     filter.assignee_id  = req.user.id;
+        if (req.query.priority) filter.priority     = req.query.priority;
 
         // Staff can only see their own tasks
         if (req.user.role !== 'admin') {
-            filter.assignee = req.user.id;
+            filter.assignee_id = req.user.id;
         }
 
-        const tasks = await Task.find(filter)
-            .populate('assignee', 'name email avatar')
-            .populate('project', 'name color')
-            .populate('blockedBy', 'title status')
-            .sort({ priority: -1, dueDate: 1 });
+        const tasks = await tasksDb.find({ filter, search: req.query.search });
         res.json(tasks);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -39,16 +29,12 @@ router.get('/', requireAuth, requirePermission('tasks'), async (req, res) => {
 // Single task
 router.get('/:id', requireAuth, requirePermission('tasks'), async (req, res) => {
     try {
-        const task = await Task.findById(req.params.id)
-            .populate('assignee', 'name email avatar')
-            .populate('project', 'name')
-            .populate('blockedBy', 'title status')
-            .populate('comments.user', 'name');
+        const task = await tasksDb.findById(req.params.id);
         if (!task) return res.status(404).json({ error: 'Not found' });
 
         // Staff can only view tasks assigned to them
         if (req.user.role !== 'admin') {
-            if (!task.assignee || task.assignee._id.toString() !== req.user.id) {
+            if (!task.assignee || task.assignee.id !== req.user.id) {
                 return res.status(403).json({ error: 'You do not have access to this task' });
             }
         }
@@ -77,22 +63,20 @@ router.post('/', requireAuth, requirePermission('tasks'), async (req, res) => {
             return res.status(400).json({ error: 'Invalid priority. Must be one of: ' + validPriorities.join(', ') });
         }
 
-        const task = await Task.create({
+        const task = await tasksDb.create({
             title, description,
-            project: project || null,
-            assignee: assignee || null,
+            project_id: project || null,
+            assignee_id: assignee || null,
             status: status || 'todo',
             priority: priority || 'medium',
-            dueDate: dueDate || null,
+            due_date: dueDate || null,
             estimated: estimated || 0,
             spent: spent || 0,
-            blockedBy: Array.isArray(blockedBy) ? blockedBy : [],
-            createdBy: req.user.id
+            blocked_by: Array.isArray(blockedBy) ? blockedBy : [],
+            created_by: req.user.id
         });
-        const populated = await task.populate([
-            { path: 'assignee', select: 'name email' },
-            { path: 'project', select: 'name color' }
-        ]);
+        // Re-fetch with populated fields
+        const populated = await tasksDb.findById(task.id);
         res.status(201).json(populated);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -104,10 +88,10 @@ router.patch('/:id', requireAuth, requirePermission('tasks'), async (req, res) =
     try {
         // Permission check: admin or task assignee/creator
         if (req.user.role !== 'admin') {
-            const existing = await Task.findById(req.params.id);
+            const existing = await tasksDb.findById(req.params.id);
             if (!existing) return res.status(404).json({ error: 'Not found' });
-            if (existing.assignee && existing.assignee.toString() !== req.user.id &&
-                existing.createdBy && existing.createdBy.toString() !== req.user.id) {
+            if (existing.assignee_id && existing.assignee_id !== req.user.id &&
+                existing.created_by && existing.created_by !== req.user.id) {
                 return res.status(403).json({ error: 'You can only update your own tasks' });
             }
         }
@@ -116,37 +100,38 @@ router.patch('/:id', requireAuth, requirePermission('tasks'), async (req, res) =
         const updateFields = {};
         if (title !== undefined) updateFields.title = title;
         if (description !== undefined) updateFields.description = description;
-        if (assignee !== undefined) updateFields.assignee = assignee;
+        if (assignee !== undefined) updateFields.assignee_id = assignee;
         if (status !== undefined) updateFields.status = status;
         if (priority !== undefined) updateFields.priority = priority;
-        if (dueDate !== undefined) updateFields.dueDate = dueDate;
+        if (dueDate !== undefined) updateFields.due_date = dueDate;
         if (estimated !== undefined) updateFields.estimated = estimated;
         if (spent !== undefined) updateFields.spent = spent;
-        if (blockedBy !== undefined) updateFields.blockedBy = blockedBy;
+        if (blockedBy !== undefined) updateFields.blocked_by = blockedBy;
 
-        const task = await Task.findByIdAndUpdate(req.params.id, updateFields, { new: true, runValidators: true })
-            .populate('assignee', 'name email avatar')
-            .populate('project', 'name color')
-            .populate('blockedBy', 'title status');
+        const task = await tasksDb.update(req.params.id, updateFields);
         if (!task) return res.status(404).json({ error: 'Not found' });
 
+        // Re-fetch with populated fields
+        const populated = await tasksDb.findById(task.id);
+
         // Auto-transition project status
-        if (task.project) {
-            const projectTasks = await Task.find({ project: task.project._id || task.project });
+        const projectId = populated.project_id || (populated.project && populated.project.id);
+        if (projectId) {
+            const projectTasks = await tasksDb.findByProject(projectId);
             const allDone = projectTasks.length > 0 && projectTasks.every(t => t.status === 'done');
             const anyActive = projectTasks.some(t => ['in-progress','review'].includes(t.status));
 
             if (allDone) {
-                await Project.findByIdAndUpdate(task.project._id || task.project, { status: 'completed' });
+                await projectsDb.update(projectId, { status: 'completed' });
             } else if (anyActive) {
-                const proj = await Project.findById(task.project._id || task.project);
+                const proj = await projectsDb.findById(projectId);
                 if (proj && proj.status === 'not-started') {
-                    await Project.findByIdAndUpdate(proj._id, { status: 'in-progress' });
+                    await projectsDb.update(projectId, { status: 'in-progress' });
                 }
             }
         }
 
-        res.json(task);
+        res.json(populated);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -157,16 +142,15 @@ router.delete('/:id', requireAuth, requirePermission('tasks'), async (req, res) 
     try {
         // Permission check: admin or task assignee/creator
         if (req.user.role !== 'admin') {
-            const existing = await Task.findById(req.params.id);
+            const existing = await tasksDb.findById(req.params.id);
             if (!existing) return res.status(404).json({ error: 'Not found' });
-            if (existing.assignee && existing.assignee.toString() !== req.user.id &&
-                existing.createdBy && existing.createdBy.toString() !== req.user.id) {
+            if (existing.assignee_id && existing.assignee_id !== req.user.id &&
+                existing.created_by && existing.created_by !== req.user.id) {
                 return res.status(403).json({ error: 'You can only delete your own tasks' });
             }
         }
 
-        const task = await Task.findByIdAndDelete(req.params.id);
-        if (!task) return res.status(404).json({ error: 'Not found' });
+        await tasksDb.remove(req.params.id);
         res.json({ message: 'Task deleted' });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -179,16 +163,13 @@ router.post('/:id/comments', requireAuth, async (req, res) => {
         const { text } = req.body;
         if (!text || !text.trim()) return res.status(400).json({ error: 'Comment text is required' });
 
-        const task = await Task.findById(req.params.id);
+        // Verify task exists
+        const task = await tasksDb.findById(req.params.id);
         if (!task) return res.status(404).json({ error: 'Task not found' });
 
-        task.comments.push({ user: req.user.id, text: text.trim() });
-        await task.save();
+        await tasksDb.addComment(req.params.id, { user_id: req.user.id, text: text.trim() });
 
-        const updated = await Task.findById(req.params.id)
-            .populate('assignee', 'name email')
-            .populate('project', 'name')
-            .populate('comments.user', 'name');
+        const updated = await tasksDb.findById(req.params.id);
         res.json(updated);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -198,24 +179,21 @@ router.post('/:id/comments', requireAuth, async (req, res) => {
 // Delete comment from task
 router.delete('/:id/comments/:commentId', requireAuth, async (req, res) => {
     try {
-        const task = await Task.findById(req.params.id);
+        const task = await tasksDb.findById(req.params.id);
         if (!task) return res.status(404).json({ error: 'Task not found' });
 
-        const comment = task.comments.id(req.params.commentId);
+        const comment = (task.comments || []).find(c => c.id === req.params.commentId);
         if (!comment) return res.status(404).json({ error: 'Comment not found' });
 
         // Only admin or comment author can delete
-        if (req.user.role !== 'admin' && comment.user.toString() !== req.user.id) {
+        const commentUserId = comment.user_id || (comment.user && comment.user.id);
+        if (req.user.role !== 'admin' && commentUserId !== req.user.id) {
             return res.status(403).json({ error: 'You can only delete your own comments' });
         }
 
-        task.comments.pull(req.params.commentId);
-        await task.save();
+        await tasksDb.removeComment(req.params.commentId);
 
-        const updated = await Task.findById(req.params.id)
-            .populate('assignee', 'name email')
-            .populate('project', 'name')
-            .populate('comments.user', 'name');
+        const updated = await tasksDb.findById(req.params.id);
         res.json(updated);
     } catch (err) {
         res.status(500).json({ error: err.message });

@@ -1,8 +1,7 @@
 const cron = require('node-cron');
 const { sendMail } = require('./mailer');
-const Task = require('../models/Task');
-const ReminderLog = require('../models/ReminderLog');
-const ReminderSettings = require('../models/ReminderSettings');
+const tasksDb = require('../db/tasks');
+const remindersDb = require('../db/reminders');
 
 let currentCronJob = null;
 
@@ -15,8 +14,8 @@ function daysUntil(date) {
 }
 
 function buildEmail(task, user, project) {
-    const days = daysUntil(task.dueDate);
-    const dueStr = new Date(task.dueDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const days = daysUntil(task.due_date);
+    const dueStr = new Date(task.due_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     const isOverdue = days < 0;
     const isToday = days === 0;
 
@@ -121,12 +120,8 @@ function buildEmail(task, user, project) {
 async function sendTaskReminders() {
     const result = { sent: 0, total: 0 };
     try {
-        // Find all tasks that are NOT done and have a due date
-        const tasks = await Task.find({
-            status: { $ne: 'done' },
-            dueDate: { $exists: true, $ne: null },
-            assignee: { $exists: true, $ne: null }
-        }).populate('assignee', 'name email').populate('project', 'name color');
+        // Find all tasks that are NOT done and have a due date and assignee
+        const tasks = await tasksDb.findIncomplete({ notNull: ['due_date', 'assignee_id'] });
 
         result.total = tasks.length;
 
@@ -151,11 +146,11 @@ async function sendTaskReminders() {
                 console.log(`[Reminders] Sent to ${task.assignee.email}: "${task.title}"`);
 
                 // Log success
-                await ReminderLog.create({
-                    task: task._id,
-                    taskTitle: task.title,
+                await remindersDb.createLog({
+                    task_id: task.id,
+                    task_title: task.title,
                     recipient: task.assignee.email,
-                    recipientName: task.assignee.name,
+                    recipient_name: task.assignee.name,
                     project: projectName,
                     status: 'sent'
                 });
@@ -163,11 +158,11 @@ async function sendTaskReminders() {
                 console.error(`[Reminders] Failed to send to ${task.assignee.email}:`, err.message);
 
                 // Log failure
-                await ReminderLog.create({
-                    task: task._id,
-                    taskTitle: task.title,
+                await remindersDb.createLog({
+                    task_id: task.id,
+                    task_title: task.title,
                     recipient: task.assignee.email,
-                    recipientName: task.assignee.name,
+                    recipient_name: task.assignee.name,
                     project: projectName,
                     status: 'failed',
                     error: err.message
@@ -183,7 +178,7 @@ async function sendTaskReminders() {
 
 function buildCronExpression(settings) {
     const freq = settings.frequency || 2;
-    const time = settings.sendTime || '08:00';
+    const time = settings.send_time || '08:00';
     const [hour, minute] = time.split(':').map(Number);
     // "minute hour */freq * *"
     return `${minute} ${hour} */${freq} * *`;
@@ -209,16 +204,16 @@ function restartCron(settings) {
         timezone: 'Africa/Lagos'
     });
 
-    console.log(`[Reminders] Cron scheduled — every ${settings.frequency} days at ${settings.sendTime} WAT`);
+    console.log(`[Reminders] Cron scheduled — every ${settings.frequency} days at ${settings.send_time} WAT`);
 }
 
 async function startReminderCron() {
     try {
-        const settings = await ReminderSettings.get();
+        const settings = await remindersDb.getSettings();
         restartCron(settings);
     } catch (err) {
         console.error('[Reminders] Failed to load settings, using defaults:', err.message);
-        restartCron({ frequency: 2, enabled: true, sendTime: '08:00' });
+        restartCron({ frequency: 2, enabled: true, send_time: '08:00' });
     }
 }
 

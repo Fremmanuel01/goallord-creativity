@@ -1,5 +1,5 @@
 const express = require('express');
-const Content = require('../models/Content');
+const contentDb = require('../db/content');
 const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -7,9 +7,9 @@ const router = express.Router();
 // GET /api/content/:section — public
 router.get('/:section', async (req, res) => {
   try {
-    const doc = await Content.findOne({ section: req.params.section });
+    const doc = await contentDb.findBySection(req.params.section);
     if (!doc) return res.status(404).json({ error: 'Section not found' });
-    res.json({ section: doc.section, data: doc.data, updatedAt: doc.updatedAt });
+    res.json({ section: doc.section, data: doc.data, updatedAt: doc.updated_at });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -18,7 +18,7 @@ router.get('/:section', async (req, res) => {
 // GET /api/content — list all sections (protected)
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const docs = await Content.find({}, 'section updatedAt');
+    const docs = await contentDb.findAll();
     res.json({ data: docs });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -28,12 +28,8 @@ router.get('/', requireAuth, async (req, res) => {
 // PUT /api/content/:section — protected (upsert)
 router.put('/:section', requireAuth, async (req, res) => {
   try {
-    const doc = await Content.findOneAndUpdate(
-      { section: req.params.section },
-      { data: req.body.data, updatedAt: new Date() },
-      { new: true, upsert: true }
-    );
-    res.json({ section: doc.section, data: doc.data, updatedAt: doc.updatedAt });
+    const doc = await contentDb.upsert(req.params.section, req.body.data);
+    res.json({ section: doc.section, data: doc.data, updatedAt: doc.updated_at });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -46,7 +42,7 @@ async function seedContent() {
       section: 'hero',
       data: {
         headline: 'We Build High-Performing Websites That Turn Visitors Into Clients.',
-        subline: 'We build premium websites, web apps, and digital strategies for businesses that refuse to be ordinary. From Onitsha to the world — bold ideas, flawless execution.',
+        subline: 'We build premium websites, web apps, and digital strategies for businesses that refuse to be ordinary. From Onitsha to the world \u2014 bold ideas, flawless execution.',
         cta1: { text: 'Start Your Project', url: '#contactScroll' },
         cta2: { text: 'View Portfolio', url: '#workScroll' }
       }
@@ -73,7 +69,7 @@ async function seedContent() {
         featured: {
           title: "Nigeria's Web Landscape in 2026: What Every Business Owner Needs to Know",
           category: 'Business', date: 'March 2026', readTime: '8 min read',
-          excerpt: 'Over 220 million people. A growing middle class. And fewer than 30% of SMEs with a functional website. The opportunity is enormous — but so is the risk of getting it wrong.',
+          excerpt: 'Over 220 million people. A growing middle class. And fewer than 30% of SMEs with a functional website. The opportunity is enormous \u2014 but so is the risk of getting it wrong.',
           image: 'assets/images/portfolio/img-1.jpg', url: 'blog-single.html'
         },
         posts: [
@@ -91,9 +87,9 @@ async function seedContent() {
       data: {
         items: [
           { id: 1, name: 'Chukwuemeka Obi',  role: 'CEO, Obi Agro Supplies, Onitsha',        image: 'assets/images/section/tes-1.jpg', text: 'Goallord transformed our outdated website into a lead-generating machine. Within 3 months of launch, our online enquiries tripled. The team was professional, fast, and genuinely understood our business.' },
-          { id: 2, name: 'Ngozi Adeleke',    role: 'Founder, StyleHaus Lagos',               image: 'assets/images/section/tes-2.jpg', text: 'Our Shopify store was beautifully designed and set up perfectly. Sales went up 40% in the first month. Goallord delivered exactly what they promised — on time and on budget.' },
+          { id: 2, name: 'Ngozi Adeleke',    role: 'Founder, StyleHaus Lagos',               image: 'assets/images/section/tes-2.jpg', text: 'Our Shopify store was beautifully designed and set up perfectly. Sales went up 40% in the first month. Goallord delivered exactly what they promised \u2014 on time and on budget.' },
           { id: 3, name: 'Daniel Eze',       role: 'Director, TechBridge Fintech, Enugu',    image: 'assets/images/section/tes-3.jpg', text: "They built our web app MVP in 6 weeks. Clean code, great UX, and the team was easy to work with throughout. We've since signed them on for maintenance and ongoing development." },
-          { id: 4, name: 'Amaka Nwosu',      role: 'Principal, Starlight Academy, Awka',     image: 'assets/images/section/tes-2.jpg', text: 'The school website Goallord built for us is outstanding. Parents love it, registration went fully online, and we look credible. Worth every naira — highly recommended.' },
+          { id: 4, name: 'Amaka Nwosu',      role: 'Principal, Starlight Academy, Awka',     image: 'assets/images/section/tes-2.jpg', text: 'The school website Goallord built for us is outstanding. Parents love it, registration went fully online, and we look credible. Worth every naira \u2014 highly recommended.' },
           { id: 5, name: 'Seun Balogun',     role: 'Founder, QuickFix Auto, Abuja',          image: 'assets/images/section/tes-1.jpg', text: 'Our Google ranking jumped from page 5 to page 1 for key search terms in Abuja. The SEO work and new website design from Goallord have been a game-changer for our workshop.' },
           { id: 6, name: 'Ifeoma Chime',     role: 'MD, Chime Medical Centre, Onitsha',      image: 'assets/images/section/tes-3.jpg', text: 'Goallord built our patient portal and booking system from scratch. It\'s been running flawlessly since launch. The team has deep technical knowledge and excellent communication.' },
         ]
@@ -102,8 +98,8 @@ async function seedContent() {
   ];
 
   for (const s of sections) {
-    const exists = await Content.findOne({ section: s.section });
-    if (!exists) await Content.create(s);
+    const exists = await contentDb.findBySection(s.section);
+    if (!exists) await contentDb.create(s);
   }
   console.log('Content seeded');
 }

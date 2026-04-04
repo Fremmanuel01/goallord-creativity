@@ -1,6 +1,6 @@
-const router = require('express').Router();
-const Project = require('../models/Project');
-const Task    = require('../models/Task');
+const router     = require('express').Router();
+const projectsDb = require('../db/projects');
+const tasksDb    = require('../db/tasks');
 const { requireAuth, requirePermission } = require('../middleware/auth');
 
 // List all projects (staff: only projects they are a member of)
@@ -10,24 +10,27 @@ router.get('/', requireAuth, requirePermission('projects'), async (req, res) => 
         if (req.query.status) filter.status = req.query.status;
 
         // Staff only see projects they are a member of or created
+        const userId = req.user.role !== 'admin' ? req.user.id : undefined;
+
+        const projects = await projectsDb.findAll(filter, userId);
+
+        // If non-admin, also include projects they created
+        let result;
         if (req.user.role !== 'admin') {
-            filter.$or = [
-                { members: req.user.id },
-                { createdBy: req.user.id }
-            ];
+            const allProjects = await projectsDb.findAll(filter);
+            const createdByUser = allProjects.filter(p => p.created_by === req.user.id);
+            const projectIds = new Set(projects.map(p => p.id));
+            for (const p of createdByUser) {
+                if (!projectIds.has(p.id)) projects.push(p);
+            }
         }
 
-        const projects = await Project.find(filter)
-            .populate('members', 'name email avatar')
-            .populate('createdBy', 'name')
-            .sort({ updatedAt: -1 });
-
         // Attach task counts
-        const result = await Promise.all(projects.map(async p => {
-            const pObj = p.toObject();
-            pObj.taskCount = await Task.countDocuments({ project: p._id });
-            pObj.tasksDone = await Task.countDocuments({ project: p._id, status: 'done' });
-            return pObj;
+        result = await Promise.all(projects.map(async p => {
+            const tasks = await tasksDb.findByProject(p.id);
+            p.taskCount = tasks.length;
+            p.tasksDone = tasks.filter(t => t.status === 'done').length;
+            return p;
         }));
         res.json(result);
     } catch (err) {
@@ -38,15 +41,13 @@ router.get('/', requireAuth, requirePermission('projects'), async (req, res) => 
 // Single project
 router.get('/:id', requireAuth, requirePermission('projects'), async (req, res) => {
     try {
-        const project = await Project.findById(req.params.id)
-            .populate('members', 'name email avatar')
-            .populate('createdBy', 'name');
+        const project = await projectsDb.findById(req.params.id);
         if (!project) return res.status(404).json({ error: 'Not found' });
 
         // Staff can only view projects they belong to
         if (req.user.role !== 'admin') {
-            const isMember = project.members.some(m => m._id.toString() === req.user.id);
-            const isCreator = project.createdBy && project.createdBy._id.toString() === req.user.id;
+            const isMember = (project.members || []).some(m => m.id === req.user.id);
+            const isCreator = project.created_by === req.user.id;
             if (!isMember && !isCreator) {
                 return res.status(403).json({ error: 'You do not have access to this project' });
             }
@@ -76,11 +77,11 @@ router.post('/', requireAuth, requirePermission('projects'), async (req, res) =>
             return res.status(400).json({ error: 'Invalid priority. Must be one of: ' + validPriorities.join(', ') });
         }
 
-        const project = await Project.create({
+        const project = await projectsDb.create({
             name, client, description, status, priority, deadline,
             members: members || [],
             color: color || '#D66A1F',
-            createdBy: req.user.id
+            created_by: req.user.id
         });
         res.status(201).json(project);
     } catch (err) {
@@ -93,10 +94,10 @@ router.patch('/:id', requireAuth, requirePermission('projects'), async (req, res
     try {
         // Permission check: admin or project member/creator
         if (req.user.role !== 'admin') {
-            const existing = await Project.findById(req.params.id);
+            const existing = await projectsDb.findById(req.params.id);
             if (!existing) return res.status(404).json({ error: 'Not found' });
-            const isMember = existing.members.some(m => m.toString() === req.user.id);
-            const isCreator = existing.createdBy && existing.createdBy.toString() === req.user.id;
+            const isMember = (existing.members || []).some(m => m.id === req.user.id);
+            const isCreator = existing.created_by === req.user.id;
             if (!isMember && !isCreator) {
                 return res.status(403).json({ error: 'You can only update projects you belong to' });
             }
@@ -115,8 +116,7 @@ router.patch('/:id', requireAuth, requirePermission('projects'), async (req, res
         if (budget !== undefined) updateFields.budget = budget;
         if (spent !== undefined) updateFields.spent = spent;
 
-        const project = await Project.findByIdAndUpdate(req.params.id, updateFields, { new: true, runValidators: true })
-            .populate('members', 'name email avatar');
+        const project = await projectsDb.update(req.params.id, updateFields);
         if (!project) return res.status(404).json({ error: 'Not found' });
         res.json(project);
     } catch (err) {
@@ -129,16 +129,20 @@ router.delete('/:id', requireAuth, requirePermission('projects'), async (req, re
     try {
         // Permission check: only admin or project creator can delete
         if (req.user.role !== 'admin') {
-            const existing = await Project.findById(req.params.id);
+            const existing = await projectsDb.findById(req.params.id);
             if (!existing) return res.status(404).json({ error: 'Not found' });
-            if (!existing.createdBy || existing.createdBy.toString() !== req.user.id) {
+            if (!existing.created_by || existing.created_by !== req.user.id) {
                 return res.status(403).json({ error: 'Only the project creator or admin can delete this project' });
             }
         }
 
-        const project = await Project.findByIdAndDelete(req.params.id);
-        if (!project) return res.status(404).json({ error: 'Not found' });
-        await Task.deleteMany({ project: req.params.id });
+        // Delete tasks first
+        const tasks = await tasksDb.findByProject(req.params.id);
+        for (const task of tasks) {
+            await tasksDb.remove(task.id);
+        }
+
+        await projectsDb.remove(req.params.id);
         res.json({ message: 'Project and tasks deleted' });
     } catch (err) {
         res.status(500).json({ error: err.message });

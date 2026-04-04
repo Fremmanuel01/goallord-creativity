@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express    = require('express');
-const mongoose   = require('mongoose');
 const cors       = require('cors');
 const path       = require('path');
 const http       = require('http');
@@ -8,6 +7,9 @@ const { Server } = require('socket.io');
 const jwt        = require('jsonwebtoken');
 const helmet     = require('helmet');
 const rateLimit  = require('express-rate-limit');
+
+// Initialize Supabase client (loaded once, reused everywhere)
+require('./lib/supabase');
 
 const app        = express();
 const httpServer = http.createServer(app);
@@ -38,7 +40,8 @@ app.use(helmet({
             baseUri: ["'self'"],
             formAction: ["'self'"],
             frameAncestors: ["'self'"],
-            scriptSrcAttr: ["'unsafe-inline'"]
+            scriptSrcAttr: ["'unsafe-inline'"],
+            upgradeInsecureRequests: null
         }
     },
     crossOriginEmbedderPolicy: false,
@@ -58,6 +61,14 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// ─── TRANSFORM snake_case → camelCase for frontend compatibility ──
+const { camelKeys } = require('./lib/utils');
+app.use('/api/', (req, res, next) => {
+    const originalJson = res.json.bind(res);
+    res.json = (data) => originalJson(camelKeys(data));
+    next();
+});
+
 // ─── GLOBAL API RATE LIMITER ─────────────────────────────────
 app.use('/api/', rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -71,8 +82,8 @@ app.use('/go', require('./routes/go'));
 // ─── DYNAMIC SITEMAP (must be before static so it overrides sitemap.xml) ─────
 app.get('/sitemap.xml', async (req, res) => {
   try {
-    const BlogPost = require('./models/BlogPost');
-    const posts = await BlogPost.find({ published: true }, 'slug publishedAt updatedAt').sort({ publishedAt: -1 });
+    const blogDb = require('./db/blog');
+    const posts = await blogDb.findAllSlugs();
     const base = 'https://goallordcreativity.com';
     const now  = new Date().toISOString().split('T')[0];
     const staticPages = [
@@ -92,7 +103,7 @@ app.get('/sitemap.xml', async (req, res) => {
         `  <url><loc>${base}${p.url}</loc><lastmod>${now}</lastmod><changefreq>${p.freq}</changefreq><priority>${p.priority}</priority></url>`
       ),
       ...posts.map(post => {
-        const mod = post.updatedAt ? post.updatedAt.toISOString().split('T')[0] : now;
+        const mod = post.updated_at ? new Date(post.updated_at).toISOString().split('T')[0] : now;
         return `  <url><loc>${base}/blog-single.html?slug=${encodeURIComponent(post.slug)}</loc><lastmod>${mod}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>`;
       }),
     ];
@@ -202,12 +213,12 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// ─── DATABASE + SEED + START ──────────────────────────────────
+// ─── SEED + START ─────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 
-mongoose.connect(process.env.MONGODB_URI)
-  .then(async () => {
-    console.log('MongoDB connected');
+(async function start() {
+  try {
+    console.log('Supabase client initialized');
     await seedAll();
     httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
@@ -224,16 +235,16 @@ mongoose.connect(process.env.MONGODB_URI)
       await runDeadlineReminders().catch(e => console.error('Deadline reminders failed:', e.message));
     }
 
-    // Run once on startup (after 30s to let DB settle), then every 24h
+    // Run once on startup (after 30s), then every 24h
     setTimeout(() => {
       runDailyChecks();
       setInterval(runDailyChecks, 24 * 60 * 60 * 1000);
     }, 30 * 1000);
-  })
-  .catch(err => {
-    console.error('MongoDB connection error:', err.message);
+  } catch (err) {
+    console.error('Startup error:', err.message);
     process.exit(1);
-  });
+  }
+})();
 
 async function seedAll() {
   const { seedAdmin }      = require('./routes/auth');

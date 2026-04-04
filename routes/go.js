@@ -1,13 +1,12 @@
-const express       = require('express');
-const AffiliateLink = require('../models/AffiliateLink');
-const AffiliateClick = require('../models/AffiliateClick');
+const express     = require('express');
+const affiliateDb = require('../db/affiliate');
 
 const router = express.Router();
 
 router.get('/:slug', async (req, res) => {
   try {
-    const link = await AffiliateLink.findOne({ slug: req.params.slug.toLowerCase(), active: true });
-    if (!link) return res.status(404).send('Link not found');
+    const link = await affiliateDb.findLinkBySlug(req.params.slug.toLowerCase());
+    if (!link || !link.active) return res.status(404).send('Link not found');
 
     // Detect device from User-Agent
     const ua = req.headers['user-agent'] || '';
@@ -25,8 +24,8 @@ router.get('/:slug', async (req, res) => {
     const country = req.headers['cf-ipcountry'] || req.headers['x-country'] || '';
 
     // Log click + increment counter (non-blocking)
-    AffiliateClick.create({ linkSlug: link.slug, postSlug, device, country }).catch(() => {});
-    AffiliateLink.updateOne({ _id: link._id }, { $inc: { totalClicks: 1 } }).catch(() => {});
+    affiliateDb.createClick({ link_slug: link.slug, post_slug: postSlug, device, country }).catch(() => {});
+    affiliateDb.incrementClicks(link.slug).catch(() => {});
 
     // Append UTM parameters to destination URL
     let dest = link.destination;

@@ -1,8 +1,8 @@
-const express        = require('express');
-const BlogPost       = require('../models/BlogPost');
-const AffiliateClick = require('../models/AffiliateClick');
-const AffiliateLink  = require('../models/AffiliateLink');
-const Contact        = require('../models/Contact');
+const express     = require('express');
+const supabase    = require('../lib/supabase');
+const blogDb      = require('../db/blog');
+const affiliateDb = require('../db/affiliate');
+const contactsDb  = require('../db/contacts');
 const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -23,59 +23,83 @@ function buildDayMap(since) {
 router.get('/summary', requireAuth, async (req, res) => {
   try {
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const sinceISO = since.toISOString();
 
     const [
       totalPosts,
-      totalViews,
+      totalViewsResult,
       totalAffiliateClicks,
       totalContacts,
-      topPosts,
+      topPostsResult,
       affClicks,
-      contacts,
-      topAffLinks,
+      contactsResult,
+      topAffLinksResult,
     ] = await Promise.all([
-      BlogPost.countDocuments({ published: true }),
-      BlogPost.aggregate([{ $group: { _id: null, total: { $sum: '$views' } } }]),
-      AffiliateClick.countDocuments(),
-      Contact.countDocuments(),
+      blogDb.countPosts({ published: true }),
+
+      // Blog views aggregate via RPC
+      supabase.rpc('get_total_blog_views'),
+
+      // Total affiliate clicks
+      (async () => {
+        const { count, error } = await supabase.from('affiliate_clicks').select('id', { count: 'exact', head: true });
+        if (error) throw error;
+        return count || 0;
+      })(),
+
+      contactsDb.count(),
 
       // Top 10 posts by views
-      BlogPost.find({ published: true }, 'slug title category views publishedAt')
-        .sort({ views: -1 }).limit(10),
+      blogDb.findPosts({ filter: { published: true }, sort: '-views', page: 1, limit: 10, excludeContent: true }),
 
       // Affiliate clicks last 30 days
-      AffiliateClick.find({ createdAt: { $gte: since } }).select('createdAt'),
+      (async () => {
+        const { data, error } = await supabase.from('affiliate_clicks').select('created_at').gte('created_at', sinceISO);
+        if (error) throw error;
+        return data || [];
+      })(),
 
       // Contact signups last 30 days
-      Contact.find({ createdAt: { $gte: since } }).select('createdAt'),
+      (async () => {
+        const { data, error } = await supabase.from('contacts').select('created_at').gte('created_at', sinceISO);
+        if (error) throw error;
+        return data || [];
+      })(),
 
       // Top 5 affiliate links
-      AffiliateLink.find({}, 'slug name totalClicks category').sort({ totalClicks: -1 }).limit(5),
+      (async () => {
+        const { data, error } = await supabase.from('affiliate_links').select('slug, name, total_clicks, category').order('total_clicks', { ascending: false }).limit(5);
+        if (error) throw error;
+        return data || [];
+      })(),
     ]);
+
+    const totalViews = totalViewsResult.data ?? 0;
+    const topPosts = topPostsResult.data;
 
     // Build day-by-day affiliate click trend
     const affByDay = buildDayMap(since);
     affClicks.forEach(c => {
-      const day = c.createdAt.toISOString().split('T')[0];
+      const day = new Date(c.created_at).toISOString().split('T')[0];
       if (day in affByDay) affByDay[day]++;
     });
 
     // Build day-by-day contact trend
     const contactByDay = buildDayMap(since);
-    contacts.forEach(c => {
-      const day = c.createdAt.toISOString().split('T')[0];
+    contactsResult.forEach(c => {
+      const day = new Date(c.created_at).toISOString().split('T')[0];
       if (day in contactByDay) contactByDay[day]++;
     });
 
     res.json({
       totals: {
         posts:           totalPosts,
-        views:           (totalViews[0]?.total) || 0,
+        views:           totalViews,
         affiliateClicks: totalAffiliateClicks,
         contacts:        totalContacts,
       },
       topPosts:    topPosts,
-      topAffLinks: topAffLinks,
+      topAffLinks: topAffLinksResult,
       affByDay,
       contactByDay,
     });

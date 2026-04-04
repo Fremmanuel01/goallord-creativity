@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
-const User = require('../models/User');
+const usersDb = require('../db/users');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 const { sendMail } = require('../utils/mailer');
@@ -16,14 +16,14 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await usersDb.findByEmail(email.toLowerCase());
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
 
     const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role, name: user.name, permissions: user.permissions },
+      { id: user.id, email: user.email, role: user.role, name: user.name, permissions: user.permissions },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -31,7 +31,7 @@ router.post('/login', async (req, res) => {
     res.json({
       token,
       user: {
-        id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
@@ -50,17 +50,17 @@ router.get('/me', requireAuth, (req, res) => {
 
 // Seed admin user on first start
 async function seedAdmin() {
-  const exists = await User.findOne({ email: process.env.ADMIN_EMAIL });
+  const exists = await usersDb.findByEmail(process.env.ADMIN_EMAIL);
   if (exists) return;
   const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
-  await User.create({ name: 'Goallord Admin', email: process.env.ADMIN_EMAIL, password: hash, role: 'admin' });
+  await usersDb.create({ name: 'Goallord Admin', email: process.env.ADMIN_EMAIL, password: hash, role: 'admin' });
   console.log('Admin user seeded');
 }
 
 // GET /api/auth/users — list all users (for assignee dropdowns)
 router.get('/users', requireAuth, async (req, res) => {
   try {
-    const users = await User.find({}, 'name email role permissions avatar createdAt').sort({ name: 1 });
+    const users = await usersDb.findAll();
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -77,7 +77,7 @@ router.post('/register', requireAuth, requireAdmin, async (req, res) => {
     const validRoles = ['admin', 'staff'];
     const userRole = validRoles.includes(role) ? role : 'staff';
 
-    const existing = await User.findOne({ email: email.toLowerCase() });
+    const existing = await usersDb.findByEmail(email.toLowerCase());
     if (existing) return res.status(409).json({ error: 'A user with that email already exists' });
 
     const hash = await bcrypt.hash(password, 10);
@@ -86,7 +86,7 @@ router.post('/register', requireAuth, requireAdmin, async (req, res) => {
       userData.permissions = permissions;
     }
     if (avatar) userData.avatar = avatar;
-    const user = await User.create(userData);
+    const user = await usersDb.create(userData);
 
     // Send welcome email with credentials
     try {
@@ -159,12 +159,12 @@ router.post('/register', requireAuth, requireAdmin, async (req, res) => {
     }
 
     res.status(201).json({
-      _id: user._id,
+      id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
       permissions: user.permissions,
-      createdAt: user.createdAt
+      createdAt: user.created_at
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -182,14 +182,21 @@ router.patch('/users/:id', requireAuth, requireAdmin, async (req, res) => {
     if (password) updates.password = await bcrypt.hash(password, 10);
     if (typeof avatar === 'string') updates.avatar = avatar;
     if (permissions && typeof permissions === 'object') {
-      // Set each permission key individually so Mongoose merges correctly
+      // Fetch existing user to merge permissions into a complete JSONB object
+      const existing = await usersDb.findById(req.params.id);
+      if (!existing) return res.status(404).json({ error: 'User not found' });
+      const merged = { ...(existing.permissions || {}) };
       for (const [key, val] of Object.entries(permissions)) {
-        updates[`permissions.${key}`] = !!val;
+        merged[key] = !!val;
       }
+      updates.permissions = merged;
     }
 
-    const user = await User.findByIdAndUpdate(req.params.id, updates, { new: true }).select('-password');
+    const user = await usersDb.update(req.params.id, updates);
     if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Remove password from response
+    delete user.password;
 
     res.json(user);
   } catch (err) {
@@ -204,8 +211,7 @@ router.delete('/users/:id', requireAuth, requireAdmin, async (req, res) => {
     if (req.params.id === req.user.id) {
       return res.status(400).json({ error: 'You cannot delete your own account' });
     }
-    const user = await User.findByIdAndDelete(req.params.id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    await usersDb.remove(req.params.id);
 
     res.json({ message: 'User deleted' });
   } catch (err) {
@@ -224,14 +230,14 @@ router.post('/change-password', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'New password must be at least 6 characters' });
     }
 
-    const user = await User.findById(req.user.id);
+    const user = await usersDb.findById(req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const valid = await bcrypt.compare(currentPassword, user.password);
     if (!valid) return res.status(401).json({ error: 'Current password is incorrect' });
 
-    user.password = await bcrypt.hash(newPassword, 10);
-    await user.save();
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await usersDb.update(user.id, { password: hashedPassword });
 
     res.json({ message: 'Password changed successfully' });
   } catch (err) {
@@ -245,14 +251,12 @@ router.post('/forgot-password', forgotLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     // Always respond OK to prevent email enumeration
-    const user = await User.findOne({ email: email?.toLowerCase() });
+    const user = await usersDb.findByEmail(email?.toLowerCase());
     if (!user) return res.json({ success: true });
 
     const token   = crypto.randomBytes(32).toString('hex');
     const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-    user.resetToken   = token;
-    user.resetExpires = expires;
-    await user.save();
+    await usersDb.update(user.id, { reset_token: token, reset_expires: expires.toISOString() });
 
     const host     = process.env.HOST || 'https://goallordcreativity.com';
     const resetUrl = `${host}/reset-password.html?token=${token}&role=admin`;
@@ -296,13 +300,11 @@ router.post('/reset-password', resetLimiter, async (req, res) => {
     if (!token || !newPassword) return res.status(400).json({ error: 'Token and new password are required' });
     if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
 
-    const user = await User.findOne({ resetToken: token, resetExpires: { $gt: new Date() } });
+    const user = await usersDb.findByResetToken(token);
     if (!user) return res.status(400).json({ error: 'Invalid or expired reset link' });
 
-    user.password     = await bcrypt.hash(newPassword, 10);
-    user.resetToken   = undefined;
-    user.resetExpires = undefined;
-    await user.save();
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await usersDb.update(user.id, { password: hashedPassword, reset_token: null, reset_expires: null });
 
     res.json({ success: true });
   } catch (err) {

@@ -1,8 +1,8 @@
-const express    = require('express');
-const Assignment = require('../models/Assignment');
-const Submission = require('../models/Submission');
-const Student    = require('../models/Student');
-const Notification = require('../models/Notification');
+const express        = require('express');
+const assignmentsDb  = require('../db/assignments');
+const submissionsDb  = require('../db/submissions');
+const studentsDb     = require('../db/students');
+const notificationsDb = require('../db/notifications');
 const { requireLecturer } = require('../middleware/lecturerAuth');
 const { requireStudentAuth } = require('../middleware/studentAuth');
 
@@ -13,22 +13,29 @@ const router = express.Router();
 // GET /api/assignments/student — student: published assignments + own submission status
 router.get('/student', requireStudentAuth, async (req, res) => {
   try {
-    const student = await Student.findById(req.user.id).select('batch');
+    const student = await studentsDb.findById(req.user.id);
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
-    const assignments = await Assignment.find({ batch: student.batch, published: true })
-      .populate('lecturer', 'fullName').sort({ week: 1, deadline: 1 });
+    const assignments = await assignmentsDb.find({
+      filter: { batch_id: student.batch_id, published: true },
+      populate: 'lecturer'
+    });
 
-    const assignmentIds = assignments.map(a => a._id);
-    const mySubmissions = await Submission.find({ assignment: { $in: assignmentIds }, student: req.user.id })
-      .select('assignment content score feedback scoredAt isLate submittedAt');
+    const assignmentIds = assignments.map(a => a.id);
+    let mySubmissions = [];
+    if (assignmentIds.length > 0) {
+      mySubmissions = await submissionsDb.find({
+        inFilter: { assignment_id: assignmentIds },
+        filter: { student_id: req.user.id }
+      });
+    }
 
     const subMap = {};
-    mySubmissions.forEach(s => { subMap[s.assignment.toString()] = s; });
+    mySubmissions.forEach(s => { subMap[s.assignment_id] = s; });
 
     const result = assignments.map(a => ({
-      ...a.toObject(),
-      mySubmission: subMap[a._id.toString()] || null
+      ...a,
+      mySubmission: subMap[a.id] || null
     }));
 
     res.json(result);
@@ -41,10 +48,10 @@ router.get('/student', requireStudentAuth, async (req, res) => {
 router.get('/', requireLecturer, async (req, res) => {
   try {
     const filter = {};
-    if (req.query.batch) filter.batch = req.query.batch;
-    if (req.query.week)  filter.week  = Number(req.query.week);
-    if (req.user.role === 'lecturer') filter.lecturer = req.user.id;
-    const docs = await Assignment.find(filter).populate('lecturer', 'fullName').sort({ week: 1, deadline: 1 });
+    if (req.query.batch) filter.batch_id = req.query.batch;
+    if (req.query.week)  filter.week     = Number(req.query.week);
+    if (req.user.role === 'lecturer') filter.lecturer_id = req.user.id;
+    const docs = await assignmentsDb.find({ filter, populate: 'lecturer' });
     res.json(docs);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -54,7 +61,7 @@ router.get('/', requireLecturer, async (req, res) => {
 // GET /api/assignments/:id
 router.get('/:id', requireLecturer, async (req, res) => {
   try {
-    const doc = await Assignment.findById(req.params.id).populate('lecturer', 'fullName');
+    const doc = await assignmentsDb.findById(req.params.id, { populate: 'lecturer' });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
   } catch (err) {
@@ -67,7 +74,17 @@ router.post('/', requireLecturer, async (req, res) => {
   try {
     const { title, description, batch, week, deadline, maxScore, published, attachments } = req.body;
     const lecturerId = req.user.role === 'lecturer' ? req.user.id : req.body.lecturer;
-    const doc = await Assignment.create({ title, description, batch, week, deadline, maxScore, published, attachments, lecturer: lecturerId });
+    const doc = await assignmentsDb.create({
+      title,
+      description: description || '',
+      batch_id: batch,
+      week: week || null,
+      deadline: deadline || null,
+      max_score: maxScore || null,
+      published: published || false,
+      attachments: attachments || [],
+      lecturer_id: lecturerId
+    });
     res.status(201).json(doc);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -81,13 +98,13 @@ router.patch('/:id', requireLecturer, async (req, res) => {
     const update = {};
     if (title !== undefined) update.title = title;
     if (description !== undefined) update.description = description;
-    if (batch !== undefined) update.batch = batch;
+    if (batch !== undefined) update.batch_id = batch;
     if (week !== undefined) update.week = week;
     if (deadline !== undefined) update.deadline = deadline;
-    if (maxScore !== undefined) update.maxScore = maxScore;
+    if (maxScore !== undefined) update.max_score = maxScore;
     if (published !== undefined) update.published = published;
     if (attachments !== undefined) update.attachments = attachments;
-    const doc = await Assignment.findByIdAndUpdate(req.params.id, update, { new: true });
+    const doc = await assignmentsDb.update(req.params.id, update);
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
   } catch (err) {
@@ -98,7 +115,7 @@ router.patch('/:id', requireLecturer, async (req, res) => {
 // DELETE /api/assignments/:id
 router.delete('/:id', requireLecturer, async (req, res) => {
   try {
-    await Assignment.findByIdAndDelete(req.params.id);
+    await assignmentsDb.remove(req.params.id);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -110,9 +127,11 @@ router.delete('/:id', requireLecturer, async (req, res) => {
 // GET /api/assignments/:id/submissions (lecturer/admin sees all)
 router.get('/:id/submissions', requireLecturer, async (req, res) => {
   try {
-    const subs = await Submission.find({ assignment: req.params.id })
-      .populate('student', 'fullName email profilePicture')
-      .sort({ submittedAt: -1 });
+    const subs = await submissionsDb.find({
+      filter: { assignment_id: req.params.id },
+      populate: 'student',
+      sort: '-submitted_at'
+    });
     res.json(subs);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -122,20 +141,24 @@ router.get('/:id/submissions', requireLecturer, async (req, res) => {
 // POST /api/assignments/:id/submissions (student submits)
 router.post('/:id/submissions', requireStudentAuth, async (req, res) => {
   try {
-    const assignment = await Assignment.findById(req.params.id);
+    const assignment = await assignmentsDb.findById(req.params.id);
     if (!assignment) return res.status(404).json({ error: 'Assignment not found' });
 
-    const isLate = new Date() > assignment.deadline;
-    const existing = await Submission.findOne({ assignment: req.params.id, student: req.user.id });
-    if (existing) return res.status(409).json({ error: 'Already submitted' });
+    const isLate = new Date() > new Date(assignment.deadline);
 
-    const sub = await Submission.create({
-      assignment:  req.params.id,
-      student:     req.user.id,
-      batch:       assignment.batch,
-      content:     req.body.content || '',
-      fileUrl:     req.body.fileUrl || '',
-      isLate
+    // Check for existing submission
+    const existingSubs = await submissionsDb.find({
+      filter: { assignment_id: req.params.id, student_id: req.user.id }
+    });
+    if (existingSubs.length > 0) return res.status(409).json({ error: 'Already submitted' });
+
+    const sub = await submissionsDb.create({
+      assignment_id: req.params.id,
+      student_id:    req.user.id,
+      batch_id:      assignment.batch_id,
+      content:       req.body.content || '',
+      file_url:      req.body.fileUrl || '',
+      is_late:       isLate
     });
     res.status(201).json(sub);
   } catch (err) {
@@ -147,23 +170,24 @@ router.post('/:id/submissions', requireStudentAuth, async (req, res) => {
 router.patch('/:id/submissions/:subId', requireLecturer, async (req, res) => {
   try {
     const { score, feedback } = req.body;
-    const sub = await Submission.findByIdAndUpdate(
-      req.params.subId,
-      { score, feedback, scoredBy: req.user.id, scoredAt: new Date() },
-      { new: true }
-    );
+    const sub = await submissionsDb.update(req.params.subId, {
+      score,
+      feedback: feedback || null,
+      scored_by: req.user.id,
+      scored_at: new Date().toISOString()
+    });
     if (!sub) return res.status(404).json({ error: 'Not found' });
 
     // Notify student that their assignment has been graded
     if (score != null) {
-      const assignment = await Assignment.findById(req.params.id).select('title maxScore');
-      const msg = `Your submission for "${assignment?.title || 'an assignment'}" has been graded: ${score}${assignment?.maxScore ? '/' + assignment.maxScore : ''} points.${feedback ? ' Feedback: ' + feedback : ''}`;
-      Notification.create({
-        recipient:     sub.student,
-        recipientType: 'Student',
-        type:          'assignment_scored',
-        title:         'Assignment Graded',
-        message:       msg
+      const assignment = await assignmentsDb.findById(req.params.id);
+      const msg = `Your submission for "${assignment?.title || 'an assignment'}" has been graded: ${score}${assignment?.max_score ? '/' + assignment.max_score : ''} points.${feedback ? ' Feedback: ' + feedback : ''}`;
+      notificationsDb.create({
+        recipient_id:   sub.student_id,
+        recipient_type: 'Student',
+        type:           'assignment_scored',
+        title:          'Assignment Graded',
+        message:        msg
       }).catch(() => {});
     }
 
@@ -176,39 +200,36 @@ router.patch('/:id/submissions/:subId', requireLecturer, async (req, res) => {
 // Scheduled: remind students of assignments due within 24 hours that they haven't submitted
 async function runDeadlineReminders() {
   const now     = new Date();
-  const in24h   = new Date(now.getTime() + 24 * 60 * 60 * 1000);
   let sent = 0;
 
-  const upcoming = await Assignment.find({
-    published: true,
-    deadline:  { $gte: now, $lte: in24h }
-  });
+  const upcoming = await assignmentsDb.findUpcoming(24);
 
   for (const assignment of upcoming) {
-    if (!assignment.batch) continue;
+    if (!assignment.batch_id) continue;
 
-    const students  = await Student.find({ batch: assignment.batch, status: 'Active' }).select('_id');
-    const submitted = new Set((await Submission.find({ assignment: assignment._id }).distinct('student')).map(String));
+    const students = await studentsDb.findByBatch(assignment.batch_id);
+    const submittedStudentIds = await submissionsDb.findDistinctStudents(assignment.id);
+    const submittedSet = new Set(submittedStudentIds.map(String));
 
     for (const s of students) {
-      if (submitted.has(String(s._id))) continue;
+      if (submittedSet.has(String(s.id))) continue;
 
       // Only notify once per assignment per student
-      const exists = await Notification.exists({
-        recipient: s._id,
-        type:      'assignment_deadline',
-        link:      String(assignment._id)
+      const exists = await notificationsDb.exists({
+        recipient_id: s.id,
+        type:         'assignment_deadline',
+        link:         String(assignment.id)
       });
       if (exists) continue;
 
       const hoursLeft = Math.round((new Date(assignment.deadline) - now) / (1000 * 60 * 60));
-      await Notification.create({
-        recipient:     s._id,
-        recipientType: 'Student',
-        type:          'assignment_deadline',
-        title:         'Assignment Due Soon',
-        message:       `"${assignment.title}" is due in about ${hoursLeft} hour${hoursLeft !== 1 ? 's' : ''}. Submit before the deadline.`,
-        link:          String(assignment._id)
+      await notificationsDb.create({
+        recipient_id:   s.id,
+        recipient_type: 'Student',
+        type:           'assignment_deadline',
+        title:          'Assignment Due Soon',
+        message:        `"${assignment.title}" is due in about ${hoursLeft} hour${hoursLeft !== 1 ? 's' : ''}. Submit before the deadline.`,
+        link:           String(assignment.id)
       }).catch(() => {});
       sent++;
     }

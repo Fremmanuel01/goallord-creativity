@@ -1,5 +1,5 @@
-const router = require('express').Router();
-const CheckIn = require('../models/CheckIn');
+const router     = require('express').Router();
+const checkInsDb = require('../db/checkIns');
 const { requireAuth, requirePermission } = require('../middleware/auth');
 
 // List check-ins (filter by user, date)
@@ -7,20 +7,17 @@ const { requireAuth, requirePermission } = require('../middleware/auth');
 router.get('/', requireAuth, requirePermission('checkins'), async (req, res) => {
     try {
         const filter = {};
-        if (req.query.user) filter.user = req.query.user;
-        if (req.query.date) filter.date = req.query.date;
-        if (req.query.mine) filter.user = req.user.id;
+        if (req.query.user) filter.user_id = req.query.user;
+        if (req.query.date) filter.date    = req.query.date;
+        if (req.query.mine) filter.user_id = req.user.id;
 
         // Staff without explicit admin role see only their own check-ins
         // unless they are viewing the team feed (admin sees all)
         if (req.user.role !== 'admin' && !req.query.user && !req.query.mine) {
-            filter.user = req.user.id;
+            filter.user_id = req.user.id;
         }
 
-        const checkins = await CheckIn.find(filter)
-            .populate('user', 'name email avatar')
-            .sort({ date: -1, createdAt: -1 })
-            .limit(parseInt(req.query.limit) || 50);
+        const checkins = await checkInsDb.find(filter);
         res.json(checkins);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -38,13 +35,38 @@ router.post('/', requireAuth, requirePermission('checkins'), async (req, res) =>
         }
 
         const date = new Date().toISOString().slice(0, 10);
-        const checkin = await CheckIn.findOneAndUpdate(
-            { user: req.user.id, date },
-            { yesterday, today, blockers },
-            { new: true, upsert: true, runValidators: true }
-        );
-        const populated = await checkin.populate('user', 'name email avatar');
-        res.json(populated);
+
+        // Upsert: check if one exists for today
+        const supabase = require('../lib/supabase');
+        const { data: existing } = await supabase
+            .from('check_ins')
+            .select('id')
+            .eq('user_id', req.user.id)
+            .eq('date', date)
+            .limit(1)
+            .maybeSingle();
+
+        let checkin;
+        if (existing) {
+            const { data, error } = await supabase
+                .from('check_ins')
+                .update({ yesterday, today, blockers })
+                .eq('id', existing.id)
+                .select()
+                .single();
+            if (error) throw error;
+            checkin = data;
+        } else {
+            checkin = await checkInsDb.create({
+                user_id: req.user.id,
+                date,
+                yesterday,
+                today,
+                blockers
+            });
+        }
+
+        res.json(checkin);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -53,8 +75,7 @@ router.post('/', requireAuth, requirePermission('checkins'), async (req, res) =>
 // Delete
 router.delete('/:id', requireAuth, requirePermission('checkins'), async (req, res) => {
     try {
-        const checkin = await CheckIn.findByIdAndDelete(req.params.id);
-        if (!checkin) return res.status(404).json({ error: 'Not found' });
+        await checkInsDb.remove(req.params.id);
         res.json({ message: 'Check-in deleted' });
     } catch (err) {
         res.status(500).json({ error: err.message });

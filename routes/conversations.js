@@ -1,17 +1,14 @@
 const express  = require('express');
 const router   = express.Router();
 const xss      = require('xss');
-const Conversation = require('../models/Conversation');
+const conversationsDb = require('../db/conversations');
 const { requireAuth } = require('../middleware/auth');
 
 // GET all conversations (agents only)
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const convos = await Conversation.find()
-      .sort({ updatedAt: -1 })
-      .limit(100)
-      .lean();
-    res.json({ conversations: convos });
+    const result = await conversationsDb.find({ limit: 100 });
+    res.json({ conversations: result.data });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -20,7 +17,7 @@ router.get('/', requireAuth, async (req, res) => {
 // GET single conversation
 router.get('/:sessionId', requireAuth, async (req, res) => {
   try {
-    const convo = await Conversation.findOne({ sessionId: req.params.sessionId }).lean();
+    const convo = await conversationsDb.findBySessionId(req.params.sessionId);
     if (!convo) return res.status(404).json({ error: 'Not found' });
     res.json({ conversation: convo });
   } catch (err) {
@@ -39,20 +36,21 @@ router.post('/:sessionId/reply', requireAuth, async (req, res) => {
   }
 
   try {
-    const convo = await Conversation.findOne({ sessionId: req.params.sessionId });
+    const convo = await conversationsDb.findBySessionId(req.params.sessionId);
     if (!convo) return res.status(404).json({ error: 'Not found' });
 
     const msg = {
-      role:      'agent',
-      content:   xss(content.trim()),
-      agentName: req.user.name,
-      timestamp: new Date()
+      role:       'agent',
+      content:    xss(content.trim()),
+      agent_name: req.user.name,
+      timestamp:  new Date().toISOString()
     };
-    convo.messages.push(msg);
-    convo.mode   = 'human';
-    convo.agentId   = req.user.id;
-    convo.agentName = req.user.name;
-    await convo.save();
+    await conversationsDb.addMessage(convo.id, msg);
+    await conversationsDb.update(convo.id, {
+      mode:       'human',
+      agent_id:   req.user.id,
+      agent_name: req.user.name
+    });
 
     // Emit to visitor's socket room and to other agents
     const io = req.app.get('io');
@@ -73,12 +71,14 @@ router.patch('/:sessionId/mode', requireAuth, async (req, res) => {
   if (!['ai', 'human'].includes(mode)) return res.status(400).json({ error: 'Invalid mode' });
 
   try {
-    const convo = await Conversation.findOneAndUpdate(
-      { sessionId: req.params.sessionId },
-      { mode, agentId: mode === 'human' ? req.user.id : null, agentName: mode === 'human' ? req.user.name : null },
-      { new: true }
-    );
+    const convo = await conversationsDb.findBySessionId(req.params.sessionId);
     if (!convo) return res.status(404).json({ error: 'Not found' });
+
+    await conversationsDb.update(convo.id, {
+      mode,
+      agent_id:   mode === 'human' ? req.user.id : null,
+      agent_name: mode === 'human' ? req.user.name : null
+    });
 
     const io = req.app.get('io');
     if (io) io.to('agents').emit('mode:changed', { sessionId: req.params.sessionId, mode, agentName: req.user.name });
@@ -93,7 +93,9 @@ router.patch('/:sessionId/mode', requireAuth, async (req, res) => {
 // PATCH mark as read
 router.patch('/:sessionId/read', requireAuth, async (req, res) => {
   try {
-    await Conversation.findOneAndUpdate({ sessionId: req.params.sessionId }, { unreadByAgent: 0 });
+    const convo = await conversationsDb.findBySessionId(req.params.sessionId);
+    if (!convo) return res.status(404).json({ error: 'Not found' });
+    await conversationsDb.update(convo.id, { unread_by_agent: 0 });
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -102,30 +104,33 @@ router.patch('/:sessionId/read', requireAuth, async (req, res) => {
 
 // PATCH close conversation
 router.patch('/:sessionId/close', requireAuth, async (req, res) => {
-  const convo = await Conversation.findOneAndUpdate(
-    { sessionId: req.params.sessionId },
-    { status: 'closed' },
-    { new: true }
-  );
-  const io = req.app.get('io');
-  if (io) io.to(req.params.sessionId).emit('conversation:closed');
-  res.json({ ok: true });
+  try {
+    const convo = await conversationsDb.findBySessionId(req.params.sessionId);
+    if (!convo) return res.status(404).json({ error: 'Not found' });
+    await conversationsDb.update(convo.id, { status: 'closed' });
+    const io = req.app.get('io');
+    if (io) io.to(req.params.sessionId).emit('conversation:closed');
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // PATCH reopen conversation
 router.patch('/:sessionId/reopen', requireAuth, async (req, res) => {
-  const convo = await Conversation.findOneAndUpdate(
-    { sessionId: req.params.sessionId },
-    { status: 'active', mode: 'ai' },
-    { new: true }
-  );
-  if (!convo) return res.status(404).json({ error: 'Not found' });
-  const io = req.app.get('io');
-  if (io) {
-    io.to('agents').emit('mode:changed', { sessionId: req.params.sessionId, mode: 'ai', status: 'active' });
-    io.to(req.params.sessionId).emit('mode:changed', { mode: 'ai', status: 'active' });
+  try {
+    const convo = await conversationsDb.findBySessionId(req.params.sessionId);
+    if (!convo) return res.status(404).json({ error: 'Not found' });
+    await conversationsDb.update(convo.id, { status: 'active', mode: 'ai' });
+    const io = req.app.get('io');
+    if (io) {
+      io.to('agents').emit('mode:changed', { sessionId: req.params.sessionId, mode: 'ai', status: 'active' });
+      io.to(req.params.sessionId).emit('mode:changed', { mode: 'ai', status: 'active' });
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  res.json({ ok: true });
 });
 
 module.exports = router;

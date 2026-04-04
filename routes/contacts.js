@@ -1,6 +1,6 @@
 const express  = require('express');
 const router   = express.Router();
-const Contact  = require('../models/Contact');
+const contactsDb = require('../db/contacts');
 const { requireAuth } = require('../middleware/auth');
 const { sendMail }    = require('../utils/mailer');
 const { adminContactEmail, contactAutoReplyEmail, contactReplyEmail } = require('../utils/emailTemplates');
@@ -47,7 +47,7 @@ router.post('/', contactLimiter, async (req, res) => {
         source: 'Contact Form'
     };
 
-    const contact = await Contact.create(sanitized);
+    const contact = await contactsDb.create(sanitized);
 
     const host = process.env.HOST || 'https://goallordcreativity.com';
 
@@ -65,7 +65,7 @@ router.post('/', contactLimiter, async (req, res) => {
       html:    contactAutoReplyEmail({ name: sanitized.name })
     }).catch(e => console.error('Contact auto-reply failed:', e.message));
 
-    res.status(201).json({ success: true, id: contact._id });
+    res.status(201).json({ success: true, id: contact.id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -77,17 +77,23 @@ router.get('/', requireAuth, async (req, res) => {
     const { status, search, page = 1, limit = 50 } = req.query;
     const filter = {};
     if (status) filter.status = status;
+
+    // For search, use supabase ilike directly
     if (search) {
-      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const re = new RegExp(escaped, 'i');
-      filter.$or = [{ name: re }, { email: re }, { message: re }];
+      const supabase = require('../lib/supabase');
+      let q = supabase.from('contacts').select('*', { count: 'exact' });
+      if (status) q = q.eq('status', status);
+      q = q.or(`name.ilike.%${search}%,email.ilike.%${search}%,message.ilike.%${search}%`);
+      q = q.order('created_at', { ascending: false });
+      const skip = (Number(page) - 1) * Number(limit);
+      q = q.range(skip, skip + Number(limit) - 1);
+      const { data: docs, count: total, error } = await q;
+      if (error) throw error;
+      return res.json({ data: docs || [], total });
     }
-    const skip = (Number(page) - 1) * Number(limit);
-    const [docs, total] = await Promise.all([
-      Contact.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
-      Contact.countDocuments(filter)
-    ]);
-    res.json({ data: docs, total });
+
+    const result = await contactsDb.find({ filter, page: Number(page), limit: Number(limit) });
+    res.json({ data: result.data, total: result.count });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -96,9 +102,12 @@ router.get('/', requireAuth, async (req, res) => {
 // GET /api/contacts/:id — protected
 router.get('/:id', requireAuth, async (req, res) => {
   try {
-    const contact = await Contact.findById(req.params.id);
+    const contact = await contactsDb.findById(req.params.id);
     if (!contact) return res.status(404).json({ error: 'Not found' });
-    if (contact.status === 'New') { contact.status = 'Read'; await contact.save(); }
+    if (contact.status === 'New') {
+      await contactsDb.update(req.params.id, { status: 'Read' });
+      contact.status = 'Read';
+    }
     res.json(contact);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -111,12 +120,11 @@ router.post('/:id/reply', requireAuth, async (req, res) => {
     const { body } = req.body;
     if (!body) return res.status(400).json({ error: 'Reply body is required.' });
 
-    const contact = await Contact.findById(req.params.id);
+    const contact = await contactsDb.findById(req.params.id);
     if (!contact) return res.status(404).json({ error: 'Not found' });
 
-    contact.replies.push({ body: xss(body.trim()), sentBy: req.user.name || 'Admin' });
-    contact.status = 'Replied';
-    await contact.save();
+    await contactsDb.addReply(req.params.id, { body: xss(body.trim()), sent_by: req.user.name || 'Admin' });
+    await contactsDb.update(req.params.id, { status: 'Replied' });
 
     await sendMail({
       to:      contact.email,
@@ -133,7 +141,7 @@ router.post('/:id/reply', requireAuth, async (req, res) => {
 // PATCH /api/contacts/:id — protected (update status)
 router.patch('/:id', requireAuth, async (req, res) => {
   try {
-    const contact = await Contact.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true });
+    const contact = await contactsDb.update(req.params.id, { status: req.body.status });
     if (!contact) return res.status(404).json({ error: 'Not found' });
     res.json(contact);
   } catch (err) {
@@ -144,7 +152,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
 // DELETE /api/contacts/:id — protected
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
-    await Contact.findByIdAndDelete(req.params.id);
+    await contactsDb.remove(req.params.id);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
