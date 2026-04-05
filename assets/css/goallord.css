@@ -536,6 +536,10 @@ body {
 }
 .preloader .site-name {
     background-color: var(--gl-black) !important;
+    z-index: 3 !important;
+}
+.preloader span {
+    overflow-x: visible !important;
 }
 .inner-bar {
     background-color: var(--gl-orange) !important;
