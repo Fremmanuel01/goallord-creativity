@@ -534,6 +534,9 @@ body {
 .preloader {
     background-color: var(--gl-black) !important;
 }
+.preloader .site-name {
+    background-color: var(--gl-black) !important;
+}
 .inner-bar {
     background-color: var(--gl-orange) !important;
 }
