@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -613,6 +614,14 @@ async function createAccount(reference) {
 
     // Show receipt automatically — no extra click needed
     showReceipt(data.receipt, reference);
+
+    // If the acceptance email didn't send, tell the user clearly
+    if (data.emailSent === false) {
+      var warn = document.createElement('div');
+      warn.style.cssText = 'margin-top:16px;padding:12px 14px;background:#2A1F0E;border:1px solid #D66A1F;border-radius:8px;color:#F4F6FA;font-size:14px;';
+      warn.innerHTML = '<strong style="color:#D66A1F;">Email delivery issue.</strong> Your payment went through but we could not send your login details. Please contact admin with reference <strong>' + escHtml(reference) + '</strong> to receive your account credentials.';
+      errEl.parentNode.insertBefore(warn, errEl.nextSibling);
+    }
 
   } catch {
     errEl.textContent = 'Network error. Your payment may have gone through.';

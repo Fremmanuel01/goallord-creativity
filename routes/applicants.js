@@ -293,11 +293,25 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
   const loginUrl = `${host}/student-login.html`;
   const duration = TRACK_DURATION[applicant.track] || '12 Weeks';
 
-  await sendMail({
-    to:      applicant.email,
-    subject: `Welcome to Goallord Creativity Academy — Your Login Details`,
-    html:    acceptanceEmail({ fullName: applicant.full_name, track: applicant.track || 'Other', duration, email: applicant.email, password: plainPassword, loginUrl })
-  }).catch(e => console.error('Acceptance email failed:', e.message));
+  let acceptanceEmailSent = true;
+  try {
+    await sendMail({
+      to:      applicant.email,
+      subject: `Welcome to Goallord Creativity Academy — Your Login Details`,
+      html:    acceptanceEmail({ fullName: applicant.full_name, track: applicant.track || 'Other', duration, email: applicant.email, password: plainPassword, loginUrl })
+    });
+  } catch (e) {
+    acceptanceEmailSent = false;
+    console.error('Acceptance email failed:', e.message);
+    try {
+      await require('../lib/supabase').from('email_failures').insert({
+        to_email: applicant.email, kind: 'acceptance', student_id: student.id,
+        error: e.message, payload: { password: plainPassword, loginUrl }
+      });
+    } catch {}
+  }
+  student._acceptanceEmailSent = acceptanceEmailSent;
+  student._plainPassword = plainPassword;
 
   await sendMail({
     to:      process.env.EMAIL_FROM,
@@ -359,6 +373,23 @@ router.post('/:id/pay-application', async (req, res) => {
     if (!psData.data || psData.data.status !== 'success')
       return res.status(400).json({ error: 'Payment verification failed. Please try again.' });
 
+    // Currency must be NGN
+    if (psData.data.currency && psData.data.currency !== 'NGN')
+      return res.status(400).json({ error: `Unexpected currency: ${psData.data.currency}` });
+
+    // Ensure the Paystack metadata matches this applicant (blocks reference hijacking)
+    const psMeta = psData.data.metadata || {};
+    const psApplicantId = psMeta.applicantId || psMeta.applicant_id;
+    if (psApplicantId && String(psApplicantId) !== String(applicant.id))
+      return res.status(400).json({ error: 'Payment reference does not belong to this applicant' });
+
+    // Reject a reference that was already consumed by another payment row
+    const supabase = require('../lib/supabase');
+    const { data: dupRefs } = await supabase
+      .from('payments').select('id').eq('reference', reference).limit(1);
+    if (dupRefs && dupRefs.length)
+      return res.status(409).json({ error: 'This payment reference has already been processed' });
+
     const appFee     = Number(process.env.APPLICATION_FEE)    || 20000;
     const fullFee    = Number(process.env.FULL_TUITION_FEE)   || 150000;
     const monthlyFee = Number(process.env.MONTHLY_TUITION_FEE)|| 60000;
@@ -388,6 +419,7 @@ router.post('/:id/pay-application', async (req, res) => {
     res.json({
       success: true,
       studentId: student.id,
+      emailSent: student._acceptanceEmailSent !== false,
       receipt: {
         receiptNumber:   appFeePayment ? appFeePayment.receipt_number   : '',
         receiptIssuedAt: appFeePayment ? appFeePayment.receipt_issued_at : new Date(),
