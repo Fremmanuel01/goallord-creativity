@@ -18,6 +18,21 @@ const io         = new Server(httpServer, { cors: { origin: ['https://goallordcr
 // ─── Share io with routes ──────────────────────────────────────
 app.set('io', io);
 
+// ─── CANONICAL HOST REDIRECT ─────────────────────────────────
+// Force every request onto https://goallordcreativity.com so the raw
+// *.herokuapp.com URL (which Chrome Safe Browsing has flagged) never
+// serves HTML. Sends a 301 so search engines de-list the Heroku URL.
+app.use((req, res, next) => {
+    const host = req.headers.host || '';
+    const proto = req.headers['x-forwarded-proto'] || req.protocol;
+    const isHeroku = host.endsWith('.herokuapp.com');
+    const isInsecure = proto !== 'https' && process.env.NODE_ENV === 'production';
+    if (isHeroku || isInsecure) {
+        return res.redirect(301, 'https://goallordcreativity.com' + req.originalUrl);
+    }
+    next();
+});
+
 // ─── MIDDLEWARE ───────────────────────────────────────────────
 app.use(cors({
     origin: ['https://goallordcreativity.com', 'https://www.goallordcreativity.com', 'http://localhost:3000'],
