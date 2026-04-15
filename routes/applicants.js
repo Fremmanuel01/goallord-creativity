@@ -203,11 +203,15 @@ h2{color:#D66A1F;margin:0 0 16px}p{color:#A0A6B3;margin:0 0 24px}a{color:#D66A1F
 <a href="/apply.html">Back to Apply</a></div></body></html>`);
     }
 
-    await applicantsDb.update(applicant.id, {
-      email_verified:       true,
-      email_verify_token:   null,
-      email_verify_expires: null
-    });
+    // Idempotent verify — do NOT null the token. Gmail/Outlook/spam scanners
+    // prefetch every link in every email to check for phishing; if we nulled
+    // the token here the real user's click would always land on "Link
+    // Expired". Keep the token valid until email_verify_expires and just
+    // flip email_verified — re-hitting the link is then a harmless no-op
+    // and the real click still redirects to the payment page.
+    if (!applicant.email_verified) {
+      await applicantsDb.update(applicant.id, { email_verified: true });
+    }
 
     // Redirect to payment page
     return res.redirect(`/apply-payment.html?id=${applicant.id}`);
