@@ -4629,7 +4629,7 @@ function renderApplicants(list) {
   tbody.innerHTML = list.map(a => {
     const st = getStatus(a.id);
     return `<tr>
-      <td class="muted">${a.id}</td>
+      <td class="muted" title="${a.id}" style="font-family:monospace;font-size:0.75rem">${String(a.id).slice(0, 8)}</td>
       <td><strong style="font-weight:600">${a.name}</strong></td>
       <td class="muted" style="font-size:0.775rem">${a.email}</td>
       <td class="muted" style="font-size:0.775rem">${a.phone}</td>
