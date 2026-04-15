@@ -4888,27 +4888,37 @@ function viewApplicant(id) {
 }
 
 async function vapResendVerification() {
-  if (!_vapId) return;
+  console.log('[vapResendVerification] clicked, _vapId =', _vapId);
+  if (!_vapId) {
+    if (typeof showToast === 'function') showToast('No applicant selected', 'error');
+    return;
+  }
   const btn = document.getElementById('vapResendBtn');
+  if (!btn) return;
   btn.disabled = true;
   btn.textContent = 'Sending…';
   try {
+    // apiFetch returns null on !res.ok (and already shows its own toast), or the parsed JSON on success.
     const res = await apiFetch('/api/applicants/' + _vapId + '/admin-resend-verification', { method: 'POST' });
-    if (res && (res.success || res.ok !== false)) {
+    if (res && res.success) {
       btn.textContent = '✓ Sent';
-      if (typeof toast === 'function') toast('Verification email resent', 'success');
-      setTimeout(() => { btn.textContent = '↻ Resend Verify'; btn.disabled = false; }, 2500);
+      if (typeof showToast === 'function') showToast('Verification email sent — ask applicant to check inbox and spam', 'success');
+      setTimeout(() => {
+        btn.textContent = '↻ Resend Verify';
+        btn.disabled = false;
+      }, 3000);
     } else {
-      btn.textContent = 'Failed — retry';
+      btn.textContent = '↻ Resend Verify';
       btn.disabled = false;
-      if (typeof toast === 'function') toast((res && res.error) || 'Could not resend verification', 'error');
     }
   } catch (err) {
+    console.error('[vapResendVerification] failed:', err);
     btn.textContent = 'Failed — retry';
     btn.disabled = false;
-    if (typeof toast === 'function') toast('Network error: ' + err.message, 'error');
+    if (typeof showToast === 'function') showToast('Network error: ' + err.message, 'error');
   }
 }
+window.vapResendVerification = vapResendVerification;
 
 async function vapSetStatus(status) {
   if (!_vapId) return;
