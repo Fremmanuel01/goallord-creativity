@@ -3961,6 +3961,7 @@
     <!-- Footer actions -->
     <div class="vap-footer">
       <button class="vap-btn vap-btn-close" onclick="closeModal('viewApplicantModal')">Close</button>
+      <button class="vap-btn" id="vapResendBtn" style="display:none;background:rgba(30,75,255,0.15);color:#60a5fa;border:1px solid rgba(30,75,255,0.35)" onclick="vapResendVerification()">↻ Resend Verify</button>
       <button class="vap-btn vap-btn-reject" id="vapRejectBtn" onclick="vapSetStatus('Rejected')">✕ Reject</button>
       <button class="vap-btn vap-btn-accept" id="vapAcceptBtn" onclick="vapSetStatus('Accepted')">✓ Accept</button>
     </div>
@@ -4874,12 +4875,38 @@ function viewApplicant(id) {
   // Show/hide action buttons based on current status
   document.getElementById('vapAcceptBtn').style.display = st === 'Accepted' ? 'none' : '';
   document.getElementById('vapRejectBtn').style.display = st === 'Rejected'  ? 'none' : '';
+  document.getElementById('vapResendBtn').style.display = a.emailVerified ? 'none' : '';
+  document.getElementById('vapResendBtn').disabled = false;
+  document.getElementById('vapResendBtn').textContent = '↻ Resend Verify';
 
   openModal('viewApplicantModal');
   } catch (err) {
     console.error('viewApplicant failed:', err);
     if (typeof toast === 'function') toast('Could not open applicant details: ' + err.message, 'error');
     else alert('Could not open applicant details: ' + err.message);
+  }
+}
+
+async function vapResendVerification() {
+  if (!_vapId) return;
+  const btn = document.getElementById('vapResendBtn');
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  try {
+    const res = await apiFetch('/api/applicants/' + _vapId + '/admin-resend-verification', { method: 'POST' });
+    if (res && (res.success || res.ok !== false)) {
+      btn.textContent = '✓ Sent';
+      if (typeof toast === 'function') toast('Verification email resent', 'success');
+      setTimeout(() => { btn.textContent = '↻ Resend Verify'; btn.disabled = false; }, 2500);
+    } else {
+      btn.textContent = 'Failed — retry';
+      btn.disabled = false;
+      if (typeof toast === 'function') toast((res && res.error) || 'Could not resend verification', 'error');
+    }
+  } catch (err) {
+    btn.textContent = 'Failed — retry';
+    btn.disabled = false;
+    if (typeof toast === 'function') toast('Network error: ' + err.message, 'error');
   }
 }
 

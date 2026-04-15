@@ -398,6 +398,28 @@ const fmtD = d => d.toLocaleDateString('en-GB', { day:'numeric', month:'short', 
 
     if (!ar.ok) {
       const e = await ar.json().catch(() => ({}));
+      if (ar.status === 403) {
+        // Email not verified — offer a one-click resend instead of a dead page
+        crash(e.error || 'Email not verified yet.');
+        const box = document.querySelector('#crash') || document.body;
+        const btn = document.createElement('button');
+        btn.textContent = 'Resend verification email';
+        btn.className = 'btn btn-primary';
+        btn.style.marginTop = '18px';
+        btn.onclick = async () => {
+          btn.disabled = true; btn.textContent = 'Sending…';
+          try {
+            const r = await fetch('/api/applicants/' + AID + '/resend-verification', { method: 'POST' });
+            const d = await r.json().catch(() => ({}));
+            btn.textContent = r.ok ? '✓ Sent — check your inbox (and spam)' : (d.error || 'Failed to resend');
+          } catch {
+            btn.textContent = 'Network error — try again';
+            btn.disabled = false;
+          }
+        };
+        box.appendChild(btn);
+        return;
+      }
       crash(e.error || 'Could not load your application. Please use the link from your verification email.');
       return;
     }

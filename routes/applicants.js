@@ -323,15 +323,14 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
 }
 
 // GET /api/applicants/:id/payment-info — public (payment page fetches this)
+// Gate on email_verified: the verification step has already nulled the token,
+// and the flag proves the user clicked the link. Re-requiring the token here
+// locked every real applicant out of the payment page.
 router.get('/:id/payment-info', async (req, res) => {
   try {
-    const { token } = req.query;
-    if (!token) return res.status(401).json({ error: 'Verification token required' });
-
-    // Find applicant by id and verify token
     const applicant = await applicantsDb.findById(req.params.id);
-    if (!applicant || applicant.email_verify_token !== token) return res.status(404).json({ error: 'Not found or invalid token' });
-    if (!applicant.email_verified) return res.status(403).json({ error: 'Email not verified' });
+    if (!applicant) return res.status(404).json({ error: 'Application not found' });
+    if (!applicant.email_verified) return res.status(403).json({ error: 'Email not verified. Please click the link we sent to your inbox first.' });
     res.json({
       fullName:           applicant.full_name,
       email:              applicant.email,
@@ -339,6 +338,65 @@ router.get('/:id/payment-info', async (req, res) => {
       applicationFeePaid: applicant.application_fee_paid
     });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/applicants/:id/resend-verification — public (rescue path for stuck applicants)
+router.post('/:id/resend-verification', applyLimiter, async (req, res) => {
+  try {
+    const applicant = await applicantsDb.findById(req.params.id);
+    if (!applicant) return res.status(404).json({ error: 'Application not found' });
+    if (applicant.email_verified) return res.status(400).json({ error: 'Email is already verified.' });
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await applicantsDb.update(applicant.id, {
+      email_verify_token:   token,
+      email_verify_expires: expires.toISOString()
+    });
+
+    const host = process.env.HOST || `${req.protocol}://${req.get('host')}`;
+    const verifyUrl = `${host}/api/applicants/verify/${token}`;
+    await sendMail({
+      to:      applicant.email,
+      subject: 'Verify your email — Goallord Creativity Academy',
+      html:    verificationEmail({ fullName: applicant.full_name, verifyUrl })
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('resend-verification failed:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/applicants/:id/admin-resend-verification — protected (dashboard button)
+router.post('/:id/admin-resend-verification', requireAuth, async (req, res) => {
+  try {
+    const applicant = await applicantsDb.findById(req.params.id);
+    if (!applicant) return res.status(404).json({ error: 'Application not found' });
+    if (applicant.email_verified) return res.status(400).json({ error: 'Email is already verified.' });
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await applicantsDb.update(applicant.id, {
+      email_verify_token:   token,
+      email_verify_expires: expires.toISOString()
+    });
+
+    const host = process.env.HOST || `${req.protocol}://${req.get('host')}`;
+    const verifyUrl = `${host}/api/applicants/verify/${token}`;
+    await sendMail({
+      to:      applicant.email,
+      subject: 'Verify your email — Goallord Creativity Academy',
+      html:    verificationEmail({ fullName: applicant.full_name, verifyUrl })
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('admin-resend-verification failed:', err);
     res.status(500).json({ error: err.message });
   }
 });

@@ -1,6 +1,17 @@
 const https = require('https');
 
 async function sendMail({ to, subject, html }) {
+  // Fail loud on misconfig so "stuck at unverified" stops being a silent mystery.
+  if (!process.env.BREVO_API_KEY) {
+    throw new Error('BREVO_API_KEY is not set. Cannot send email.');
+  }
+  if (!process.env.EMAIL_FROM) {
+    throw new Error('EMAIL_FROM is not set. Brevo requires a verified sender address.');
+  }
+  if (!to) {
+    throw new Error('sendMail called with no recipient.');
+  }
+
   const payload = JSON.stringify({
     sender:   { name: 'Goallord Creativity', email: process.env.EMAIL_FROM },
     to:       [{ email: to }],
