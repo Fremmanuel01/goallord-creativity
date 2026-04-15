@@ -5671,28 +5671,36 @@ async function loadApplicantsFromAPI() {
   const data = await apiFetch('/api/applicants?limit=200');
   if (!data) return;
   // Merge into APPLICANTS array (used by existing renderApplicants)
-  window.APPLICANTS = data.data.map(a => ({
-    id:                 a._id,
-    name:               a.fullName,
-    email:              a.email,
-    phone:              a.phone,
-    location:           a.location,
-    track:              a.track,
-    experience:         a.experience,
-    schedule:           a.schedule,
-    howFound:           a.howFound,
-    goal:               a.goal,
-    why:                a.why,
-    background:         a.background,
-    notes:              a.notes,
-    photo:              a.profilePhoto,
-    emailVerified:      a.emailVerified,
-    applicationFeePaid: a.applicationFeePaid,
-    applicationFeeRef:  a.applicationFeeRef,
-    pendingPaymentPlan: a.pendingPaymentPlan,
-    status:             a.status,
-    date:               new Date(a.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
-  }));
+  // Tolerate both camelCase (post-transform) and snake_case (raw Supabase) so a
+  // missed key transform never blanks the dashboard.
+  window.APPLICANTS = data.data.map(a => {
+    const createdRaw = a.createdAt || a.created_at;
+    const created = createdRaw ? new Date(createdRaw) : null;
+    return {
+      id:                 a.id || a._id,
+      name:               a.fullName           || a.full_name            || '—',
+      email:              a.email              || '',
+      phone:              a.phone              || '',
+      location:           a.location           || '',
+      track:              a.track              || '',
+      experience:         a.experience         || '',
+      schedule:           a.schedule           || '',
+      howFound:           a.howFound           || a.how_found            || '',
+      goal:               a.goal               || '',
+      why:                a.why                || '',
+      background:         a.background         || '',
+      notes:              a.notes              || '',
+      photo:              a.profilePhoto       || a.profile_photo        || '',
+      emailVerified:      a.emailVerified      ?? a.email_verified       ?? false,
+      applicationFeePaid: a.applicationFeePaid ?? a.application_fee_paid ?? false,
+      applicationFeeRef:  a.applicationFeeRef  || a.application_fee_ref  || '',
+      pendingPaymentPlan: a.pendingPaymentPlan || a.pending_payment_plan || '',
+      status:             a.status             || 'Pending',
+      date: created && !isNaN(created)
+        ? created.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
+        : '—'
+    };
+  });
   if (typeof renderApplicants === 'function') renderApplicants(window.APPLICANTS);
   renderOverviewApplicants();
   if (window._donutChart) updateDonutChart();
