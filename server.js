@@ -46,7 +46,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             imgSrc: ["'self'", "data:", "https:", "blob:"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-            connectSrc: ["'self'", "blob:", "data:", "https://api.anthropic.com", "https://api.brevo.com", "https://prod.spline.design", "https://unpkg.com", "https://viewer.spline.design", "https://api.paystack.co", "https://standard.paystack.co", "https://js.paystack.co", "wss:", "ws:"],
+            connectSrc: ["'self'", "blob:", "data:", "https://api.anthropic.com", "https://api.brevo.com", "https://prod.spline.design", "https://unpkg.com", "https://viewer.spline.design", "https://api.paystack.co", "https://standard.paystack.co", "https://js.paystack.co", "https://cdn.jsdelivr.net", "wss:", "ws:"],
             frameSrc: ["'self'", "https://js.paystack.co", "https://checkout.paystack.com", "https://standard.paystack.co", "https://prod.spline.design", "https://viewer.spline.design"],
             mediaSrc: ["'self'", "blob:", "data:"],
             workerSrc: ["'self'", "blob:"],

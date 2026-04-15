@@ -5776,17 +5776,23 @@ async function loadApplicantsFromAPI() {
 
 async function loadClientsFromAPI() {
   const data = await apiFetch('/api/clients?limit=200');
-  if (!data) return;
-  window.CLIENTS = data.data.map(c => ({
-    id:      c._id,
-    name:    c.name,
-    email:   c.email,
-    service: c.service,
-    budget:  c.budget,
-    status:  c.status,
-    started: new Date(c.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
-  }));
-  if (typeof renderClients === 'function') renderClients();
+  if (!data || !Array.isArray(data.data)) return;
+  window.CLIENTS = data.data.map(c => {
+    const createdRaw = c.createdAt || c.created_at;
+    const created = createdRaw ? new Date(createdRaw) : null;
+    return {
+      id:      c.id || c._id,
+      name:    c.name    || '—',
+      email:   c.email   || '',
+      service: c.service || '',
+      budget:  c.budget  || '',
+      status:  c.status  || 'Pending',
+      started: created && !isNaN(created)
+        ? created.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
+        : '—'
+    };
+  });
+  if (typeof renderClients === 'function') renderClients(window.CLIENTS);
 }
 
 async function loadOverviewStats() {
@@ -5815,24 +5821,36 @@ async function loadOverviewStats() {
 
 async function loadOrdersFromAPI() {
   const data = await apiFetch('/api/orders?limit=500');
-  if (!data) return;
-  ORDERS = data.data.map(o => ({
-    _id:        o._id,
-    id:         '#' + (o.orderId || o._id.slice(-6).toUpperCase()),
-    orderId:    o.orderId,
-    product:    o.productId?.name || 'Unknown Product',
-    productId:  o.productId,
-    buyer:      o.buyerName,
-    buyerName:  o.buyerName,
-    buyerEmail: o.buyerEmail,
-    rawAmount:  o.amount,
-    currency:   o.currency,
-    amount:     (o.currency === 'NGN' ? '₦' : '$') + (o.amount || 0),
-    category:   o.category || 'Other',
-    date:       new Date(o.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }),
-    createdAt:  o.createdAt,
-    status:     o.status
-  }));
+  if (!data || !Array.isArray(data.data)) return;
+  ORDERS = data.data.map(o => {
+    const rawId = o.id || o._id || '';
+    const orderId = o.orderId || o.order_id;
+    const createdRaw = o.createdAt || o.created_at;
+    const created = createdRaw ? new Date(createdRaw) : null;
+    const productRel = o.product || o.productId || o.product_id || null;
+    const productName = (productRel && typeof productRel === 'object' && productRel.name)
+      ? productRel.name : 'Unknown Product';
+    const shortId = String(rawId).replace(/-/g, '').slice(-6).toUpperCase() || '------';
+    return {
+      _id:        rawId,
+      id:         '#' + (orderId || shortId),
+      orderId:    orderId,
+      product:    productName,
+      productId:  productRel,
+      buyer:      o.buyerName  || o.buyer_name  || '',
+      buyerName:  o.buyerName  || o.buyer_name  || '',
+      buyerEmail: o.buyerEmail || o.buyer_email || '',
+      rawAmount:  o.amount || 0,
+      currency:   o.currency || 'NGN',
+      amount:     ((o.currency || 'NGN') === 'NGN' ? '₦' : '$') + (o.amount || 0),
+      category:   o.category || 'Other',
+      date:       created && !isNaN(created)
+        ? created.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
+        : '—',
+      createdAt:  createdRaw,
+      status:     o.status || 'Pending'
+    };
+  });
   if (typeof renderOrders === 'function') renderOrders();
   if (typeof renderOverviewOrders === 'function') renderOverviewOrders();
 }
