@@ -4663,8 +4663,8 @@ function renderApplicants(list) {
           <select class="status-select" onchange="updateApplicantStatus('${a.id}', this.value)" title="Change status">
             ${['Pending','Reviewed','Accepted','Rejected'].map(s => `<option ${s===st?'selected':''}>${s}</option>`).join('')}
           </select>
-          <button class="btn-icon" onclick="viewApplicant('${a.id}')" title="View details">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <button type="button" class="btn-icon" data-view-applicant="${a.id}" onclick="viewApplicant('${a.id}')" title="View details">
+            <svg style="pointer-events:none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
           ${a.applicationFeeRef && !a.applicationFeePaid
             ? `<button title="Bank transfer ref: ${a.applicationFeeRef}" style="padding:4px 9px;font-size:11px;font-weight:600;background:#1E4BFF;color:#fff;border:none;border-radius:5px;cursor:pointer;" onclick="confirmApplicantFee('${a.id}','${a.pendingPaymentPlan||'monthly'}')">Confirm Fee ₦</button>`
@@ -4774,9 +4774,10 @@ function glConfirmResolve(ok) {
 let _vapId = null;
 
 function viewApplicant(id) {
+  console.log('[viewApplicant] called with id:', id, '— APPLICANTS length:', (window.APPLICANTS || []).length);
   try {
   _vapId = id;
-  const a = APPLICANTS.find(x => String(x.id) === String(id));
+  const a = (window.APPLICANTS || []).find(x => String(x.id) === String(id));
   if (!a) {
     console.warn('viewApplicant: no applicant found for id', id, 'APPLICANTS length:', (APPLICANTS || []).length);
     if (typeof toast === 'function') toast('Applicant not found. Refresh the page and try again.', 'error');
@@ -5710,6 +5711,21 @@ document.addEventListener('click', function(e) {
 // Load badge count on page load
 window.addEventListener('load', function() {
   setTimeout(loadAdminNotifs, 800);
+});
+
+// Guarantee viewApplicant is reachable from inline onclick and add a
+// bulletproof click-delegation fallback in case the inline handler is
+// ever stripped or masked by a parent handler.
+window.viewApplicant = viewApplicant;
+document.addEventListener('click', function(e) {
+  const btn = e.target && e.target.closest && e.target.closest('[data-view-applicant]');
+  if (!btn) return;
+  const id = btn.getAttribute('data-view-applicant');
+  if (id) {
+    e.preventDefault();
+    e.stopPropagation();
+    window.viewApplicant(id);
+  }
 });
 
 // ── API helpers ───────────────────────────────────────────────
