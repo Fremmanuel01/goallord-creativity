@@ -3937,6 +3937,14 @@
 
       <div class="vap-section-divider"></div>
 
+      <!-- Journey Timeline -->
+      <div style="margin-bottom:20px">
+        <div class="vap-field-label" style="margin-bottom:12px">Applicant Journey</div>
+        <div id="vapJourney" style="display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+
+      <div class="vap-section-divider"></div>
+
       <!-- Application fields -->
       <div id="vapFields"></div>
 
@@ -4766,13 +4774,19 @@ function glConfirmResolve(ok) {
 let _vapId = null;
 
 function viewApplicant(id) {
+  try {
   _vapId = id;
-  const a = APPLICANTS.find(x => x.id === id);
-  if (!a) return;
+  const a = APPLICANTS.find(x => String(x.id) === String(id));
+  if (!a) {
+    console.warn('viewApplicant: no applicant found for id', id, 'APPLICANTS length:', (APPLICANTS || []).length);
+    if (typeof toast === 'function') toast('Applicant not found. Refresh the page and try again.', 'error');
+    return;
+  }
   const st = getStatus(id);
+  const safeName = (a.name || '—').trim() || '—';
 
   // Avatar
-  const initials = a.name.trim().split(' ').map(p => p[0] || '').join('').substring(0,2).toUpperCase();
+  const initials = safeName.split(' ').map(p => p[0] || '').join('').substring(0,2).toUpperCase() || '?';
   document.getElementById('vapInitials').textContent = initials;
   const img = document.getElementById('vapAvatarImg');
   if (a.photo) {
@@ -4783,11 +4797,48 @@ function viewApplicant(id) {
     document.getElementById('vapInitials').style.display = '';
   }
 
-  document.getElementById('vapName').textContent = a.name;
+  document.getElementById('vapName').textContent = safeName;
   document.getElementById('vapTrackBadge').textContent = a.track || 'No Track';
   document.getElementById('vapStatusBadge').innerHTML = badge(st);
   document.getElementById('vapDate').textContent = (a.emailVerified ? '✉ Verified · ' : '⚠ Unverified · ') + 'Applied ' + a.date;
   document.getElementById('vapNotes').value = a.notes || '';
+
+  // Journey Timeline — applied → verified → paid → accepted
+  const feePaid = !!a.applicationFeePaid;
+  const awaitingBank = !!a.applicationFeeRef && !feePaid;
+  const accepted = st === 'Accepted';
+  const step = (done, pending, label, sub) => {
+    const dotBg = done ? '#22c55e' : pending ? '#D66A1F' : '#2A2F3A';
+    const dotIcon = done ? '✓' : pending ? '⌛' : '○';
+    const titleCol = done ? '#F4F6FA' : pending ? '#F4F6FA' : '#6b7280';
+    return `<div style="display:flex;gap:12px;align-items:flex-start">
+      <div style="width:22px;height:22px;border-radius:50%;background:${dotBg};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px">${dotIcon}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:${titleCol}">${label}</div>
+        ${sub ? `<div style="font-size:11px;color:var(--muted);margin-top:2px">${sub}</div>` : ''}
+      </div>
+    </div>`;
+  };
+
+  const planLabel = a.pendingPaymentPlan === 'full' ? 'Full upfront'
+                  : a.pendingPaymentPlan === 'monthly' ? 'Monthly'
+                  : '';
+
+  document.getElementById('vapJourney').innerHTML = [
+    step(true, false, '1. Application Submitted', 'Filled out apply form · ' + a.date),
+    step(a.emailVerified, !a.emailVerified, '2. Email Verified',
+         a.emailVerified ? 'Clicked the verification link in their inbox'
+                         : 'Waiting — link may be in spam or email bounced'),
+    step(feePaid, awaitingBank, '3. Application Fee + Tuition Paid',
+         feePaid ? ('Paid · Ref: ' + (a.applicationFeeRef || '—') + (planLabel ? ' · ' + planLabel : ''))
+         : awaitingBank ? ('Bank transfer ref submitted — awaiting admin confirm · ' + a.applicationFeeRef + (planLabel ? ' · ' + planLabel : ''))
+         : a.emailVerified ? 'Verified but abandoned payment page'
+         : 'Blocked until email is verified'),
+    step(accepted, false, '4. Accepted & Enrolled',
+         accepted ? 'Student account created — credentials emailed'
+         : feePaid ? 'Payment captured, awaiting status update'
+         : 'Blocked until fee is paid')
+  ].join('');
 
   // Contact cards
   document.getElementById('vapContactRow').innerHTML = [
@@ -4824,6 +4875,11 @@ function viewApplicant(id) {
   document.getElementById('vapRejectBtn').style.display = st === 'Rejected'  ? 'none' : '';
 
   openModal('viewApplicantModal');
+  } catch (err) {
+    console.error('viewApplicant failed:', err);
+    if (typeof toast === 'function') toast('Could not open applicant details: ' + err.message, 'error');
+    else alert('Could not open applicant details: ' + err.message);
+  }
 }
 
 async function vapSetStatus(status) {
