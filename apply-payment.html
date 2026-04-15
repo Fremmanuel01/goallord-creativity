@@ -400,24 +400,29 @@ const fmtD = d => d.toLocaleDateString('en-GB', { day:'numeric', month:'short', 
       const e = await ar.json().catch(() => ({}));
       if (ar.status === 403) {
         // Email not verified — offer a one-click resend instead of a dead page
-        crash(e.error || 'Email not verified yet.');
-        const box = document.querySelector('#crash') || document.body;
-        const btn = document.createElement('button');
-        btn.textContent = 'Resend verification email';
-        btn.className = 'btn btn-primary';
-        btn.style.marginTop = '18px';
-        btn.onclick = async () => {
-          btn.disabled = true; btn.textContent = 'Sending…';
-          try {
-            const r = await fetch('/api/applicants/' + AID + '/resend-verification', { method: 'POST' });
-            const d = await r.json().catch(() => ({}));
-            btn.textContent = r.ok ? '✓ Sent — check your inbox (and spam)' : (d.error || 'Failed to resend');
-          } catch {
-            btn.textContent = 'Network error — try again';
-            btn.disabled = false;
+        crash(e.error || 'Email not verified yet. Please click the link in your inbox first.');
+        try {
+          const box = document.getElementById('crash');
+          if (box) {
+            const btn = document.createElement('button');
+            btn.textContent = 'Resend verification email';
+            btn.style.cssText = 'display:inline-block;margin-top:16px;margin-left:10px;padding:10px 18px;background:#D66A1F;color:#fff;border:none;border-radius:7px;font-weight:700;font-size:13px;cursor:pointer';
+            btn.onclick = async () => {
+              btn.disabled = true; btn.textContent = 'Sending…';
+              try {
+                const r = await fetch('/api/applicants/' + AID + '/resend-verification', { method: 'POST' });
+                const d = await r.json().catch(() => ({}));
+                btn.textContent = r.ok ? '✓ Sent — check your inbox and spam' : (d.error || 'Failed to resend');
+              } catch {
+                btn.textContent = 'Network error — try again';
+                btn.disabled = false;
+              }
+            };
+            box.appendChild(btn);
           }
-        };
-        box.appendChild(btn);
+        } catch (uiErr) {
+          console.error('Could not render resend button:', uiErr);
+        }
         return;
       }
       crash(e.error || 'Could not load your application. Please use the link from your verification email.');
@@ -634,6 +639,29 @@ async function createAccount(reference) {
       return;
     }
 
+    // Recovery response from server catch: payment succeeded but student
+    // creation had an error. No receipt object available — show a friendly
+    // "you're in, go to login" state instead of calling showReceipt with
+    // undefined which would render a broken overlay.
+    if (data.recovered) {
+      errEl.style.display = 'none';
+      const ok = document.createElement('div');
+      ok.style.cssText = 'margin-top:18px;padding:18px 20px;background:#0E2A1A;border:1px solid #22c55e;border-radius:10px;color:#F4F6FA';
+      ok.innerHTML =
+        '<div style="font-size:15px;font-weight:700;color:#22c55e;margin-bottom:8px">✓ Payment received</div>' +
+        '<div style="font-size:13px;color:#A0A6B3;line-height:1.55">' +
+          (data.message || 'Your payment was processed. If you didn\'t get login details, use the Forgot Password link.') +
+        '</div>' +
+        '<div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">' +
+          '<a href="/student-login.html" style="padding:10px 18px;background:#D66A1F;color:#fff;border-radius:7px;text-decoration:none;font-weight:700;font-size:13px">Go to Student Login →</a>' +
+          '<a href="/forgot-password.html" style="padding:10px 18px;background:transparent;color:#F4F6FA;border:1px solid #2A2F3A;border-radius:7px;text-decoration:none;font-weight:600;font-size:13px">Forgot Password</a>' +
+        '</div>' +
+        '<div style="margin-top:12px;font-size:11px;color:#6b7280">Ref: ' + escHtml(reference) + '</div>';
+      errEl.parentNode.insertBefore(ok, errEl.nextSibling);
+      btn.style.display = 'none';
+      return;
+    }
+
     // Show receipt automatically — no extra click needed
     showReceipt(data.receipt, reference);
 
@@ -747,7 +775,7 @@ function resetBtn(btn, msg) { btn.disabled = false; btn.textContent = msg; }
 
 function crash(msg) {
   document.getElementById('enrollPage').innerHTML =
-    '<div style="background:var(--card);border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:40px;text-align:center;">' +
+    '<div id="crash" style="background:var(--card);border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:40px;text-align:center;">' +
     '<div style="font-size:40px;margin-bottom:14px;">⚠️</div>' +
     '<h2 style="color:#fca5a5;font-size:17px;margin-bottom:10px;">Something went wrong</h2>' +
     '<p style="color:var(--muted);font-size:13px;line-height:1.6;max-width:360px;margin:0 auto;">' + msg + '</p>' +

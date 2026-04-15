@@ -449,10 +449,14 @@ router.post('/:id/pay-application', async (req, res) => {
     if (psData.data.currency && psData.data.currency !== 'NGN')
       return res.status(400).json({ error: `Unexpected currency: ${psData.data.currency}` });
 
-    // Ensure the Paystack metadata matches this applicant (blocks reference hijacking)
+    // Ensure the Paystack metadata matches this applicant (blocks reference hijacking).
+    // Metadata is required — if absent we cannot prove the payment was initiated
+    // for this applicant, so we reject.
     const psMeta = psData.data.metadata || {};
     const psApplicantId = psMeta.applicantId || psMeta.applicant_id;
-    if (psApplicantId && String(psApplicantId) !== String(applicant.id))
+    if (!psApplicantId)
+      return res.status(400).json({ error: 'Payment reference has no applicant metadata' });
+    if (String(psApplicantId) !== String(applicant.id))
       return res.status(400).json({ error: 'Payment reference does not belong to this applicant' });
 
     // Reject a reference that was already consumed by another payment row
