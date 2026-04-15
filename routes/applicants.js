@@ -245,54 +245,10 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
     profile_picture:     applicant.profile_photo || ''
   });
 
-  // Application fee — always paid
-  const appFee = Number(process.env.APPLICATION_FEE) || 20000;
-  await paymentsDb.create({
-    student_id:  student.id,
-    batch_id:    activeBatch ? activeBatch.id : null,
-    category:    'application_fee',
-    amount_due:  appFee,
-    amount_paid: appFee,
-    method, reference,
-    recorded_by: 'System',
-    paid_at:     new Date().toISOString()
-  });
-
-  // Tuition payment records
-  const fullFee    = Number(process.env.FULL_TUITION_FEE)    || 150000;
-  const monthlyFee = Number(process.env.MONTHLY_TUITION_FEE) || 60000;
-  const now = new Date();
-
-  if (paymentPlan === 'full') {
-    // Full tuition — paid upfront in same transaction
-    await paymentsDb.create({
-      student_id: student.id, batch_id: activeBatch ? activeBatch.id : null,
-      category: 'full_tuition_payment', amount_due: fullFee,
-      amount_paid: opts.tuitionPaid ? fullFee : 0,
-      method:    opts.tuitionPaid ? method : '',
-      reference: opts.tuitionPaid ? reference : '',
-      paid_at:   opts.tuitionPaid ? new Date().toISOString() : null,
-      due_date:  new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString(),
-      recorded_by: 'System'
-    });
-  } else {
-    // Monthly — 1st instalment paid now, 2nd and 3rd pending
-    for (let i = 1; i <= 3; i++) {
-      const isFirst = i === 1;
-      await paymentsDb.create({
-        student_id: student.id, batch_id: activeBatch ? activeBatch.id : null,
-        category: `tuition_month_${i}`, amount_due: monthlyFee,
-        amount_paid: (opts.tuitionPaid && isFirst) ? monthlyFee : 0,
-        method:    (opts.tuitionPaid && isFirst) ? method : '',
-        reference: (opts.tuitionPaid && isFirst) ? reference : '',
-        paid_at:   (opts.tuitionPaid && isFirst) ? new Date().toISOString() : null,
-        due_date:  new Date(now.getFullYear(), now.getMonth() + i, 1).toISOString(),
-        recorded_by: 'System'
-      });
-    }
-  }
-
-  // Send acceptance email with credentials
+  // Send credentials FIRST — if a payment row insert later fails, the student
+  // must still have their login details. An admin can always reconcile the
+  // payment rows after the fact, but a student locked out of their account
+  // has no recovery path.
   const host     = process.env.HOST || 'https://goallordcreativity.com';
   const loginUrl = `${host}/student-login.html`;
   const duration = TRACK_DURATION[applicant.track] || '12 Weeks';
@@ -316,6 +272,60 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
   }
   student._acceptanceEmailSent = acceptanceEmailSent;
   student._plainPassword = plainPassword;
+
+  // Now create payment rows. Each insert is independently try/catched so a
+  // single failure (duplicate, constraint, etc.) never blocks the rest —
+  // admins can reconcile from the dashboard if anything is missing.
+  const appFee    = Number(process.env.APPLICATION_FEE)     || 20000;
+  const fullFee   = Number(process.env.FULL_TUITION_FEE)    || 150000;
+  const monthlyFee = Number(process.env.MONTHLY_TUITION_FEE) || 60000;
+  const now = new Date();
+
+  const safeInsert = async (row, label) => {
+    try {
+      await paymentsDb.create(row);
+    } catch (e) {
+      console.error(`Payment row insert failed (${label}):`, e.message);
+    }
+  };
+
+  await safeInsert({
+    student_id:  student.id,
+    batch_id:    activeBatch ? activeBatch.id : null,
+    category:    'application_fee',
+    amount_due:  appFee,
+    amount_paid: appFee,
+    method, reference,
+    recorded_by: 'System',
+    paid_at:     new Date().toISOString()
+  }, 'application_fee');
+
+  if (paymentPlan === 'full') {
+    await safeInsert({
+      student_id: student.id, batch_id: activeBatch ? activeBatch.id : null,
+      category: 'full_tuition_payment', amount_due: fullFee,
+      amount_paid: opts.tuitionPaid ? fullFee : 0,
+      method:    opts.tuitionPaid ? method : '',
+      reference: opts.tuitionPaid ? reference : '',
+      paid_at:   opts.tuitionPaid ? new Date().toISOString() : null,
+      due_date:  new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString(),
+      recorded_by: 'System'
+    }, 'full_tuition_payment');
+  } else {
+    for (let i = 1; i <= 3; i++) {
+      const isFirst = i === 1;
+      await safeInsert({
+        student_id: student.id, batch_id: activeBatch ? activeBatch.id : null,
+        category: `tuition_month_${i}`, amount_due: monthlyFee,
+        amount_paid: (opts.tuitionPaid && isFirst) ? monthlyFee : 0,
+        method:    (opts.tuitionPaid && isFirst) ? method : '',
+        reference: (opts.tuitionPaid && isFirst) ? reference : '',
+        paid_at:   (opts.tuitionPaid && isFirst) ? new Date().toISOString() : null,
+        due_date:  new Date(now.getFullYear(), now.getMonth() + i, 1).toISOString(),
+        recorded_by: 'System'
+      }, `tuition_month_${i}`);
+    }
+  }
 
   await sendMail({
     to:      process.env.EMAIL_FROM,
@@ -496,7 +506,28 @@ router.post('/:id/pay-application', async (req, res) => {
     });
   } catch (err) {
     console.error('pay-application error:', err);
-    res.status(500).json({ error: err.message });
+    // If the applicant ended up paid and has a student account, surface that
+    // as success — the user's money is not lost, their account is active.
+    try {
+      const refreshed = await applicantsDb.findById(req.params.id);
+      if (refreshed && refreshed.application_fee_paid) {
+        const existing = await studentsDb.findByEmail(refreshed.email);
+        if (existing) {
+          return res.json({
+            success: true,
+            recovered: true,
+            studentId: existing.id,
+            emailSent: false,
+            message: 'Your payment was processed successfully. If you did not receive login details, use the Forgot Password link on the student login page.'
+          });
+        }
+      }
+    } catch {}
+    // Otherwise give a friendly, non-leaky error
+    const msg = /duplicate key/i.test(err.message)
+      ? 'This payment is already being processed. Please wait a moment and refresh the page — do not pay again.'
+      : 'Something went wrong finalising your enrolment. Your payment is safe. Please contact admin with your reference.';
+    res.status(500).json({ error: msg });
   }
 });
 
