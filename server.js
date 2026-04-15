@@ -155,8 +155,8 @@ app.get('/api/config/public', (req, res) => {
     },
     fees: {
       application:    Number(process.env.APPLICATION_FEE)    || 20000,
-      fullTuition:    Number(process.env.FULL_TUITION_FEE)   || 150000,
-      monthlyTuition: Number(process.env.MONTHLY_TUITION_FEE) || 60000
+      fullTuition:    Number(process.env.FULL_TUITION_FEE)   || 300000,
+      monthlyTuition: Number(process.env.MONTHLY_TUITION_FEE) || 100000
     }
   });
 });

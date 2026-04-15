@@ -277,8 +277,8 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
   // single failure (duplicate, constraint, etc.) never blocks the rest —
   // admins can reconcile from the dashboard if anything is missing.
   const appFee    = Number(process.env.APPLICATION_FEE)     || 20000;
-  const fullFee   = Number(process.env.FULL_TUITION_FEE)    || 150000;
-  const monthlyFee = Number(process.env.MONTHLY_TUITION_FEE) || 60000;
+  const fullFee   = Number(process.env.FULL_TUITION_FEE)    || 300000;
+  const monthlyFee = Number(process.env.MONTHLY_TUITION_FEE) || 100000;
   const now = new Date();
 
   const safeInsert = async (row, label) => {
@@ -467,8 +467,8 @@ router.post('/:id/pay-application', async (req, res) => {
       return res.status(409).json({ error: 'This payment reference has already been processed' });
 
     const appFee     = Number(process.env.APPLICATION_FEE)    || 20000;
-    const fullFee    = Number(process.env.FULL_TUITION_FEE)   || 150000;
-    const monthlyFee = Number(process.env.MONTHLY_TUITION_FEE)|| 60000;
+    const fullFee    = Number(process.env.FULL_TUITION_FEE)   || 300000;
+    const monthlyFee = Number(process.env.MONTHLY_TUITION_FEE)|| 100000;
     const tuitionNow = paymentPlan === 'full' ? fullFee : monthlyFee;
     const totalExpected = appFee + tuitionNow;
     const amountPaid    = psData.data.amount / 100;

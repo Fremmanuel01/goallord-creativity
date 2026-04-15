@@ -229,13 +229,13 @@ body {
       <div class="plan" id="planFull" onclick="choosePlan('full')">
         <div class="plan-icon">💳</div>
         <div class="plan-name">Full Payment</div>
-        <div class="plan-amount" id="displayFull">₦150,000</div>
+        <div class="plan-amount" id="displayFull">₦300,000</div>
         <div class="plan-note">One-time · Best value</div>
       </div>
       <div class="plan" id="planMonthly" onclick="choosePlan('monthly')">
         <div class="plan-icon">📅</div>
         <div class="plan-name">Monthly Plan</div>
-        <div class="plan-amount" id="displayMonthly">₦60,000</div>
+        <div class="plan-amount" id="displayMonthly">₦100,000</div>
         <div class="plan-note">× 3 months · Pay in instalments</div>
       </div>
     </div>
@@ -355,7 +355,7 @@ body {
 function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 // ── State ───────────────────────────────────────────────────────
 const AID = new URLSearchParams(location.search).get('id');
-let fees = { application: 20000, fullTuition: 150000, monthlyTuition: 60000 };
+let fees = { application: 20000, fullTuition: 300000, monthlyTuition: 100000 };
 let pubKey = '';
 let email  = '';
 let name   = '';
@@ -392,8 +392,8 @@ const fmtD = d => d.toLocaleDateString('en-GB', { day:'numeric', month:'short', 
     setText('b2num',  b2.number      || '—');
     setText('b2acct', b2.accountName || '—');
 
-    setText('displayFull',    '₦' + fmt(fees.fullTuition    || 150000));
-    setText('displayMonthly', '₦' + fmt(fees.monthlyTuition || 60000));
+    setText('displayFull',    '₦' + fmt(fees.fullTuition    || 300000));
+    setText('displayMonthly', '₦' + fmt(fees.monthlyTuition || 100000));
     // Payment button labels updated when plan is chosen
 
     if (!ar.ok) {
@@ -454,8 +454,8 @@ function choosePlan(p) {
 
   // Update payment button to show combined amount
   const appFee  = fees.application    || 20000;
-  const full    = fees.fullTuition    || 150000;
-  const monthly = fees.monthlyTuition || 60000;
+  const full    = fees.fullTuition    || 300000;
+  const monthly = fees.monthlyTuition || 100000;
   const total   = p === 'full' ? appFee + full : appFee + monthly;
   const bankTotal = total;
 
@@ -467,8 +467,8 @@ function choosePlan(p) {
 }
 
 function renderSchedule(p) {
-  const full    = fees.fullTuition    || 150000;
-  const monthly = fees.monthlyTuition || 60000;
+  const full    = fees.fullTuition    || 300000;
+  const monthly = fees.monthlyTuition || 100000;
   const appFee  = fees.application    || 20000;
   const today   = new Date();
 
@@ -561,7 +561,7 @@ function payWithPaystack() {
   }
 
   const appFee     = fees.application    || 20000;
-  const tuitionNow = plan === 'full' ? (fees.fullTuition || 150000) : (fees.monthlyTuition || 60000);
+  const tuitionNow = plan === 'full' ? (fees.fullTuition || 300000) : (fees.monthlyTuition || 100000);
   const totalCharge = appFee + tuitionNow;
   const ref    = 'ENROL-' + AID + '-' + Date.now();
   const btn    = document.getElementById('paystackBtn');
@@ -742,7 +742,7 @@ async function submitBankTransfer() {
 function showReceipt(receipt, fallbackRef) {
   const r       = receipt || {};
   const appFee  = r.appFee       || fees.application    || 20000;
-  const tuition = r.tuitionAmount|| (plan === 'full' ? (fees.fullTuition || 150000) : (fees.monthlyTuition || 60000));
+  const tuition = r.tuitionAmount|| (plan === 'full' ? (fees.fullTuition || 300000) : (fees.monthlyTuition || 100000));
   const total   = r.totalAmount  || (appFee + tuition);
   const tuLabel = r.tuitionLabel || (plan === 'full' ? 'Full Tuition Payment' : 'Tuition — 1st Instalment');
 
