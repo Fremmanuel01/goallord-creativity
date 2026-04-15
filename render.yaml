@@ -1,0 +1,61 @@
+services:
+  - type: web
+    name: goallord-website
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      # Secrets — set these in the Render dashboard (marked sync:false)
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: PAYSTACK_PUBLIC_KEY
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: HOST
+        sync: false
+      # Fees & bank details — non-secret config
+      - key: APPLICATION_FEE
+        value: "20000"
+      - key: FULL_TUITION_FEE
+        value: "150000"
+      - key: MONTHLY_TUITION_FEE
+        value: "60000"
+      - key: BANK_NAME
+        sync: false
+      - key: BANK_ACCOUNT_NUMBER
+        sync: false
+      - key: BANK_ACCOUNT_NAME
+        sync: false
+      - key: BANK2_NAME
+        sync: false
+      - key: BANK2_ACCOUNT_NUMBER
+        sync: false
+      - key: BANK2_ACCOUNT_NAME
+        sync: false

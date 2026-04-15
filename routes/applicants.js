@@ -55,11 +55,12 @@ router.post('/upload-photo', async (req, res) => {
 });
 
 const TRACK_DURATION = {
-  'Web Design':        '12 Weeks',
-  'WordPress':         '12 Weeks',
-  'Digital Marketing': '8 Weeks',
-  'Brand Identity':    '12 Weeks',
-  'Other':             '12 Weeks'
+  'AI Software Development': '12 Weeks',
+  'UI/UX':                   '12 Weeks',
+  'WordPress':               '12 Weeks',
+  'AI App Development':      '12 Weeks',
+  'Videography':             '12 Weeks',
+  'Other':                   '12 Weeks'
 };
 
 function generatePassword() {

@@ -225,10 +225,11 @@
                                             <span class="current letter-space--1">Choose Your Track</span>
                                             <ul class="list">
                                                 <li class="option disabled">-- Select a track --</li>
-                                                <li class="option" data-value="web-design">Web Design — 12 Weeks</li>
+                                                <li class="option" data-value="ai-software">AI Software Development — 12 Weeks</li>
+                                                <li class="option" data-value="ui-ux">UI/UX Design — 12 Weeks</li>
                                                 <li class="option" data-value="wordpress">WordPress Development — 12 Weeks</li>
-
-                                                <li class="option" data-value="brand-identity">Brand Identity — 12 Weeks</li>
+                                                <li class="option" data-value="ai-app">AI App Development — 12 Weeks</li>
+                                                <li class="option" data-value="videography">Videography — 12 Weeks</li>
                                                 <li class="option" data-value="undecided">Not Sure Yet</li>
                                             </ul>
                                         </div>
@@ -405,9 +406,11 @@
         var params = new URLSearchParams(window.location.search);
         var track = params.get('track');
         var trackMap = {
-            'web-design':        'Web Design — 12 Weeks',
-            'wordpress':         'WordPress Development — 12 Weeks',
-            'brand-identity':    'Brand Identity — 12 Weeks'
+            'ai-software':   'AI Software Development — 12 Weeks',
+            'ui-ux':         'UI/UX Design — 12 Weeks',
+            'wordpress':     'WordPress Development — 12 Weeks',
+            'ai-app':        'AI App Development — 12 Weeks',
+            'videography':   'Videography — 12 Weeks'
         };
         if (track && trackMap[track]) {
             var $select = $('#trackSelect');
@@ -457,10 +460,12 @@
 
             // Collect nice-select values
             const trackValueMap = {
-                'web-design':        'Web Design',
-                'wordpress':         'WordPress',
-                'brand-identity':    'Brand Identity',
-                'undecided':         'Other'
+                'ai-software':   'AI Software Development',
+                'ui-ux':         'UI/UX',
+                'wordpress':     'WordPress',
+                'ai-app':        'AI App Development',
+                'videography':   'Videography',
+                'undecided':     'Other'
             };
             const trackDataVal   = $('#trackSelect li.option.selected').data('value') || '';
             const track          = trackValueMap[trackDataVal] || '';

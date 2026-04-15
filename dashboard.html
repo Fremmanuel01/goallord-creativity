@@ -2340,9 +2340,12 @@
         <input class="filter-input" type="text" placeholder="Search applicants…" id="appSearch">
         <select class="filter-select" id="appTrackFilter">
           <option value="">All Tracks</option>
-          <option value="Web Design">Web Design</option>
+          <option value="AI Software Development">AI Software Development</option>
+          <option value="UI/UX">UI/UX</option>
           <option value="WordPress">WordPress</option>
-
+          <option value="AI App Development">AI App Development</option>
+          <option value="Videography">Videography</option>
+          <option value="Other">Other</option>
         </select>
         <select class="filter-select" id="appStatusFilter">
           <option value="">All Statuses</option>
@@ -3747,9 +3750,11 @@
         </select>
         <select class="form-input" id="stu-track-filter" style="max-width:180px" onchange="filterStudents()">
           <option value="">All Tracks</option>
-          <option>Web Design</option>
+          <option>AI Software Development</option>
+          <option>UI/UX</option>
           <option>WordPress</option>
-          <option>Brand Identity</option>
+          <option>AI App Development</option>
+          <option>Videography</option>
           <option>Other</option>
         </select>
         <select class="form-input" id="stu-status-filter" style="max-width:140px" onchange="filterStudents()">
@@ -4357,7 +4362,7 @@
         <div class="modal-form-row">
           <div class="form-group"><label>Track</label>
             <select class="form-input" id="stu-track">
-              <option>Web Design</option><option>WordPress</option><option>Brand Identity</option><option>Other</option>
+              <option>AI Software Development</option><option>UI/UX</option><option>WordPress</option><option>AI App Development</option><option>Videography</option><option>Other</option>
             </select>
           </div>
           <div class="form-group"><label>Batch</label>
@@ -5418,7 +5423,7 @@ function initCharts() {
   window._donutChart = new Chart(doCtx, {
     type: 'doughnut',
     data: {
-      labels: ['Web Design', 'WordPress', 'Brand Identity'],
+      labels: ['AI Software Development', 'UI/UX', 'WordPress', 'AI App Development', 'Videography'],
       datasets: [{
         data: [22, 18, 7],
         backgroundColor: [
@@ -5953,7 +5958,7 @@ async function updateRevenueChart() {
 }
 
 function updateDonutChart() {
-  const tracks = ['Web Design', 'WordPress', 'Brand Identity', 'Other'];
+  const tracks = ['AI Software Development', 'UI/UX', 'WordPress', 'AI App Development', 'Videography', 'Other'];
   const counts = tracks.map(t => window.APPLICANTS.filter(a => a.track === t).length);
   const nonZero = tracks.map((t,i) => ({ label: t, count: counts[i] })).filter(x => x.count > 0);
   window._donutChart.data.labels   = nonZero.map(x => x.label);
@@ -8983,7 +8988,7 @@ function openAddStudent() {
   document.getElementById('stu-edit-id').value = '';
   ['stu-fullName','stu-email','stu-password','stu-phone','stu-notes'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('stu-batch-select').value = '';
-  document.getElementById('stu-track').value = 'Web Design';
+  document.getElementById('stu-track').value = 'AI Software Development';
   document.getElementById('stu-status').value = 'Active';
   document.getElementById('stuModalError').style.display = 'none';
   document.getElementById('stu-password').placeholder = '••••••••';
@@ -9000,7 +9005,7 @@ async function openEditStudent(id) {
   document.getElementById('stu-password').value = '';
   document.getElementById('stu-password').placeholder = 'Leave blank to keep';
   document.getElementById('stu-phone').value    = s.phone    || '';
-  document.getElementById('stu-track').value    = s.track    || 'Web Design';
+  document.getElementById('stu-track').value    = s.track    || 'AI Software Development';
   document.getElementById('stu-batch-select').value = s.batch?._id || '';
   document.getElementById('stu-status').value   = s.status   || 'Active';
   document.getElementById('stu-notes').value    = s.notes    || '';
@@ -9705,9 +9710,11 @@ function showErr(el, msg) {
         <label class="form-label">Track</label>
         <select class="form-input" id="batch-track">
           <option value="">All Tracks</option>
-          <option>Web Design</option>
+          <option>AI Software Development</option>
+          <option>UI/UX</option>
           <option>WordPress</option>
-          <option>Brand Identity</option>
+          <option>AI App Development</option>
+          <option>Videography</option>
           <option>Other</option>
         </select>
       </div>
