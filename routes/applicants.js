@@ -52,7 +52,7 @@ router.post('/upload-photo', async (req, res) => {
   }
 });
 
-const { createStudentFromApplicant } = require('../utils/enrolStudent');
+const { createStudentFromApplicant, TRACK_DURATION } = require('../utils/enrolStudent');
 
 // POST /api/applicants — public (apply form)
 router.post('/', applyLimiter, async (req, res) => {
