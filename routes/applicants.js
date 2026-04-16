@@ -88,12 +88,18 @@ router.post('/', applyLimiter, async (req, res) => {
     if (phone && !/^[\d\s\-\+\(\)]{7,20}$/.test(phone)) return res.status(400).json({ error: 'Invalid phone number.' });
 
     // Sanitize all text fields
+    const VALID_TRACKS = Object.keys(TRACK_DURATION);
+    const cleanTrack = (track || '').trim();
+    if (cleanTrack && !VALID_TRACKS.includes(cleanTrack)) {
+        return res.status(400).json({ error: `Invalid track. Must be one of: ${VALID_TRACKS.join(', ')}` });
+    }
+
     const sanitized = {
         fullName: xss(fullName.trim()),
         email: email.toLowerCase().trim(),
         phone: xss((phone || '').trim()),
         location: xss((location || '').trim()),
-        track: xss((track || '').trim()),
+        track: xss(cleanTrack),
         experience: xss((experience || '').trim()),
         schedule: xss((schedule || '').trim()),
         howFound: xss((howFound || '').trim()),
@@ -547,6 +553,11 @@ router.post('/:id/bank-transfer-fee', async (req, res) => {
     if (!applicant.email_verified) return res.status(403).json({ error: 'Email not verified' });
     if (applicant.application_fee_paid) return res.status(400).json({ error: 'Application fee already paid' });
 
+    const existingRef = await applicantsDb.findByRef(reference);
+    if (existingRef && existingRef.id !== applicant.id) {
+      return res.status(400).json({ error: 'This transfer reference has already been submitted.' });
+    }
+
     await applicantsDb.update(applicant.id, {
       application_fee_ref:  reference,
       pending_payment_plan: paymentPlan
@@ -646,51 +657,17 @@ router.patch('/:id', requireAuth, async (req, res) => {
     const doc = await applicantsDb.update(req.params.id, update);
     if (!doc) return res.status(404).json({ error: 'Not found' });
 
-    // Auto-create student account and send acceptance email
+    // Auto-create student account, payment records, and send acceptance email
     if (status === 'Accepted') {
       const existing = await studentsDb.findByEmail(doc.email);
       if (!existing) {
-        const plainPassword = generatePassword();
-        const hashed        = await bcrypt.hash(plainPassword, 12);
-
-        // Assign to the current active batch
-        const activeBatch = await batchesDb.findActive();
-
-        const student = await studentsDb.create({
-          full_name:          doc.full_name,
-          email:              doc.email,
-          password:           hashed,
-          phone:              doc.phone || '',
-          track:              doc.track || 'Other',
-          batch_id:           activeBatch ? activeBatch.id : null,
-          status:             'Active',
-          applicant_ref:      doc.id,
-          application_fee_paid: true,
-          profile_picture:    doc.profile_photo || ''
+        const paymentPlan = doc.pending_payment_plan || 'monthly';
+        const student = await createStudentFromApplicant(doc, paymentPlan, {
+          method: 'Admin',
+          reference: `admin-accept-${doc.id}`
         });
 
-        const host     = process.env.HOST || 'https://goallordcreativity.com';
-        const loginUrl = `${host}/student-login.html`;
-        const duration = TRACK_DURATION[doc.track] || '12 Weeks';
-
-        try {
-          await sendMail({
-            to:      doc.email,
-            subject: `You've been accepted — Goallord Creativity Academy`,
-            html:    acceptanceEmail({
-              fullName: doc.full_name,
-              track:    doc.track || 'Other',
-              duration,
-              email:    doc.email,
-              password: plainPassword,
-              loginUrl
-            })
-          });
-        } catch (mailErr) {
-          console.error('Acceptance email failed:', mailErr.message);
-        }
-
-        // Notify admin of acceptance
+        const host = process.env.HOST || 'https://goallordcreativity.com';
         try {
           await sendMail({
             to:      process.env.EMAIL_FROM,

@@ -652,7 +652,14 @@
                     var topicTags = (t.topics || []).map(function(tp) {
                         return '<span class="ac-topic-tag">' + tp + '</span>';
                     }).join('');
-                    var slug = t.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                    var slugMap = {
+                        'AI Software Development': 'ai-software',
+                        'UI/UX Design': 'ui-ux',
+                        'WordPress Development': 'wordpress',
+                        'AI App Development': 'ai-app',
+                        'Videography': 'videography'
+                    };
+                    var slug = slugMap[t.name] || t.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
                     return '<div>' +
                         '<div class="ac-glass ac-track-card effectFade fadeUp">' +
                         '<div class="ac-track-icon">' + iconSvg + '</div>' +

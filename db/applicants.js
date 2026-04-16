@@ -10,6 +10,12 @@ module.exports = {
     return data;
   },
 
+  async findByRef(ref) {
+    const { data, error } = await supabase.from(TABLE).select('*').eq('application_fee_ref', ref).limit(1).maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+
   async findById(id) {
     const { data, error } = await supabase.from(TABLE).select('*').eq('id', id).single();
     if (error) throw error;
