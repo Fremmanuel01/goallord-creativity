@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Check Application Status — Goallord Academy</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --orange: #D66A1F; --green: #22c55e; --blue: #1E4BFF;
+  --bg: #0F1115; --card: #171A21; --border: #2A2F3A;
+  --text: #F4F6FA; --muted: #A0A6B3;
+}
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 48px 16px 80px; }
+.page { width: 100%; max-width: 480px; }
+.logo { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
+.logo-text { font-size: 14px; font-weight: 700; }
+.logo-sub { font-size: 11px; color: var(--muted); }
+h1 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+.subtitle { color: var(--muted); font-size: 14px; margin-bottom: 32px; line-height: 1.6; }
+.field label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 6px; }
+.field input { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 13px 16px; color: var(--text); font-size: 15px; outline: none; transition: border-color .2s; }
+.field input:focus { border-color: var(--orange); }
+.btn { width: 100%; padding: 14px; background: var(--orange); color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 14px; transition: opacity .15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn:hover { opacity: .9; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.error-msg { background: rgba(239,68,68,.09); border: 1px solid rgba(239,68,68,.3); color: #fca5a5; border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-top: 16px; display: none; }
+.result { display: none; margin-top: 24px; }
+.result-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+.result-name { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+.result-track { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+.status-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(42,47,58,.7); font-size: 14px; }
+.status-row:last-child { border-bottom: none; }
+.status-label { color: var(--muted); }
+.badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; }
+.badge-green { background: rgba(34,197,94,.15); color: var(--green); }
+.badge-orange { background: rgba(214,106,31,.12); color: var(--orange); }
+.badge-red { background: rgba(239,68,68,.12); color: #fca5a5; }
+.badge-blue { background: rgba(30,75,255,.12); color: #93c5fd; }
+.badge-muted { background: rgba(160,166,179,.1); color: var(--muted); }
+.action-link { display: inline-block; margin-top: 16px; padding: 11px 20px; border-radius: 8px; font-size: 13px; font-weight: 700; text-decoration: none; }
+.action-primary { background: var(--orange); color: #fff; }
+.action-secondary { background: transparent; border: 1px solid var(--border); color: var(--muted); margin-left: 8px; }
+.back { display: block; text-align: center; margin-top: 28px; font-size: 13px; color: var(--muted); }
+.back a { color: var(--orange); text-decoration: none; font-weight: 600; }
+@keyframes rot { to { transform: rotate(360deg); } }
+.spin { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: rot .65s linear infinite; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="logo">
+    <img src="assets/images/logo/goallord-logo.png" alt="Goallord" style="height:44px;width:auto;display:block;flex-shrink:0;">
+    <div>
+      <div class="logo-text">Goallord Academy</div>
+      <div class="logo-sub">Application Status</div>
+    </div>
+  </div>
+
+  <h1>Check Your Application</h1>
+  <p class="subtitle">Enter the email you used to apply and we'll show you where your application stands.</p>
+
+  <form id="checkForm" onsubmit="checkStatus(event)">
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="emailInput" placeholder="yourname@email.com" required autocomplete="email">
+    </div>
+    <button type="submit" class="btn" id="checkBtn">Check Status</button>
+  </form>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <div class="result" id="result">
+    <div class="result-card">
+      <div class="result-name" id="rName"></div>
+      <div class="result-track" id="rTrack"></div>
+
+      <div class="status-row">
+        <span class="status-label">Application</span>
+        <span id="sApplied"></span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Email Verified</span>
+        <span id="sVerified"></span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Payment</span>
+        <span id="sPayment"></span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Status</span>
+        <span id="sStatus"></span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Enrolled</span>
+        <span id="sEnrolled"></span>
+      </div>
+
+      <div id="actions" style="margin-top:20px;"></div>
+    </div>
+  </div>
+
+  <div class="back">
+    <a href="apply.html">Apply Now</a> &nbsp;·&nbsp; <a href="student-login.html">Student Login</a> &nbsp;·&nbsp; <a href="index.html">Home</a>
+  </div>
+</div>
+
+<script src="assets/js/csrf.js"></script>
+<script>
+async function checkStatus(e) {
+  e.preventDefault();
+  var btn = document.getElementById('checkBtn');
+  var err = document.getElementById('errorMsg');
+  var res = document.getElementById('result');
+  var email = document.getElementById('emailInput').value.trim();
+
+  err.style.display = 'none';
+  res.style.display = 'none';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Checking…';
+
+  try {
+    var r = await fetch('/api/applicants/check-status?email=' + encodeURIComponent(email));
+    var data = await r.json();
+
+    if (!r.ok) {
+      err.textContent = data.error || 'Could not find your application.';
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Check Status';
+      return;
+    }
+
+    document.getElementById('rName').textContent = data.fullName;
+    document.getElementById('rTrack').textContent = data.track + ' Programme';
+
+    // Applied date
+    var applied = new Date(data.appliedAt);
+    document.getElementById('sApplied').innerHTML = '<span class="badge badge-green">Submitted ' + applied.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) + '</span>';
+
+    // Email verified
+    document.getElementById('sVerified').innerHTML = data.emailVerified
+      ? '<span class="badge badge-green">Verified</span>'
+      : '<span class="badge badge-orange">Pending</span>';
+
+    // Payment
+    document.getElementById('sPayment').innerHTML = data.feePaid
+      ? '<span class="badge badge-green">Paid</span>'
+      : '<span class="badge badge-red">Unpaid</span>';
+
+    // Status
+    var statusMap = {
+      'Pending': 'badge-orange', 'Reviewed': 'badge-blue',
+      'Accepted': 'badge-green', 'Rejected': 'badge-red'
+    };
+    document.getElementById('sStatus').innerHTML = '<span class="badge ' + (statusMap[data.status] || 'badge-muted') + '">' + data.status + '</span>';
+
+    // Enrolled
+    document.getElementById('sEnrolled').innerHTML = data.enrolled
+      ? '<span class="badge badge-green">Yes — Student Account Active</span>'
+      : '<span class="badge badge-muted">Not yet</span>';
+
+    // Actions
+    var actions = document.getElementById('actions');
+    actions.innerHTML = '';
+    if (data.enrolled) {
+      actions.innerHTML = '<a href="student-login.html" class="action-link action-primary">Go to Student Login</a>';
+    } else if (data.paymentUrl) {
+      actions.innerHTML = '<a href="' + data.paymentUrl + '" class="action-link action-primary">Complete Payment</a>';
+    } else if (!data.emailVerified) {
+      actions.innerHTML = '<span style="font-size:13px;color:var(--muted);">Check your inbox for the verification email, or <a href="apply.html" style="color:var(--orange);font-weight:600;">reapply</a> if the link has expired.</span>';
+    }
+
+    res.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Check Status';
+
+  } catch (e) {
+    err.textContent = 'Network error. Please try again.';
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Check Status';
+  }
+}
+</script>
+</body>
+</html>

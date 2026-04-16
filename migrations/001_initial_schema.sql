@@ -695,7 +695,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Get flashcard progress for a student (replaces MongoDB aggregate)
+-- Get flashcard progress for a student
 CREATE OR REPLACE FUNCTION get_flashcard_progress(p_student_id UUID)
 RETURNS TABLE(set_id UUID, total BIGINT, correct BIGINT) AS $$
 BEGIN
@@ -707,7 +707,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Get total blog views (replaces MongoDB aggregate)
+-- Get total blog views
 CREATE OR REPLACE FUNCTION get_total_blog_views()
 RETURNS BIGINT AS $$
 DECLARE

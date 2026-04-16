@@ -4,21 +4,11 @@
 - Node.js 18+ installed locally
 - Git installed
 - Heroku CLI installed (`brew install heroku/brew/heroku` on Mac)
-- MongoDB Atlas free account: https://cloud.mongodb.com
 - Cloudinary free account: https://cloudinary.com
 
 ---
 
-## Step 1: MongoDB Atlas Setup
-1. Create a free cluster at cloud.mongodb.com
-2. Create a database user (Database Access > Add new user)
-3. Whitelist all IPs: Network Access > Add IP Address > `0.0.0.0/0`
-4. Get your connection string: Clusters > Connect > Connect your application
-   - Format: `mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net/goallord`
-
----
-
-## Step 2: Cloudinary Setup
+## Step 1: Cloudinary Setup
 1. Sign up at cloudinary.com (free tier)
 2. Go to Dashboard and copy:
    - Cloud Name
@@ -27,7 +17,7 @@
 
 ---
 
-## Step 3: Local Test (optional but recommended)
+## Step 2: Local Test (optional but recommended)
 ```bash
 cd /path/to/davies
 
@@ -43,7 +33,7 @@ npm start
 
 ---
 
-## Step 4: Heroku Deploy
+## Step 3: Heroku Deploy
 ```bash
 # Login
 heroku login
@@ -53,7 +43,6 @@ heroku create goallord-creativity
 # (or pick your own name)
 
 # Set environment variables
-heroku config:set MONGODB_URI="mongodb+srv://user:pass@cluster.mongodb.net/goallord"
 heroku config:set JWT_SECRET="paste-a-long-random-string-here-minimum-32-chars"
 heroku config:set ADMIN_EMAIL="admin@goallordcreativity.com"
 heroku config:set ADMIN_PASSWORD="YourSecurePassword2026!"
@@ -76,7 +65,7 @@ heroku open
 
 ---
 
-## Step 5: Verify
+## Step 4: Verify
 - **Website:** `https://goallord-creativity.herokuapp.com`
 - **Login:** `https://goallord-creativity.herokuapp.com/login.html`
 - **Dashboard:** `https://goallord-creativity.herokuapp.com/dashboard.html`

@@ -128,6 +128,20 @@ body {
 .bank-tile-row { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
 .bank-tile-row b { color: var(--text); font-weight: 600; }
 .bank-tile-row .num { font-family: monospace; font-size: 14px; color: var(--orange); letter-spacing: 1px; }
+.copy-btn { display: inline-flex; align-items: center; gap: 4px; background: rgba(214,106,31,.12); border: 1px solid rgba(214,106,31,.3); color: var(--orange); border-radius: 5px; padding: 3px 8px; font-size: 10px; font-weight: 700; cursor: pointer; margin-left: 6px; transition: background .15s; }
+.copy-btn:hover { background: rgba(214,106,31,.2); }
+.copy-btn.copied { background: rgba(34,197,94,.15); border-color: rgba(34,197,94,.3); color: var(--green); }
+
+/* ── Progress Steps ── */
+.steps { display: flex; align-items: center; gap: 0; margin-bottom: 8px; }
+.step { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.step.done { color: var(--green); }
+.step.active { color: var(--orange); }
+.step-num { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+.step.done .step-num { background: var(--green); border-color: var(--green); color: #fff; }
+.step.active .step-num { border-color: var(--orange); color: var(--orange); }
+.step-line { width: 32px; height: 2px; background: var(--border); margin: 0 6px; flex-shrink: 0; }
+.step.done + .step-line { background: var(--green); }
 
 /* ── Alerts ── */
 .error-box {
@@ -222,6 +236,15 @@ body {
     </div>
   </div>
 
+  <!-- Progress Steps -->
+  <div class="steps" id="progressSteps">
+    <div class="step done" id="step1"><span class="step-num">✓</span> Verify Email</div>
+    <div class="step-line" style="background:var(--green)"></div>
+    <div class="step active" id="step2"><span class="step-num">2</span> Choose Plan</div>
+    <div class="step-line"></div>
+    <div class="step" id="step3"><span class="step-num">3</span> Pay</div>
+  </div>
+
   <!-- Choose plan -->
   <div class="card">
     <div class="card-label">Choose Your Tuition Plan</div>
@@ -272,13 +295,13 @@ body {
         <div class="bank-tile">
           <div class="bank-tile-title">Account 1</div>
           <div class="bank-tile-row">Bank: <b id="b1name">—</b></div>
-          <div class="bank-tile-row">No: <b class="num" id="b1num">—</b></div>
+          <div class="bank-tile-row">No: <b class="num" id="b1num">—</b> <button class="copy-btn" onclick="copyNum(this,'b1num')">Copy</button></div>
           <div class="bank-tile-row">Name: <b id="b1acct">—</b></div>
         </div>
         <div class="bank-tile">
           <div class="bank-tile-title">Account 2</div>
           <div class="bank-tile-row">Bank: <b id="b2name">—</b></div>
-          <div class="bank-tile-row">No: <b class="num" id="b2num">—</b></div>
+          <div class="bank-tile-row">No: <b class="num" id="b2num">—</b> <button class="copy-btn" onclick="copyNum(this,'b2num')">Copy</button></div>
           <div class="bank-tile-row">Name: <b id="b2acct">—</b></div>
         </div>
       </div>
@@ -350,6 +373,7 @@ body {
   </div>
 </div>
 
+<script src="assets/js/csrf.js"></script>
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
 function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -461,6 +485,12 @@ function choosePlan(p) {
 
   setText('paystackBtn', 'Pay ₦' + fmt(total) + ' Now — Card or Bank (Paystack)');
   document.getElementById('paystackBtn').disabled = false;
+
+  // Advance progress to step 3
+  document.getElementById('step2').className = 'step done';
+  document.getElementById('step2').querySelector('.step-num').textContent = '✓';
+  document.querySelectorAll('.step-line')[1].style.background = 'var(--green)';
+  document.getElementById('step3').className = 'step active';
   setText('feeLabel',    fmt(appFee));
   setText('feeBtnLabel', fmt(total));
   setText('bankFeeLabel', fmt(bankTotal));
@@ -535,6 +565,8 @@ function totalRow(total, sub) {
 function payWithPaystack() {
   const errEl = document.getElementById('mainError');
   errEl.style.display = 'none';
+  const btn = document.getElementById('paystackBtn');
+  if (btn.disabled) return;
 
   if (!plan) {
     errEl.textContent   = 'Please select a tuition plan above before paying.';
@@ -564,7 +596,6 @@ function payWithPaystack() {
   const tuitionNow = plan === 'full' ? (fees.fullTuition || 300000) : (fees.monthlyTuition || 100000);
   const totalCharge = appFee + tuitionNow;
   const ref    = 'ENROL-' + AID + '-' + Date.now();
-  const btn    = document.getElementById('paystackBtn');
 
   let handler;
   try {
@@ -768,6 +799,20 @@ function showReceipt(receipt, fallbackRef) {
 }
 
 // ── Utils ────────────────────────────────────────────────────────
+function copyNum(btn, id) {
+  var text = document.getElementById(id).textContent.trim();
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  }).catch(function() {
+    // Fallback for older browsers
+    var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    btn.textContent = '✓ Copied'; btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
 function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
 function show(id, d='block') { const el = document.getElementById(id); if (el) el.style.display = d; }
 function spinBtn(btn, msg) { btn.disabled = true; btn.innerHTML = '<span class="spin"></span>' + msg; }
@@ -778,8 +823,9 @@ function crash(msg) {
     '<div id="crash" style="background:var(--card);border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:40px;text-align:center;">' +
     '<div style="font-size:40px;margin-bottom:14px;">⚠️</div>' +
     '<h2 style="color:#fca5a5;font-size:17px;margin-bottom:10px;">Something went wrong</h2>' +
-    '<p style="color:var(--muted);font-size:13px;line-height:1.6;max-width:360px;margin:0 auto;">' + msg + '</p>' +
+    '<p id="crashMsg" style="color:var(--muted);font-size:13px;line-height:1.6;max-width:360px;margin:0 auto;"></p>' +
     '<a href="/apply.html" style="display:inline-block;margin-top:20px;color:var(--orange);font-size:13px;">← Back to Apply</a></div>';
+  document.getElementById('crashMsg').textContent = msg;
 }
 </script>
 <script>

@@ -5,8 +5,9 @@ const path       = require('path');
 const http       = require('http');
 const { Server } = require('socket.io');
 const jwt        = require('jsonwebtoken');
-const helmet     = require('helmet');
-const rateLimit  = require('express-rate-limit');
+const helmet       = require('helmet');
+const rateLimit    = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
 
 // Initialize Supabase client (loaded once, reused everywhere)
 require('./lib/supabase');
@@ -84,6 +85,32 @@ app.use('/api/', (req, res, next) => {
     next();
 });
 
+app.use(cookieParser());
+
+// ─── CSRF double-submit cookie ───────────────────────────────
+// Sets a random token cookie; public POST endpoints check that the
+// X-CSRF-Token header matches. GET requests and webhook routes are exempt.
+const csrfCrypto = require('crypto');
+app.use((req, res, next) => {
+  if (!req.cookies || !req.cookies._csrf) {
+    const token = csrfCrypto.randomBytes(24).toString('hex');
+    res.cookie('_csrf', token, { httpOnly: false, sameSite: 'Strict', secure: process.env.NODE_ENV === 'production', path: '/' });
+  }
+  next();
+});
+
+function csrfCheck(req, res, next) {
+  // Skip non-mutating methods, webhooks, and file uploads
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+  if (req.path.includes('/upload')) return next();
+  const cookie = req.cookies && req.cookies._csrf;
+  const header = req.headers['x-csrf-token'];
+  if (!cookie || !header || cookie !== header) {
+    return res.status(403).json({ error: 'Invalid or missing CSRF token. Please refresh the page and try again.' });
+  }
+  next();
+}
+
 // ─── GLOBAL API RATE LIMITER ─────────────────────────────────
 app.use('/api/', rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -160,6 +187,9 @@ app.get('/api/config/public', (req, res) => {
     }
   });
 });
+
+// ─── CSRF check on all mutating API calls ────────────────────
+app.use('/api/', csrfCheck);
 
 // ─── API ROUTES ───────────────────────────────────────────────
 app.use('/api/auth',          require('./routes/auth'));
@@ -241,13 +271,17 @@ const PORT = process.env.PORT || 3000;
     const { startReminderCron } = require('./utils/taskReminders');
     startReminderCron();
 
-    // ── Daily checks (payments + deadline reminders) ─────────────
+    // ── Daily checks (payments + deadline reminders + applicant nudge) ──
     const { runOverdueCheck }      = require('./routes/payments');
     const { runDeadlineReminders } = require('./routes/assignments');
+    const { runApplicantPaymentReminders } = require('./utils/applicantReminders');
+    const { runPaymentRecovery } = require('./utils/paymentRecovery');
 
     async function runDailyChecks() {
       await runOverdueCheck().catch(e => console.error('Overdue check failed:', e.message));
       await runDeadlineReminders().catch(e => console.error('Deadline reminders failed:', e.message));
+      await runApplicantPaymentReminders().catch(e => console.error('Applicant payment reminders failed:', e.message));
+      await runPaymentRecovery().catch(e => console.error('Payment recovery failed:', e.message));
     }
 
     // Run once on startup (after 30s), then every 24h

@@ -548,4 +548,24 @@ function contactReplyEmail({ name, replyBody }) {
 </body></html>`;
 }
 
-module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail, suspensionEmail, graduationEmail, reactivationEmail };
+function applicantPaymentReminderEmail({ fullName, track, paymentUrl }) {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0F1115;font-family:'Segoe UI',system-ui,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;padding:40px 20px;">
+<tr><td>
+  <h2 style="color:#D66A1F;font-size:20px;margin:0 0 16px;">Hi ${fullName},</h2>
+  <p style="color:#A0A6B3;font-size:15px;line-height:1.7;margin:0 0 16px;">
+    We noticed you verified your email for the <strong style="color:#F4F6FA;">${track || 'Academy'}</strong> programme but haven't completed your enrolment payment yet.
+  </p>
+  <p style="color:#A0A6B3;font-size:15px;line-height:1.7;margin:0 0 24px;">
+    Spots are limited for this intake. Complete your payment now to secure your place and receive your student login details instantly.
+  </p>
+  <a href="${paymentUrl}" style="display:inline-block;background:#D66A1F;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">Complete Payment →</a>
+  <p style="color:#555;font-size:13px;margin-top:32px;line-height:1.6;">
+    If you've already paid, please ignore this email. If you have questions, reply to this email or contact us at academy@goallordcreativity.com.
+  </p>
+  <p style="color:#333;font-size:12px;margin-top:24px;">— Goallord Creativity Academy</p>
+</td></tr></table></body></html>`;
+}
+
+module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail, suspensionEmail, graduationEmail, reactivationEmail, applicantPaymentReminderEmail };

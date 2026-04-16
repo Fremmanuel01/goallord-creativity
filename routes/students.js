@@ -21,7 +21,10 @@ router.post('/login', async (req, res) => {
     const student = await studentsDb.findByEmail(email.toLowerCase());
     if (!student) return res.status(401).json({ error: 'Invalid credentials' });
     if (student.status === 'Suspended') return res.status(403).json({ error: 'Account suspended. Contact admin.' });
-    if (!student.application_fee_paid) return res.status(403).json({ error: 'Application fee not paid. Please complete payment to access your dashboard.', paymentRequired: true });
+    if (!student.application_fee_paid) {
+      const applicantRef = student.applicant_ref || '';
+      return res.status(403).json({ error: 'Application fee not paid. Please complete payment to access your dashboard.', paymentRequired: true, applicantId: applicantRef });
+    }
 
     const match = await bcrypt.compare(password, student.password);
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });

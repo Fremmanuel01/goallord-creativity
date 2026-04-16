@@ -57,7 +57,21 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+    <style>
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .tf-field.has-error .tf-input { border-color: #ef4444 !important; }
+    .tf-field .field-error { display:none; font-size:12px; color:#fca5a5; margin-top:4px; }
+    .tf-field.has-error .field-error { display:block; }
+    .nc-wrap.has-error .nice-select { border-color: #ef4444 !important; }
+    .nc-wrap .field-error { display:none; font-size:12px; color:#fca5a5; margin-top:4px; }
+    .nc-wrap.has-error .field-error { display:block; }
+    .form-error-banner { display:none; background:rgba(239,68,68,.09); border:1px solid rgba(239,68,68,.3); color:#fca5a5; border-radius:8px; padding:12px 16px; font-size:13px; margin-bottom:20px; line-height:1.6; }
+    .form-error-banner.show { display:block; }
+    .submit-overlay { display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,17,21,.85); align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+    .submit-overlay.show { display:flex; }
+    .submit-overlay .spin-lg { width:36px; height:36px; border:3px solid rgba(214,106,31,.3); border-top-color:#D66A1F; border-radius:50%; animation:spin .7s linear infinite; }
+    .submit-overlay p { color:#A0A6B3; font-size:15px; }
+    </style>
 </head>
 <body class="counter-scroll">
     <canvas class="cursor-trail d-none d-xl-block" id="trail"></canvas>
@@ -163,7 +177,14 @@
                             <div class="text-center py-5 effectFade fadeUp">
                                 <p class="text-caption text-primary fw-medium letter-space--1 mb-4">APPLICATION RECEIVED</p>
                                 <h2 class="text-display-2 letter-space--3 mb-4">Check Your Email!</h2>
-                                <p class="text-white-64 mb-5">Your application has been submitted. We've sent a verification link to your email — please click it to confirm your address. Check your spam folder if you don't see it within a few minutes.</p>
+                                <p class="text-white-64 mb-3">Your application has been submitted. We've sent a verification link to <strong id="successEmail" class="text-primary"></strong> — please click it to confirm your address.</p>
+                                <p class="text-white-64 mb-2" style="font-size:.9rem;">Check your spam/junk folder if you don't see it within a few minutes. The link expires in <strong style="color:#F4F6FA;">24 hours</strong>.</p>
+                                <p class="mb-5">
+                                    <button type="button" id="resendBtn" class="tf-btn style-troke" style="font-size:13px;padding:8px 20px;margin-top:12px;" onclick="resendVerification()">
+                                        <span class="text-caption fw-medium">RESEND VERIFICATION EMAIL</span>
+                                    </button>
+                                    <span id="resendStatus" style="display:block;margin-top:8px;font-size:13px;color:var(--primary);"></span>
+                                </p>
                                 <div class="d-flex gap-3 justify-content-center flex-wrap">
                                     <a href="academy.html" class="tf-btn style-fill"><span class="text-caption fw-medium">BACK TO ACADEMY</span></a>
                                     <a href="index.html" class="tf-btn style-troke"><span class="text-caption fw-medium">HOME</span></a>
@@ -192,21 +213,25 @@
                                 </div>
 
                                 <!-- Personal Details -->
+                                <div class="form-error-banner" id="formErrorBanner"></div>
                                 <p class="text-caption text-primary fw-medium letter-space--1 mb-4">// PERSONAL DETAILS</p>
                                 <div class="tf-grid-layout sm-col-2">
-                                    <fieldset class="tf-field">
+                                    <fieldset class="tf-field" data-validate="name">
                                         <input class="tf-input" type="text" name="full_name" placeholder required>
                                         <label class="tf-lable">Full Name <span class="text-primary">*</span></label>
+                                        <div class="field-error">Please enter your full name.</div>
                                     </fieldset>
-                                    <fieldset class="tf-field">
+                                    <fieldset class="tf-field" data-validate="email">
                                         <input class="tf-input" type="email" name="email" placeholder required>
                                         <label class="tf-lable">Email Address <span class="text-primary">*</span></label>
+                                        <div class="field-error">Please enter a valid email address.</div>
                                     </fieldset>
                                 </div>
                                 <div class="tf-grid-layout sm-col-2">
-                                    <fieldset class="tf-field">
+                                    <fieldset class="tf-field" data-validate="phone">
                                         <input class="tf-input" type="tel" name="phone" placeholder required>
                                         <label class="tf-lable">Phone / WhatsApp <span class="text-primary">*</span></label>
+                                        <div class="field-error">Please enter a valid phone number.</div>
                                     </fieldset>
                                     <fieldset class="tf-field">
                                         <input class="tf-input" type="text" name="location" placeholder>
@@ -219,7 +244,7 @@
                                 <!-- Programme Selection -->
                                 <p class="text-caption text-primary fw-medium letter-space--1 mb-4">// PROGRAMME SELECTION</p>
                                 <div class="tf-grid-layout sm-col-2">
-                                    <div class="nc-wrap">
+                                    <div class="nc-wrap" id="trackWrap" data-validate="track">
                                         <p class="select-label fs-14 text-white-64 d-sm-none">Track <span class="text-primary">*</span></p>
                                         <div class="nice-select" id="trackSelect">
                                             <span class="current letter-space--1">Choose Your Track</span>
@@ -233,6 +258,7 @@
                                                 <li class="option" data-value="undecided">Not Sure Yet</li>
                                             </ul>
                                         </div>
+                                        <div class="field-error">Please select a track.</div>
                                     </div>
                                     <div class="nc-wrap">
                                         <p class="select-label fs-14 text-white-64 d-sm-none">Experience Level</p>
@@ -283,13 +309,15 @@
 
                                 <!-- Motivation -->
                                 <p class="text-caption text-primary fw-medium letter-space--1 mb-4">// YOUR MOTIVATION</p>
-                                <fieldset class="tf-field">
+                                <fieldset class="tf-field" data-validate="goal">
                                     <input class="tf-input" type="text" name="goal" placeholder required>
                                     <label class="tf-lable">What do you want to achieve after this programme? <span class="text-primary">*</span></label>
+                                    <div class="field-error">Please tell us your goal.</div>
                                 </fieldset>
-                                <fieldset class="tf-field">
+                                <fieldset class="tf-field" data-validate="why">
                                     <input class="tf-input" type="text" name="why" placeholder required>
                                     <label class="tf-lable">Why Goallord Academy? <span class="text-primary">*</span></label>
+                                    <div class="field-error">Please tell us why you want to join.</div>
                                 </fieldset>
                                 <fieldset class="tf-field">
                                     <input class="tf-input" type="text" name="background" placeholder>
@@ -312,6 +340,12 @@
             </div>
         </section>
         <!-- /Application Form -->
+
+        <!-- Submit Overlay -->
+        <div class="submit-overlay" id="submitOverlay">
+            <div class="spin-lg"></div>
+            <p>Submitting your application…</p>
+        </div>
 
         <!-- Footer -->
         <footer class="tf-footer">
@@ -386,6 +420,7 @@
         </div></div></div>
     </div>
 
+    <script src="assets/js/csrf.js"></script>
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.min.js"></script>
     <script src="assets/js/swiper-bundle.min.js"></script>
@@ -456,13 +491,33 @@
             spinner.style.display = 'none';
         });
 
+        // Inline validation on blur
+        $('#applyForm').on('blur', '.tf-input', function () {
+            validateField($(this).closest('.tf-field'));
+        });
+
+        function validateField($field) {
+            var type = $field.data('validate');
+            if (!type) return true;
+            var val = $field.find('.tf-input').val().trim();
+            var valid = true;
+            if (type === 'name')  valid = val.length >= 2;
+            if (type === 'email') valid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val);
+            if (type === 'phone') valid = val.length === 0 || /^[\d\s\-\+\(\)]{7,20}$/.test(val);
+            if (type === 'goal' || type === 'why') valid = val.length > 0;
+            $field.toggleClass('has-error', !valid);
+            return valid;
+        }
+
         $('#applyForm').on('submit', async function (e) {
             e.preventDefault();
-            const $form = $(this);
-            const $btn  = $form.find('button[type="submit"]');
+            var $form = $(this);
+            var $btn  = $form.find('button[type="submit"]');
+            var banner = document.getElementById('formErrorBanner');
+            banner.classList.remove('show');
 
             // Collect nice-select values
-            const trackValueMap = {
+            var trackValueMap = {
                 'ai-software':   'AI Software Development',
                 'ui-ux':         'UI/UX',
                 'wordpress':     'WordPress',
@@ -470,13 +525,30 @@
                 'videography':   'Videography',
                 'undecided':     'Other'
             };
-            const trackDataVal   = $('#trackSelect li.option.selected').data('value') || '';
-            const track          = trackValueMap[trackDataVal] || '';
-            const experience     = $form.find('.nc-wrap').eq(1).find('.current').text().trim();
-            const schedule       = $form.find('.nc-wrap').eq(2).find('.current').text().trim();
-            const howFound       = $form.find('.nc-wrap').eq(3).find('.current').text().trim();
+            var trackDataVal   = $('#trackSelect li.option.selected').data('value') || '';
+            var track          = trackValueMap[trackDataVal] || '';
+            var experience     = $form.find('.nc-wrap').eq(1).find('.current').text().trim();
+            var schedule       = $form.find('.nc-wrap').eq(2).find('.current').text().trim();
+            var howFound       = $form.find('.nc-wrap').eq(3).find('.current').text().trim();
 
-            const payload = {
+            // Validate all fields
+            var allValid = true;
+            $form.find('[data-validate]').each(function () {
+                if (!validateField($(this))) allValid = false;
+            });
+            // Track validation
+            var $trackWrap = $('#trackWrap');
+            if (!track) { $trackWrap.addClass('has-error'); allValid = false; }
+            else { $trackWrap.removeClass('has-error'); }
+
+            if (!allValid) {
+                banner.textContent = 'Please fix the highlighted fields before submitting.';
+                banner.classList.add('show');
+                $form.find('.has-error').first()[0].scrollIntoView({ behavior:'smooth', block:'center' });
+                return;
+            }
+
+            var payload = {
                 fullName:   $form.find('[name="full_name"]').val().trim(),
                 email:      $form.find('[name="email"]').val().trim(),
                 phone:      $form.find('[name="phone"]').val().trim(),
@@ -492,23 +564,58 @@
             };
 
             $btn.prop('disabled', true).text('Submitting…');
+            document.getElementById('submitOverlay').classList.add('show');
 
             try {
-                const res  = await fetch('/api/applicants', {
+                var res  = await fetch('/api/applicants', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                const data = await res.json();
+                var data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'Submission failed');
+                document.getElementById('submitOverlay').classList.remove('show');
+                window._applicantId = data.id;
+                document.getElementById('successEmail').textContent = payload.email;
                 $form.addClass('d-none');
                 $('#applySuccess').removeClass('d-none');
             } catch (err) {
-                alert(err.message);
+                document.getElementById('submitOverlay').classList.remove('show');
+                banner.textContent = err.message;
+                banner.classList.add('show');
+                banner.scrollIntoView({ behavior:'smooth', block:'center' });
                 $btn.prop('disabled', false).text('SUBMIT APPLICATION');
             }
         });
     });
+
+    async function resendVerification() {
+        var btn = document.getElementById('resendBtn');
+        var status = document.getElementById('resendStatus');
+        if (!window._applicantId) { status.textContent = 'Please submit the form first.'; return; }
+        btn.disabled = true;
+        btn.querySelector('span').textContent = 'SENDING…';
+        status.textContent = '';
+        try {
+            var res = await fetch('/api/applicants/' + window._applicantId + '/resend-verification', { method: 'POST' });
+            var data = await res.json().catch(function() { return {}; });
+            if (res.ok) {
+                status.style.color = '#22c55e';
+                status.textContent = '✓ Verification email sent — check your inbox and spam folder.';
+                btn.querySelector('span').textContent = 'EMAIL SENT';
+            } else {
+                status.style.color = '#fca5a5';
+                status.textContent = data.error || 'Failed to resend. Please try again later.';
+                btn.disabled = false;
+                btn.querySelector('span').textContent = 'RESEND VERIFICATION EMAIL';
+            }
+        } catch (e) {
+            status.style.color = '#fca5a5';
+            status.textContent = 'Network error. Please try again.';
+            btn.disabled = false;
+            btn.querySelector('span').textContent = 'RESEND VERIFICATION EMAIL';
+        }
+    }
     </script>
 <script>
 (function(){
