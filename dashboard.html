@@ -8970,17 +8970,17 @@ function filterStudents() {
   }
   const statusColors = { Active: 'var(--success)', Suspended: 'var(--warning)', Graduated: '#6a9fff' };
   tbody.innerHTML = filtered.map(s => `
-    <tr style="cursor:pointer" onclick="viewStudent('${s._id}')" onmouseenter="this.style.background='rgba(255,255,255,0.03)'" onmouseleave="this.style.background=''">
+    <tr style="cursor:pointer" onclick="viewStudent('${s._id||s.id}')" onmouseenter="this.style.background='rgba(255,255,255,0.03)'" onmouseleave="this.style.background=''">
       <td style="padding:12px 14px;font-weight:600">${s.fullName||'—'}</td>
       <td style="padding:12px 14px;color:var(--muted);font-size:13px">${s.email||'—'}</td>
       <td style="padding:12px 14px;font-size:13px">${s.track||'—'}</td>
       <td style="padding:12px 14px;font-size:13px">${s.batch?.name || '—'}</td>
       <td style="padding:12px 14px"><span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:${statusColors[s.status]+'22'};color:${statusColors[s.status]}">${s.status}</span></td>
       <td style="padding:12px 14px" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="openEditStudent('${s._id}')">Edit</button>
-        ${s.status === 'Suspended' ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--success)" onclick="reactivateStudent('${s._id}','${(s.fullName||'').replace(/'/g,"\\'")}')">Reactivate</button>` : ''}
-        ${s.status !== 'Graduated' ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:#6a9fff" onclick="graduateStudent('${s._id}','${(s.fullName||'').replace(/'/g,"\\'")}')">Graduate</button>` : ''}
-        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--danger)" onclick="deleteStudent('${s._id}','${s.fullName||''}')">Delete</button>
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="openEditStudent('${s._id||s.id}')">Edit</button>
+        ${s.status === 'Suspended' ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--success)" onclick="reactivateStudent('${s._id||s.id}','${(s.fullName||'').replace(/'/g,"\\'")}')">Reactivate</button>` : ''}
+        ${s.status !== 'Graduated' ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:#6a9fff" onclick="graduateStudent('${s._id||s.id}','${(s.fullName||'').replace(/'/g,"\\'")}')">Graduate</button>` : ''}
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--danger)" onclick="deleteStudent('${s._id||s.id}','${s.fullName||''}')">Delete</button>
       </td>
     </tr>
   `).join('');
