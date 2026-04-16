@@ -499,7 +499,11 @@
         function validateField($field) {
             var type = $field.data('validate');
             if (!type) return true;
-            var val = $field.find('.tf-input').val().trim();
+            // Skip track — validated separately via nice-select
+            if (type === 'track') return true;
+            var input = $field.find('.tf-input');
+            if (!input.length) return true;
+            var val = input.val().trim();
             var valid = true;
             if (type === 'name')  valid = val.length >= 2;
             if (type === 'email') valid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val);
