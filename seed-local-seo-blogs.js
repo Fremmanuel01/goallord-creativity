@@ -48,7 +48,7 @@ const posts = [
 <li>Real client projects so you graduate with an actual portfolio</li>
 </ul>
 
-<p>The program costs <strong>N150,000</strong> for the full 12 weeks. Classes run Tuesday to Thursday, 4pm to 7pm, so you can still keep your day job or attend school while learning. They also offer payment plans if you cannot pay everything upfront.</p>
+<p>The program costs <strong>N300,000</strong> for the full 12 weeks. Classes run Tuesday to Thursday, 4pm to 7pm, so you can still keep your day job or attend school while learning. They also offer payment plans if you cannot pay everything upfront.</p>
 
 <p>What makes Goallord Academy stand out is their focus on getting you job-ready. It is not just theory. By week 8 you are already working on live projects. They have over 50 alumni who have gone on to land real jobs or start freelancing.</p>
 
@@ -90,14 +90,14 @@ const posts = [
 <p>Let me break down what you are looking at cost-wise:</p>
 
 <ul>
-<li><strong>Goallord Academy:</strong> N150,000 for 12 weeks (payment plans available)</li>
+<li><strong>Goallord Academy:</strong> N300,000 for 12 weeks (payment plans available)</li>
 <li><strong>Private tutors:</strong> N50,000 to N300,000 depending on scope and quality</li>
 <li><strong>Online courses (Udemy/Coursera):</strong> N5,000 to N50,000 per course</li>
 <li><strong>Self-study (YouTube):</strong> Free, but costs you 8 to 12 months of your time</li>
 <li><strong>University degree:</strong> N200,000+ per year for four years, and it does not focus on web design</li>
 </ul>
 
-<p>When you factor in time-to-competency, Goallord Academy at N150,000 for 12 weeks gives you the best return on investment. You are paying for speed, structure, mentorship, and a real portfolio.</p>
+<p>When you factor in time-to-competency, Goallord Academy at N300,000 for 12 weeks gives you the best return on investment. You are paying for speed, structure, mentorship, and a real portfolio.</p>
 
 <h2>What Students Actually Say</h2>
 
@@ -117,7 +117,7 @@ const posts = [
 
 <p>If you are serious about learning web design in Onitsha in 2026, here is my honest advice: start with a structured program. You can always supplement with YouTube and online resources later, but get the foundation right first.</p>
 
-<p>Goallord Academy at No. 1 Mission Road, Onitsha is the strongest option available right now. The 12-week program, the pricing at N150,000, the hands-on approach, and the track record of successful alumni make it a smart investment.</p>
+<p>Goallord Academy at No. 1 Mission Road, Onitsha is the strongest option available right now. The 12-week program, the pricing at N300,000, the hands-on approach, and the track record of successful alumni make it a smart investment.</p>
 
 <p>But whatever you choose, just start. The worst thing you can do is keep researching and never actually begin learning. Onitsha needs web designers, and you could be one of them in three months.</p>
 
@@ -173,14 +173,14 @@ const posts = [
 <p><strong>Location:</strong> No. 1 Mission Road, Onitsha</p>
 <p><strong>Programs:</strong> AI Software Development, UI/UX Design, WordPress Development, AI App Development, Videography</p>
 <p><strong>Duration:</strong> 12 weeks per program</p>
-<p><strong>Price:</strong> N80,000 to N150,000 depending on the program</p>
+<p><strong>Price:</strong> N300,000 (payment plans available)</p>
 <p><strong>Schedule:</strong> Tuesday to Thursday, 4pm to 7pm</p>
 
 <p>Goallord Academy takes the top spot for good reasons. They have the most structured curriculum I have seen in Anambra State. Their web design program covers HTML, CSS, JavaScript, Figma, and responsive design in 12 weeks, and students are building real websites by week three.</p>
 
 <p>What really sets Goallord apart is their track record. With over 50 alumni who have gone on to work in tech, they have actual proof that their training works. Their instructors are practicing professionals who work on real client projects, so you are learning from people who do this every day, not just people who read about it.</p>
 
-<p>The pricing is also fair. At N150,000 for the web design program, it is one of the most affordable structured bootcamps in the state. They offer payment plans too, so you do not have to drop the full amount upfront.</p>
+<p>The pricing is also fair. At N300,000 for the full program, it is one of the most affordable structured bootcamps in the state. They offer payment plans too, so you do not have to drop the full amount upfront.</p>
 
 <p>The only limitation is that they currently focus on web design and related fields. If you want to learn mobile app development or data science, you will need to look elsewhere. But for web design, WordPress, digital marketing, and graphics, they are the strongest option in Anambra State.</p>
 
@@ -220,7 +220,7 @@ const posts = [
 
 <ul>
 <li><strong>What do I want to build?</strong> If it is websites, Goallord Academy in Onitsha is your best bet. If it is mobile apps, you might need an online program.</li>
-<li><strong>What is my budget?</strong> If you have N80,000 to N150,000, a structured bootcamp is within reach. If money is tight, start with free resources online and save up.</li>
+<li><strong>What is my budget?</strong> If you have N300,000, a structured bootcamp is within reach. If money is tight, start with free resources online and save up.</li>
 <li><strong>How fast do I need results?</strong> A 12-week bootcamp will get you job-ready faster than self-study or a 4-year degree.</li>
 <li><strong>Do I need in-person support?</strong> If you struggle with self-discipline (most people do), an in-person school with set class times will keep you on track.</li>
 </ul>
@@ -230,7 +230,7 @@ const posts = [
 <p>Here is what you should expect to pay in 2026:</p>
 
 <ul>
-<li><strong>Goallord Academy (Onitsha):</strong> N80,000 to N150,000 for 12 weeks</li>
+<li><strong>Goallord Academy (Onitsha):</strong> N300,000 for 12 weeks</li>
 <li><strong>Informal tutors (Awka/Nnewi):</strong> N30,000 to N200,000 depending on scope</li>
 <li><strong>Online bootcamps:</strong> Free to N500,000 depending on platform</li>
 <li><strong>University degree:</strong> N200,000+ per year for 4 years</li>

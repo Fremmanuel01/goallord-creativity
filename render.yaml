@@ -44,9 +44,9 @@ services:
       - key: APPLICATION_FEE
         value: "20000"
       - key: FULL_TUITION_FEE
-        value: "150000"
+        value: "300000"
       - key: MONTHLY_TUITION_FEE
-        value: "60000"
+        value: "100000"
       - key: BANK_NAME
         sync: false
       - key: BANK_ACCOUNT_NUMBER

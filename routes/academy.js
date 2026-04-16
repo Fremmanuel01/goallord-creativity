@@ -89,8 +89,8 @@ async function seedAcademySettings() {
             { name: 'Felicitas K. Ogbachalu', role: 'WordPress Developer & Instructor', photo: 'assets/images/team members/Kosi.webp', teaches: 'WordPress Track', bio: 'WordPress specialist with experience building sites for schools, churches, and businesses.' }
         ],
         tuition: {
-            inPerson: 150000,
-            inPersonInstallment: '3 monthly payments of \u20A650,000',
+            inPerson: 300000,
+            inPersonInstallment: '3 monthly payments of \u20A6100,000',
             online: 80000,
             onlineNote: 'One-time payment',
             duration: '12 weeks'
