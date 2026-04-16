@@ -44,41 +44,48 @@ async function seedAcademySettings() {
     const count = await academyDb.count();
     if (count > 0) return;
     await academyDb.create({
-        hero_headline: 'Launch Your Career in Web Design & Development',
-        hero_subtext: 'Hands-on, practical training in Onitsha, Nigeria. Learn web design, WordPress development, and digital marketing from real practitioners \u2014 not textbooks.',
+        hero_headline: 'Launch Your Career in AI, Design & Development',
+        hero_subtext: 'Hands-on, practical training in Onitsha, Nigeria. Learn AI software development, UI/UX design, WordPress, AI app development, and videography from real practitioners \u2014 not textbooks.',
         tracks: [
             {
-                name: 'Web Design',
-                description: 'Master Figma, HTML/CSS, and responsive design. Build 4 real portfolio projects. Graduate with a portfolio that gets you hired.',
+                name: 'AI Software Development',
+                description: 'Build production AI-powered software using Python, LLMs, vector databases, and modern agent frameworks. Graduate ready to ship intelligent applications.',
                 duration: '12 Weeks',
-                topics: ['Figma & UI Design', 'HTML & CSS Fundamentals', 'Responsive Web Design', 'GSAP Animations', 'Portfolio Project'],
+                topics: ['Python Fundamentals', 'LLM APIs & Prompt Engineering', 'Vector Databases', 'AI Agent Frameworks', 'Deployment'],
                 icon: 'code'
             },
             {
-                name: 'WordPress Developer',
+                name: 'UI/UX Design',
+                description: 'Learn user research, wireframing, prototyping, and interface design with Figma. Ship production-ready product experiences.',
+                duration: '12 Weeks',
+                topics: ['User Research', 'Wireframing', 'Figma Prototyping', 'Design Systems', 'Usability Testing'],
+                icon: 'palette'
+            },
+            {
+                name: 'WordPress Development',
                 description: 'Build professional WordPress sites and WooCommerce stores from scratch. Learn to charge clients and run your own web business.',
                 duration: '12 Weeks',
                 topics: ['WordPress Setup', 'Theme Development', 'WooCommerce', 'SEO Fundamentals', 'Client Management'],
                 icon: 'globe'
             },
             {
-                name: 'Digital Marketing',
-                description: 'Learn SEO, Google Ads, social media strategy, and analytics. Get certified and start generating results for businesses.',
+                name: 'AI App Development',
+                description: 'Build mobile and web apps powered by AI. Learn React Native, API integration, and how to ship AI-driven products users love.',
                 duration: '12 Weeks',
-                topics: ['SEO Strategy', 'Google Ads', 'Social Media Marketing', 'Analytics & Reporting', 'Content Strategy'],
+                topics: ['React & React Native', 'API Integration', 'AI Feature Integration', 'App Deployment', 'Product Design'],
                 icon: 'search'
             },
             {
-                name: 'Brand Identity & Graphics',
-                description: 'Learn logo design, visual identity systems, brand guidelines, social media graphics, and print design using Adobe Creative Suite and Canva.',
+                name: 'Videography',
+                description: 'Master video production from pre-production to post. Learn cinematography, editing, colour grading, and content creation for brands.',
                 duration: '12 Weeks',
-                topics: ['Logo Design', 'Brand Guidelines', 'Typography & Color Theory', 'Social Media Graphics', 'Print Design'],
-                icon: 'palette'
+                topics: ['Cinematography', 'Video Editing', 'Colour Grading', 'Sound Design', 'Content Strategy'],
+                icon: 'video'
             }
         ],
         instructors: [
-            { name: 'Emmanuel K. Nwabufo', role: 'Founder & Lead Instructor', photo: 'assets/images/section/ceo.webp', teaches: 'Web Design, Custom Development', bio: '5+ years building websites and web apps for businesses across Nigeria and internationally. Founded Goallord in 2020.' },
-            { name: 'Nnaemego Ifeanyi', role: 'Senior Developer & Instructor', photo: 'assets/images/team members/Mr Ifeanyi.webp', teaches: 'WordPress, Web Applications', bio: 'Full-stack developer specializing in WordPress and React. Has built 20+ production websites.' },
+            { name: 'Emmanuel K. Nwabufo', role: 'Founder & Lead Instructor', photo: 'assets/images/section/ceo.webp', teaches: 'AI Software Development, Custom Development', bio: '5+ years building websites and web apps for businesses across Nigeria and internationally. Founded Goallord in 2020.' },
+            { name: 'Nnaemego Ifeanyi', role: 'Senior Developer & Instructor', photo: 'assets/images/team members/Mr Ifeanyi.webp', teaches: 'WordPress, AI App Development', bio: 'Full-stack developer specializing in WordPress and React. Has built 20+ production websites.' },
             { name: 'Felicitas K. Ogbachalu', role: 'WordPress Developer & Instructor', photo: 'assets/images/team members/Kosi.webp', teaches: 'WordPress Track', bio: 'WordPress specialist with experience building sites for schools, churches, and businesses.' }
         ],
         tuition: {

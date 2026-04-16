@@ -84,9 +84,11 @@ async function seedProducts() {
 
   const defaults = [
     // Application Fees (for academy — not shown in public store)
-    { name: 'Web Design Academy Fee',        category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for Web Design track', type: '', features: [], demo_url: '', download_url: '' },
-    { name: 'WordPress Academy Fee',         category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for WordPress track', type: '', features: [], demo_url: '', download_url: '' },
-    { name: 'Digital Marketing Academy Fee', category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for Digital Marketing track', type: '', features: [], demo_url: '', download_url: '' },
+    { name: 'AI Software Development Academy Fee', category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for AI Software Development track', type: '', features: [], demo_url: '', download_url: '' },
+    { name: 'UI/UX Design Academy Fee',             category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for UI/UX Design track', type: '', features: [], demo_url: '', download_url: '' },
+    { name: 'WordPress Academy Fee',                category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for WordPress track', type: '', features: [], demo_url: '', download_url: '' },
+    { name: 'AI App Development Academy Fee',       category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for AI App Development track', type: '', features: [], demo_url: '', download_url: '' },
+    { name: 'Videography Academy Fee',              category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for Videography track', type: '', features: [], demo_url: '', download_url: '' },
 
     // Templates
     { name: 'Agency Pro Template',   category: 'Template', price: 79,  currency: 'USD', type: 'HTML/CSS/JS',    description: 'Premium agency website template with GSAP animations, dark theme, responsive design, and modern layout sections.',     features: ['GSAP Animations', 'Dark Theme', 'Responsive', '15+ Sections', 'Contact Form', 'SEO Optimized'] },
