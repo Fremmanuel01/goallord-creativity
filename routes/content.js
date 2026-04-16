@@ -75,10 +75,10 @@ async function seedContent() {
         posts: [
           { id: 1, title: 'WordPress vs Custom Website: Which Should Your Business Choose in 2026?', category: 'WordPress', date: 'Feb 2026', readTime: '6 min', image: 'assets/images/portfolio/img-2.jpg', url: 'blog-single.html' },
           { id: 2, title: 'Local SEO for Nigerian Businesses: Rank on Google Without a Big Budget',  category: 'SEO',       date: 'Jan 2026', readTime: '7 min', image: 'assets/images/portfolio/img-3.jpg', url: 'blog-single.html' },
-          { id: 3, title: '5 Signs Your Website Is Costing You Customers (And How to Fix It)',       category: 'Web Design', date: 'Dec 2025', readTime: '5 min', image: 'assets/images/portfolio/img-4.jpg', url: 'blog-single.html' },
-          { id: 4, title: 'Launching an E-commerce Store in Nigeria: The Complete 2026 Checklist',   category: 'Digital Marketing', date: 'Nov 2025', readTime: '9 min', image: 'assets/images/portfolio/img-5.jpg', url: 'blog-single.html' },
+          { id: 3, title: '5 Signs Your Website Is Costing You Customers (And How to Fix It)',       category: 'Technology', date: 'Dec 2025', readTime: '5 min', image: 'assets/images/portfolio/img-4.jpg', url: 'blog-single.html' },
+          { id: 4, title: 'Launching an E-commerce Store in Nigeria: The Complete 2026 Checklist',   category: 'E-commerce', date: 'Nov 2025', readTime: '9 min', image: 'assets/images/portfolio/img-5.jpg', url: 'blog-single.html' },
           { id: 5, title: 'How to Validate Your Web App Idea Before Spending a Single Naira',        category: 'Business', date: 'Oct 2025', readTime: '6 min', image: 'assets/images/portfolio/img-6.jpg', url: 'blog-single.html' },
-          { id: 6, title: 'Starting a Web Design Career in Nigeria: What No One Tells You',          category: 'Web Design', date: 'Sep 2025', readTime: '4 min', image: 'assets/images/portfolio/img-7.jpg', url: 'blog-single.html' },
+          { id: 6, title: 'Starting a Tech Career in Nigeria: What No One Tells You',                category: 'Career', date: 'Sep 2025', readTime: '4 min', image: 'assets/images/portfolio/img-7.jpg', url: 'blog-single.html' },
         ]
       }
     },

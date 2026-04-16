@@ -8,7 +8,7 @@ const posts = [
     title: 'Where to Learn Web Design in Onitsha in 2026: Your Complete Guide',
     excerpt: 'Looking for where to learn web design in Onitsha? This guide covers every option available in 2026, from coding schools to self-study, and helps you pick the right path.',
     category: 'Academy',
-    tags: ['Web Design', 'Onitsha', 'Training', 'Coding School', 'Anambra'],
+    tags: ['Technology', 'Onitsha', 'Training', 'Coding School', 'Anambra'],
     author: 'Emmanuel Nwabufo',
     authorAvatar: 'assets/images/section/ceo.webp',
     readTime: '8 min read',
@@ -171,7 +171,7 @@ const posts = [
 <h3>1. Goallord Academy, Onitsha</h3>
 
 <p><strong>Location:</strong> No. 1 Mission Road, Onitsha</p>
-<p><strong>Programs:</strong> Web Design, WordPress Development, Digital Marketing, Brand Identity and Graphics</p>
+<p><strong>Programs:</strong> AI Software Development, UI/UX Design, WordPress Development, AI App Development, Videography</p>
 <p><strong>Duration:</strong> 12 weeks per program</p>
 <p><strong>Price:</strong> N80,000 to N150,000 depending on the program</p>
 <p><strong>Schedule:</strong> Tuesday to Thursday, 4pm to 7pm</p>

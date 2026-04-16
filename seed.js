@@ -22,35 +22,35 @@ async function seed() {
     {
       name:       'Batch Alpha 2026',
       number:     1,
-      track:      'Web Design',
+      track:      'AI Software Development',
       isActive:   true,
       startDate:  new Date('2026-01-06'),
       endDate:    new Date('2026-04-06'),
       totalWeeks: 12,
       classDays:  ['Tuesday', 'Wednesday', 'Thursday'],
-      notes:      'First cohort of 2026. Focus on HTML, CSS, Figma, and WordPress.'
+      notes:      'First cohort of 2026. Focus on Python, LLMs, and AI agent frameworks.'
     },
     {
       name:       'Batch Beta 2026',
       number:     2,
-      track:      'Digital Marketing',
+      track:      'AI App Development',
       isActive:   false,
       startDate:  new Date('2026-04-07'),
       endDate:    new Date('2026-06-07'),
-      totalWeeks: 8,
+      totalWeeks: 12,
       classDays:  ['Wednesday'],
-      notes:      'Digital marketing cohort. Covers SEO, social media, and paid ads.'
+      notes:      'AI app development cohort. Covers React Native, API integration, and AI features.'
     },
     {
       name:       'Batch Gamma 2025',
       number:     3,
-      track:      'Brand Identity',
+      track:      'UI/UX',
       isActive:   false,
       startDate:  new Date('2025-09-01'),
       endDate:    new Date('2025-12-01'),
       totalWeeks: 12,
       classDays:  ['Tuesday', 'Thursday'],
-      notes:      'Completed cohort — Brand Identity track.'
+      notes:      'Completed cohort — UI/UX Design track.'
     }
   ]);
   console.log(`  ✓ Created: ${batchA.name}, ${batchB.name}, ${batchC.name}`);
@@ -67,7 +67,7 @@ async function seed() {
       password:       pw,
       phone:          '08012345601',
       bio:            'UI/UX designer and front-end developer with 6 years of experience building web products for startups across Africa.',
-      specialization: 'Web Design & Frontend Development',
+      specialization: 'AI Software Development',
       batches:        [batchA._id],
       status:         'Active'
     },
@@ -77,7 +77,7 @@ async function seed() {
       password:       pw,
       phone:          '08012345602',
       bio:            'Digital marketing strategist with expertise in SEO, content strategy, and paid advertising campaigns.',
-      specialization: 'Digital Marketing & SEO',
+      specialization: 'AI App Development',
       batches:        [batchB._id],
       status:         'Active'
     },
@@ -87,7 +87,7 @@ async function seed() {
       password:       pw,
       phone:          '08012345603',
       bio:            'Brand identity designer with a passion for African aesthetics and visual storytelling.',
-      specialization: 'Brand Identity & Graphic Design',
+      specialization: 'UI/UX Design',
       batches:        [batchC._id],
       status:         'Active'
     }
@@ -109,7 +109,7 @@ async function seed() {
       email:     'tunde@student.com',
       password:  await spw('Student2026'),
       phone:     '08091234501',
-      track:     'Web Design',
+      track:     'AI Software Development',
       batch:     batchA._id,
       status:    'Active',
       paymentPlan: 'monthly'
@@ -119,7 +119,7 @@ async function seed() {
       email:     'ngozi@student.com',
       password:  await spw('Student2026'),
       phone:     '08091234502',
-      track:     'Web Design',
+      track:     'AI Software Development',
       batch:     batchA._id,
       status:    'Active',
       paymentPlan: 'full_upfront'
@@ -129,7 +129,7 @@ async function seed() {
       email:     'david@student.com',
       password:  await spw('Student2026'),
       phone:     '08091234503',
-      track:     'Web Design',
+      track:     'AI Software Development',
       batch:     batchA._id,
       status:    'Active',
       paymentPlan: 'monthly'
@@ -139,7 +139,7 @@ async function seed() {
       email:     'blessing@student.com',
       password:  await spw('Student2026'),
       phone:     '08091234504',
-      track:     'Digital Marketing',
+      track:     'AI App Development',
       batch:     batchB._id,
       status:    'Active',
       paymentPlan: 'monthly'
@@ -149,7 +149,7 @@ async function seed() {
       email:     'ifeanyi@student.com',
       password:  await spw('Student2026'),
       phone:     '08091234505',
-      track:     'Brand Identity',
+      track:     'UI/UX',
       batch:     batchC._id,
       status:    'Graduated',
       paymentPlan: 'full_upfront'
