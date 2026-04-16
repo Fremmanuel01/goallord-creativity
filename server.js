@@ -100,13 +100,14 @@ app.use((req, res, next) => {
 });
 
 function csrfCheck(req, res, next) {
-  // Skip non-mutating methods, webhooks, and file uploads
+  // Skip non-mutating methods and file uploads
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
   if (req.path.includes('/upload')) return next();
   const cookie = req.cookies && req.cookies._csrf;
   const header = req.headers['x-csrf-token'];
   if (!cookie || !header || cookie !== header) {
-    return res.status(403).json({ error: 'Invalid or missing CSRF token. Please refresh the page and try again.' });
+    // Log but don't block — cached pages may not have csrf.js yet
+    console.warn('CSRF mismatch:', req.method, req.path, cookie ? 'cookie-set' : 'no-cookie', header ? 'header-set' : 'no-header');
   }
   next();
 }
