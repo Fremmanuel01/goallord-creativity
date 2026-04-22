@@ -32,32 +32,29 @@ Rules:
 - If asked something outside your knowledge, say you'll connect them with the team
 - Respond in the same language the user writes in`;
 
-function callClaude(messages) {
+function callGemini(messages) {
   return new Promise((resolve, reject) => {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) return reject(new Error('GEMINI_API_KEY is not set'));
+
     const body = JSON.stringify({
-      model:      'claude-sonnet-4-6',
-      max_tokens: 400,
-      system:     SYSTEM_PROMPT,
-      messages:   messages.map(m => ({
-        role:    m.role === 'assistant' || m.role === 'agent' ? 'assistant' : 'user',
-        content: m.content
-      }))
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: messages.map(m => ({
+        role:  m.role === 'assistant' || m.role === 'agent' ? 'model' : 'user',
+        parts: [{ text: m.content }]
+      })),
+      generationConfig: { maxOutputTokens: 400, temperature: 0.7 }
     });
 
     const options = {
-      hostname: 'api.anthropic.com',
-      path:     '/v1/messages',
+      hostname: 'generativelanguage.googleapis.com',
+      path:     `/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
       method:   'POST',
       headers:  {
-        'Content-Type':      'application/json',
-        'Content-Length':    Buffer.byteLength(body),
-        'x-api-key':         apiKey,
-        'anthropic-version': '2023-06-01'
+        'Content-Type':   'application/json',
+        'Content-Length': Buffer.byteLength(body)
       }
     };
-
-    if (!apiKey) return reject(new Error('ANTHROPIC_API_KEY is not set'));
 
     const req = https.request(options, res => {
       let data = '';
@@ -65,14 +62,14 @@ function callClaude(messages) {
       res.on('end', () => {
         try {
           const parsed = JSON.parse(data);
-          const text   = parsed?.content?.[0]?.text;
+          const text   = parsed?.candidates?.[0]?.content?.parts?.[0]?.text;
           if (!text) {
             const detail = parsed?.error?.message || JSON.stringify(parsed).slice(0, 400);
-            return reject(new Error(`Anthropic API ${res.statusCode}: ${detail}`));
+            return reject(new Error(`Gemini API ${res.statusCode}: ${detail}`));
           }
           resolve(text);
         } catch (e) {
-          reject(new Error(`Anthropic parse fail (${res.statusCode}): ${data.slice(0, 300)}`));
+          reject(new Error(`Gemini parse fail (${res.statusCode}): ${data.slice(0, 300)}`));
         }
       });
     });
@@ -157,8 +154,8 @@ router.post('/', chatLimiter, async (req, res) => {
       }
     }
 
-    // AI mode — call Claude
-    const reply = await callClaude(messages);
+    // AI mode — call Gemini
+    const reply = await callGemini(messages);
     await conversationsDb.addMessage(convo.id, { role: 'assistant', content: reply });
 
     // Notify dashboard in real-time

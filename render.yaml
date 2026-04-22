@@ -32,7 +32,7 @@ services:
         sync: false
       - key: EMAIL_FROM
         sync: false
-      - key: ANTHROPIC_API_KEY
+      - key: GEMINI_API_KEY
         sync: false
       - key: ADMIN_EMAIL
         sync: false
