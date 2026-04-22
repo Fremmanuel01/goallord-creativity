@@ -13,6 +13,7 @@ const cookieParser = require('cookie-parser');
 require('./lib/supabase');
 
 const app        = express();
+app.set('trust proxy', 1);
 const httpServer = http.createServer(app);
 const io         = new Server(httpServer, { cors: { origin: ['https://goallordcreativity.com', 'https://www.goallordcreativity.com', 'http://localhost:3000'] } });
 

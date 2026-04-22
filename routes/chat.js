@@ -57,6 +57,8 @@ function callClaude(messages) {
       }
     };
 
+    if (!apiKey) return reject(new Error('ANTHROPIC_API_KEY is not set'));
+
     const req = https.request(options, res => {
       let data = '';
       res.on('data', c => { data += c; });
@@ -64,9 +66,14 @@ function callClaude(messages) {
         try {
           const parsed = JSON.parse(data);
           const text   = parsed?.content?.[0]?.text;
-          if (!text) return reject(new Error('Empty response'));
+          if (!text) {
+            const detail = parsed?.error?.message || JSON.stringify(parsed).slice(0, 400);
+            return reject(new Error(`Anthropic API ${res.statusCode}: ${detail}`));
+          }
           resolve(text);
-        } catch (e) { reject(e); }
+        } catch (e) {
+          reject(new Error(`Anthropic parse fail (${res.statusCode}): ${data.slice(0, 300)}`));
+        }
       });
     });
     req.on('error', reject);
