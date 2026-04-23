@@ -3645,6 +3645,29 @@
             setTimeout(function() { msgArea.scrollTop = msgArea.scrollHeight; }, 50);
         }
 
+        function glChatLinkify(text) {
+            var escaped = String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+            // Full URLs
+            escaped = escaped.replace(/\bhttps?:\/\/[^\s<>"']+[^\s<>"'.,;:!?)]/g, function(u) {
+                return '<a class="gl-chat-link gl-chat-link--ext" href="' + u + '" target="_blank" rel="noopener">' + u + '</a>';
+            });
+            // Emails
+            escaped = escaped.replace(/\b[\w.+-]+@[\w-]+\.[\w.-]+\b/g, function(e) {
+                return '<a class="gl-chat-link gl-chat-link--ext" href="mailto:' + e + '">' + e + '</a>';
+            });
+            // Relative page paths like /apply.html — render as a small pill
+            escaped = escaped.replace(/(^|[\s(])(\/[a-zA-Z0-9_\-\/]+\.html)\b/g, function(m, pre, u) {
+                var label = u.replace(/^\//, '').replace(/\.html$/, '');
+                return pre + '<a class="gl-chat-link gl-chat-link--path" href="' + u + '">' + label + '</a>';
+            });
+            return escaped;
+        }
+
         function addMsg(role, text, agentName) {
             var div    = document.createElement('div');
             var isUser = role === 'user';
@@ -3661,7 +3684,11 @@
 
             var bubble = document.createElement('div');
             bubble.className = 'gl-chat-bubble';
-            bubble.textContent = text;
+            if (isUser) {
+                bubble.textContent = text;
+            } else {
+                bubble.innerHTML = glChatLinkify(text);
+            }
             var meta = document.createElement('span');
             meta.className = 'gl-chat-time';
             meta.textContent = timeStr();
