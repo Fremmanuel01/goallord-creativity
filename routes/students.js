@@ -350,11 +350,13 @@ router.post('/', requireAuth, async (req, res) => {
 // row. Matches by applicant_ref (UUID) first, then by email
 // (case-insensitive). Each field is only overwritten when the student's
 // value is empty AND the applicant has a non-empty value, so this is
-// always safe to re-run.
+// always safe to re-run. Pass ?debug=1 to also get a per-row report.
 router.post('/sync-names-from-applicants', requireAuth, async (req, res) => {
   try {
-    // Scan ALL students — we may be backfilling a photo even when the
-    // name is already set, and vice versa.
+    const debug = req.query.debug === '1' || req.body.debug === true;
+
+    // Scan ALL students — backfilling a photo even when the name is set,
+    // and vice versa.
     const { data: rows, error } = await supabase
       .from('students')
       .select('id, email, full_name, profile_picture, applicant_ref');
@@ -363,43 +365,73 @@ router.post('/sync-names-from-applicants', requireAuth, async (req, res) => {
     let namesUpdated  = 0;
     let photosUpdated = 0;
     let alreadyComplete = 0;
-    const missing = [];   // emails/ids with no matching applicant
-    const partial = [];   // applicant matched but had no usable data
+    const missing = [];
+    const partial = [];
+    const report  = []; // per-row diagnostic when ?debug=1
 
     for (const s of rows || []) {
       const studentName  = (s.full_name || '').trim();
       const studentPhoto = (s.profile_picture || '').trim();
-      if (studentName && studentPhoto) { alreadyComplete++; continue; }
+      const row = {
+        id: s.id,
+        email: s.email || '',
+        hadName: !!studentName,
+        hadPhoto: !!studentPhoto,
+        hadApplicantRef: !!s.applicant_ref
+      };
+
+      if (studentName && studentPhoto) {
+        alreadyComplete++;
+        if (debug) { row.outcome = 'alreadyComplete'; report.push(row); }
+        continue;
+      }
 
       let applicant = null;
+      let matchedBy = null;
       if (s.applicant_ref) {
-        try { applicant = await applicantsDb.findById(s.applicant_ref); } catch (_) {}
+        try {
+          applicant = await applicantsDb.findById(s.applicant_ref);
+          if (applicant) matchedBy = 'ref';
+        } catch (_) {}
       }
       if (!applicant && s.email) {
         try {
           applicant = await applicantsDb.findByEmail(String(s.email).toLowerCase().trim());
+          if (applicant) matchedBy = 'email';
         } catch (_) {}
       }
+      row.matchedBy = matchedBy;
 
-      if (!applicant) { missing.push(s.email || s.id); continue; }
+      if (!applicant) {
+        missing.push(s.email || s.id);
+        if (debug) { row.outcome = 'noApplicantFound'; report.push(row); }
+        continue;
+      }
 
-      const update = {};
       const applicantName  = (applicant.full_name    || '').trim();
       const applicantPhoto = (applicant.profile_photo || '').trim();
+      row.applicantHasName  = !!applicantName;
+      row.applicantHasPhoto = !!applicantPhoto;
 
+      const update = {};
       if (!studentName  && applicantName)  update.full_name       = applicantName;
       if (!studentPhoto && applicantPhoto) update.profile_picture = applicantPhoto;
-      // Backfill applicant_ref while we're here, if the student didn't have it.
       if (!s.applicant_ref && applicant.id) update.applicant_ref = applicant.id;
 
       if (Object.keys(update).length === 0) {
         partial.push(s.email || s.id);
+        if (debug) { row.outcome = 'applicantBlank'; report.push(row); }
         continue;
       }
 
       await studentsDb.update(s.id, update);
-      if (update.full_name)        namesUpdated++;
-      if (update.profile_picture)  photosUpdated++;
+      if (update.full_name)       namesUpdated++;
+      if (update.profile_picture) photosUpdated++;
+      if (debug) {
+        row.outcome = 'updated';
+        row.applied = Object.keys(update);
+        report.push(row);
+      }
     }
 
     const summary = {
@@ -410,7 +442,8 @@ router.post('/sync-names-from-applicants', requireAuth, async (req, res) => {
       missing,
       partial
     };
-    if (namesUpdated || photosUpdated) {
+    if (debug) summary.report = report;
+    if (namesUpdated || photosUpdated || debug) {
       console.log('[sync-from-applicants]', summary);
     }
     res.json(summary);
