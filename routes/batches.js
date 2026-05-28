@@ -39,7 +39,9 @@ router.get('/:id', requireAuth, async (req, res) => {
 // POST /api/batches
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { name, number, track, classDays, isActive, startDate, endDate, totalWeeks, description } = req.body;
+    // The admin form sends `description` (legacy field name); the DB column is `notes`.
+    // Accept either, write to `notes`.
+    const { name, number, track, classDays, isActive, startDate, endDate, totalWeeks, description, notes } = req.body;
     const doc = {
       name,
       number,
@@ -49,7 +51,7 @@ router.post('/', requireAuth, async (req, res) => {
       start_date:   startDate,
       end_date:     endDate,
       total_weeks:  totalWeeks,
-      description:  description || '',
+      notes:        (notes !== undefined ? notes : (description !== undefined ? description : '')) || '',
       created_by:   req.user.id
     };
     const batch = await batchesDb.create(doc);
@@ -62,7 +64,8 @@ router.post('/', requireAuth, async (req, res) => {
 // PATCH /api/batches/:id
 router.patch('/:id', requireAuth, async (req, res) => {
   try {
-    const { name, number, track, classDays, isActive, startDate, endDate, totalWeeks, description } = req.body;
+    // Accept either `description` (legacy) or `notes`; DB column is `notes`.
+    const { name, number, track, classDays, isActive, startDate, endDate, totalWeeks, description, notes } = req.body;
 
     // If setting isActive=true, deactivate all others first
     if (isActive === true) {
@@ -84,7 +87,8 @@ router.patch('/:id', requireAuth, async (req, res) => {
     if (startDate !== undefined)   update.start_date = startDate;
     if (endDate !== undefined)     update.end_date = endDate;
     if (totalWeeks !== undefined)  update.total_weeks = totalWeeks;
-    if (description !== undefined) update.description = description;
+    if (notes !== undefined)            update.notes = notes;
+    else if (description !== undefined) update.notes = description;
 
     const batch = await batchesDb.update(req.params.id, update);
     if (!batch) return res.status(404).json({ error: 'Not found' });
