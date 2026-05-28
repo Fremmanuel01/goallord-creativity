@@ -8937,6 +8937,24 @@ async function loadStudents() {
   if (!res) return;
   allStudents = res.data || [];
 
+  // Normalise to camelCase across the table so a missed key transform
+  // (which has been seen on this codebase — see loadApplicantsFromAPI)
+  // doesn't blank the row.
+  allStudents = allStudents.map(s => ({
+    ...s,
+    _id:             s._id             || s.id,
+    fullName:        s.fullName        || s.full_name        || '',
+    profilePicture:  s.profilePicture  || s.profile_picture  || '',
+    applicantRef:    s.applicantRef    || s.applicant_ref    || '',
+    paymentStatus:   s.paymentStatus   || s.payment_status   || '',
+    // Keep batch nested object as-is; the populate may already be camelCased.
+  }));
+  if (allStudents.length) {
+    // Helpful for diagnosing data-shape issues without server access.
+    // Logs a single sample to console — no PII risk because the admin is signed in.
+    try { console.debug('[students] sample row keys:', Object.keys(allStudents[0])); } catch (_) {}
+  }
+
   // Auto-backfill names + photos from the applicants table once per
   // page load when at least one student looks incomplete. The manual
   // "Sync from applicants" button can re-run it on demand.
@@ -9086,7 +9104,14 @@ async function syncStudentsFromApplicants(verbose) {
     // Re-fetch so the table reflects the updates
     const refresh = await apiFetch('/api/students?limit=500');
     if (refresh) {
-      allStudents = refresh.data || [];
+      allStudents = (refresh.data || []).map(s => ({
+        ...s,
+        _id:             s._id             || s.id,
+        fullName:        s.fullName        || s.full_name        || '',
+        profilePicture:  s.profilePicture  || s.profile_picture  || '',
+        applicantRef:    s.applicantRef    || s.applicant_ref    || '',
+        paymentStatus:   s.paymentStatus   || s.payment_status   || ''
+      }));
       filterStudents();
     }
     return;
