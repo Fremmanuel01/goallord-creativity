@@ -4688,7 +4688,9 @@ function renderApplicants(list) {
             <svg style="pointer-events:none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
           ${a.applicationFeeRef && !a.applicationFeePaid
-            ? `<button title="Bank transfer ref: ${a.applicationFeeRef}" style="padding:4px 9px;font-size:11px;font-weight:600;background:#1E4BFF;color:#fff;border:none;border-radius:5px;cursor:pointer;" onclick="confirmApplicantFee('${a.id}','${a.pendingPaymentPlan||'monthly'}')">Confirm Fee ₦</button>`
+            ? (String(a.applicationFeeRef).startsWith('CASH-')
+                ? `<button title="Cash payment ref: ${a.applicationFeeRef}" style="padding:4px 9px;font-size:11px;font-weight:600;background:#D66A1F;color:#fff;border:none;border-radius:5px;cursor:pointer;" onclick="confirmApplicantFee('${a.id}','${a.pendingPaymentPlan||'monthly'}')">Confirm Cash 💵</button>`
+                : `<button title="Bank transfer ref: ${a.applicationFeeRef}" style="padding:4px 9px;font-size:11px;font-weight:600;background:#1E4BFF;color:#fff;border:none;border-radius:5px;cursor:pointer;" onclick="confirmApplicantFee('${a.id}','${a.pendingPaymentPlan||'monthly'}')">Confirm Fee ₦</button>`)
             : a.applicationFeePaid ? `<span style="font-size:11px;color:#22c55e;font-weight:600;">✓ Fee Paid</span>` : ''
           }
           ${(JSON.parse(localStorage.getItem('gl_user') || '{}').role === 'admin') ? `<button style="padding:4px 9px;font-size:11px;font-weight:600;background:#ef4444;color:#fff;border:none;border-radius:5px;cursor:pointer;" onclick="deleteApplicant('${a.id}')" title="Delete applicant">Delete</button>` : ''}
@@ -4699,14 +4701,16 @@ function renderApplicants(list) {
 }
 
 async function confirmApplicantFee(id, pendingPlan) {
+  // Method is auto-detected server-side from the ref prefix (CASH-* vs other)
   const plan = confirm(
-    `Confirm bank transfer fee payment for this applicant?\n\nThis will create their student account with plan: ${pendingPlan || 'monthly'}.\n\nOK = Confirm | Cancel = Cancel`
+    `Confirm fee payment for this applicant?\n\nThis will create their student account with plan: ${pendingPlan || 'monthly'}.\n\nOK = Confirm | Cancel = Cancel`
   ) ? pendingPlan || 'monthly' : null;
   if (!plan) return;
   try {
     const res = await apiFetch(`/api/applicants/${id}/confirm-fee`, { method: 'POST', body: JSON.stringify({ paymentPlan: plan }) });
     if (res && res.success) {
-      showToast('Fee confirmed! Student account created and credentials emailed.', 'success');
+      const method = res.method || 'payment';
+      showToast(`${method} confirmed! Student account created and credentials emailed.`, 'success');
       loadApplicantsFromAPI();
     } else {
       showToast((res && res.error) || 'Confirmation failed.', 'error');
@@ -9385,6 +9389,7 @@ function renderPayTable(rows) {
     const receiptData = JSON.stringify(buildPaymentReceipt(r)).replace(/"/g,'&quot;');
     const isPaid = status === 'paid' || status === 'fully_paid';
     const isBankPending = r.method === 'Bank Transfer' && status === 'pending';
+    const isCashPending = String(r.method || '').toLowerCase() === 'cash' && !isPaid;
     return `<tr>
       <td style="padding:12px 14px;font-weight:600">${r.student?.fullName || '—'}<br><span style="font-size:12px;color:var(--muted);font-weight:400">${r.student?.track || ''}</span></td>
       <td style="padding:12px 14px">${PAY_CAT_LABEL[r.category] || r.category || '—'}</td>
@@ -9396,6 +9401,7 @@ function renderPayTable(rows) {
       <td style="padding:12px 14px;display:flex;gap:6px;flex-wrap:wrap;">
         <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick='openEditPayment(${editData})'>Edit</button>
         ${isBankPending ? `<button style="padding:5px 10px;font-size:12px;background:#1E4BFF;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick="confirmBankTransfer('${r._id}',${r.amountDue})">Confirm</button>` : ''}
+        ${isCashPending ? `<button title="${(r.notes||'').replace(/"/g,'&quot;')}" style="padding:5px 10px;font-size:12px;background:#D66A1F;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick="confirmCashPayment('${r._id}')">Confirm Cash 💵</button>` : ''}
         ${(status === 'overdue' || status === 'pending') && !isPaid ? `<button style="padding:5px 10px;font-size:12px;background:rgba(214,106,31,0.15);color:#D66A1F;border:1px solid rgba(214,106,31,0.3);border-radius:6px;cursor:pointer;font-weight:600;" onclick="sendPaymentReminder('${r._id}')">Remind</button>` : ''}
         ${isPaid ? `<button style="padding:5px 10px;font-size:12px;background:#22c55e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick='openReceipt(${receiptData})'>Receipt</button>` : ''}
         ${(JSON.parse(localStorage.getItem('gl_user') || '{}').role === 'admin') ? `<button style="padding:5px 10px;font-size:12px;background:#ef4444;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick="deletePayment('${r._id}')">Delete</button>` : ''}
@@ -9965,6 +9971,17 @@ async function confirmBankTransfer(id, amountDue) {
   if (!confirm('Confirm this bank transfer and mark as paid?')) return;
   const res = await apiFetch(`/api/payments/${id}`, { method: 'PATCH', body: JSON.stringify({ amountPaid: amountDue }) });
   if (!res) return;
+  const updated = await apiFetch(`/api/payments/${id}`);
+  if (updated) openReceipt(buildPaymentReceipt({ ...updated, _id: id }));
+  loadPaymentsPage();
+}
+
+async function confirmCashPayment(id) {
+  if (!confirm('Confirm this cash payment was received in person and mark as paid?')) return;
+  const res = await apiFetch(`/api/payments/${id}/confirm-cash`, { method: 'POST' });
+  if (!res) return;
+  if (res.error) { showToast(res.error, 'error'); return; }
+  showToast('Cash payment confirmed.', 'success');
   const updated = await apiFetch(`/api/payments/${id}`);
   if (updated) openReceipt(buildPaymentReceipt({ ...updated, _id: id }));
   loadPaymentsPage();

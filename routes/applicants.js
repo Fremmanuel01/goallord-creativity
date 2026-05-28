@@ -444,15 +444,58 @@ router.post('/:id/bank-transfer-fee', async (req, res) => {
   }
 });
 
-// POST /api/applicants/:id/confirm-fee — admin: confirm bank transfer, create student
+// POST /api/applicants/:id/cash-application — public (record cash payment, admin confirms)
+router.post('/:id/cash-application', async (req, res) => {
+  try {
+    const { paymentPlan, collectedBy, notes } = req.body || {};
+    if (!paymentPlan || (paymentPlan !== 'full' && paymentPlan !== 'monthly')) {
+      return res.status(400).json({ error: 'paymentPlan must be "full" or "monthly"' });
+    }
+
+    const applicant = await applicantsDb.findById(req.params.id);
+    if (!applicant) return res.status(404).json({ error: 'Application not found' });
+    if (!applicant.email_verified) return res.status(403).json({ error: 'Email not verified' });
+    if (applicant.application_fee_paid) return res.status(400).json({ error: 'Application fee already paid' });
+
+    const cashRef = 'CASH-' + Date.now() + '-' + require('crypto').randomBytes(3).toString('hex').toUpperCase();
+    const stamp = new Date().toISOString();
+    const collected = (collectedBy || '').toString().trim().slice(0, 80);
+    const note = (notes || '').toString().trim().slice(0, 280);
+    const cashNote = `[CASH PAYMENT recorded ${stamp}` +
+      (collected ? ` | collected by: ${collected}` : '') +
+      (note ? ` | notes: ${note}` : '') + ']';
+    const newNotes = (applicant.notes ? applicant.notes + '\n' : '') + cashNote;
+
+    await applicantsDb.update(applicant.id, {
+      application_fee_ref:  cashRef,
+      pending_payment_plan: paymentPlan,
+      notes:                newNotes
+    });
+
+    res.json({
+      success: true,
+      reference: cashRef,
+      message: 'Cash payment recorded. An admin will confirm your payment within 24 hours and email your login details.'
+    });
+  } catch (err) {
+    console.error('cash-application error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/applicants/:id/confirm-fee — admin: confirm bank/cash payment, create student
 router.post('/:id/confirm-fee', requireAuth, async (req, res) => {
   try {
     const applicant = await applicantsDb.findById(req.params.id);
     if (!applicant) return res.status(404).json({ error: 'Application not found' });
     if (applicant.application_fee_paid) return res.status(400).json({ error: 'Fee already confirmed' });
-    if (!applicant.application_fee_ref) return res.status(400).json({ error: 'No bank transfer reference on record' });
+    if (!applicant.application_fee_ref) return res.status(400).json({ error: 'No payment reference on record' });
 
     const paymentPlan = req.body.paymentPlan || applicant.pending_payment_plan || 'monthly';
+
+    // Detect payment method from reference prefix
+    const isCash = String(applicant.application_fee_ref).startsWith('CASH-');
+    const method = req.body.method || (isCash ? 'Cash' : 'Bank Transfer');
 
     await applicantsDb.update(applicant.id, {
       application_fee_paid: true,
@@ -462,13 +505,13 @@ router.post('/:id/confirm-fee', requireAuth, async (req, res) => {
     const existing = await studentsDb.findByEmail(applicant.email);
     if (existing) return res.status(400).json({ error: 'Student account already exists for this email' });
 
-    // Bank transfer covers full amount (app fee + tuition) — mark both as paid
+    // Manual payment (bank or cash) covers full amount (app fee + tuition) — mark both as paid
     const student = await createStudentFromApplicant(applicant, paymentPlan, {
       tuitionPaid: true,
       reference:   applicant.application_fee_ref,
-      method:      'Bank Transfer'
+      method
     });
-    res.json({ success: true, studentId: student.id });
+    res.json({ success: true, studentId: student.id, method });
   } catch (err) {
     console.error('confirm-fee error:', err);
     res.status(500).json({ error: err.message });

@@ -205,6 +205,70 @@ router.post('/:id/bank-transfer', requireStudent, async (req, res) => {
   }
 });
 
+// ── POST /api/payments/:id/cash — student: record cash payment, awaits admin confirm ──
+router.post('/:id/cash', requireStudent, async (req, res) => {
+  try {
+    const { collectedBy, notes } = req.body || {};
+
+    const payment = await paymentsDb.findById(req.params.id);
+    if (!payment) return res.status(404).json({ error: 'Payment not found' });
+    if (String(payment.student_id) !== String(req.student.id))
+      return res.status(403).json({ error: 'Forbidden' });
+
+    const cashRef = 'CASH-' + Date.now() + '-' + require('crypto').randomBytes(3).toString('hex').toUpperCase();
+    const stamp = new Date().toISOString();
+    const collected = (collectedBy || '').toString().trim().slice(0, 80);
+    const note = (notes || '').toString().trim().slice(0, 280);
+    const noteLine = `Cash payment — awaiting admin confirmation` +
+      (collected ? ` | collected by: ${collected}` : '') +
+      (note ? ` | notes: ${note}` : '') +
+      ` | submitted ${stamp}`;
+
+    const updated = await paymentsDb.update(req.params.id, {
+      method: 'Cash',
+      reference: cashRef,
+      notes: noteLine,
+      recorded_by: 'Student (Cash)'
+    });
+
+    res.json({ payment: updated, reference: cashRef });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/payments/:id/confirm-cash — admin: approve cash payment ──
+router.post('/:id/confirm-cash', requireAuth, async (req, res) => {
+  try {
+    const payment = await paymentsDb.findById(req.params.id);
+    if (!payment) return res.status(404).json({ error: 'Payment not found' });
+
+    // Only confirm rows that are still cash-pending (method=Cash and not yet fully paid).
+    const isCashRow = String(payment.method || '').toLowerCase() === 'cash';
+    const alreadyPaid = Number(payment.amount_paid || 0) >= Number(payment.amount_due || 0);
+    if (!isCashRow) return res.status(400).json({ error: 'Payment is not marked as Cash' });
+    if (alreadyPaid)  return res.status(400).json({ error: 'Payment already fully paid' });
+
+    const adminLabel = (req.user && (req.user.name || req.user.email)) || 'Admin';
+    const confirmStamp = new Date().toISOString();
+    const newNotes = (payment.notes ? payment.notes + ' | ' : '') +
+      `confirmed by ${adminLabel} at ${confirmStamp}`;
+
+    const updated = await paymentsDb.update(req.params.id, {
+      amount_paid: payment.amount_due,
+      method: 'Cash',
+      notes: newNotes,
+      recorded_by: adminLabel + ' (Cash confirm)'
+    });
+
+    // Trigger auto-reactivate if applicable (same path as Paystack flow)
+    checkAutoReactivate(payment.student_id).catch(() => {});
+    res.json({ payment: updated, receiptNumber: updated.receipt_number });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── POST /api/payments/:id/email-receipt — admin: email receipt to student ──
 router.post('/:id/email-receipt', requireAuth, async (req, res) => {
   try {

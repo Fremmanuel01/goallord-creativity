@@ -329,6 +329,30 @@ body {
         Submit Reference →
       </button>
     </div>
+
+    <!-- Cash payment (in-person at the academy office) -->
+    <button class="btn btn-secondary" id="cashToggle" onclick="toggleCash()" style="margin-top:10px;">
+      Pay in Cash (at our Onitsha office) ▼
+    </button>
+    <div class="bank-panel" id="cashPanel">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5;">
+        Bring <strong style="color:var(--orange);">₦<span id="cashFeeLabel">20,000</span></strong> in cash to <strong style="color:var(--text);">No. 1 Mission Road, Onitsha</strong>.
+        Record the payment here and our team will confirm within 24 hours.
+        Your login details will be emailed once approved.
+      </p>
+      <div class="field" style="margin-bottom:10px;">
+        <label>Collected by (optional)</label>
+        <input type="text" id="cashCollectedBy" placeholder="e.g. name of the Goallord staff who received it" maxlength="80">
+      </div>
+      <div class="field" style="margin-bottom:10px;">
+        <label>Notes (optional)</label>
+        <input type="text" id="cashNotes" placeholder="any extra detail you'd like admin to see" maxlength="280">
+      </div>
+      <div class="error-box" id="cashError"></div>
+      <button class="btn btn-blue" id="cashSubmitBtn" onclick="submitCashPayment()">
+        Record Cash Payment →
+      </button>
+    </div>
   </div>
 
 </div><!-- /page -->
@@ -508,6 +532,7 @@ function choosePlan(p) {
   setText('feeLabel',    fmt(appFee));
   setText('feeBtnLabel', fmt(total));
   setText('bankFeeLabel', fmt(bankTotal));
+  setText('cashFeeLabel', fmt(bankTotal));
 }
 
 function renderSchedule(p) {
@@ -780,6 +805,55 @@ async function submitBankTransfer() {
     errEl.textContent   = 'Network error. Please try again.';
     errEl.style.display = 'block';
     resetBtn(btn, 'Submit Reference →');
+  }
+}
+
+// ── Cash payment ─────────────────────────────────────────────────
+function toggleCash() {
+  const panel = document.getElementById('cashPanel');
+  const btn   = document.getElementById('cashToggle');
+  const open  = panel.classList.toggle('show');
+  btn.textContent = open ? 'Pay in Cash (at our Onitsha office) ▲' : 'Pay in Cash (at our Onitsha office) ▼';
+}
+
+async function submitCashPayment() {
+  const errEl = document.getElementById('cashError');
+  errEl.style.display = 'none';
+
+  if (!plan) {
+    document.getElementById('mainError').textContent = 'Please select a tuition plan above first.';
+    document.getElementById('mainError').style.display = 'block';
+    document.getElementById('planFull').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  const collectedBy = document.getElementById('cashCollectedBy').value.trim();
+  const notes       = document.getElementById('cashNotes').value.trim();
+  const btn         = document.getElementById('cashSubmitBtn');
+  spinBtn(btn, 'Submitting…');
+
+  try {
+    const res  = await fetch('/api/applicants/' + AID + '/cash-application', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ paymentPlan: plan, collectedBy, notes })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      errEl.textContent   = data.error || 'Submission failed. Please try again.';
+      errEl.style.display = 'block';
+      resetBtn(btn, 'Record Cash Payment →');
+      return;
+    }
+
+    setText('pendingEmail', email);
+    document.getElementById('pendingOverlay').classList.add('show');
+
+  } catch {
+    errEl.textContent   = 'Network error. Please try again.';
+    errEl.style.display = 'block';
+    resetBtn(btn, 'Record Cash Payment →');
   }
 }
 
