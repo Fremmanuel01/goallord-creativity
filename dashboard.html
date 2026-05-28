@@ -9005,13 +9005,37 @@ function filterStudents() {
     allBatchesAdmin.map(b =>
       `<option value="${b._id}" ${selectedId === b._id ? 'selected' : ''}>${escHtml(b.name)}</option>`
     ).join('');
+  const renderStudentAvatar = (s) => {
+    const photo = s.profilePicture && String(s.profilePicture).trim();
+    const initials = (s.fullName || '').trim().split(' ').filter(Boolean).map(p => p[0]).join('').slice(0, 2).toUpperCase();
+    if (photo) {
+      return `<span style="display:inline-flex;width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--bg);border:1px solid var(--border)">
+                <img src="${escHtml(photo)}" alt="" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:var(--orange);color:#fff;font-size:11px;font-weight:700">${escHtml(initials || '?')}</span>
+              </span>`;
+    }
+    if (initials) {
+      return `<span style="display:inline-flex;width:32px;height:32px;border-radius:50%;align-items:center;justify-content:center;flex-shrink:0;background:var(--orange);color:#fff;font-size:11px;font-weight:700">${escHtml(initials)}</span>`;
+    }
+    return `<span style="display:inline-flex;width:32px;height:32px;border-radius:50%;align-items:center;justify-content:center;flex-shrink:0;background:rgba(255,255,255,0.06);color:var(--muted);font-size:13px;font-weight:600;border:1px dashed var(--border)">?</span>`;
+  };
+
   tbody.innerHTML = filtered.map(s => {
     const sid = s._id || s.id;
     const hasName = !!(s.fullName && s.fullName.trim());
+    const avatar = renderStudentAvatar(s);
     const nameCell = hasName
-      ? `<td style="padding:12px 14px;font-weight:600">${escHtml(s.fullName)}</td>`
+      ? `<td style="padding:12px 14px">
+           <div style="display:flex;align-items:center;gap:10px">
+             ${avatar}
+             <span style="font-weight:600">${escHtml(s.fullName)}</span>
+           </div>
+         </td>`
       : `<td style="padding:12px 14px" onclick="event.stopPropagation()">
-           <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--orange);font-weight:600;border:1px dashed rgba(214,106,31,0.4);border-radius:6px" onclick="inlineSetName('${sid}')">＋ Set name</button>
+           <div style="display:flex;align-items:center;gap:10px">
+             ${avatar}
+             <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--orange);font-weight:600;border:1px dashed rgba(214,106,31,0.4);border-radius:6px" onclick="inlineSetName('${sid}')">＋ Set name</button>
+           </div>
          </td>`;
     const currentBatchId = s.batch?._id || '';
     const batchCell = allBatchesAdmin.length === 0
@@ -9246,7 +9270,7 @@ function viewStudent(id) {
   if (!s) return;
 
   // Avatar
-  const initials = s.fullName.trim().split(' ').map(p => p[0] || '').join('').substring(0,2).toUpperCase();
+  const initials = (s.fullName || '').trim().split(' ').filter(Boolean).map(p => p[0] || '').join('').substring(0,2).toUpperCase() || '?';
   document.getElementById('vsInitials').textContent = initials;
   const img = document.getElementById('vsAvatarImg');
   if (s.profilePicture) {
@@ -9257,7 +9281,7 @@ function viewStudent(id) {
     document.getElementById('vsInitials').style.display = '';
   }
 
-  document.getElementById('vsName').textContent = s.fullName;
+  document.getElementById('vsName').textContent = s.fullName || '(no name on file)';
   document.getElementById('vsTrackBadge').textContent = s.track || 'No Track';
   const statusColors = { Active: '#22c55e', Suspended: '#f59e0b', Graduated: '#6a9fff' };
   const sc = statusColors[s.status] || 'var(--muted)';
