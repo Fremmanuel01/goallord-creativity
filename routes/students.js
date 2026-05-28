@@ -346,37 +346,74 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 // ── POST /api/students/sync-names-from-applicants — admin ──────
-// Backfill students that have empty/null full_name from the linked
-// applicant record. Matches by applicant_ref (UUID) first, falls back
-// to applicant.email when ref is missing.
+// Backfill student full_name + profile_picture from the linked applicant
+// row. Matches by applicant_ref (UUID) first, then by email
+// (case-insensitive). Each field is only overwritten when the student's
+// value is empty AND the applicant has a non-empty value, so this is
+// always safe to re-run.
 router.post('/sync-names-from-applicants', requireAuth, async (req, res) => {
   try {
-    // Pull all students with empty/null full_name.
+    // Scan ALL students — we may be backfilling a photo even when the
+    // name is already set, and vice versa.
     const { data: rows, error } = await supabase
       .from('students')
-      .select('id, email, full_name, applicant_ref')
-      .or('full_name.is.null,full_name.eq.');
+      .select('id, email, full_name, profile_picture, applicant_ref');
     if (error) throw error;
 
-    let updated = 0;
-    const missing = [];
+    let namesUpdated  = 0;
+    let photosUpdated = 0;
+    let alreadyComplete = 0;
+    const missing = [];   // emails/ids with no matching applicant
+    const partial = [];   // applicant matched but had no usable data
+
     for (const s of rows || []) {
+      const studentName  = (s.full_name || '').trim();
+      const studentPhoto = (s.profile_picture || '').trim();
+      if (studentName && studentPhoto) { alreadyComplete++; continue; }
+
       let applicant = null;
       if (s.applicant_ref) {
         try { applicant = await applicantsDb.findById(s.applicant_ref); } catch (_) {}
       }
       if (!applicant && s.email) {
-        try { applicant = await applicantsDb.findByEmail(String(s.email).toLowerCase()); } catch (_) {}
+        try {
+          applicant = await applicantsDb.findByEmail(String(s.email).toLowerCase().trim());
+        } catch (_) {}
       }
-      const name = applicant && applicant.full_name && String(applicant.full_name).trim();
-      if (!name) {
-        missing.push(s.email || s.id);
+
+      if (!applicant) { missing.push(s.email || s.id); continue; }
+
+      const update = {};
+      const applicantName  = (applicant.full_name    || '').trim();
+      const applicantPhoto = (applicant.profile_photo || '').trim();
+
+      if (!studentName  && applicantName)  update.full_name       = applicantName;
+      if (!studentPhoto && applicantPhoto) update.profile_picture = applicantPhoto;
+      // Backfill applicant_ref while we're here, if the student didn't have it.
+      if (!s.applicant_ref && applicant.id) update.applicant_ref = applicant.id;
+
+      if (Object.keys(update).length === 0) {
+        partial.push(s.email || s.id);
         continue;
       }
-      await studentsDb.update(s.id, { full_name: name });
-      updated++;
+
+      await studentsDb.update(s.id, update);
+      if (update.full_name)        namesUpdated++;
+      if (update.profile_picture)  photosUpdated++;
     }
-    res.json({ updated, missing, scanned: (rows || []).length });
+
+    const summary = {
+      scanned: (rows || []).length,
+      namesUpdated,
+      photosUpdated,
+      alreadyComplete,
+      missing,
+      partial
+    };
+    if (namesUpdated || photosUpdated) {
+      console.log('[sync-from-applicants]', summary);
+    }
+    res.json(summary);
   } catch (err) {
     console.error('sync-names-from-applicants error:', err);
     res.status(500).json({ error: err.message });

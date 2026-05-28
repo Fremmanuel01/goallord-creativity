@@ -3778,7 +3778,8 @@
           <option>Suspended</option>
           <option>Graduated</option>
         </select>
-        <button class="btn btn-ghost" id="bulkBatchBtn" style="margin-left:auto" onclick="openBulkBatchAssign()">Bulk assign batch ▾</button>
+        <button class="btn btn-ghost" id="syncFromApplicantsBtn" style="margin-left:auto" onclick="syncStudentsFromApplicants(true)" title="Pull missing names + photos from the applicants table">⟳ Sync from applicants</button>
+        <button class="btn btn-ghost" id="bulkBatchBtn" onclick="openBulkBatchAssign()">Bulk assign batch ▾</button>
       </div>
       <div id="stuTableWrap" class="table-wrapper">
         <table style="width:100%;border-collapse:collapse">
@@ -8936,17 +8937,13 @@ async function loadStudents() {
   if (!res) return;
   allStudents = res.data || [];
 
-  // Auto-backfill names from the applicants table once per page load.
-  // Safe + idempotent: only touches students whose full_name is empty.
-  if (!_namesSyncTried && allStudents.some(s => !s.fullName)) {
+  // Auto-backfill names + photos from the applicants table once per
+  // page load when at least one student looks incomplete. The manual
+  // "Sync from applicants" button can re-run it on demand.
+  const needsSync = allStudents.some(s => !s.fullName || !s.profilePicture);
+  if (!_namesSyncTried && needsSync) {
     _namesSyncTried = true;
-    const sync = await apiFetch('/api/students/sync-names-from-applicants', { method: 'POST' });
-    if (sync && sync.updated > 0) {
-      showToast(`Filled in ${sync.updated} name${sync.updated === 1 ? '' : 's'} from applications.`, 'success');
-      // Re-fetch to pick up the updated names
-      const refresh = await apiFetch('/api/students?limit=500');
-      if (refresh) allStudents = refresh.data || [];
-    }
+    await syncStudentsFromApplicants(false); // silent on the "already complete" case
   }
 
   // Populate batch filter dropdowns from students (only batches with students)
@@ -9039,6 +9036,50 @@ function filterStudents() {
       </td>
     </tr>`;
   }).join('');
+}
+
+// ── Sync names + photos from applicants ──────────────────────
+async function syncStudentsFromApplicants(verbose) {
+  const btn = document.getElementById('syncFromApplicantsBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Syncing…'; }
+
+  const res = await apiFetch('/api/students/sync-names-from-applicants', { method: 'POST' });
+
+  if (btn) { btn.disabled = false; btn.textContent = '⟳ Sync from applicants'; }
+
+  if (!res) {
+    if (verbose) showToast('Sync request failed.', 'error');
+    return;
+  }
+
+  const n = Number(res.namesUpdated || 0);
+  const p = Number(res.photosUpdated || 0);
+  if (n > 0 || p > 0) {
+    const parts = [];
+    if (n > 0) parts.push(`${n} name${n === 1 ? '' : 's'}`);
+    if (p > 0) parts.push(`${p} photo${p === 1 ? '' : 's'}`);
+    showToast(`Synced ${parts.join(' + ')} from applications.`, 'success');
+    // Re-fetch so the table reflects the updates
+    const refresh = await apiFetch('/api/students?limit=500');
+    if (refresh) {
+      allStudents = refresh.data || [];
+      filterStudents();
+    }
+    return;
+  }
+
+  // Nothing to update — only speak up when the admin explicitly clicked.
+  if (verbose) {
+    const missing = Number((res.missing || []).length);
+    const partial = Number((res.partial || []).length);
+    if (missing > 0) {
+      showToast(`No matching applicant for ${missing} student${missing === 1 ? '' : 's'} (likely added manually).`, 'error');
+    } else if (partial > 0) {
+      showToast(`${partial} student${partial === 1 ? '' : 's'} matched an applicant, but it has no name or photo on file.`, 'error');
+    } else {
+      showToast('All students already have a name and photo on file.', 'success');
+    }
+  }
 }
 
 // ── Inline single-row editors ─────────────────────────────────
