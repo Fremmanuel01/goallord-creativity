@@ -75,6 +75,16 @@ app.use((req, res, next) => {
     res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(self)');
     next();
 });
+
+// ─── WEBHOOKS (must run BEFORE express.json so the raw body is preserved
+//     for HMAC signature verification). The webhooks router uses express.raw
+//     to read the body and parses JSON itself. ────────────────────────────
+app.use(
+  '/api/webhooks',
+  express.raw({ type: '*/*', limit: '256kb' }),
+  require('./routes/webhooks')
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -101,14 +111,15 @@ app.use((req, res, next) => {
 });
 
 function csrfCheck(req, res, next) {
-  // Skip non-mutating methods and file uploads
+  // Skip non-mutating methods, file uploads, and webhooks (already signed).
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
   if (req.path.includes('/upload')) return next();
+  if (req.path.startsWith('/webhooks/') || req.path === '/webhooks') return next();
   const cookie = req.cookies && req.cookies._csrf;
   const header = req.headers['x-csrf-token'];
   if (!cookie || !header || cookie !== header) {
-    // Log but don't block — cached pages may not have csrf.js yet
-    console.warn('CSRF mismatch:', req.method, req.path, cookie ? 'cookie-set' : 'no-cookie', header ? 'header-set' : 'no-header');
+    console.warn('CSRF blocked:', req.method, req.originalUrl, cookie ? 'cookie-set' : 'no-cookie', header ? 'header-set' : 'no-header');
+    return res.status(403).json({ error: 'Invalid or missing CSRF token. Please refresh the page.' });
   }
   next();
 }
@@ -164,6 +175,14 @@ app.use(express.static(path.join(__dirname, '.'), {
     setHeaders: (res, filePath) => {
         if (filePath.endsWith('.html')) {
             res.setHeader('Cache-Control', 'no-cache');
+        } else if (filePath.endsWith('sw.js')) {
+            // Service worker must always reflect the latest version
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.setHeader('Service-Worker-Allowed', '/');
+        } else if (filePath.endsWith('manifest.json')) {
+            res.setHeader('Cache-Control', 'public, max-age=3600');
+        } else if (filePath.includes(`${path.sep}assets${path.sep}images${path.sep}icons${path.sep}`)) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
         }
     }
 }));
@@ -233,7 +252,7 @@ io.on('connection', socket => {
   // Agents authenticate and join the 'agents' room
   socket.on('agent:join', ({ token }) => {
     try {
-      const user = jwt.verify(token, process.env.JWT_SECRET);
+      const user = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
       socket.user = user;
       socket.join('agents');
       socket.emit('agent:joined', { name: user.name });

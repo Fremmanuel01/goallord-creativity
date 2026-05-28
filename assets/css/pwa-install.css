@@ -1,0 +1,212 @@
+/* Goallord PWA — Install banner + iOS instruction modal
+ * Self-contained; uses prefixed class names so it can't collide with site CSS.
+ */
+
+/* root vars — fall back gracefully if site doesn't define them */
+.gl-pwa, .gl-pwa * { box-sizing: border-box; }
+
+.gl-pwa-banner {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2147483600; /* sit above almost everything except modals */
+  padding-bottom: env(safe-area-inset-bottom);
+  display: none;
+}
+.gl-pwa-banner.is-visible { display: block; }
+
+.gl-pwa-banner__inner {
+  background: rgba(15, 17, 20, .96);
+  backdrop-filter: saturate(160%) blur(14px);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  border: 1px solid rgba(255, 255, 255, .08);
+  color: #f3f3f5;
+  border-radius: 16px;
+  padding: 14px 14px 14px 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .45);
+  max-width: 560px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+  transform: translateY(120%);
+  opacity: 0;
+  transition: transform .35s cubic-bezier(.22, .61, .36, 1), opacity .25s ease;
+}
+.gl-pwa-banner.is-visible .gl-pwa-banner__inner {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.gl-pwa-banner__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  background: #D66A1F;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 6px 18px rgba(214, 106, 31, .35);
+}
+.gl-pwa-banner__icon img { width: 30px; height: 30px; display: block; }
+
+.gl-pwa-banner__body { flex: 1 1 auto; min-width: 0; }
+.gl-pwa-banner__title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 2px;
+  line-height: 1.2;
+}
+.gl-pwa-banner__sub {
+  font-size: 12.5px;
+  color: #c2c5cc;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.gl-pwa-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.gl-pwa-btn {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1;
+  transition: opacity .15s ease, transform .15s ease, background .15s ease;
+}
+.gl-pwa-btn:active { transform: translateY(1px); }
+.gl-pwa-btn--primary { background: #D66A1F; color: #fff; }
+.gl-pwa-btn--primary:hover { opacity: .9; }
+.gl-pwa-btn--ghost { background: transparent; color: #f3f3f5; border-color: rgba(255, 255, 255, .14); }
+.gl-pwa-btn--ghost:hover { background: rgba(255, 255, 255, .06); }
+
+.gl-pwa-banner__close {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: #9aa0a8;
+  font-size: 20px;
+  line-height: 1;
+  padding: 6px 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.gl-pwa-banner__close:hover { color: #fff; }
+
+@media (max-width: 520px) {
+  .gl-pwa-banner__inner { flex-wrap: wrap; padding: 14px; }
+  .gl-pwa-banner__body { flex: 1 1 100%; order: 2; }
+  .gl-pwa-banner__icon { order: 1; }
+  .gl-pwa-banner__close { order: 1; margin-left: auto; }
+  .gl-pwa-banner__actions { flex: 1 1 100%; order: 3; }
+  .gl-pwa-banner__actions .gl-pwa-btn { flex: 1; }
+}
+
+/* ----- iOS instruction modal ----- */
+.gl-pwa-ios {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483640;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, .55);
+  padding: 16px;
+  padding-bottom: env(safe-area-inset-bottom);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+}
+.gl-pwa-ios.is-visible { display: flex; }
+
+.gl-pwa-ios__sheet {
+  background: #14171d;
+  color: #f3f3f5;
+  border-radius: 18px;
+  padding: 22px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .5);
+  transform: translateY(20px);
+  opacity: 0;
+  transition: transform .3s cubic-bezier(.22, .61, .36, 1), opacity .25s ease;
+}
+.gl-pwa-ios.is-visible .gl-pwa-ios__sheet {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.gl-pwa-ios__title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
+}
+.gl-pwa-ios__sub {
+  font-size: 13.5px;
+  color: #b8bcc4;
+  margin: 0 0 16px;
+  line-height: 1.45;
+}
+.gl-pwa-ios__steps { list-style: none; padding: 0; margin: 0 0 18px; }
+.gl-pwa-ios__steps li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255, 255, 255, .06);
+}
+.gl-pwa-ios__steps li:first-child { border-top: 0; }
+.gl-pwa-ios__num {
+  flex-shrink: 0;
+  width: 26px; height: 26px;
+  border-radius: 8px;
+  background: rgba(214, 106, 31, .15);
+  color: #ffb37b;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.gl-pwa-ios__text { font-size: 14px; line-height: 1.45; }
+.gl-pwa-ios__glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .08);
+  margin: 0 4px;
+  vertical-align: -6px;
+}
+.gl-pwa-ios__glyph svg { width: 14px; height: 14px; }
+
+.gl-pwa-ios__close {
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, .14);
+  color: #f3f3f5;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  font-family: inherit;
+}
+.gl-pwa-ios__close:hover { background: rgba(255, 255, 255, .06); }
+
+@media (prefers-reduced-motion: reduce) {
+  .gl-pwa-banner__inner,
+  .gl-pwa-ios__sheet { transition: none; }
+}

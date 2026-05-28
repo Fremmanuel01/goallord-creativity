@@ -86,6 +86,21 @@
   .notif-time { font-size: 11px; color: var(--muted); margin-top: 4px; opacity: 0.7; }
   .notif-empty { padding: 32px 16px; text-align: center; color: var(--muted); font-size: 13px; }
 </style>
+  <!-- pwa:head-start -->
+  <meta name="theme-color" content="#D66A1F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Goallord">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Goallord Creativity">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/icons/apple-touch-icon-180.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="/assets/images/icons/apple-touch-icon-167.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/assets/images/icons/apple-touch-icon-152.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/assets/images/icons/apple-touch-icon-120.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/icons/favicon-16.png">
+  <!-- pwa:head-end -->
 </head>
 <body>
 
@@ -444,7 +459,6 @@
   </div>
 </div>
 
-<script src="assets/js/csrf.js"></script>
 <script>
 function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 const TOKEN_KEY = 'gl_lecturer_token';
@@ -1177,5 +1191,16 @@ loaded['overview'] = true;
 loadOverview();
 loadNotifications();
 </script>
+  <!-- pwa:body-end-start -->
+  <script src="/assets/js/csrf.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js').catch(function () {});
+      });
+    }
+  </script>
+  <script src="/assets/js/pwa-install.js" defer></script>
+  <!-- pwa:body-end-end -->
 </body>
 </html>

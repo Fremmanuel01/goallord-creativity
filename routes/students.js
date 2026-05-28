@@ -2,6 +2,7 @@ const express  = require('express');
 const bcrypt   = require('bcryptjs');
 const crypto   = require('crypto');
 const jwt      = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 const studentsDb = require('../db/students');
 const notificationsDb = require('../db/notifications');
 const { requireAuth }       = require('../middleware/auth');
@@ -12,8 +13,17 @@ const { passwordResetEmail, graduationEmail } = require('../utils/emailTemplates
 
 const router = express.Router();
 
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  message: { error: 'Too many login attempts. Please try again in 15 minutes.' }
+});
+
 // ── POST /api/students/login — public ──────────────────────────
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
@@ -32,7 +42,7 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign(
       { id: student.id, email: student.email, name: student.full_name, role: 'student', track: student.track },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '7d', algorithm: 'HS256' }
     );
 
     res.json({
@@ -124,7 +134,6 @@ router.patch('/me/photo', requireStudent, async (req, res) => {
 });
 
 // ── POST /api/students/forgot-password — public ─────────────────
-const rateLimit = require('express-rate-limit');
 const resetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 3, message: { error: 'Too many reset attempts. Try again later.' } });
 router.post('/forgot-password', resetLimiter, async (req, res) => {
   try {

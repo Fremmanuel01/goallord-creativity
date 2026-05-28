@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
     if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'No token' });
 
     const jwt = require('jsonwebtoken');
-    const decoded = jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET);
+    const decoded = jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET, { algorithms: ['HS256'] });
 
     const filter = { recipient_id: decoded.id };
     if (req.query.read !== undefined) filter.read = req.query.read === 'true';
@@ -33,7 +33,7 @@ router.patch('/:id/read', async (req, res) => {
     const auth = req.headers.authorization;
     if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'No token' });
     const jwt = require('jsonwebtoken');
-    jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET);
+    jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET, { algorithms: ['HS256'] });
     const doc = await notificationsDb.markRead(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
@@ -48,7 +48,7 @@ router.patch('/read-all', async (req, res) => {
     const auth = req.headers.authorization;
     if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'No token' });
     const jwt = require('jsonwebtoken');
-    const decoded = jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET);
+    const decoded = jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET, { algorithms: ['HS256'] });
     await notificationsDb.markAllRead(decoded.id);
     res.json({ success: true });
   } catch (err) {

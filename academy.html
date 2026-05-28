@@ -201,6 +201,21 @@
         .mb-portal-links a.mb-portal-link:hover { border-color: var(--gl-orange); color: #F4F6FA; }
         .mb-portal-links a.mb-portal-link .mpl-icon { font-size: 18px; flex-shrink: 0; }
     </style>
+  <!-- pwa:head-start -->
+  <meta name="theme-color" content="#D66A1F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Goallord">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Goallord Creativity">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/icons/apple-touch-icon-180.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="/assets/images/icons/apple-touch-icon-167.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/assets/images/icons/apple-touch-icon-152.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/assets/images/icons/apple-touch-icon-120.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/icons/favicon-16.png">
+  <!-- pwa:head-end -->
 </head>
 <body class="counter-scroll">
     <canvas class="cursor-trail d-none d-xl-block" id="trail"></canvas>
@@ -591,8 +606,7 @@
         </div></div></div>
     </div>
 
-    <script src="assets/js/csrf.js"></script>
-    <script src="assets/js/jquery.min.js"></script>
+<script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.min.js"></script>
     <script src="assets/js/swiper-bundle.min.js"></script>
     <script src="assets/js/slick.min.js"></script>
@@ -746,5 +760,16 @@
 })();
 </script>
 <script>(function(){var h=document.querySelector(".tf-header");if(!h)return;var t=null;window.addEventListener("scroll",function(){var y=window.scrollY;if(y<=80){h.classList.remove("header-sticky","header-hidden");return;}h.classList.add("header-hidden");clearTimeout(t);t=setTimeout(function(){h.classList.remove("header-hidden");h.classList.add("header-sticky");},300);},{passive:true});})();</script>
+  <!-- pwa:body-end-start -->
+  <script src="/assets/js/csrf.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js').catch(function () {});
+      });
+    }
+  </script>
+  <script src="/assets/js/pwa-install.js" defer></script>
+  <!-- pwa:body-end-end -->
 </body>
 </html>

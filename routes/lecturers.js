@@ -2,6 +2,7 @@ const express   = require('express');
 const bcrypt    = require('bcryptjs');
 const crypto    = require('crypto');
 const jwt       = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 const lecturersDb = require('../db/lecturers');
 const { requireAuth }        = require('../middleware/auth');
 const { sendMail }           = require('../utils/mailer');
@@ -9,8 +10,17 @@ const { passwordResetEmail } = require('../utils/emailTemplates');
 
 const router = express.Router();
 
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  message: { error: 'Too many login attempts. Please try again in 15 minutes.' }
+});
+
 // POST /api/lecturers/login
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
     const lecturer = await lecturersDb.findByEmail(email.toLowerCase());
@@ -23,7 +33,7 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign(
       { id: lecturer.id, role: 'lecturer', fullName: lecturer.full_name, email: lecturer.email },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '7d', algorithm: 'HS256' }
     );
     res.json({ token, lecturer: { id: lecturer.id, fullName: lecturer.full_name, email: lecturer.email, specialization: lecturer.specialization, profilePicture: lecturer.profile_picture } });
   } catch (err) {
@@ -113,7 +123,6 @@ router.delete('/:id', requireAuth, async (req, res) => {
 });
 
 // ── POST /api/lecturers/forgot-password — public, rate limited ───
-const rateLimit = require('express-rate-limit');
 const forgotLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 3, message: { error: 'Too many reset attempts. Try again later.' } });
 router.post('/forgot-password', forgotLimiter, async (req, res) => {
   try {
