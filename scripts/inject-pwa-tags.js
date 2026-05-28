@@ -79,10 +79,41 @@ function stripBlock(src, startMarker, endMarker) {
 }
 function escape(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
+// Tags the codemod owns. Any matching tag found OUTSIDE the sentinel block
+// is a leftover from before site-wide PWA tags were unified, so we strip it.
+// The canonical version lives inside the block below.
+const META_NAMES_OWNED = [
+  'theme-color',
+  'apple-mobile-web-app-capable',
+  'apple-mobile-web-app-status-bar-style',
+  'apple-mobile-web-app-title',
+  'mobile-web-app-capable',
+  'application-name'
+];
+const LINK_RELS_OWNED = [
+  'manifest',
+  'apple-touch-icon',
+  'apple-touch-icon-precomposed'
+];
+
+function stripOwnedHeadTags(src) {
+  const metaRe = new RegExp(
+    '[ \\t]*<meta\\s[^>]*name=["\'](?:' + META_NAMES_OWNED.join('|') + ')["\'][^>]*>\\s*\\n?',
+    'gi'
+  );
+  const linkRe = new RegExp(
+    '[ \\t]*<link\\s[^>]*rel=["\'](?:' + LINK_RELS_OWNED.join('|') + ')["\'][^>]*>\\s*\\n?',
+    'gi'
+  );
+  return src.replace(metaRe, '').replace(linkRe, '');
+}
+
 function injectHead(src, block) {
-  // Replace any existing block.
-  const cleaned = stripBlock(src, HEAD_START, HEAD_END);
-  // Insert before </head> with NORMALIZED whitespace so repeat runs are stable.
+  // 1) Replace any existing sentinel block.
+  let cleaned = stripBlock(src, HEAD_START, HEAD_END);
+  // 2) Strip leftover pre-existing copies of tags we now own.
+  cleaned = stripOwnedHeadTags(cleaned);
+  // 3) Insert before </head> with normalized whitespace.
   if (!/<\/head>/i.test(cleaned)) {
     console.warn('  ! no </head> tag found, skipping');
     return null;
