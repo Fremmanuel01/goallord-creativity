@@ -78,6 +78,54 @@
   .stat-card.orange .stat-value { color: var(--orange); }
   .stat-card.red .stat-value { color: var(--red); }
 
+  /* ── PROGRESS HERO ── */
+  .progress-hero {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 22px 24px; margin-bottom: 18px;
+    display: flex; gap: 28px; align-items: center;
+  }
+  .progress-hero .pg-ring { position: relative; flex-shrink: 0; width: 124px; height: 124px; }
+  .progress-hero .pg-ring svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+  .progress-hero .pg-ring .pg-track { stroke: rgba(255,255,255,0.06); }
+  .progress-hero .pg-ring .pg-fill  { stroke: var(--orange); stroke-linecap: round; transition: stroke-dashoffset 0.8s cubic-bezier(.22,.61,.36,1); }
+  .progress-hero .pg-ring-pct {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column;
+  }
+  .progress-hero .pg-ring-pct .num { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+  .progress-hero .pg-ring-pct .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 2px; }
+  .progress-hero .pg-meta { flex: 1; min-width: 0; }
+  .progress-hero .pg-title { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+  .progress-hero .pg-title .pg-week-num { color: var(--orange); }
+  .progress-hero .pg-sub { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
+  .progress-hero .pg-bars { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .progress-hero .pg-bar { min-width: 0; }
+  .progress-hero .pg-bar-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; font-size: 11px; }
+  .progress-hero .pg-bar-head .lbl { color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; }
+  .progress-hero .pg-bar-head .val { color: var(--text); font-weight: 700; font-size: 12px; }
+  .progress-hero .pg-bar-track { background: rgba(255,255,255,0.05); border-radius: 999px; height: 5px; overflow: hidden; }
+  .progress-hero .pg-bar-fill  { height: 100%; border-radius: 999px; transition: width 0.7s cubic-bezier(.22,.61,.36,1); background: var(--text); }
+  .progress-hero .pg-bar-fill.time { background: linear-gradient(90deg, #6a9fff, #1E4BFF); }
+  .progress-hero .pg-bar-fill.asg  { background: linear-gradient(90deg, #f59e0b, var(--orange)); }
+  .progress-hero .pg-bar-fill.att  { background: linear-gradient(90deg, #34d399, var(--green)); }
+  .progress-hero .pg-next {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(214,106,31,0.08); border: 1px solid rgba(214,106,31,0.18);
+    color: var(--text); padding: 9px 13px; border-radius: 10px;
+    font-size: 12.5px; line-height: 1.35; cursor: pointer; transition: background 0.15s;
+  }
+  .progress-hero .pg-next:hover { background: rgba(214,106,31,0.14); }
+  .progress-hero .pg-next-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); flex-shrink: 0; box-shadow: 0 0 0 4px rgba(214,106,31,0.18); }
+  .progress-hero .pg-next strong { font-weight: 700; }
+  .progress-hero .pg-next .pg-when { color: var(--muted); margin-left: 4px; }
+  .progress-hero .pg-next.is-empty { background: transparent; border-color: var(--border); color: var(--muted); cursor: default; }
+  .progress-hero .pg-next.is-empty:hover { background: transparent; }
+  .progress-hero .pg-next.is-empty .pg-next-dot { background: var(--muted); box-shadow: none; }
+  @media (max-width: 720px) {
+    .progress-hero { flex-direction: column; align-items: stretch; gap: 18px; padding: 18px; }
+    .progress-hero .pg-ring { align-self: center; }
+    .progress-hero .pg-bars { grid-template-columns: 1fr; gap: 10px; }
+  }
+
   /* ── SECTION ── */
   .section-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
 
@@ -207,6 +255,45 @@
   <div id="tab-overview">
     <div id="loadingState" class="loading">Loading your data…</div>
     <div id="overviewContent" style="display:none;">
+
+      <!-- ── Progress Hero ── -->
+      <section class="progress-hero" id="progressHero" aria-label="Your bootcamp progress">
+        <div class="pg-ring" role="img" aria-label="Overall progress">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="pg-track" cx="60" cy="60" r="52" stroke-width="10" fill="none"></circle>
+            <circle class="pg-fill"  cx="60" cy="60" r="52" stroke-width="10" fill="none"
+                    pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"
+                    id="pg-ring-fill"></circle>
+          </svg>
+          <div class="pg-ring-pct">
+            <div class="num" id="pg-overall">—</div>
+            <div class="lbl">overall</div>
+          </div>
+        </div>
+        <div class="pg-meta">
+          <div class="pg-title">Week <span class="pg-week-num" id="pg-week">—</span> <span id="pg-week-of">of —</span></div>
+          <div class="pg-sub" id="pg-dates">Loading your bootcamp progress…</div>
+          <div class="pg-bars">
+            <div class="pg-bar">
+              <div class="pg-bar-head"><span class="lbl">Time</span><span class="val" id="pg-time-val">—</span></div>
+              <div class="pg-bar-track"><div class="pg-bar-fill time" id="pg-time-fill" style="width:0%"></div></div>
+            </div>
+            <div class="pg-bar">
+              <div class="pg-bar-head"><span class="lbl">Assignments</span><span class="val" id="pg-asg-val">—</span></div>
+              <div class="pg-bar-track"><div class="pg-bar-fill asg" id="pg-asg-fill" style="width:0%"></div></div>
+            </div>
+            <div class="pg-bar">
+              <div class="pg-bar-head"><span class="lbl">Attendance</span><span class="val" id="pg-att-val">—</span></div>
+              <div class="pg-bar-track"><div class="pg-bar-fill att" id="pg-att-fill" style="width:0%"></div></div>
+            </div>
+          </div>
+          <div class="pg-next is-empty" id="pg-next" role="button" tabindex="0">
+            <span class="pg-next-dot" aria-hidden="true"></span>
+            <span id="pg-next-text">No upcoming deadlines.</span>
+          </div>
+        </div>
+      </section>
+
       <div class="stats-grid">
         <div class="stat-card blue">
           <div class="stat-label">Classes Attended</div>
@@ -601,10 +688,11 @@
   async function loadAll() {
     const headers = { 'Authorization': 'Bearer ' + token };
     try {
-      const [meRes, attendRes, payRes] = await Promise.all([
+      const [meRes, attendRes, payRes, progRes] = await Promise.all([
         fetch('/api/students/me', { headers }),
         fetch('/api/attendance/me', { headers }),
-        fetch('/api/payments/me', { headers })
+        fetch('/api/payments/me', { headers }),
+        fetch('/api/students/me/progress', { headers })
       ]);
 
       if (meRes.status === 401 || meRes.status === 403) {
@@ -614,11 +702,90 @@
       studentData = await meRes.json();
       attendData  = await attendRes.json();
       payData     = await payRes.json();
+      const progress = progRes.ok ? await progRes.json() : null;
 
       renderAll();
+      if (progress) renderProgress(progress);
     } catch (err) {
       document.getElementById('loadingState').textContent = 'Failed to load data. Please refresh.';
     }
+  }
+
+  // ── Progress hero renderer ────────────────────────────────────
+  function renderProgress(p) {
+    var overall = Math.max(0, Math.min(100, Number(p.overall) || 0));
+    document.getElementById('pg-overall').textContent = overall + '%';
+    // pathLength=100 trick: dashoffset goes from 100 → (100 - pct)
+    document.getElementById('pg-ring-fill').setAttribute('stroke-dashoffset', String(100 - overall));
+
+    var weeks = p.weeks || null;
+    if (weeks && weeks.total) {
+      document.getElementById('pg-week').textContent = weeks.current;
+      document.getElementById('pg-week-of').textContent = 'of ' + weeks.total;
+      var fmt = function (d) {
+        if (!d) return '';
+        try {
+          return new Date(d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+        } catch (_) { return d; }
+      };
+      var sub = weeks.remaining > 0
+        ? weeks.remaining + ' week' + (weeks.remaining === 1 ? '' : 's') + ' to go'
+        : 'Final week of your bootcamp';
+      if (weeks.startDate) sub += ' · started ' + fmt(weeks.startDate);
+      document.getElementById('pg-dates').textContent = sub;
+    } else {
+      document.getElementById('pg-week').textContent = '—';
+      document.getElementById('pg-week-of').textContent = 'of —';
+      document.getElementById('pg-dates').textContent = 'Your batch dates haven’t been set yet.';
+    }
+
+    var setBar = function (fillId, valId, data) {
+      var pct = data && typeof data.pct === 'number' ? Math.max(0, Math.min(100, data.pct)) : 0;
+      document.getElementById(fillId).style.width = pct + '%';
+      var el = document.getElementById(valId);
+      if (data && data.total > 0) {
+        el.textContent = data.submitted !== undefined
+          ? data.submitted + '/' + data.total
+          : data.present + '/' + data.total;
+      } else {
+        el.textContent = (weeks && fillId === 'pg-time-fill') ? (pct + '%') : '—';
+      }
+    };
+    // Time bar uses weeks.pct (no submitted/total)
+    document.getElementById('pg-time-fill').style.width = (weeks ? weeks.pct : 0) + '%';
+    document.getElementById('pg-time-val').textContent = weeks ? (weeks.pct + '%') : '—';
+    setBar('pg-asg-fill', 'pg-asg-val', p.assignments);
+    setBar('pg-att-fill', 'pg-att-val', p.attendance);
+
+    var nextEl = document.getElementById('pg-next');
+    var nextTxt = document.getElementById('pg-next-text');
+    if (p.nextDeadline) {
+      var d = new Date(p.nextDeadline.deadline);
+      var now = new Date();
+      var diff = (d - now) / 1000;
+      var when;
+      if (diff < 0) when = 'overdue';
+      else if (diff < 86400) when = 'due today';
+      else if (diff < 86400 * 2) when = 'due tomorrow';
+      else when = 'due in ' + Math.ceil(diff / 86400) + ' days';
+      nextTxt.innerHTML = '<strong>Next due:</strong> ' +
+        escapeHtml(p.nextDeadline.title || 'Assignment') +
+        ' <span class="pg-when">· ' + when + '</span>';
+      nextEl.classList.remove('is-empty');
+      nextEl.onclick = function () { switchTab('assignments'); };
+      nextEl.onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') switchTab('assignments'); };
+    } else {
+      nextTxt.textContent = 'All caught up — no upcoming deadlines.';
+      nextEl.classList.add('is-empty');
+      nextEl.onclick = null;
+      nextEl.onkeydown = null;
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
   }
 
   function renderAll() {

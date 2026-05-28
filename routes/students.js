@@ -4,6 +4,10 @@ const crypto   = require('crypto');
 const jwt      = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const studentsDb = require('../db/students');
+const batchesDb = require('../db/batches');
+const assignmentsDb = require('../db/assignments');
+const submissionsDb = require('../db/submissions');
+const supabase = require('../lib/supabase');
 const notificationsDb = require('../db/notifications');
 const { requireAuth }       = require('../middleware/auth');
 const { requireStudent }    = require('../middleware/studentAuth');
@@ -62,6 +66,110 @@ router.get('/me', requireStudent, async (req, res) => {
     // Remove sensitive fields
     const { password, reset_token, reset_expires, ...safe } = student;
     res.json(safe);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── GET /api/students/me/progress — student dashboard hero ─────
+// Behaviour-based progress, computed live from existing data:
+//   - weeks: today's position inside the batch's start_date..end_date window
+//   - assignments: submitted vs published for this batch
+//   - attendance: present count vs total sessions taken for this batch
+//   - overall: weighted blend (time 30%, assignments 35%, attendance 35%)
+//     where components with no data are excluded
+//   - nextDeadline: soonest published, unsubmitted assignment
+router.get('/me/progress', requireStudent, async (req, res) => {
+  try {
+    const student = await studentsDb.findById(req.student.id);
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+
+    const batchId = student.batch_id;
+    const now = Date.now();
+
+    const [batch, allAssignments, mySubs, attRowsRes] = await Promise.all([
+      batchId ? batchesDb.findById(batchId).catch(() => null) : Promise.resolve(null),
+      batchId
+        ? assignmentsDb.find({ filter: { batch_id: batchId, published: true } }).catch(() => [])
+        : Promise.resolve([]),
+      submissionsDb.find({ filter: { student_id: student.id } }).catch(() => []),
+      batchId
+        ? supabase.from('attendance').select('id').eq('batch_id', batchId)
+        : Promise.resolve({ data: [] })
+    ]);
+
+    // ── Weeks ──
+    let weeks = null;
+    if (batch && batch.start_date) {
+      const startMs = new Date(batch.start_date).getTime();
+      const endMs   = batch.end_date ? new Date(batch.end_date).getTime() : null;
+      const DAY = 86400000;
+      const defaultTotalDays = 12 * 7;
+      const totalDays = endMs ? Math.max(1, Math.round((endMs - startMs) / DAY)) : defaultTotalDays;
+      const totalWeeks = Math.max(1, Math.round(totalDays / 7));
+      const elapsedDays = Math.max(0, Math.floor((now - startMs) / DAY));
+      const currentWeek = Math.min(totalWeeks, Math.max(1, Math.floor(elapsedDays / 7) + 1));
+      const pct = Math.min(100, Math.max(0, Math.round((elapsedDays / totalDays) * 100)));
+      weeks = {
+        current: currentWeek,
+        total: totalWeeks,
+        remaining: Math.max(0, totalWeeks - currentWeek),
+        pct,
+        startDate: batch.start_date,
+        endDate: batch.end_date || null
+      };
+    }
+
+    // ── Assignments ──
+    const submittedIds = new Set((mySubs || []).map(s => String(s.assignment_id)));
+    const submittedCount = (allAssignments || []).filter(a => submittedIds.has(String(a.id))).length;
+    const totalAssignments = (allAssignments || []).length;
+    const assignmentsPct = totalAssignments
+      ? Math.round((submittedCount / totalAssignments) * 100)
+      : 0;
+
+    // ── Attendance ──
+    const attIds = ((attRowsRes && attRowsRes.data) || []).map(r => r.id);
+    const totalSessions = attIds.length;
+    let presentCount = 0;
+    if (totalSessions > 0) {
+      const { data: studAtt } = await supabase
+        .from('attendance_students')
+        .select('attendance_id, status')
+        .eq('student_id', student.id)
+        .eq('status', 'present')
+        .in('attendance_id', attIds);
+      presentCount = (studAtt || []).length;
+    }
+    const attendancePct = totalSessions
+      ? Math.round((presentCount / totalSessions) * 100)
+      : 0;
+
+    // ── Overall (weighted; drop components without data) ──
+    const parts = [];
+    if (weeks)                     parts.push({ w: 30, v: weeks.pct });
+    if (totalAssignments > 0)      parts.push({ w: 35, v: assignmentsPct });
+    if (totalSessions > 0)         parts.push({ w: 35, v: attendancePct });
+    const totalWeight = parts.reduce((a, p) => a + p.w, 0);
+    const overall = totalWeight
+      ? Math.round(parts.reduce((a, p) => a + p.w * p.v, 0) / totalWeight)
+      : 0;
+
+    // ── Next deadline (soonest unsubmitted) ──
+    const upcoming = (allAssignments || [])
+      .filter(a => a.deadline && new Date(a.deadline).getTime() > now && !submittedIds.has(String(a.id)))
+      .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    const nextDeadline = upcoming[0]
+      ? { id: upcoming[0].id, title: upcoming[0].title, deadline: upcoming[0].deadline, week: upcoming[0].week || null }
+      : null;
+
+    res.json({
+      weeks,
+      assignments: { submitted: submittedCount, total: totalAssignments, pct: assignmentsPct },
+      attendance:  { present: presentCount, total: totalSessions, pct: attendancePct },
+      overall,
+      nextDeadline
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

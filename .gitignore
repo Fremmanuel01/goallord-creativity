@@ -4,5 +4,7 @@ node_modules/
 .DS_Store
 uploads/
 ruvector.db
+agentdb.rvf
+agentdb.rvf.lock
 *.sqlite
 *.sqlite3
