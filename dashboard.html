@@ -5028,11 +5028,14 @@ function renderClients(list) {
       <td class="muted">${c.started}</td>
       <td>
         <div style="display:flex;gap:6px;align-items:center">
-          <select class="status-select" onchange="updateClientStatus(${c.id}, this.value)">
+          <select class="status-select" onchange="updateClientStatus('${c.id}', this.value)">
             ${['Pending','In Progress','Completed'].map(s => `<option ${s===st?'selected':''}>${s}</option>`).join('')}
           </select>
-          <button class="btn-icon" onclick="viewClient(${c.id})" title="View">
+          <button class="btn-icon" onclick="viewClient('${c.id}')" title="View">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <button class="btn-icon" onclick="deleteClient('${c.id}')" title="Delete" style="color:#ef4444;border-color:rgba(239,68,68,0.3)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
           </button>
         </div>
       </td>
@@ -5045,6 +5048,16 @@ function updateClientStatus(id, status) {
   localStorage.setItem('gl_client_statuses', JSON.stringify(clientStatuses));
   const cell = document.getElementById('cl-badge-' + id);
   if (cell) cell.innerHTML = badge(status);
+}
+
+async function deleteClient(id) {
+  if (!confirm('Delete this client / enquiry permanently? This cannot be undone.')) return;
+  const res = await apiFetch('/api/clients/' + id, { method: 'DELETE' });
+  if (!res) return;            // apiFetch already showed an error toast
+  delete clientStatuses[id];
+  localStorage.setItem('gl_client_statuses', JSON.stringify(clientStatuses));
+  showToast('Client deleted', 'success');
+  loadClientsFromAPI();
 }
 
 function viewClient(id) {
