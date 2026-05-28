@@ -27,6 +27,8 @@
 
 const express = require('express');
 const crypto  = require('crypto');
+const { sendMail } = require('../utils/mailer');
+const { paymentRetryEmail } = require('../utils/emailTemplates');
 
 const router = express.Router();
 
@@ -86,8 +88,13 @@ async function handlePaystackEvent(event) {
     console.warn('[webhook] event has no reference', { type });
     return;
   }
+  if (type === 'charge.failed') {
+    // A card attempt failed server-side — best-effort nudge the payer to retry.
+    await handleFailedCharge(data).catch(e => console.error('[webhook] failed-charge handler:', e.message));
+    return;
+  }
   if (type !== 'charge.success') {
-    // We currently only care about successful charges. Other events
+    // We only act on successful/failed charges. Other events
     // (transfer.success, refund.processed, etc.) are accepted but ignored.
     console.log('[webhook] ignoring event', { type, reference });
     return;
@@ -117,6 +124,50 @@ async function handlePaystackEvent(event) {
       metadata: meta
     }
   );
+}
+
+// Best-effort retry nudge for a failed charge. Matches the payer to a student
+// by email, finds their most relevant unsettled payment for context, and emails
+// a retry link. Throttled per-payment (retry_email_sent_at) to avoid spam.
+async function handleFailedCharge(data) {
+  const email = data.customer && data.customer.email;
+  if (!email) { console.log('[webhook] charge.failed without customer email'); return; }
+
+  const supabase = require('../lib/supabase');
+  const { data: students } = await supabase
+    .from('students').select('id, full_name, email').eq('email', String(email).toLowerCase()).limit(1);
+  const student = students && students[0];
+  if (!student) { console.log('[webhook] charge.failed for non-student', { email }); return; }
+
+  // Pick an unsettled payment for context (soonest due first).
+  const { data: pending } = await supabase
+    .from('payments')
+    .select('id, category, amount_due, amount_paid, retry_email_sent_at, due_date')
+    .eq('student_id', student.id)
+    .in('status', ['pending', 'overdue', 'partially_paid'])
+    .order('due_date', { ascending: true })
+    .limit(1);
+  const payment = pending && pending[0];
+
+  // Throttle: at most one retry email per hour for the matched payment.
+  const lastSent = payment && payment.retry_email_sent_at ? new Date(payment.retry_email_sent_at).getTime() : 0;
+  if (Date.now() - lastSent < 60 * 60 * 1000) { console.log('[webhook] retry email throttled', { email }); return; }
+
+  const loginUrl = (process.env.HOST || 'https://goallordcreativity.com') + '/student-login.html';
+  await sendMail({
+    to: student.email,
+    subject: 'Your payment didn\'t go through — Goallord Creativity Academy',
+    html: paymentRetryEmail({
+      fullName: student.full_name,
+      category: payment ? payment.category : null,
+      amountDue: payment ? payment.amount_due : null,
+      loginUrl
+    })
+  });
+  if (payment) {
+    await supabase.from('payments').update({ retry_email_sent_at: new Date().toISOString() }).eq('id', payment.id);
+  }
+  console.log('[webhook] retry email sent', { email });
 }
 
 async function isReferenceKnown(reference) {

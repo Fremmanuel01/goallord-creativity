@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken');
+const { extractToken } = require('../lib/authCookie');
 
 const JWT_VERIFY_OPTS = { algorithms: ['HS256'] };
 
 function requireAuth(req, res, next) {
-  const header = req.headers.authorization || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  const token = extractToken(req, 'gl_token');
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
@@ -16,8 +16,7 @@ function requireAuth(req, res, next) {
 }
 
 function optionalAuth(req, res, next) {
-  const header = req.headers.authorization || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  const token = extractToken(req, 'gl_token');
   if (!token) { req.user = null; return next(); }
 
   try {

@@ -5,10 +5,20 @@ const jwt       = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const lecturersDb = require('../db/lecturers');
 const { requireAuth }        = require('../middleware/auth');
+const { requireLecturerOnly } = require('../middleware/lecturerAuth');
 const { sendMail }           = require('../utils/mailer');
 const { passwordResetEmail } = require('../utils/emailTemplates');
+const { createTwoFactorHandlers, verifyLoginCode } = require('../utils/twoFactor');
+const { sanitizeIdentity } = require('../lib/utils');
+const { passwordError } = require('../utils/passwordPolicy');
+const { setAuthCookie, clearAuthCookie } = require('../lib/authCookie');
 
 const router = express.Router();
+
+const twoFactor = createTwoFactorHandlers({
+  db: lecturersDb,
+  getIdentity: (req) => ({ id: req.user.id, email: req.user.email })
+});
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -22,7 +32,7 @@ const loginLimiter = rateLimit({
 // POST /api/lecturers/login
 router.post('/login', loginLimiter, async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, totpCode } = req.body;
     const lecturer = await lecturersDb.findByEmail(email.toLowerCase());
     if (!lecturer) return res.status(401).json({ error: 'Invalid credentials' });
     if (lecturer.status === 'Inactive') return res.status(403).json({ error: 'Account inactive' });
@@ -30,16 +40,35 @@ router.post('/login', loginLimiter, async (req, res) => {
     const match = await bcrypt.compare(password, lecturer.password);
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
 
+    if (lecturer.totp_enabled) {
+      if (!totpCode) return res.json({ twoFactorRequired: true });
+      const codeOk = await verifyLoginCode(lecturersDb, lecturer, totpCode);
+      if (!codeOk) return res.status(401).json({ error: 'Invalid authentication code' });
+    }
+
     const token = jwt.sign(
       { id: lecturer.id, role: 'lecturer', fullName: lecturer.full_name, email: lecturer.email },
       process.env.JWT_SECRET,
       { expiresIn: '7d', algorithm: 'HS256' }
     );
+    setAuthCookie(res, 'gl_lecturer_token', token);
     res.json({ token, lecturer: { id: lecturer.id, fullName: lecturer.full_name, email: lecturer.email, specialization: lecturer.specialization, profilePicture: lecturer.profile_picture } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
+// POST /api/lecturers/logout — clear the auth cookie
+router.post('/logout', (req, res) => {
+  clearAuthCookie(res, 'gl_lecturer_token');
+  res.json({ success: true });
+});
+
+// ── Two-factor authentication (lecturers) ──────────────────────
+router.get('/2fa/status',   requireLecturerOnly, twoFactor.status);
+router.post('/2fa/setup',   requireLecturerOnly, twoFactor.setup);
+router.post('/2fa/enable',  requireLecturerOnly, twoFactor.enable);
+router.post('/2fa/disable', requireLecturerOnly, twoFactor.disable);
 
 // GET /api/lecturers
 router.get('/', requireAuth, async (req, res) => {
@@ -58,8 +87,7 @@ router.get('/:id', requireAuth, async (req, res) => {
   try {
     const lecturer = await lecturersDb.findById(req.params.id);
     if (!lecturer) return res.status(404).json({ error: 'Not found' });
-    const { password, ...safe } = lecturer;
-    res.json(safe);
+    res.json(sanitizeIdentity(lecturer));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -81,8 +109,7 @@ router.post('/', requireAuth, async (req, res) => {
       status: status || 'Active',
       created_by: req.user.id
     });
-    const { password: pw, ...safe } = lecturer;
-    res.status(201).json(safe);
+    res.status(201).json(sanitizeIdentity(lecturer));
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -105,8 +132,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
     }
     const lecturer = await lecturersDb.update(req.params.id, update);
     if (!lecturer) return res.status(404).json({ error: 'Not found' });
-    const { password, ...safe } = lecturer;
-    res.json(safe);
+    res.json(sanitizeIdentity(lecturer));
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -158,7 +184,7 @@ router.post('/reset-password', resetLimiter, async (req, res) => {
   try {
     const { token, newPassword } = req.body;
     if (!token || !newPassword) return res.status(400).json({ error: 'token and newPassword are required' });
-    if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    { const e = passwordError(newPassword); if (e) return res.status(400).json({ error: e }); }
 
     const lecturer = await lecturersDb.findByResetToken(token);
     if (!lecturer) return res.status(400).json({ error: 'Reset link is invalid or has expired' });

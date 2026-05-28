@@ -1,5 +1,11 @@
 # Goallord Creativity — Heroku Deployment Guide
 
+> **Shipping the SYSTEM_AUDIT M3–M10 features?** Follow
+> [`DEPLOY_CHECKLIST.md`](./DEPLOY_CHECKLIST.md) — it covers the required DB
+> migrations (`006`–`009`), new env vars, the Paystack `charge.failed` webhook,
+> per-feature smoke tests (incl. the httpOnly auth-cookie cutover), and rollback
+> steps. This file remains the general host/setup guide.
+
 ## Prerequisites
 - Node.js 18+ installed locally
 - Git installed

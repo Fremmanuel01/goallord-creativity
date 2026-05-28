@@ -171,6 +171,47 @@
     .student-name { display: none; }
   }
 
+  /* ── MOBILE-FIRST: cards over tables (≥375px) ── */
+  @media (max-width: 640px) {
+    /* Scrollable tab bar so all tabs stay reachable on narrow screens */
+    .tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { white-space: nowrap; flex-shrink: 0; padding: 10px 14px; }
+
+    /* Two-up stat cards shrink their numbers so they don't overflow */
+    .stat-card { padding: 16px; }
+    .stat-card .stat-value { font-size: 22px; }
+
+    /* Turn each data-table row into a self-contained card */
+    .table-wrap { border: none; background: transparent; overflow: visible; }
+    .table-wrap table,
+    .table-wrap tbody,
+    .table-wrap tr,
+    .table-wrap td { display: block; width: 100%; }
+    .table-wrap thead { display: none; }
+    .table-wrap tr {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; margin-bottom: 12px; padding: 4px 2px;
+    }
+    .table-wrap tr:hover td { background: transparent; }
+    .table-wrap td {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding: 10px 16px; border-bottom: 1px solid var(--border);
+      font-size: 14px; text-align: right; white-space: normal;
+    }
+    .table-wrap tr td:last-child { border-bottom: none; }
+    .table-wrap td::before {
+      content: attr(data-label);
+      font-size: 11px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      text-align: left; flex-shrink: 0;
+    }
+    /* Labelless cells (actions) and full-width loading/empty rows */
+    .table-wrap td[data-label=""]::before { content: none; }
+    .table-wrap td[colspan] { display: block; text-align: center; }
+    .table-wrap td[colspan]::before { content: none; }
+  }
+
   /* ── TOAST ── */
   #sdToast { position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none; }
   .sd-toast { background:#1E2533;border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;font-weight:600;color:var(--text);box-shadow:0 8px 24px rgba(0,0,0,0.4);transform:translateY(20px);opacity:0;transition:transform .25s,opacity .25s; }
@@ -248,6 +289,7 @@
     <button class="tab" onclick="switchTab('materials')">Materials</button>
     <button class="tab" onclick="switchTab('assignments')">Assignments</button>
     <button class="tab" onclick="switchTab('flashcards')">Flashcards</button>
+    <button class="tab" onclick="switchTab('messages')">Messages<span id="msgTabBadge" style="display:none;margin-left:6px;background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;"></span></button>
     <button class="tab" onclick="switchTab('profile')">Profile</button>
   </div>
 
@@ -421,8 +463,8 @@
   <!-- ── CURRICULUM TAB ── -->
   <div id="tab-curriculum" style="display:none;">
     <div class="page-header" style="margin-bottom:20px;">
-      <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">Course Curriculum</h2>
-      <p style="color:var(--muted);font-size:14px;">Weekly plan for your batch</p>
+      <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">Syllabus Calendar</h2>
+      <p style="color:var(--muted);font-size:14px;">Week-by-week topics, class dates and deadlines for your batch</p>
     </div>
     <div id="curriculumContent"><div class="loading">Loading curriculum…</div></div>
   </div>
@@ -444,6 +486,15 @@
   </div>
 
   <!-- ── PROFILE TAB ── -->
+  <!-- ── MESSAGES TAB ── -->
+  <div id="tab-messages" style="display:none;">
+    <div class="page-header" style="margin-bottom:16px;">
+      <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">Messages</h2>
+      <p style="color:var(--muted);font-size:14px;">Chat with your lecturers and your batch group.</p>
+    </div>
+    <div id="chatPanel"></div>
+  </div>
+
   <div id="tab-profile" style="display:none;">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:720px;">
 
@@ -516,6 +567,9 @@
         </div>
         <button onclick="changePassword()" id="changePwBtn" style="padding:11px 28px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Update Password</button>
       </div>
+
+      <!-- Two-Factor Authentication Card -->
+      <div id="twoFactorPanel" style="grid-column:1/-1;"></div>
 
     </div>
   </div>
@@ -631,13 +685,14 @@
 
   // ── Logout ──────────────────────────────────────────────────
   function logout() {
+    try { fetch('/api/students/logout', { method: 'POST', keepalive: true }).catch(function(){}); } catch(e){}
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(STUDENT_KEY);
     window.location.href = 'student-login.html';
   }
 
   // ── Tab switching ────────────────────────────────────────────
-  const ALL_TABS = ['overview','attendance','payments','curriculum','materials','assignments','flashcards','profile'];
+  const ALL_TABS = ['overview','attendance','payments','curriculum','materials','assignments','flashcards','messages','profile'];
   let curriculumLoaded = false;
 
   function switchTab(tab) {
@@ -653,6 +708,26 @@
     if (tab === 'flashcards'  && !flashcardsLoaded)  loadFlashcards();
     if (tab === 'attendance') loadOpenSession();
     if (tab === 'profile') loadProfile();
+    if (tab === 'messages'  && !messagesLoaded)  initStudentChat();
+  }
+
+  let messagesLoaded = false;
+  function initStudentChat() {
+    messagesLoaded = true;
+    if (!window.initChat) return;
+    let me = {};
+    try { me = JSON.parse(localStorage.getItem(STUDENT_KEY) || '{}'); } catch (e) {}
+    initChat({
+      container: '#chatPanel',
+      base: '/api/messages',
+      token: function () { return localStorage.getItem('gl_student_token'); },
+      self: { type: 'student', id: me.id, name: me.fullName },
+      onUnread: function (n) {
+        const b = document.getElementById('msgTabBadge');
+        if (!b) return;
+        if (n > 0) { b.textContent = n; b.style.display = ''; } else { b.style.display = 'none'; }
+      }
+    });
   }
 
   // ── Toast ─────────────────────────────────────────────────────
@@ -885,11 +960,11 @@
     } else {
       attBody.innerHTML = history.map(r =>
         '<tr>' +
-        '<td>' + fmtDate(r.classDate) + '</td>' +
-        '<td>' + escHtml(r.batch ? (r.batch.name || '—') : '—') + '</td>' +
-        '<td>Week ' + (r.week || '?') + ' · ' + escHtml(r.day || '') + '</td>' +
-        '<td>' + (r.present ? '<span class="badge badge-present">Present</span>' : '<span class="badge badge-absent">Absent</span>') + '</td>' +
-        '<td style="color:var(--muted);font-size:13px;">' + escHtml(r.notes || '') + '</td>' +
+        '<td data-label="Date">' + fmtDate(r.classDate) + '</td>' +
+        '<td data-label="Batch">' + escHtml(r.batch ? (r.batch.name || '—') : '—') + '</td>' +
+        '<td data-label="Week / Day">Week ' + (r.week || '?') + ' · ' + escHtml(r.day || '') + '</td>' +
+        '<td data-label="Status">' + (r.present ? '<span class="badge badge-present">Present</span>' : '<span class="badge badge-absent">Absent</span>') + '</td>' +
+        '<td data-label="Notes" style="color:var(--muted);font-size:13px;">' + escHtml(r.notes || '') + '</td>' +
         '</tr>'
       ).join('');
     }
@@ -933,14 +1008,14 @@
           actions = `<span style="padding:4px 9px;font-size:11px;background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);border-radius:5px;font-weight:600;">Cash — awaiting admin</span>`;
         }
         return '<tr>' +
-          '<td style="font-weight:600">' + escHtml(catLabel[p.category] || p.category || '—') + '</td>' +
-          '<td>' + fmt(p.amountDue) + '</td>' +
-          '<td>' + fmt(p.amountPaid) + '</td>' +
-          '<td><span class="badge badge-' + statusClass(p.status) + '">' + escHtml(p.status) + '</span></td>' +
-          '<td style="color:var(--muted)">' + escHtml(p.method || '—') + '</td>' +
-          '<td style="color:var(--muted);font-size:13px;">' + escHtml(p.reference || '—') + '</td>' +
-          '<td style="color:var(--muted)">' + (p.paidAt ? fmtDate(p.paidAt) : (p.dueDate ? 'Due ' + fmtDate(p.dueDate) : '—')) + '</td>' +
-          '<td>' + actions + '</td>' +
+          '<td data-label="Category" style="font-weight:600">' + escHtml(catLabel[p.category] || p.category || '—') + '</td>' +
+          '<td data-label="Amount Due">' + fmt(p.amountDue) + '</td>' +
+          '<td data-label="Amount Paid">' + fmt(p.amountPaid) + '</td>' +
+          '<td data-label="Status"><span class="badge badge-' + statusClass(p.status) + '">' + escHtml(p.status) + '</span></td>' +
+          '<td data-label="Method" style="color:var(--muted)">' + escHtml(p.method || '—') + '</td>' +
+          '<td data-label="Reference" style="color:var(--muted);font-size:13px;">' + escHtml(p.reference || '—') + '</td>' +
+          '<td data-label="Date" style="color:var(--muted)">' + (p.paidAt ? fmtDate(p.paidAt) : (p.dueDate ? 'Due ' + fmtDate(p.dueDate) : '—')) + '</td>' +
+          '<td data-label="">' + actions + '</td>' +
           '</tr>';
       }).join('');
     }
@@ -990,35 +1065,76 @@
     } catch { btn.disabled = false; btn.textContent = 'Mark Present'; }
   }
 
-  // ── Curriculum ───────────────────────────────────────────────
-  const DAY_ORDER = { Tuesday: 1, Wednesday: 2, Thursday: 3 };
+  // ── Syllabus Calendar ────────────────────────────────────────
+  function fmtCalDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+  function fmtDeadline(iso) {
+    const d = new Date(iso);
+    const now = Date.now();
+    const diffH = Math.round((d.getTime() - now) / 3600000);
+    let rel;
+    if (diffH < 0)           rel = 'past due';
+    else if (diffH < 24)     rel = 'due in ' + diffH + 'h';
+    else                     rel = 'due in ' + Math.round(diffH / 24) + 'd';
+    const when = d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    return { when, rel, overdue: diffH < 0, soon: diffH >= 0 && diffH < 48 };
+  }
   async function loadCurriculumTab() {
     curriculumLoaded = true;
     const cont = document.getElementById('curriculumContent');
-    cont.innerHTML = '<div class="loading">Loading curriculum…</div>';
+    cont.innerHTML = '<div class="loading">Loading syllabus calendar…</div>';
     try {
-      const res = await fetch('/api/curriculum/student', { headers: { 'Authorization': 'Bearer ' + token } });
+      const res = await fetch('/api/curriculum/calendar', { headers: { 'Authorization': 'Bearer ' + token } });
       const data = await res.json();
-      const items = Array.isArray(data) ? data : [];
-      if (!items.length) {
-        cont.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>No curriculum published yet.</div>';
+      const weeks = (data && Array.isArray(data.weeks)) ? data.weeks : [];
+      // A week is worth showing only if it has topics or deadlines.
+      const filled = weeks.filter(w => (w.days && w.days.length) || (w.deadlines && w.deadlines.length));
+      if (!filled.length) {
+        cont.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>No syllabus published yet.</div>';
         return;
       }
-      // Group by week
-      const byWeek = {};
-      items.forEach(e => { if (!byWeek[e.week]) byWeek[e.week] = []; byWeek[e.week].push(e); });
-      Object.values(byWeek).forEach(arr => arr.sort((a,b) => (DAY_ORDER[a.day]||9) - (DAY_ORDER[b.day]||9)));
 
-      cont.innerHTML = Object.keys(byWeek).sort((a,b)=>Number(a)-Number(b)).map(week => `
-        <div style="margin-bottom:28px">
-          <div style="font-weight:700;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
-            <span style="background:rgba(30,75,255,0.15);color:#6a9fff;padding:3px 10px;border-radius:12px;font-size:11px">WEEK ${week}</span>
+      cont.innerHTML = filled.map(w => {
+        const isCurrent = w.status === 'current';
+        const isPast    = w.status === 'past';
+        const range = (w.startDate && w.endDate)
+          ? ' · ' + fmtCalDate(w.startDate) + ' – ' + fmtCalDate(w.endDate)
+          : '';
+        const weekBadge = isCurrent
+          ? 'background:var(--orange);color:#fff'
+          : 'background:rgba(30,75,255,0.15);color:#6a9fff';
+        const thisWeekTag = isCurrent
+          ? '<span style="background:rgba(214,106,31,0.15);color:var(--orange);padding:2px 9px;border-radius:10px;font-size:10px;font-weight:700">THIS WEEK</span>'
+          : '';
+        const deadlineChips = (w.deadlines || []).map(d => {
+          const f = fmtDeadline(d.deadline);
+          const tone = f.overdue
+            ? 'background:rgba(220,53,69,0.12);color:#ff6b7a;border-color:rgba(220,53,69,0.3)'
+            : (f.soon ? 'background:rgba(214,106,31,0.12);color:var(--orange);border-color:rgba(214,106,31,0.3)'
+                      : 'background:rgba(255,255,255,0.04);color:var(--muted);border-color:var(--border)');
+          return `<div style="display:flex;align-items:center;gap:8px;border:1px solid;border-radius:8px;padding:8px 12px;font-size:12px;${tone}">
+              <span style="font-size:14px">📌</span>
+              <span style="font-weight:600;color:var(--text)">${escHtml(d.title)}</span>
+              <span style="opacity:.85">· ${escHtml(f.when)}</span>
+              <span style="font-weight:700;margin-left:auto;white-space:nowrap">${escHtml(f.rel)}</span>
+            </div>`;
+        }).join('');
+
+        return `
+        <div style="margin-bottom:28px;${isPast ? 'opacity:.6' : ''}">
+          <div style="font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="${weekBadge};padding:3px 10px;border-radius:12px;font-size:11px">WEEK ${w.week}</span>
+            ${range ? `<span style="color:var(--muted);font-size:11px;font-weight:600;letter-spacing:normal;text-transform:none">${range.replace(/^ · /,'')}</span>` : ''}
+            ${thisWeekTag}
           </div>
           <div style="display:grid;gap:10px">
-            ${byWeek[week].map(e => `
-              <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px">
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:${(e.subtopics?.length||e.objectives)?'10px':'0'}">
-                  <span style="background:rgba(214,106,31,0.12);color:var(--orange);padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700;flex-shrink:0">${escHtml(e.day)}</span>
+            ${(w.days || []).map(e => `
+              <div style="background:var(--card);border:1px solid ${isCurrent ? 'rgba(214,106,31,0.35)' : 'var(--border)'};border-radius:10px;padding:16px 20px">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:${(e.subtopics?.length||e.objectives)?'10px':'0'}">
+                  <span style="background:rgba(214,106,31,0.12);color:var(--orange);padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700;flex-shrink:0">${escHtml(e.day)}${e.date ? ' · ' + escHtml(fmtCalDate(e.date)) : ''}</span>
                   <span style="font-weight:700;font-size:14px">${escHtml(e.topic)}</span>
                 </div>
                 ${e.subtopics && e.subtopics.length ? `
@@ -1033,10 +1149,12 @@
                     <span style="font-weight:600;color:var(--text)">Objectives: </span>${escHtml(e.objectives)}
                   </div>` : ''}
               </div>`).join('')}
+            ${deadlineChips ? `<div style="display:grid;gap:8px;margin-top:2px">${deadlineChips}</div>` : ''}
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     } catch {
-      cont.innerHTML = '<div class="empty">Failed to load curriculum. Please try again.</div>';
+      cont.innerHTML = '<div class="empty">Failed to load syllabus calendar. Please try again.</div>';
     }
   }
 
@@ -1059,10 +1177,10 @@
           <div class="table-wrap">
             <table><thead><tr><th>Title</th><th>Type</th><th>Topic</th><th>Link</th></tr></thead>
             <tbody>${byWeek[week].map(m => `<tr>
-              <td style="font-weight:600">${escHtml(m.title)}</td>
-              <td><span style="background:rgba(30,75,255,0.12);color:#6a9fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${escHtml(m.type.toUpperCase())}</span></td>
-              <td style="color:var(--muted)">${escHtml(m.topic || '—')}</td>
-              <td>${(m.fileUrl || m.linkUrl) ? `<a href="${m.fileUrl || m.linkUrl}" target="_blank" style="color:var(--orange);font-size:13px">Open ↗</a>` : '—'}</td>
+              <td data-label="Title" style="font-weight:600">${escHtml(m.title)}</td>
+              <td data-label="Type"><span style="background:rgba(30,75,255,0.12);color:#6a9fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${escHtml(m.type.toUpperCase())}</span></td>
+              <td data-label="Topic" style="color:var(--muted)">${escHtml(m.topic || '—')}</td>
+              <td data-label="Link">${(m.fileUrl || m.linkUrl) ? `<a href="${m.fileUrl || m.linkUrl}" target="_blank" style="color:var(--orange);font-size:13px">Open ↗</a>` : '—'}</td>
             </tr>`).join('')}</tbody></table>
           </div>
         </div>`).join('');
@@ -1100,12 +1218,12 @@
             actionCell = `<button onclick="openSubmitModal('${a._id}','${a.title.replace(/'/g,"\\'")}','${(a.description||'').replace(/'/g,"\\'").replace(/\n/g,' ')}')" style="background:var(--orange);color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Submit</button>`;
           }
           return `<tr>
-            <td style="font-weight:600">${escHtml(a.title)}</td>
-            <td>Week ${a.week}</td>
-            <td>${fmtDate(a.deadline)} ${isPast && !sub ? '<span style="color:var(--red);font-size:11px">(Closed)</span>' : ''}</td>
-            <td>${a.maxScore}</td>
-            <td>${statusCell}</td>
-            <td>${actionCell}</td>
+            <td data-label="Title" style="font-weight:600">${escHtml(a.title)}</td>
+            <td data-label="Week">Week ${a.week}</td>
+            <td data-label="Deadline">${fmtDate(a.deadline)} ${isPast && !sub ? '<span style="color:var(--red);font-size:11px">(Closed)</span>' : ''}</td>
+            <td data-label="Max Score">${a.maxScore}</td>
+            <td data-label="Status">${statusCell}</td>
+            <td data-label="">${actionCell}</td>
           </tr>`;
         }).join('') + '</tbody></table></div>';
     } catch { cont.innerHTML = '<div class="empty">Failed to load assignments.</div>'; }
@@ -1773,7 +1891,14 @@ function closeStudentReceipt() {
 </script>
   <!-- pwa:body-end-start -->
   <script src="/assets/js/csrf.js"></script>
+  <script src="/assets/js/two-factor-ui.js"></script>
+  <script src="/assets/js/chat-ui.js"></script>
   <script>
+    if (window.initTwoFactor) initTwoFactor({
+      container: '#twoFactorPanel',
+      base: '/api/students',
+      token: function () { return localStorage.getItem('gl_student_token'); }
+    });
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
         navigator.serviceWorker.register('/sw.js').catch(function () {});

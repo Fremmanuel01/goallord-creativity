@@ -15,8 +15,17 @@ const { requireStudent }    = require('../middleware/studentAuth');
 const { requireLecturer }   = require('../middleware/lecturerAuth');
 const { sendMail }          = require('../utils/mailer');
 const { passwordResetEmail, graduationEmail } = require('../utils/emailTemplates');
+const { createTwoFactorHandlers, verifyLoginCode } = require('../utils/twoFactor');
+const { sanitizeIdentity } = require('../lib/utils');
+const { passwordError } = require('../utils/passwordPolicy');
+const { setAuthCookie, clearAuthCookie } = require('../lib/authCookie');
 
 const router = express.Router();
+
+const twoFactor = createTwoFactorHandlers({
+  db: studentsDb,
+  getIdentity: (req) => ({ id: req.student.id, email: req.student.email })
+});
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -30,7 +39,7 @@ const loginLimiter = rateLimit({
 // ── POST /api/students/login — public ──────────────────────────
 router.post('/login', loginLimiter, async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, totpCode } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
     const student = await studentsDb.findByEmail(email.toLowerCase());
@@ -44,11 +53,19 @@ router.post('/login', loginLimiter, async (req, res) => {
     const match = await bcrypt.compare(password, student.password);
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
 
+    if (student.totp_enabled) {
+      if (!totpCode) return res.json({ twoFactorRequired: true });
+      const codeOk = await verifyLoginCode(studentsDb, student, totpCode);
+      if (!codeOk) return res.status(401).json({ error: 'Invalid authentication code' });
+    }
+
     const token = jwt.sign(
       { id: student.id, email: student.email, name: student.full_name, role: 'student', track: student.track },
       process.env.JWT_SECRET,
       { expiresIn: '7d', algorithm: 'HS256' }
     );
+
+    setAuthCookie(res, 'gl_student_token', token);
 
     res.json({
       token,
@@ -59,14 +76,24 @@ router.post('/login', loginLimiter, async (req, res) => {
   }
 });
 
+// ── POST /api/students/logout — clear the auth cookie ──────────
+router.post('/logout', (req, res) => {
+  clearAuthCookie(res, 'gl_student_token');
+  res.json({ success: true });
+});
+
+// ── Two-factor authentication (students) ───────────────────────
+router.get('/2fa/status',   requireStudent, twoFactor.status);
+router.post('/2fa/setup',   requireStudent, twoFactor.setup);
+router.post('/2fa/enable',  requireStudent, twoFactor.enable);
+router.post('/2fa/disable', requireStudent, twoFactor.disable);
+
 // ── GET /api/students/me — student auth ────────────────────────
 router.get('/me', requireStudent, async (req, res) => {
   try {
     const student = await studentsDb.findById(req.student.id, { populate: 'batch' });
     if (!student) return res.status(404).json({ error: 'Student not found' });
-    // Remove sensitive fields
-    const { password, reset_token, reset_expires, ...safe } = student;
-    res.json(safe);
+    res.json(sanitizeIdentity(student));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -184,8 +211,7 @@ router.patch('/me', requireStudent, async (req, res) => {
     if (fullName) update.full_name = fullName.trim();
     if (phone !== undefined) update.phone = phone.trim();
     const student = await studentsDb.update(req.student.id, update);
-    const { password, reset_token, reset_expires, ...safe } = student;
-    res.json(safe);
+    res.json(sanitizeIdentity(student));
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -196,7 +222,7 @@ router.patch('/me/password', requireStudent, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) return res.status(400).json({ error: 'currentPassword and newPassword are required' });
-    if (newPassword.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    { const e = passwordError(newPassword); if (e) return res.status(400).json({ error: e }); }
 
     const student = await studentsDb.findById(req.student.id);
     const match = await bcrypt.compare(currentPassword, student.password);
@@ -234,8 +260,7 @@ router.patch('/me/photo', requireStudent, async (req, res) => {
       if (err) return res.status(400).json({ error: err.message });
       if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
       const student = await studentsDb.update(req.student.id, { profile_picture: req.file.path });
-      const { password, reset_token, reset_expires, ...safe } = student;
-      res.json({ url: req.file.path, student: safe });
+      res.json({ url: req.file.path, student: sanitizeIdentity(student) });
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -279,7 +304,7 @@ router.post('/reset-password', studentResetLimiter, async (req, res) => {
   try {
     const { token, newPassword } = req.body;
     if (!token || !newPassword) return res.status(400).json({ error: 'token and newPassword are required' });
-    if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    { const e = passwordError(newPassword); if (e) return res.status(400).json({ error: e }); }
 
     const student = await studentsDb.findByResetToken(token);
     if (!student) return res.status(400).json({ error: 'Reset link is invalid or has expired' });
@@ -312,7 +337,7 @@ router.get('/', requireLecturer, async (req, res) => {
       page: Number(page),
       limit: Number(limit)
     });
-    res.json({ data: docs, total, page: Number(page) });
+    res.json({ data: (docs || []).map(sanitizeIdentity), total, page: Number(page) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -458,8 +483,7 @@ router.get('/:id', requireAuth, async (req, res) => {
   try {
     const student = await studentsDb.findById(req.params.id, { populate: 'batch' });
     if (!student) return res.status(404).json({ error: 'Not found' });
-    const { password, ...safe } = student;
-    res.json(safe);
+    res.json(sanitizeIdentity(student));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -480,8 +504,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
 
     const student = await studentsDb.update(req.params.id, update);
     if (!student) return res.status(404).json({ error: 'Not found' });
-    const { password, ...safe } = student;
-    res.json(safe);
+    res.json(sanitizeIdentity(student));
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -556,7 +579,7 @@ router.post('/:id/reactivate', requireAuth, async (req, res) => {
 router.post('/:id/reset-password', requireAuth, async (req, res) => {
   try {
     const { newPassword } = req.body;
-    if (!newPassword || newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    { const e = passwordError(newPassword); if (e) return res.status(400).json({ error: e }); }
     const hash = await bcrypt.hash(newPassword, 10);
     await studentsDb.update(req.params.id, { password: hash });
     res.json({ success: true });
