@@ -8929,11 +8929,25 @@ document.getElementById('contactStatusFilter')?.addEventListener('change', rende
 // ═══════════════════════════════════════════════════════════
 let allStudents = [];
 let allBatchesAdmin = [];
+let _namesSyncTried = false;
 
 async function loadStudents() {
   const res = await apiFetch('/api/students?limit=500');
   if (!res) return;
   allStudents = res.data || [];
+
+  // Auto-backfill names from the applicants table once per page load.
+  // Safe + idempotent: only touches students whose full_name is empty.
+  if (!_namesSyncTried && allStudents.some(s => !s.fullName)) {
+    _namesSyncTried = true;
+    const sync = await apiFetch('/api/students/sync-names-from-applicants', { method: 'POST' });
+    if (sync && sync.updated > 0) {
+      showToast(`Filled in ${sync.updated} name${sync.updated === 1 ? '' : 's'} from applications.`, 'success');
+      // Re-fetch to pick up the updated names
+      const refresh = await apiFetch('/api/students?limit=500');
+      if (refresh) allStudents = refresh.data || [];
+    }
+  }
 
   // Populate batch filter dropdowns from students (only batches with students)
   const batchMap = {};
@@ -9048,9 +9062,22 @@ async function inlineAssignBatch(studentId, batchId, selectEl) {
   });
   if (selectEl) selectEl.disabled = false;
   if (!res) return;
+
+  // Optimistic update so the dropdown keeps the new selection visible
+  // even before any re-fetch lands.
+  const idx = allStudents.findIndex(x => (x._id || x.id) === studentId);
+  if (idx !== -1) {
+    if (batchId) {
+      const b = allBatchesAdmin.find(b => b._id === batchId);
+      allStudents[idx].batch = b
+        ? { _id: b._id, id: b._id, name: b.name, number: b.number, track: b.track, isActive: b.isActive }
+        : null;
+    } else {
+      allStudents[idx].batch = null;
+    }
+  }
   showToast(batchId ? 'Batch assigned.' : 'Batch removed.', 'success');
-  // Soft-refresh allStudents so the filter/dropdown stays in sync
-  loadStudents();
+  filterStudents();
 }
 
 // ── Bulk batch assignment ─────────────────────────────────────

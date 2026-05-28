@@ -7,6 +7,7 @@ const studentsDb = require('../db/students');
 const batchesDb = require('../db/batches');
 const assignmentsDb = require('../db/assignments');
 const submissionsDb = require('../db/submissions');
+const applicantsDb = require('../db/applicants');
 const supabase = require('../lib/supabase');
 const notificationsDb = require('../db/notifications');
 const { requireAuth }       = require('../middleware/auth');
@@ -341,6 +342,44 @@ router.post('/', requireAuth, async (req, res) => {
     res.status(201).json({ success: true, id: student.id, email: student.email });
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+// ── POST /api/students/sync-names-from-applicants — admin ──────
+// Backfill students that have empty/null full_name from the linked
+// applicant record. Matches by applicant_ref (UUID) first, falls back
+// to applicant.email when ref is missing.
+router.post('/sync-names-from-applicants', requireAuth, async (req, res) => {
+  try {
+    // Pull all students with empty/null full_name.
+    const { data: rows, error } = await supabase
+      .from('students')
+      .select('id, email, full_name, applicant_ref')
+      .or('full_name.is.null,full_name.eq.');
+    if (error) throw error;
+
+    let updated = 0;
+    const missing = [];
+    for (const s of rows || []) {
+      let applicant = null;
+      if (s.applicant_ref) {
+        try { applicant = await applicantsDb.findById(s.applicant_ref); } catch (_) {}
+      }
+      if (!applicant && s.email) {
+        try { applicant = await applicantsDb.findByEmail(String(s.email).toLowerCase()); } catch (_) {}
+      }
+      const name = applicant && applicant.full_name && String(applicant.full_name).trim();
+      if (!name) {
+        missing.push(s.email || s.id);
+        continue;
+      }
+      await studentsDb.update(s.id, { full_name: name });
+      updated++;
+    }
+    res.json({ updated, missing, scanned: (rows || []).length });
+  } catch (err) {
+    console.error('sync-names-from-applicants error:', err);
+    res.status(500).json({ error: err.message });
   }
 });
 
