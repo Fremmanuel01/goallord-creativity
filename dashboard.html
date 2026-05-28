@@ -3778,6 +3778,7 @@
           <option>Suspended</option>
           <option>Graduated</option>
         </select>
+        <button class="btn btn-ghost" id="bulkBatchBtn" style="margin-left:auto" onclick="openBulkBatchAssign()">Bulk assign batch ▾</button>
       </div>
       <div id="stuTableWrap" class="table-wrapper">
         <table style="width:100%;border-collapse:collapse">
@@ -8927,6 +8928,7 @@ document.getElementById('contactStatusFilter')?.addEventListener('change', rende
 //  ACADEMY — STUDENTS
 // ═══════════════════════════════════════════════════════════
 let allStudents = [];
+let allBatchesAdmin = [];
 
 async function loadStudents() {
   const res = await apiFetch('/api/students?limit=500');
@@ -8948,13 +8950,13 @@ async function loadStudents() {
   // Populate modal batch selects from ALL batches (including empty ones)
   const allBatchesRes = await apiFetch('/api/batches');
   const allBatchList = Array.isArray(allBatchesRes) ? allBatchesRes : [];
-  const allBatchEntries = allBatchList.sort((a, b) => a.name.localeCompare(b.name));
+  allBatchesAdmin = allBatchList.slice().sort((a, b) => a.name.localeCompare(b.name));
   ['att-batch-input', 'stu-batch-select'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const current = el.value;
     const placeholder = id === 'stu-batch-select' ? '— No batch —' : '— Select batch —';
-    el.innerHTML = `<option value="">${placeholder}</option>` + allBatchEntries.map(b => `<option value="${b._id}">${b.name}</option>`).join('');
+    el.innerHTML = `<option value="">${placeholder}</option>` + allBatchesAdmin.map(b => `<option value="${b._id}">${b.name}</option>`).join('');
     el.value = current;
   });
 
@@ -8987,21 +8989,126 @@ function filterStudents() {
     return;
   }
   const statusColors = { Active: 'var(--success)', Suspended: 'var(--warning)', Graduated: '#6a9fff' };
-  tbody.innerHTML = filtered.map(s => `
-    <tr style="cursor:pointer" onclick="viewStudent('${s._id||s.id}')" onmouseenter="this.style.background='rgba(255,255,255,0.03)'" onmouseleave="this.style.background=''">
-      <td style="padding:12px 14px;font-weight:600">${s.fullName||'—'}</td>
-      <td style="padding:12px 14px;color:var(--muted);font-size:13px">${s.email||'—'}</td>
-      <td style="padding:12px 14px;font-size:13px">${s.track||'—'}</td>
-      <td style="padding:12px 14px;font-size:13px">${s.batch?.name || '—'}</td>
+  const batchOptions = (selectedId) =>
+    '<option value="">— No batch —</option>' +
+    allBatchesAdmin.map(b =>
+      `<option value="${b._id}" ${selectedId === b._id ? 'selected' : ''}>${escHtml(b.name)}</option>`
+    ).join('');
+  tbody.innerHTML = filtered.map(s => {
+    const sid = s._id || s.id;
+    const hasName = !!(s.fullName && s.fullName.trim());
+    const nameCell = hasName
+      ? `<td style="padding:12px 14px;font-weight:600">${escHtml(s.fullName)}</td>`
+      : `<td style="padding:12px 14px" onclick="event.stopPropagation()">
+           <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--orange);font-weight:600;border:1px dashed rgba(214,106,31,0.4);border-radius:6px" onclick="inlineSetName('${sid}')">＋ Set name</button>
+         </td>`;
+    const currentBatchId = s.batch?._id || '';
+    const batchCell = allBatchesAdmin.length === 0
+      ? `<td style="padding:12px 14px;font-size:12px;color:var(--muted);font-style:italic" onclick="event.stopPropagation()">No batches yet — create one in Batches</td>`
+      : `<td style="padding:8px 14px" onclick="event.stopPropagation()">
+           <select class="form-input" data-student-id="${sid}" onchange="inlineAssignBatch('${sid}', this.value, this)" style="font-size:12px;padding:5px 10px;min-width:130px">
+             ${batchOptions(currentBatchId)}
+           </select>
+         </td>`;
+    return `
+    <tr style="cursor:pointer" onclick="viewStudent('${sid}')" onmouseenter="this.style.background='rgba(255,255,255,0.03)'" onmouseleave="this.style.background=''">
+      ${nameCell}
+      <td style="padding:12px 14px;color:var(--muted);font-size:13px">${escHtml(s.email||'—')}</td>
+      <td style="padding:12px 14px;font-size:13px">${escHtml(s.track||'—')}</td>
+      ${batchCell}
       <td style="padding:12px 14px"><span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:${statusColors[s.status]+'22'};color:${statusColors[s.status]}">${s.status}</span></td>
       <td style="padding:12px 14px" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="openEditStudent('${s._id||s.id}')">Edit</button>
-        ${s.status === 'Suspended' ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--success)" onclick="reactivateStudent('${s._id||s.id}','${(s.fullName||'').replace(/'/g,"\\'")}')">Reactivate</button>` : ''}
-        ${s.status !== 'Graduated' ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:#6a9fff" onclick="graduateStudent('${s._id||s.id}','${(s.fullName||'').replace(/'/g,"\\'")}')">Graduate</button>` : ''}
-        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--danger)" onclick="deleteStudent('${s._id||s.id}','${s.fullName||''}')">Delete</button>
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="openEditStudent('${sid}')">Edit</button>
+        ${s.status === 'Suspended' ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--success)" onclick="reactivateStudent('${sid}','${(s.fullName||'').replace(/'/g,"\\'")}')">Reactivate</button>` : ''}
+        ${s.status !== 'Graduated' ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:#6a9fff" onclick="graduateStudent('${sid}','${(s.fullName||'').replace(/'/g,"\\'")}')">Graduate</button>` : ''}
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--danger)" onclick="deleteStudent('${sid}','${s.fullName||''}')">Delete</button>
       </td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
+}
+
+// ── Inline single-row editors ─────────────────────────────────
+async function inlineSetName(studentId) {
+  const name = prompt('Enter the student\'s full name:');
+  if (!name || !name.trim()) return;
+  const res = await apiFetch(`/api/students/${studentId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ fullName: name.trim() })
+  });
+  if (!res) return;
+  showToast('Name updated.', 'success');
+  loadStudents();
+}
+
+async function inlineAssignBatch(studentId, batchId, selectEl) {
+  if (selectEl) selectEl.disabled = true;
+  const res = await apiFetch(`/api/students/${studentId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ batch: batchId || null })
+  });
+  if (selectEl) selectEl.disabled = false;
+  if (!res) return;
+  showToast(batchId ? 'Batch assigned.' : 'Batch removed.', 'success');
+  // Soft-refresh allStudents so the filter/dropdown stays in sync
+  loadStudents();
+}
+
+// ── Bulk batch assignment ─────────────────────────────────────
+async function openBulkBatchAssign() {
+  if (!allBatchesAdmin || allBatchesAdmin.length === 0) {
+    showToast('Create a batch first in the Batches tab.', 'error');
+    return;
+  }
+  const filtered = currentFilteredStudents();
+  if (filtered.length === 0) {
+    showToast('No students match the current filters.', 'error');
+    return;
+  }
+  const unassigned = filtered.filter(s => !s.batch?._id);
+  const scopeChoice = prompt(
+    `Bulk assign batch to:\n` +
+    `  1 = currently filtered students (${filtered.length})\n` +
+    `  2 = filtered students WITHOUT a batch (${unassigned.length})\n` +
+    `Enter 1 or 2:`,
+    '2'
+  );
+  if (scopeChoice !== '1' && scopeChoice !== '2') return;
+  const targets = scopeChoice === '1' ? filtered : unassigned;
+  if (targets.length === 0) { showToast('No students to update.', 'error'); return; }
+
+  const list = allBatchesAdmin.map((b, i) => `  ${i + 1} = ${b.name}`).join('\n');
+  const pick = prompt(`Pick a batch by number:\n${list}\n\nEnter a number (or 0 to clear batch):`);
+  const idx = Number(pick);
+  if (Number.isNaN(idx)) return;
+  const batchId = idx === 0 ? null : (allBatchesAdmin[idx - 1] && allBatchesAdmin[idx - 1]._id);
+  if (idx !== 0 && !batchId) { showToast('Invalid batch number.', 'error'); return; }
+  const batchName = idx === 0 ? '— no batch —' : allBatchesAdmin[idx - 1].name;
+
+  if (!confirm(`Assign "${batchName}" to ${targets.length} student(s)?`)) return;
+
+  let ok = 0, fail = 0;
+  for (const s of targets) {
+    const r = await apiFetch(`/api/students/${s._id || s.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ batch: batchId })
+    });
+    if (r) ok++; else fail++;
+  }
+  showToast(`Updated ${ok} student(s)${fail ? ` (${fail} failed)` : ''}.`, fail ? 'error' : 'success');
+  loadStudents();
+}
+
+function currentFilteredStudents() {
+  const search = (document.getElementById('stu-search')?.value || '').toLowerCase();
+  const batch  = document.getElementById('stu-batch-filter')?.value || '';
+  const track  = document.getElementById('stu-track-filter')?.value || '';
+  const status = document.getElementById('stu-status-filter')?.value || '';
+  return allStudents.filter(s =>
+    (!search || (s.fullName||'').toLowerCase().includes(search) || (s.email||'').toLowerCase().includes(search)) &&
+    (!batch  || s.batch?._id === batch) &&
+    (!track  || s.track  === track)  &&
+    (!status || s.status === status)
+  );
 }
 
 function openAddStudent() {
