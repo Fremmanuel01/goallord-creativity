@@ -14,10 +14,13 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/batches/active
+// GET /api/batches/active — optional ?track=<name> to scope to one track
 router.get('/active', async (req, res) => {
   try {
-    const batch = await batchesDb.findActive();
+    const { track } = req.query;
+    const batch = track
+      ? await batchesDb.findActiveByTrack(track)
+      : await batchesDb.findActive();
     if (!batch) return res.status(404).json({ error: 'No active batch' });
     res.json(batch);
   } catch (err) {
@@ -42,6 +45,18 @@ router.post('/', requireAuth, async (req, res) => {
     // The admin form sends `description` (legacy field name); the DB column is `notes`.
     // Accept either, write to `notes`.
     const { name, number, track, classDays, isActive, startDate, endDate, totalWeeks, description, notes } = req.body;
+
+    // Active rule: one active batch per track. If creating an active batch,
+    // deactivate any other batch already active on this track first.
+    if (isActive === true && track) {
+      const peers = await batchesDb.findAllActive();
+      for (const b of peers) {
+        if (b.track === track) {
+          await batchesDb.update(b.id, { is_active: false });
+        }
+      }
+    }
+
     const doc = {
       name,
       number,
@@ -67,13 +82,18 @@ router.patch('/:id', requireAuth, async (req, res) => {
     // Accept either `description` (legacy) or `notes`; DB column is `notes`.
     const { name, number, track, classDays, isActive, startDate, endDate, totalWeeks, description, notes } = req.body;
 
-    // If setting isActive=true, deactivate all others first
+    // Active rule: one active batch per track. If activating, deactivate
+    // any sibling that is also active on the same track. Other tracks
+    // are untouched so cohorts can run concurrently.
     if (isActive === true) {
-      // Deactivate all batches, then activate this one
-      const allBatches = await batchesDb.findAll();
-      for (const b of allBatches) {
-        if (b.id !== req.params.id && b.is_active) {
-          await batchesDb.update(b.id, { is_active: false });
+      const current = await batchesDb.findById(req.params.id);
+      const effectiveTrack = (track !== undefined ? track : current && current.track) || null;
+      if (effectiveTrack) {
+        const peers = await batchesDb.findAllActive();
+        for (const b of peers) {
+          if (b.id !== req.params.id && b.track === effectiveTrack) {
+            await batchesDb.update(b.id, { is_active: false });
+          }
         }
       }
     }

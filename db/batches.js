@@ -22,6 +22,27 @@ module.exports = {
     return data;
   },
 
+  // Returns the active batch for a specific track (one active per track is enforced)
+  async findActiveByTrack(track) {
+    if (!track) return null;
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select('*')
+      .eq('is_active', true)
+      .eq('track', track)
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+
+  // Returns ALL currently active batches
+  async findAllActive() {
+    const { data, error } = await supabase.from(TABLE).select('*').eq('is_active', true);
+    if (error) throw error;
+    return data || [];
+  },
+
   async create(doc) {
     const { data, error } = await supabase.from(TABLE).insert(clean(doc)).select().single();
     if (error) throw error;

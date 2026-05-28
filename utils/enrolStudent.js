@@ -29,7 +29,10 @@ function generatePassword() {
 async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
   const plainPassword = generatePassword();
   const hashed        = await bcrypt.hash(plainPassword, 12);
-  const activeBatch   = await batchesDb.findActive();
+  // Place new student into the active batch for THEIR track. Fall back to
+  // any active batch only if no track-specific cohort exists yet.
+  const activeBatch   = (applicant.track ? await batchesDb.findActiveByTrack(applicant.track) : null)
+                        || await batchesDb.findActive();
   const method        = opts.method    || (applicant.application_fee_ref ? 'Bank Transfer' : 'Paystack');
   const reference     = opts.reference || applicant.application_fee_ref || '';
 
