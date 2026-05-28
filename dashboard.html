@@ -9708,7 +9708,25 @@ async function saveBatch() {
 }
 
 async function setActiveBatch(id) {
-  glConfirm('Set as active batch?', 'All other batches will be deactivated. New accepted applicants will be assigned to this batch.', 'Set Active', 'primary', async () => {
+  // Build a track-aware confirmation message so admins know exactly
+  // which batches will be deactivated.
+  const target = (allBatches || []).find(b => (b._id || b.id) === id);
+  const track  = target && target.track;
+  const sameTrackActive = (allBatches || []).filter(b =>
+    (b._id || b.id) !== id && b.isActive && b.track && b.track === track
+  );
+
+  let message;
+  if (!track) {
+    message = 'New accepted applicants on this batch\'s track will be assigned here.';
+  } else if (sameTrackActive.length === 0) {
+    message = `This will be the active batch for ${track}. Other tracks are unaffected.`;
+  } else {
+    const names = sameTrackActive.map(b => `"${b.name}"`).join(', ');
+    message = `${names} will be deactivated because only one batch can be active per track (${track}). Other tracks are unaffected.`;
+  }
+
+  glConfirm('Set as active batch?', message, 'Set Active', 'primary', async () => {
     const res = await apiFetch(`/api/batches/${id}`, { method: 'PATCH', body: JSON.stringify({ isActive: true }) });
     if (res) { loadBatches(); showToast('Active batch updated', 'success'); }
   });
