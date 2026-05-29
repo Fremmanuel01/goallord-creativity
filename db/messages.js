@@ -22,9 +22,27 @@ async function ensureParticipant(threadId, user) {
   }, { onConflict: 'thread_id,user_type,user_id', ignoreDuplicates: true });
 }
 
+// Pure policy check: may `user` post into `thread`?
+// Students are read-only in 'announce' batch threads; everyone else may post.
+function canPostToThread(user, thread) {
+  if (!thread) return false;
+  if (thread.type === 'batch' && thread.post_policy === 'announce' && user.type === 'student') {
+    return false;
+  }
+  return true;
+}
+
 module.exports = {
   dmKey,
   ensureParticipant,
+  canPostToThread,
+
+  async setPostPolicy(threadId, policy) {
+    const { data, error } = await supabase.from(THREADS)
+      .update({ post_policy: policy }).eq('id', threadId).select().single();
+    if (error) throw error;
+    return data;
+  },
 
   async getThread(id) {
     const { data, error } = await supabase.from(THREADS).select('*').eq('id', id).single();
@@ -41,6 +59,27 @@ module.exports = {
     const { data } = await supabase.from(PARTS).select('thread_id')
       .eq('thread_id', threadId).eq('user_type', user.type).eq('user_id', user.id).limit(1);
     return !!(data && data.length);
+  },
+
+  // May `user` access `threadId`? DM → must be a participant; batch → must
+  // belong to that batch. Used to gate Socket.IO room joins (mirrors the REST
+  // authorizeThread guard in routes/messages.js).
+  async canAccessThread(user, threadId) {
+    const thread = await module.exports.getThread(threadId);
+    if (!thread) return false;
+    if (thread.type === 'dm') return module.exports.isParticipant(threadId, user);
+    // batch thread
+    if (user.type === 'admin') return true;
+    if (user.type === 'lecturer') {
+      const { data } = await supabase.from('lecturer_batches').select('lecturer_id')
+        .eq('lecturer_id', user.id).eq('batch_id', thread.batch_id).limit(1);
+      return !!(data && data.length);
+    }
+    if (user.type === 'student') {
+      const { data } = await supabase.from('students').select('batch_id').eq('id', user.id).single();
+      return !!(data && data.batch_id && data.batch_id === thread.batch_id);
+    }
+    return false;
   },
 
   // Find or create the 1:1 DM thread between two users; ensures both join rows.

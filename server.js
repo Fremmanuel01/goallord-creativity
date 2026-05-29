@@ -296,8 +296,18 @@ io.on('connection', socket => {
     socket.join(`user:${u.type}:${u.id}`);
     socket.emit('chat:joined', { type: u.type, id: u.id });
   });
-  socket.on('chat:open', ({ threadId }) => {
-    if (socket.chatUser && threadId) socket.join('thread:' + threadId);
+  socket.on('chat:open', async ({ threadId }) => {
+    if (!socket.chatUser || !threadId) return;
+    try {
+      const messagesDb = require('./db/messages');
+      if (await messagesDb.canAccessThread(socket.chatUser, threadId)) {
+        socket.join('thread:' + threadId);
+      } else {
+        socket.emit('chat:error', { message: 'No access to this conversation' });
+      }
+    } catch {
+      socket.emit('chat:error', { message: 'Could not open conversation' });
+    }
   });
   socket.on('chat:leave', ({ threadId }) => {
     if (threadId) socket.leave('thread:' + threadId);
