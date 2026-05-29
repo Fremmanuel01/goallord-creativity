@@ -1,0 +1,4527 @@
+@charset "UTF-8";
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+:root {
+  --white: #ffffff;
+  --black: #000000;
+  --primary: #07C42C;
+  --primary-rgb: 7, 196, 44;
+  --white-50: #FFFFFF80;
+  --white-64: #FFFFFFA3;
+  --white-32: #ffffff52;
+  --white-16: #FFFFFF29;
+  --black-64: #000000A3;
+  --black-32: #00000052;
+  --line-2: #CCCCCC;
+  /* Custom */
+  --shadow-1: #A3A3A340;
+  --verified: #00BF43;
+  --success: #3DAB25;
+  --surface: #D8D8D8;
+}
+
+/*------------ Core CSS ---------------- */
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+html,
+body,
+div,
+span,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+address,
+big,
+cite,
+code,
+em,
+img,
+q,
+s,
+small,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+footer,
+header,
+nav,
+section,
+summary,
+time,
+mark,
+video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+  font-family: inherit;
+  font-size: 100%;
+  font-style: inherit;
+  font-weight: inherit;
+}
+
+article,
+aside,
+details,
+figure,
+footer,
+header,
+nav,
+section {
+  display: block;
+}
+
+/* Elements
+-------------------------------------------------------------- */
+html {
+  margin-right: 0 !important;
+  scroll-behavior: smooth;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Figtree", sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--white);
+  background-color: var(--black);
+}
+body::-webkit-scrollbar {
+  width: 4px;
+}
+body::-webkit-scrollbar-thumb {
+  cursor: grab;
+  background-color: var(--primary);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  transform: scale(1);
+  vertical-align: middle;
+  -ms-interpolation-mode: bicubic;
+}
+
+ul,
+li {
+  list-style-type: none;
+  margin-bottom: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+table {
+  width: 100%;
+  overflow-x: auto;
+  table-layout: auto;
+  border-collapse: collapse;
+}
+
+td,
+th {
+  padding: 12px 16px;
+}
+@media (min-width: 1200px) {
+  td,
+  th {
+    padding: 16px 24px;
+  }
+}
+
+svg path {
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+button {
+  background: transparent;
+  border: 0;
+  display: inline-flex;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+select,
+option {
+  all: unset;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Since FF19 lowers the opacity of the placeholder by default */
+
+b,
+strong {
+  font-weight: bolder;
+}
+
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+a {
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-block;
+  font-family: "Figtree", sans-serif;
+  color: var(--text);
+}
+a:focus, a:hover {
+  outline: 0;
+}
+
+p {
+  display: block;
+}
+
+.sticky-top {
+  position: sticky !important;
+  z-index: 50;
+  top: 15px;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+#scroll-top.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Preload 
+------------------------------------------- */
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 3px solid transparent;
+  border-top: 3px solid var(--primary);
+  border-radius: 100%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.br-line {
+  width: 100%;
+  height: 1px;
+  display: inline-flex;
+  background-color: var(--white-16);
+}
+
+.br-dot {
+  display: inline-flex;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  box-shadow: 0px 0px 2px 1px rgba(var(--primary-rgb), 0.2), 0px 0px 6px 4px rgba(var(--primary-rgb), 0.2);
+}
+
+.line {
+  border: 1px solid var(--white-16);
+}
+
+.tf-swiper .swiper-slide {
+  height: auto;
+}
+.tf-swiper .swiper-slide > * {
+  height: 100%;
+}
+
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+/* Typography
+============================================================== */
+/* Heading */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Figtree", sans-serif;
+  text-rendering: optimizeLegibility;
+  font-weight: 500;
+  margin-bottom: 0;
+  letter-spacing: 0;
+}
+
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+  font-family: "Figtree", sans-serif;
+  text-rendering: optimizeLegibility;
+  font-weight: 400;
+  margin-bottom: 0;
+  letter-spacing: 0;
+}
+
+h1,
+.h1 {
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: clamp(44px, 5.5vw, 68px);
+}
+
+h2,
+.h2 {
+  font-size: clamp(32px, 4.5vw, 56px);
+  line-height: clamp(40px, 5vw, 64px);
+}
+
+h3,
+.h3 {
+  font-size: clamp(28px, 4vw, 48px);
+  line-height: clamp(36px, 4.5vw, 56px);
+}
+
+h4,
+.h4 {
+  font-size: clamp(26px, 3.5vw, 40px);
+  line-height: clamp(34px, 4vw, 48px);
+}
+
+h5,
+.h5 {
+  font-size: clamp(22px, 3vw, 32px);
+  line-height: clamp(28px, 3.5vw, 40px);
+}
+
+h6,
+.h6 {
+  font-size: clamp(20px, 2.5vw, 24px);
+  line-height: clamp(26px, 3vw, 32px);
+}
+
+/* Font custom */
+
+.text-display-1 {
+  font-size: clamp(60px, 8vw, 96px);
+  line-height: clamp(60px, 8vw, 96px);
+}
+
+.text-display-2 {
+  font-size: clamp(32px, 6vw, 72px);
+  line-height: clamp(40px, 6.5vw, 80px);
+}
+
+.text-body-1 {
+  font-size: 18px;
+  line-height: 28px;
+}
+
+.text-body-2 {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.text-caption {
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: -0.01em;
+}
+
+/* Text Font */
+
+/* Font size */
+
+.fs-10 {
+  font-size: 10px !important;
+}
+
+.fs-14 {
+  font-size: 14px !important;
+}
+
+/* Line height */
+
+/* Letter spacing */
+
+.letter-space--1 {
+  letter-spacing: -0.01em !important;
+}
+
+.letter-space--2 {
+  letter-spacing: -0.02em !important;
+}
+
+.letter-space--3 {
+  letter-spacing: -0.03em !important;
+}
+
+/* Responsive */
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+/* General
+============================================================== */
+/* Margin */
+.mb-2 {
+  margin-bottom: 2px !important;
+}
+
+.mb-4 {
+  margin-bottom: 4px !important;
+}
+
+/* Padding */
+
+/* Gap */
+
+/* Spacing */
+.flat-spacing {
+  padding-top: 120px;
+  padding-bottom: 120px;
+}
+@media (max-width: 1439px) {
+  .flat-spacing {
+    padding-top: 80px;
+    padding-bottom: 80px;
+  }
+}
+@media (max-width: 991px) {
+  .flat-spacing {
+    padding-top: 60px;
+    padding-bottom: 60px;
+  }
+}
+
+/* Orther */
+.text-primary {
+  color: var(--primary) !important;
+}
+
+.text-white-64 {
+  color: var(--white-64);
+}
+
+.link {
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+.link:hover {
+  color: var(--primary) !important;
+}
+
+.cs-pointer {
+  cursor: pointer;
+}
+
+.z-5 {
+  z-index: 5;
+}
+
+.bg-primary {
+  background-color: var(--primary) !important;
+}
+/*------------ Component ---------------- */
+/*------------ Layout ---------------- */
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+.tf-grid-layout {
+  display: grid;
+  column-gap: 24px;
+  row-gap: 32px;
+}
+@media (min-width: 576px) {
+  .tf-grid-layout.sm-col-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (min-width: 768px) {
+  .tf-grid-layout.md-col-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .tf-grid-layout.md-col-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (min-width: 992px) {
+  .tf-grid-layout.lg-col-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (min-width: 1200px) {
+  .tf-grid-layout {
+    column-gap: 30px;
+    row-gap: 40px;
+  }
+}
+
+.row {
+  margin-right: -6px;
+  margin-left: -6px;
+}
+.row > * {
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+.container {
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+  padding-right: 15px;
+  padding-left: 15px;
+  width: 1326px;
+  max-width: 100%;
+}
+
+/*------------ Header ---------------- */
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+header {
+  position: sticky;
+  z-index: 100;
+  transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+header.header-sticky {
+  background-color: var(--black);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
+}
+
+.tf-header {
+  padding-top: 36px;
+  padding-bottom: 36px;
+  margin-bottom: -116px;
+}
+.tf-header .header-contact {
+  display: grid;
+  gap: 4px;
+}
+.tf-header.style-2 {
+  margin-bottom: -148px;
+}
+.tf-header.style-2 .tf-list li {
+  display: flex;
+}
+@media (max-width: 1199px) {
+  .tf-header {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    margin-bottom: -74px;
+  }
+  .tf-header.style-2 {
+    margin-bottom: -106px;
+  }
+}
+@media (max-width: 767px) {
+  .tf-header.style-2 {
+    margin-bottom: -74px;
+  }
+}
+
+.item-link {
+  display: flex;
+  align-items: start;
+  gap: 4px;
+  font-weight: 500;
+}
+.item-link span {
+  font-size: 8px;
+  line-height: 12px;
+  color: var(--white-64);
+}
+
+.nav-menu-main {
+  display: flex;
+  align-items: center;
+  gap: 21px;
+}
+.nav-icon-item.has-num {
+  margin-right: 8px;
+}
+.nav-icon-item.has-num .number-count {
+  position: absolute;
+  top: -5.75px;
+  right: -8px;
+}
+
+.btn-mobile-menu {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-mobile-menu .icon {
+  aspect-ratio: 1;
+}
+
+/*-- Menu Mobile --*/
+.mb-menu-link {
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  font-weight: 550;
+  letter-spacing: -0.03em;
+  position: relative;
+  width: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  line-height: clamp(68px, 9vw, 108px);
+}
+.mb-menu-link > * {
+  pointer-events: all;
+}
+.mb-menu-link .infiniteSlide_text_main {
+  position: absolute;
+  top: 40%;
+  left: 0;
+  transform: translateY(-50%);
+  opacity: 0;
+  visibility: hidden;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+.mb-menu-link .infiniteSlide_text_main .infiniteSlide_text {
+  gap: 40px;
+}
+.mb-menu-link .infiniteSlide_text_main::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #000 0%, rgba(255, 255, 255, 0) 20%, rgba(255, 255, 255, 0) 80%, rgba(255, 255, 255, 0) 100%);
+  z-index: 2;
+}
+.mb-menu-link .text {
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+@media (min-width: 576px) {
+  .mb-menu-link:hover .text {
+    color: rgba(255, 255, 255, 0.6392156863);
+    filter: blur(12px);
+  }
+  .mb-menu-link:hover .infiniteSlide_text_main {
+    opacity: 1;
+    visibility: visible;
+    top: 50%;
+  }
+}
+
+.nav-ul-mb {
+  display: grid;
+  gap: 4px;
+}
+.nav-ul-mb li {
+  text-align: end;
+}
+.nav-ul-mb .has-sub-menu {
+  display: grid;
+  place-items: flex-end;
+  width: 100%;
+}
+.nav-ul-mb .has-sub-menu .mb-menu-link {
+  position: relative;
+}
+.nav-ul-mb .has-sub-menu .mb-menu-link .ic {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: -1;
+  line-height: 1;
+  display: flex;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+.nav-ul-mb .has-sub-menu .mb-menu-link .ic .icon {
+  aspect-ratio: 1;
+  font-size: 24px;
+}
+.nav-ul-mb .has-sub-menu .mb-menu-link:not(.collapsed) {
+  margin-bottom: 20px;
+}
+.nav-ul-mb .has-sub-menu .mb-menu-link:not(.collapsed) .ic {
+  transform: rotate(180deg);
+}
+.nav-ul-mb .has-sub-menu .sub-nav-menu {
+  display: grid;
+  gap: 4px;
+}
+
+.offcanvas-menu {
+  height: 100vh !important;
+  backdrop-filter: blur(4px);
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5607843137);
+  z-index: 3000;
+}
+.offcanvas-menu .offcanvas-content {
+  padding-top: 36px;
+  padding-bottom: 60px;
+  height: 100%;
+}
+.offcanvas-menu .offcanvas-content_wrapin {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 20px;
+}
+.offcanvas-menu .canvas_head {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  flex-wrap: wrap;
+}
+.offcanvas-menu .canvas_center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+}
+.offcanvas-menu .canvas_center::-webkit-scrollbar {
+  width: 2px;
+}
+.offcanvas-menu .canvas_center::-webkit-scrollbar-thumb {
+  background-color: var(--primary);
+}
+.offcanvas-menu .canvas_foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.offcanvas-menu .canvas_foot .left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.offcanvas-menu .canvas_foot .right {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.offcanvas-menu.style-2 .infiniteSlide_text_main {
+  display: none;
+}
+@media (max-width: 1199px) {
+  .offcanvas-menu .offcanvas-content {
+    padding-top: 30px;
+    padding-bottom: 30px;
+  }
+  .offcanvas-menu .canvas_foot .right {
+    gap: 24px;
+  }
+}
+
+.offcanvas-menu {
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  -ms-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+  top: 100%;
+}
+.offcanvas-menu .canvas_head {
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-20px);
+}
+.offcanvas-menu .nav-ul-mb li {
+  overflow: hidden;
+}
+.offcanvas-menu .nav-ul-mb .item {
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  -ms-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(100px);
+  display: flex;
+}
+.offcanvas-menu .canvas_foot {
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+}
+.offcanvas-menu.show {
+  top: 0;
+}
+.offcanvas-menu.show .canvas_head {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition-delay: 0.5s;
+}
+.offcanvas-menu.show .canvas_foot {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition-delay: 0.6s;
+}
+.offcanvas-menu.show .nav-ul-mb li .item {
+  transform: translateY(0px);
+  opacity: 1;
+  visibility: visible;
+}
+.offcanvas-menu.show .nav-ul-mb li:nth-child(1) .item {
+  transition-delay: 0.5s;
+}
+.offcanvas-menu.show .nav-ul-mb li:nth-child(2) .item {
+  transition-delay: 0.6s;
+}
+.offcanvas-menu.show .nav-ul-mb li:nth-child(3) .item {
+  transition-delay: 0.7s;
+}
+.offcanvas-menu.show .nav-ul-mb li:nth-child(4) .item {
+  transition-delay: 0.8s;
+}
+.offcanvas-menu.show .nav-ul-mb li:nth-child(5) .item {
+  transition-delay: 1s;
+}
+
+/*-- Landing --*/
+
+.menu-item.has-child {
+  position: relative;
+  cursor: pointer;
+}
+.menu-item.has-child::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% + 40px);
+  height: calc(100% + 40px);
+  z-index: 0;
+  display: none;
+}
+.menu-item:hover.has-child > a {
+  color: var(--primary);
+}
+.menu-item:hover.has-child::after {
+  display: block;
+}
+
+/*------------ Blog ---------------- */
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+.article-blog {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--white-16);
+}
+.article-blog .blog-content {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+.article-blog .btn-action {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid var(--white-16);
+  flex-shrink: 0;
+}
+.article-blog .btn-action .icon {
+  font-size: 20px;
+}
+.article-blog .btn-action:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.article-blog .infor_sub {
+  margin-bottom: 8px;
+}
+.article-blog .infor_name {
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  display: -webkit-box !important;
+  overflow: hidden;
+}
+@media (min-width: 1200px) {
+  .article-blog .btn-action {
+    width: 50px;
+    height: 50px;
+  }
+}
+.wg-pagination .pagination-item.active {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/*------------ Element ---------------- */
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+@keyframes sliderShape {
+  0%, 100% {
+    border-radius: 42% 58% 70% 30%/45% 45% 55% 55%;
+    transform: translate3d(0, 0, 0) rotateZ(0.01deg);
+  }
+  34% {
+    border-radius: 70% 30% 46% 54%/30% 29% 71% 70%;
+    transform: translate3d(0, 5px, 0) rotateZ(0.01deg);
+  }
+  50% {
+    transform: translate3d(0, 0, 0) rotateZ(0.01deg);
+  }
+  67% {
+    border-radius: 100% 60% 60% 100%/100% 100% 60% 60%;
+    transform: translate3d(0, -3px, 0) rotateZ(0.01deg);
+  }
+}
+@keyframes tf-animate-zoom-in-out {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes ripple-line {
+  to {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+@keyframes shine-reverse {
+  0% {
+    left: 100%;
+  }
+  100% {
+    left: -100%;
+  }
+}
+@-webkit-keyframes spinner-circleBounceDelay {
+  0%, 80%, 100% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  }
+  40% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+@keyframes spinner-circleBounceDelay {
+  0%, 80%, 100% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  }
+  40% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes iconBounce {
+  0%, 100%, 20%, 50%, 80% {
+    -webkit-transform: translateY(0);
+    -ms-transform: translateY(0);
+    transform: translateY(0);
+  }
+  40% {
+    -webkit-transform: translateY(-8px);
+    -ms-transform: translateY(-8px);
+    transform: translateY(-8px);
+  }
+  60% {
+    -webkit-transform: translateY(-5px);
+    -ms-transform: translateY(-5px);
+    transform: translateY(-5px);
+  }
+}
+@keyframes float1 {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(-5deg);
+  }
+}
+@keyframes float2 {
+  0%, 100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  50% {
+    transform: translateX(5px) rotate(10deg);
+  }
+}
+@keyframes float3 {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.1) rotate(-8deg);
+  }
+}
+@keyframes float4 {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-8px);
+  }
+}
+@keyframes float5 {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(5deg) scale(1.05);
+  }
+  75% {
+    transform: rotate(-5deg) scale(1.05);
+  }
+}
+@keyframes bgMove {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: 0% 0;
+  }
+}
+@keyframes effect-send {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  49% {
+    transform: translate3d(42px, -39px, 38px);
+    opacity: 0;
+  }
+  50% {
+    transform: translate3d(-42px, 39px, 38px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes moveUp {
+  0% {
+    background-position-y: 0;
+  }
+  100% {
+    background-position-y: -1000px;
+  }
+}
+@keyframes objPosition {
+  0% {
+    object-fit: top;
+  }
+  100% {
+    object-fit: bottom;
+  }
+}
+.effectFade {
+  opacity: 0;
+}
+
+.slick-slide,
+.slick-track,
+.flip-image,
+.element,
+.effectFade,
+.animate-box,
+.image-2,
+.overflow-hidden > * {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+.hover-img .img-style {
+  overflow: hidden;
+}
+.hover-img .img-style > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  -webkit-transition: opacity 0.5s ease, transform 1.5s cubic-bezier(0, 0, 0.44, 1.18);
+  transition: opacity 0.5s ease, transform 1.5s cubic-bezier(0, 0, 0.44, 1.18);
+}
+.hover-img:hover .img-style > img {
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
+
+.pagi2 .swiper-pagination2:hover .box-img .icon-practice,
+.swiper-button-next2:hover .box-img .icon-practice,
+.swiper-button-prev2:hover .box-img .icon-practice {
+  opacity: 1;
+  z-index: 99;
+  top: 50%;
+  transition-delay: 0.5s;
+}
+.pagi2 .swiper-pagination2:hover .img-style::before,
+.swiper-button-next2:hover .img-style::before,
+.swiper-button-prev2:hover .img-style::before {
+  opacity: 1;
+}
+.pagi2 .swiper-pagination2 .img-style,
+.swiper-button-next2 .img-style,
+.swiper-button-prev2 .img-style {
+  border-radius: 10px;
+  overflow: hidden;
+}
+.pagi2 .swiper-pagination2 .img-style::before,
+.swiper-button-next2 .img-style::before,
+.swiper-button-prev2 .img-style::before {
+  content: "";
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  position: absolute;
+  background: rgba(0, 0, 0, 0.5019607843);
+  width: 100%;
+  height: 100%;
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  -ms-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+  z-index: 99;
+  opacity: 0;
+  border-radius: 10px;
+}
+.pagi2 .swiper-pagination2 .img-style.s-one::before,
+.swiper-button-next2 .img-style.s-one::before,
+.swiper-button-prev2 .img-style.s-one::before {
+  border-radius: 50%;
+}
+.hover-tooltip .tooltip {
+  position: absolute;
+  white-space: nowrap;
+  padding: 4px 12px;
+  border-radius: 2px;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  visibility: hidden;
+  color: var(--white);
+  background-color: var(--black);
+  transition: transform 0.3s ease 0.1s, opacity 0.3s ease 0.1s;
+  z-index: 5;
+  font-size: 12px;
+  line-height: 22px;
+  font-weight: 400;
+  border-radius: 8px;
+  text-align: center;
+  font-family: "Figtree", sans-serif;
+  display: none;
+}
+.hover-tooltip .tooltip::before {
+  content: "";
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  top: 26px;
+  position: absolute;
+  background: var(--black);
+  width: 9px;
+  height: 9px;
+  z-index: -1;
+}
+@media (min-width: 1200px) {
+  .hover-tooltip .tooltip {
+    font-size: 16px;
+    line-height: 22px;
+    display: block;
+  }
+}
+.hover-tooltip .tooltip.bg-primary::before {
+  background: var(--primary);
+}
+.hover-tooltip:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+.hover-tooltip.tooltip-bot .tooltip {
+  top: calc(100% + 10px);
+  bottom: unset;
+}
+.hover-tooltip.tooltip-bot .tooltip::before {
+  top: -4px;
+}
+.hover-tooltip.tooltip-left .tooltip {
+  right: 100%;
+  bottom: auto;
+  transform: translateX(0px);
+  left: unset;
+}
+.hover-tooltip.tooltip-left .tooltip::before {
+  top: 50%;
+  left: auto;
+  transform: translateY(-50%) rotate(45deg);
+  right: -4px;
+}
+.hover-tooltip.tooltip-left:hover .tooltip {
+  transform: translateX(-12px);
+}
+.hover-tooltip.tooltip-right .tooltip {
+  left: 100%;
+  bottom: auto;
+  transform: translateX(0px);
+}
+.hover-tooltip.tooltip-right .tooltip::before {
+  top: 50%;
+  right: auto;
+  transform: translateY(-50%) rotate(45deg);
+  left: -4px;
+}
+.hover-tooltip.tooltip-right:hover .tooltip {
+  transform: translateX(8px);
+}
+
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+
+.tf-link-icon {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+/*-- CSS Boostrap --*/
+.offcanvas {
+  border: none !important;
+  color: var(--white);
+  z-index: 3000;
+  background-color: rgba(0, 0, 0, 0.5607843137);
+}
+.offcanvas .icon-close-popup {
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  background: transparent;
+  font-size: 16px;
+  padding: 10px;
+  border: none;
+  color: var(--black);
+  z-index: 10;
+}
+.offcanvas .icon-close-popup:hover {
+  color: var(--primary);
+}
+.offcanvas .icon-close-popup.type-right {
+  top: 16px;
+  right: 16px;
+}
+.offcanvas .offcanvas-content {
+  height: 100%;
+}
+.offcanvas.offcanvas-center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) !important;
+  opacity: 0;
+  visibility: hidden;
+  max-width: calc(100vw - 30px);
+}
+.offcanvas.offcanvas-center.show {
+  visibility: visible;
+  opacity: 1;
+}
+
+.offcanvas-backdrop {
+  z-index: 2999;
+  cursor: url(../images/cursor-close.svg), auto;
+}
+
+.modal {
+  cursor: url(../images/cursor-close.svg), auto;
+}
+.modal .icon-close-popup {
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  background: transparent;
+  font-size: 16px;
+  padding: 16px;
+  border: none;
+  color: var(--black);
+  z-index: 10;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+.modal .icon-close-popup:hover {
+  color: var(--primary);
+}
+@media (min-width: 576px) {
+  .modal .icon-close-popup {
+    top: 10px;
+    right: 10px;
+  }
+}
+.modal .modal-content {
+  border: 0;
+}
+.modal .modal-body {
+  padding: 0;
+}
+.modal.fullRight .modal-dialog {
+  transform: translate(100%, 0);
+  min-width: 100%;
+  height: 100%;
+  margin: 0;
+  transition: transform 1s ease-out;
+}
+.modal.fullRight .modal-dialog .modal-content {
+  border-radius: 0;
+  border: 0;
+  margin: auto;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  padding: 0;
+}
+.modal.fullRight .modal-dialog .modal-content .modal-body {
+  overflow: auto;
+  padding: 0;
+  padding-bottom: 30px;
+}
+.modal.fullRight.show .modal-dialog {
+  transform: none;
+  transition: transform 0.4s ease-out;
+}
+.modal.fullLeft .modal-dialog {
+  transform: translate(-100%, 0) !important;
+  min-width: 100%;
+  height: 100%;
+  margin: 0;
+  transition: all 0.3s !important;
+}
+.modal.fullLeft .modal-content {
+  border-radius: 0;
+  border: 0;
+  margin: auto;
+  overflow: hidden;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  top: 0;
+  padding: 0;
+}
+.modal.fullLeft .modal-body {
+  overflow: auto;
+  padding: 0;
+  padding-bottom: 30px;
+}
+.modal.fullLeft.show .modal-dialog {
+  transform: translate(0, 0) !important;
+}
+.modal.fullBottom .modal-dialog {
+  transform: translate(0, 100%);
+  min-width: 100%;
+  height: 100%;
+  max-height: unset;
+  margin: 0;
+  transition: transform 0.3s linear !important;
+}
+.modal.fullBottom .modal-content {
+  border-radius: 0;
+  border: 0;
+  margin: auto;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: 0;
+  max-height: max-content;
+}
+.modal.fullBottom .modal-body {
+  overflow: auto;
+  padding: 0;
+  padding-bottom: 30px;
+}
+.modal.fullBottom.show .modal-dialog {
+  transform: translate(0, 0);
+}
+.modal.modalCentered .modal-dialog {
+  margin: 15px auto;
+  padding-left: 15px;
+  padding-right: 15px;
+  transform: translate(0, 0) !important;
+}
+.modal.fade:not(.show) {
+  opacity: 0;
+}
+.modal .modal-content {
+  cursor: default !important;
+  border-radius: 0px;
+}
+
+.modal-heading {
+  position: relative;
+  margin-bottom: 30px;
+}
+.modal-heading .icon-close-popup {
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0;
+  left: unset;
+  font-size: 24px;
+}
+@media (min-width: 992px) {
+  .modal-heading {
+    margin-bottom: 40px;
+  }
+}
+
+/*-- Css --*/
+.offcanvas-color .offcanvas-content {
+  display: flex;
+  flex-direction: column;
+}
+.offcanvas-color .offcanvas-content,
+.offcanvas-color .canvas-body {
+  background-color: #191919;
+}
+.offcanvas-color .icon-close-popup {
+  color: var(--white);
+  aspect-ratio: 1;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 20px;
+}
+.offcanvas-color .title {
+  margin-bottom: 20px;
+}
+@media (min-width: 1200px) {
+  .offcanvas-color {
+    width: 1043px !important;
+  }
+  .offcanvas-color .offcanvas-content {
+    padding: 134px;
+  }
+}
+@media (max-width: 575px) {
+  .offcanvas-color {
+    max-width: 325px;
+  }
+}
+
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+.flat-animate-tab .tab-content {
+  position: relative;
+}
+.flat-animate-tab .tab-pane {
+  display: block;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  right: 0;
+  -webkit-transform: translateY(30px);
+  -ms-transform: translateY(30px);
+  transform: translateY(30px);
+  transition-timing-function: ease-in;
+  transition-duration: 0.2s;
+}
+.flat-animate-tab .tab-pane.active {
+  pointer-events: auto;
+  opacity: 1;
+  visibility: visible;
+  position: relative;
+  z-index: 2;
+  -webkit-transform: none;
+  -ms-transform: none;
+  transform: none;
+  transition-timing-function: ease-out;
+  transition-duration: 0.3s;
+  transition-delay: 0.3s;
+}
+
+.pricing-tab_btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pricing-tab_btn li {
+  width: 100%;
+  white-space: nowrap;
+}
+.pricing-tab_btn .tf-btn-tab {
+  display: grid;
+  place-items: center;
+  gap: 16px;
+  color: var(--white-64);
+  text-align: center;
+}
+.pricing-tab_btn .tf-btn-tab.active {
+  color: var(--white);
+}
+.pricing-tab_btn .tf-btn-tab.active .dot-active {
+  background: var(--primary);
+  box-shadow: 0px 0px 2px 1px rgba(5, 148, 29, 0.3019607843), 0px 0px 6px 4px rgba(5, 148, 29, 0.1803921569);
+}
+.pricing-tab_btn .dot-active {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--white-32);
+}
+@media (min-width: 576px) {
+  .pricing-tab_btn {
+    gap: 12px;
+  }
+  .pricing-tab_btn li {
+    max-width: 206px;
+    width: 100%;
+  }
+}
+
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+form {
+  position: relative;
+  z-index: 30;
+}
+form textarea,
+form input[type=text],
+form input[type=password],
+form input[type=datetime-local],
+form input[type=date],
+form input[type=month],
+form input[type=time],
+form input[type=week],
+form input[type=number],
+form input[type=email],
+form input[type=url],
+form input[type=search],
+form input[type=tel],
+form input[type=color] {
+  outline: 0;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  width: 100%;
+  padding: 16px 12px 3px 0px;
+  border: 0;
+  background-color: transparent;
+  border-bottom: 1px solid var(--white-16);
+  color: var(--white);
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+form textarea::placeholder,
+form input[type=text]::placeholder,
+form input[type=password]::placeholder,
+form input[type=datetime-local]::placeholder,
+form input[type=date]::placeholder,
+form input[type=month]::placeholder,
+form input[type=time]::placeholder,
+form input[type=week]::placeholder,
+form input[type=number]::placeholder,
+form input[type=email]::placeholder,
+form input[type=url]::placeholder,
+form input[type=search]::placeholder,
+form input[type=tel]::placeholder,
+form input[type=color]::placeholder {
+  color: var(--text-2);
+}
+form textarea:focus,
+form input[type=text]:focus,
+form input[type=password]:focus,
+form input[type=datetime-local]:focus,
+form input[type=date]:focus,
+form input[type=month]:focus,
+form input[type=time]:focus,
+form input[type=week]:focus,
+form input[type=number]:focus,
+form input[type=email]:focus,
+form input[type=url]:focus,
+form input[type=search]:focus,
+form input[type=tel]:focus,
+form input[type=color]:focus {
+  border-color: var(--primary);
+}
+form button,
+form input[type=button],
+form input[type=reset],
+form input[type=submit] {
+  background-color: transparent;
+  overflow: hidden;
+  padding: 0;
+}
+form textarea {
+  height: 150px;
+  border-radius: 32px;
+  resize: none;
+}
+form .form-content {
+  display: grid;
+  gap: 20px;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+select {
+  outline: 0;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  width: 100%;
+  padding: 0;
+  padding-bottom: 16px;
+  padding-left: 16px;
+  border: 0;
+  background-color: transparent;
+  border-bottom: 1px solid var(--white-16);
+  color: var(--white-64);
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  font-size: 18px;
+  letter-spacing: -0.18px;
+}
+select option {
+  background-color: var(--black);
+  padding-left: 10px;
+}
+
+.tf-field {
+  position: relative;
+}
+.tf-field .tf-lable {
+  cursor: text;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  pointer-events: none;
+  color: var(--white-64);
+}
+@media (min-width: 576px) {
+  .tf-field .tf-input:not(:placeholder-shown) ~ .tf-lable, .tf-field .tf-input:focus ~ .tf-lable {
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0;
+  }
+  .tf-field .tf-input::placeholder {
+    color: transparent;
+  }
+  .tf-field .tf-lable {
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 18px;
+    line-height: 28px;
+  }
+}
+@media (max-width: 575px) {
+  .tf-field {
+    display: grid;
+  }
+  .tf-field .tf-lable {
+    order: -1;
+  }
+  .tf-field .tf-input {
+    padding-top: 0;
+  }
+}
+
+.form-cta .form-content {
+  gap: 40px;
+  margin-bottom: 88px;
+}
+.form-cta .form-content input {
+  letter-spacing: -0.01em;
+}
+.form-cta .tf-grid-layout {
+  gap: 40px;
+}
+.form-cta .form-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+@media (min-width: 576px) {
+  .form-cta .form-content input {
+    font-size: 18px;
+    line-height: 22px;
+  }
+  .form-cta .nice-select .current {
+    color: var(--white-64);
+    font-size: 18px;
+    line-height: 22px;
+  }
+}
+@media (max-width: 1199px) {
+  .form-cta .form-content {
+    gap: 32px;
+    margin-bottom: 40px;
+  }
+  .form-cta .tf-grid-layout {
+    gap: 32px;
+  }
+}
+@media (max-width: 991px) {
+  .form-cta .form-content {
+    gap: 24px;
+  }
+  .form-cta .tf-grid-layout {
+    gap: 24px;
+  }
+}
+@media (max-width: 575px) {
+  .form-cta .nice-select {
+    padding-bottom: 3px;
+  }
+}
+
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+.tf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 40px;
+  padding-left: 23px;
+  padding-right: 23px;
+  position: relative;
+  color: var(--white);
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: -0.01em;
+  border: 1px solid var(--white);
+  position: relative;
+  overflow: hidden;
+}
+.tf-btn::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  top: calc(100% + 1px);
+  height: 100%;
+  border-radius: 10px;
+  background-color: var(--white);
+  z-index: -1;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+.tf-btn:hover {
+  color: var(--black);
+}
+.tf-btn:hover::before {
+  top: 0px;
+}
+.tf-btn.style-2 {
+  border-radius: 999px;
+}
+.tf-btn.style-2::before {
+  border-radius: 999px;
+}
+.tf-btn.style-fill {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--black);
+}
+.tf-btn.style-fill::before {
+  content: none;
+}
+.tf-btn.style-fill-white {
+  background-color: var(--white);
+  border-color: var(--white);
+  color: var(--black);
+}
+.tf-btn.style-fill-white::before {
+  content: none;
+}
+
+.animate-btn {
+  position: relative;
+  overflow: hidden;
+}
+.animate-btn:hover::after {
+  animation: shine-reverse 1s forwards;
+}
+
+.animate-btn:after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(120deg, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0) 70%);
+  top: 0;
+  left: -100%;
+  opacity: 0.6;
+}
+
+button.animate-btn::after,
+.animate-btn.tf-btn::after {
+  background-image: linear-gradient(120deg, rgba(0, 0, 0, 0) 20%, rgba(255, 255, 255, 0.4), rgba(0, 0, 0, 0) 70%);
+}
+
+.animate-btn.animate-dark::after {
+  background-image: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.25), transparent);
+}
+.tf-btn-line.active {
+  background-position: left;
+}
+.tf-btn-line.active::before {
+  width: 100%;
+}
+
+.tf-btn-2 {
+  width: 80px;
+  height: 80px;
+  font-size: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.56), rgba(0, 0, 0, 0.56)), linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 100%), radial-gradient(65.62% 65.62% at 50% 50%, rgba(0, 0, 0, 0.32) 0%, rgba(0, 0, 0, 0) 100%);
+  box-shadow: 0px 0.5px 0.5px 0px rgba(255, 255, 255, 0.3215686275) inset, 0px 1px 0.5px 0px rgba(255, 255, 255, 0.1215686275) inset, 0px 4px 16px 0px rgba(255, 255, 255, 0.1607843137) inset, 0px -12px 16px 0px rgba(255, 255, 255, 0.0588235294) inset, 0px 0px 0px 1px rgba(0, 0, 0, 0.5607843137), 0px 3px 6px 0px rgba(0, 0, 0, 0.1882352941), 0px 10px 10px 0px rgba(0, 0, 0, 0.0588235294), 0px 12px 16px 0px rgba(0, 0, 0, 0.0588235294), 0px 23px 14px 0px rgba(0, 0, 0, 0.0588235294);
+  backdrop-filter: blur(12px);
+}
+@media (min-width: 1200px) {
+  .tf-btn-2 {
+    width: 120px;
+    height: 120px;
+    font-size: 48px;
+  }
+}
+
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+.tf-list {
+  display: flex;
+  gap: 4px;
+}
+.tf-list.vertical {
+  display: grid;
+}
+
+.s-header {
+  padding-bottom: 88px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+@media (max-width: 1439px) {
+  .s-header {
+    padding-bottom: 40px;
+  }
+}
+
+.section-hero-v1 {
+  padding-top: 120px;
+  padding-bottom: 60px;
+  min-height: 900px;
+  position: relative;
+  display: flex;
+  align-items: end;
+}
+.section-hero-v1 .overlay {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  z-index: 0;
+  height: 200px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, #000000 100%);
+}
+.section-hero-v1 .content-wrap {
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+.section-hero-v1 .content-wrap .container {
+  height: 100%;
+}
+.section-hero-v1 .col-left .tf-list {
+  margin-bottom: 273px;
+}
+.section-hero-v1 .col-right .top {
+  margin-bottom: 303px;
+}
+.section-hero-v1 .col-right .desc {
+  margin-bottom: 40px;
+}
+.section-hero-v1 .col-left,
+.section-hero-v1 .col-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+@media (min-width: 1200px) {
+  .section-hero-v1 .col-right .top {
+    padding-top: 24px;
+  }
+}
+@media (max-width: 1599px) {
+  .section-hero-v1 {
+    min-height: 100vh;
+  }
+  .section-hero-v1 .col-left .tf-list {
+    margin-bottom: 150px;
+  }
+  .section-hero-v1 .col-right .top {
+    margin-bottom: 150px;
+  }
+  .section-hero-v1 .col-right .desc {
+    margin-bottom: 24px;
+  }
+}
+@media (max-width: 767px) {
+  .section-hero-v1 .col-left {
+    margin-bottom: 50px;
+    height: unset;
+  }
+  .section-hero-v1 .col-left .tf-list {
+    margin-bottom: 30px;
+  }
+  .section-hero-v1 .col-right .top {
+    margin-bottom: 30px;
+  }
+}
+@media (max-width: 575px) {
+  .section-hero-v1 {
+    min-height: 500px;
+  }
+}
+
+.cursor-trail {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+@media (min-width: 1200px) {
+  .section-process .swiper-process {
+    overflow: visible;
+    padding-left: 100px;
+  }
+  .section-process .swiper-wrapper {
+    display: flex;
+  }
+  .section-process .swiper-wrapper > * {
+    flex: 1;
+  }
+  .section-process .swiper-slide {
+    z-index: 1;
+  }
+  .section-process .swiper-slide:not(:first-child) {
+    left: -5%;
+  }
+  .section-process .swiper-slide:nth-child(2) {
+    margin-top: 72px;
+    left: -5%;
+  }
+  .section-process .swiper-slide:nth-child(3) {
+    margin-top: 144px;
+    left: -10%;
+  }
+  .section-process .swiper-slide:hover {
+    z-index: 2;
+  }
+  .section-process .wg-process {
+    max-width: 509px;
+  }
+  .section-process .wg-process:hover {
+    transform: translateY(-10px);
+  }
+}
+@media (min-width: 1440px) {
+  .section-process .swiper-process {
+    padding-left: 0;
+  }
+  .section-process .swiper-slide {
+    min-width: 509px;
+  }
+  .section-process .swiper-slide:not(:first-child) {
+    left: -139px;
+  }
+  .section-process .swiper-slide:nth-child(2) {
+    margin-top: 72px;
+    left: -139px;
+  }
+  .section-process .swiper-slide:nth-child(3) {
+    margin-top: 144px;
+    left: -278px;
+  }
+}
+@media (max-width: 1199px) {
+  .section-process .swiper-slide {
+    height: auto;
+  }
+  .section-process .swiper-slide > * {
+    height: 100%;
+  }
+}
+
+.section-about-me {
+  position: relative;
+}
+.section-about-me .s-img-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.section-about-me .s-img-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.section-about-me .s-img-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4392156863);
+  z-index: 1;
+}
+.section-about-me .col-left {
+  position: relative;
+  margin-bottom: 50px;
+}
+.section-about-me .col-left .badget {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  border-radius: 50%;
+  box-shadow: 0px 0.25px 0.25px 0px rgba(255, 255, 255, 0.3215686275) inset, 0px 0.75px 0.25px 0px rgba(255, 255, 255, 0.1215686275) inset, 0px 4px 16px 0px rgba(255, 255, 255, 0.1607843137) inset, 0px -12px 16px 0px rgba(255, 255, 255, 0.0588235294) inset, 0px 0px 0px 0.75px rgba(0, 0, 0, 0.5607843137), 0px 3px 6px 0px rgba(0, 0, 0, 0.1882352941), 0px 10px 10px 0px rgba(0, 0, 0, 0.0588235294), 0px 12px 16px 0px rgba(0, 0, 0, 0.0588235294), 0px 23px 14px 0px rgba(0, 0, 0, 0.0588235294);
+  backdrop-filter: blur(6px);
+  overflow: hidden;
+}
+.section-about-me .col-left .badget img {
+  animation: spin 10s linear infinite;
+}
+.section-about-me .col-left .signature {
+  position: absolute;
+  left: 15px;
+  right: 15px;
+  bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+.section-about-me .col-right .br-line {
+  background-color: rgba(255, 255, 255, 0.1607843137);
+  display: flex;
+  margin-bottom: 40px;
+  margin-top: 40px;
+}
+@media (min-width: 1200px) {
+  .section-about-me .col-left .badget {
+    transform: translate(50%, -50%);
+    right: 0;
+  }
+  .section-about-me .col-left .signature {
+    bottom: 40px;
+  }
+  .section-about-me .col-right .br-line {
+    margin-bottom: 88px;
+    margin-top: 88px;
+  }
+}
+@media (max-width: 1199px) {
+  .section-about-me .badget {
+    max-width: 100px;
+  }
+}
+
+.experience-list {
+  display: grid;
+  gap: 16px;
+}
+.experience-list li {
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.experience-list li:first-child {
+  color: var(--white-64);
+}
+.experience-list .exp_name {
+  flex: 1;
+}
+.experience-list .exp_year {
+  color: var(--white-64);
+  min-width: 109px;
+  text-align: end;
+}
+
+.mini-title {
+  margin-bottom: 24px;
+}
+@media (min-width: 1200px) {
+  .mini-title {
+    margin-bottom: 40px;
+  }
+}
+.section-award .tf-swiper .swiper-slide.swiper-slide-active .award-item {
+  color: var(--white);
+}
+.section-award .tf-swiper.swiper-t2 .award-item {
+  color: var(--black-32);
+}
+.section-award .tf-swiper.swiper-t2 .swiper-slide.swiper-slide-active .award-item {
+  color: var(--black);
+}
+
+.flip-image {
+  width: 300px;
+  height: 300px;
+  border-radius: 16px;
+  background-size: cover;
+  background-position: center;
+  transform: translateX(150vw);
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: all;
+}
+.flip-image img {
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+.flip-image:hover img {
+  transform: translateY(-20px);
+}
+@media (max-width: 767px) {
+  .flip-image {
+    width: 150px;
+    height: 150px;
+  }
+}
+
+.section-pricing {
+  position: relative;
+}
+.section-pricing .bg-img {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: -1;
+  display: flex;
+  justify-content: center;
+  align-items: end;
+}
+.section-pricing .bg-img img {
+  width: 100%;
+  transform: translateY(25%);
+}
+.section-pricing .pricing-tab_btn {
+  margin-bottom: 88px;
+}
+.section-pricing .tf-grid-layout {
+  gap: 24px;
+}
+@media (min-width: 1440px) {
+  .section-pricing {
+    padding-top: 150px;
+    padding-bottom: 300px;
+  }
+}
+@media (max-width: 1199px) {
+  .section-pricing .pricing-tab_btn {
+    margin-bottom: 40px;
+  }
+  .section-pricing .tf-grid-layout {
+    gap: 30px 12px;
+  }
+}
+@media (max-width: 991px) {
+  .section-pricing .wg-plan:last-child {
+    grid-column: 1/-1;
+  }
+}
+
+.section-cta {
+  position: relative;
+}
+.section-cta .bg-img {
+  position: absolute;
+  z-index: -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+.section-cta .bg-img img {
+  width: 100%;
+  transform: translateY(-35%);
+}
+@media (min-width: 1440px) {
+  .section-cta {
+    padding-bottom: 180px;
+  }
+}
+
+.logo-custom {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.0509803922);
+  position: relative;
+}
+.logo-custom .logo-site {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+}
+.logo-custom .logo-site-sv {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.logo-custom .logo-site-sv path {
+  fill: var(--primary);
+}
+.logo-custom .line-vertical {
+  width: 1px;
+  height: 254px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(255, 255, 255, 0.32) 50%, rgba(0, 0, 0, 0) 100%);
+}
+.logo-custom .line-vertical.left {
+  left: 0;
+}
+.logo-custom .line-vertical.right {
+  right: 0;
+}
+.logo-custom .line-horizontal {
+  width: 254px;
+  height: 1px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(255, 255, 255, 0.32) 50%, rgba(0, 0, 0, 0) 100%);
+}
+.logo-custom .line-horizontal.top {
+  top: 0;
+}
+.logo-custom .line-horizontal.bottom {
+  bottom: 0;
+}
+@media (max-width: 991px) {
+  .logo-custom .line-vertical {
+    height: 127px;
+  }
+  .logo-custom .line-horizontal {
+    width: 127px;
+  }
+}
+
+.section-selected-work {
+  position: relative;
+}
+.section-selected-work .image-award {
+  margin-top: 40px;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+}
+.section-selected-work .image-award.active {
+  opacity: 1;
+  visibility: visible;
+}
+.section-selected-work .btn-thumbs-group.stt-2 .btn-thumbs {
+  display: none;
+}
+.section-selected-work .btn-thumbs-group.stt-2.number-order-3 .btn-thumbs:last-child {
+  display: block;
+}
+.section-selected-work .swiper-btn-hor {
+  max-height: 258px;
+}
+.section-selected-work .bg-img {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+}
+.section-selected-work .bg-img img {
+  width: 100%;
+  object-fit: cover;
+}
+.section-selected-work .group-btn-slider {
+  margin-top: 24px;
+}
+.section-selected-work .content-wrap-1 .col-left,
+.section-selected-work .content-wrap-1 .col-right {
+  margin-bottom: 35px;
+}
+.section-selected-work .content-wrap-2 {
+  position: relative;
+  z-index: 2;
+  padding-bottom: 20px;
+}
+.section-selected-work .content-wrap-2::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, #000000 100%);
+  z-index: 0;
+}
+.section-selected-work .content-wrap-2 .col-right {
+  display: flex;
+  justify-content: end;
+}
+.section-selected-work .group-btn {
+  gap: 8px 16px;
+  flex-wrap: wrap;
+}
+@media (min-width: 1200px) {
+  .section-selected-work .group-btn-slider {
+    gap: 40px;
+  }
+  .section-selected-work .content-wrap-2 .col-right {
+    transform: translateY(-50%);
+  }
+}
+@media (max-width: 767px) {
+  .section-selected-work .group-btn-slider {
+    justify-content: flex-start;
+    margin: 0;
+  }
+  .section-selected-work .content-wrap-2 .row {
+    align-items: center;
+  }
+  .section-selected-work .image-award {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-top: 0;
+  }
+}
+.work-wheel li.active {
+  color: var(--white);
+}
+
+.work-tag {
+  position: relative;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  min-height: 108px;
+}
+.work-tag li {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  -ms-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+}
+.work-tag li.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  z-index: 1;
+  position: relative;
+}
+
+.smooth-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.smooth-content {
+  position: absolute;
+  width: 100%;
+}
+
+.section-tech-stack {
+  padding-top: 60px;
+}
+
+.section-testimonial {
+  padding-bottom: 0;
+  position: relative;
+}
+.section-testimonial .bg-img-item {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 60px;
+  display: flex;
+  justify-content: center;
+  z-index: -1;
+  opacity: 0.5;
+}
+.section-testimonial .bg-img-item img {
+  width: 100%;
+}
+@media (min-width: 992px) {
+  .section-testimonial {
+    padding-bottom: 60px;
+  }
+}
+
+.section-blog .tf-grid-layout {
+  gap: 30px;
+}
+
+.main-mouse-hover {
+  position: relative;
+}
+.main-mouse-hover .tf-mouse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+}
+.main-mouse-hover .tf-mouse.hover {
+  opacity: 1;
+}
+
+@media (min-width: 992px) {
+  .stack-element-2 {
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .stack-element-2 .stack {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  .stack-element-2 .element {
+    position: absolute;
+    inset: 0;
+  }
+}
+
+.section-service-2 {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.section-service-2 .wrap-control {
+  position: relative;
+}
+.section-service-2 .bg-image-list {
+  position: absolute;
+  inset: 0;
+}
+.section-service-2 .bg-image-list .bg-image {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.section-service-2 .bg-image-list .bg-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+.section-service-2 .bg-image-list .bg-image .img-item {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: rgba(0, 0, 0, 0.5607843137);
+  backdrop-filter: blur(24px);
+}
+@media (min-width: 1200px) {
+  .section-service-2 .wg-service-2:not(:first-child) {
+    position: absolute;
+    inset: 0;
+  }
+}
+
+.wg-service-2 {
+  display: flex;
+  gap: 121px;
+  position: relative;
+  /*-- min, between, max --*/
+}
+.wg-service-2 .main-image {
+  position: relative;
+  max-width: 424px;
+  width: 100%;
+}
+.wg-service-2 .main-image .action {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translate(50%, -50%);
+}
+.wg-service-2 .title {
+  margin-bottom: 16px;
+}
+.wg-service-2 .desc {
+  margin-bottom: 40px;
+}
+.wg-service-2 .br-line {
+  margin-bottom: 40px;
+}
+.wg-service-2 .tf-list {
+  margin-bottom: 60px;
+  gap: 16px;
+}
+.wg-service-2 .image-simu {
+  width: 212px;
+  flex-shrink: 0;
+  align-self: center;
+  background-color: var(--white);
+  display: none;
+}
+.wg-service-2 .image-2 {
+  align-self: center;
+  display: none;
+}
+.wg-service-2 .image-2 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@media (min-width: 1200px) {
+  .wg-service-2 .image-2 {
+    width: 212px;
+    position: absolute;
+    left: calc(100% - 212px);
+    top: 50%;
+    transform: translateY(-50%);
+    display: block;
+  }
+  .wg-service-2 .image-simu {
+    display: block;
+  }
+}
+@media (max-width: 1439px) {
+  .wg-service-2 {
+    gap: 80px;
+  }
+}
+@media (max-width: 1199px) {
+  .wg-service-2 {
+    gap: 60px;
+  }
+  .wg-service-2:not(:last-child) {
+    margin-bottom: 60px;
+  }
+  .wg-service-2 .image {
+    height: 100%;
+  }
+  .wg-service-2 .br-line {
+    margin-bottom: 32px;
+  }
+  .wg-service-2 .tf-list {
+    margin-bottom: 40px;
+    gap: 8px;
+  }
+  .wg-service-2 .main-image {
+    max-width: unset;
+    width: 50%;
+  }
+  .wg-service-2 .main-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .wg-service-2 .center {
+    width: 50%;
+    align-self: center;
+  }
+}
+@media (max-width: 767px) {
+  .wg-service-2 .desc {
+    margin-bottom: 28px;
+  }
+  .wg-service-2 .br-line {
+    margin-bottom: 28px;
+  }
+  .wg-service-2 .tf-list {
+    margin-bottom: 32px;
+  }
+}
+@media (max-width: 575px) {
+  .wg-service-2 {
+    flex-direction: column;
+    gap: 30px;
+  }
+  .wg-service-2:not(:last-child) {
+    margin-bottom: 50px;
+  }
+  .wg-service-2 > * {
+    width: 100% !important;
+  }
+  .wg-service-2 .desc {
+    margin-bottom: 20px;
+  }
+  .wg-service-2 .br-line {
+    margin-bottom: 20px;
+  }
+  .wg-service-2 .tf-list {
+    margin-bottom: 20px;
+  }
+  .wg-service-2 .image img {
+    max-height: 350px;
+  }
+  .wg-service-2 .action {
+    display: none;
+  }
+}
+@media (min-width: 576px) and (max-width: 1199px) {
+  .wg-service-2 .desc {
+    margin-bottom: 32px;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    overflow: hidden;
+  }
+}
+
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+.sw-dot-default .swiper-pagination-bullet {
+  width: 8px;
+  height: 8px;
+  background-color: var(--white);
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  opacity: 0.32;
+  margin-left: 4px;
+  margin-right: 4px;
+}
+.sw-dot-default .swiper-pagination-bullet.swiper-pagination-bullet-active {
+  opacity: 1;
+}
+.sw-dot-default.style-white .swiper-pagination-bullet.swiper-pagination-bullet-active {
+  border: 1px solid var(--white);
+}
+.sw-dot-default.style-white .swiper-pagination-bullet.swiper-pagination-bullet-active::before {
+  background-color: var(--white);
+}
+.sw-dot-default.style-white .swiper-pagination-bullet::before {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.group-btn-slider {
+  margin-top: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+}
+.group-btn-slider .nav-prev-swiper.swiper-button-disabled,
+.group-btn-slider .nav-next-swiper.swiper-button-disabled {
+  opacity: 0.32;
+}
+@media (max-width: 1199px) {
+  .group-btn-slider {
+    margin-top: 24px;
+    gap: 24px;
+  }
+}
+
+.btn-thumbs {
+  cursor: pointer;
+}
+
+.btn-nav-swiper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swiper-testimonial .swiper-slide .testimonial-v01 {
+  position: relative;
+  z-index: 1;
+}
+.swiper-testimonial .swiper-slide::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.0039215686);
+  backdrop-filter: blur(2px);
+  z-index: 2;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+}
+.swiper-testimonial .swiper-slide:not(.swiper-slide-active)::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+.slider_effect_fade .swiper-slide.swiper-slide-active .fade-item {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+}
+.slider_effect_fade .swiper-slide.swiper-slide-active .scale-item {
+  transform: scale(1);
+}
+.slider_effect_fade .swiper-slide.swiper-slide-active .width-item {
+  width: 100%;
+}
+.slider_effect_fade .fade-item {
+  transform: translateY(100px);
+  opacity: 0;
+  visibility: hidden;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+.slider_effect_fade .fade-item.fade-box {
+  transition-delay: 0.4s;
+  transform: translateY(0px);
+}
+.slider_effect_fade .fade-item.fade-item-1 {
+  transition-delay: 0.5s;
+}
+.slider_effect_fade .fade-item.fade-item-2 {
+  transition-delay: 0.6s;
+}
+.slider_effect_fade .fade-item.fade-item-3 {
+  transition-delay: 0.7s;
+}
+.slider_effect_fade .fade-item.fade-item-4 {
+  transition-delay: 0.8s;
+}
+
+/*-- Slick Slide --*/
+.slick-list {
+  padding: 0 !important;
+  /* xóa padding auto */
+}
+
+.slick-nav .slick-slide {
+  border: 0;
+}
+.slick-nav .slick-slide .text-slide {
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+.slick-nav .slick-slide:not(.slick-center) .text-slide {
+  color: var(--white-32);
+}
+
+.slick-nav {
+  perspective: 1000px;
+}
+.slick-nav .slick-slide {
+  transition: transform 0.6s, opacity 0.6s;
+  transform-origin: center center;
+  opacity: 0.4;
+  transform: rotateX(0deg) translateZ(0px);
+}
+.slick-nav .slick-slide:not(.slick-current) {
+  transform: rotateX(45deg) translateY(-120px) translateZ(-120px);
+}
+.slick-nav .slick-current {
+  opacity: 1;
+}
+.slick-nav .slick-current + .slick-slide {
+  transform: rotateX(45deg) translateY(-120px) translateZ(-120px);
+}
+.slick-nav .slick-current ~ .slick-slide:last-child {
+  transform: rotateX(-45deg) translateY(120px) translateZ(-120px);
+}
+
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+.group-btn {
+  display: flex;
+  align-items: center;
+}
+
+.text-has-dot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+@media (min-width: 1200px) {
+  .text-has-dot {
+    gap: 12px;
+  }
+}
+
+.wg-feature-v01 {
+  box-shadow: 0px 0px 0px 1px rgba(255, 255, 255, 0.0509803922) inset;
+  position: relative;
+  display: grid;
+}
+.wg-feature-v01 .feature-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 28px 28px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+}
+.wg-feature-v01 .feature-content .tag {
+  margin-bottom: 8px;
+}
+.wg-feature-v01 .feature-content > * {
+  position: relative;
+  z-index: 1;
+}
+.wg-feature-v01 .feature-content::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, #000000 100%);
+  backdrop-filter: blur(2px);
+  z-index: 0;
+}
+
+.wg-process {
+  border: 1px solid var(--white-16);
+  padding: 28px;
+  position: relative;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  background-color: var(--black);
+}
+.wg-process .bg-img {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+  display: flex;
+}
+.wg-process .bg-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.wg-process .title {
+  margin-bottom: 24px;
+}
+.wg-process .br-line {
+  background-color: var(--white-16);
+  display: flex;
+  margin-bottom: 24px;
+}
+.wg-process .content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.wg-process:hover {
+  border-color: var(--primary);
+}
+.wg-process:hover .bg-img {
+  opacity: 1;
+  visibility: visible;
+}
+@media (min-width: 992px) {
+  .wg-process .desc {
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    overflow: hidden;
+  }
+  .wg-process .content {
+    height: 100%;
+  }
+}
+@media (min-width: 1200px) {
+  .wg-process {
+    aspect-ratio: 1;
+  }
+}
+@media (max-width: 1199px) {
+  .wg-process {
+    padding: 20px 15px;
+  }
+}
+
+.wg-tech {
+  padding: 24px 0px 23px;
+  border-bottom: 1px solid var(--white-16);
+  position: relative;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+.wg-tech .tech_text {
+  color: var(--white-32);
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.wg-tech > .tech_text {
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  opacity: 1;
+  visibility: visible;
+}
+.wg-tech .infiniteSlide_tech_main {
+  position: absolute;
+  inset: 0;
+  background: rgba(var(--primary-rgb), 0.08);
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+  display: flex;
+  align-items: center;
+}
+.wg-tech .infiniteSlide_tech > * {
+  margin-left: 20px;
+  margin-right: 20px;
+}
+.wg-tech .infiniteSlide_tech .tech_text .text {
+  color: var(--white);
+}
+.wg-tech .infiniteSlide_tech .tech_text .process {
+  color: var(--primary);
+}
+.wg-tech .app_icon {
+  box-shadow: 0px 0.5px 0.5px 0px rgba(255, 255, 255, 0.3215686275) inset, 0px 1px 0.5px 0px rgba(255, 255, 255, 0.1215686275) inset, 0px 4px 16px 0px rgba(255, 255, 255, 0.1607843137) inset, 0px -12px 16px 0px rgba(255, 255, 255, 0.0588235294) inset, 0px 0px 0px 1px rgba(0, 0, 0, 0.5607843137), 0px 3px 6px 0px rgba(0, 0, 0, 0.1882352941), 0px 10px 10px 0px rgba(0, 0, 0, 0.0588235294), 0px 12px 16px 0px rgba(0, 0, 0, 0.0588235294), 0px 23px 14px 0px rgba(0, 0, 0, 0.0588235294);
+  backdrop-filter: blur(12px);
+  border-radius: 999px;
+}
+.wg-tech:hover, .wg-tech.active {
+  border-color: rgba(var(--primary-rgb), 0.16);
+}
+.wg-tech:hover .infiniteSlide_tech_main, .wg-tech.active .infiniteSlide_tech_main {
+  opacity: 1;
+  visibility: visible;
+}
+.wg-tech:hover > .tech_text, .wg-tech.active > .tech_text {
+  opacity: 0;
+  visibility: hidden;
+}
+@media (max-width: 991px) {
+  .wg-tech .infiniteSlide_tech > * {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+}
+
+.wg-indicator {
+  text-align: center;
+}
+.wg-indicator .indicate-title {
+  margin-bottom: 24px;
+}
+.wg-indicator .indicate-counter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+@media (min-width: 1200px) {
+  .wg-indicator .indicate-title {
+    margin-bottom: 40px;
+  }
+}
+
+.wg-plan {
+  padding: 48px;
+  padding-top: 0;
+  position: relative;
+}
+.wg-plan .br-line {
+  display: flex;
+  height: 2px;
+  margin-bottom: 26px;
+}
+.wg-plan .plan-name,
+.wg-plan .plan-desc,
+.wg-plan .btn-action {
+  margin-bottom: 40px;
+}
+.wg-plan .plan-price {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: start;
+  gap: 6px;
+  letter-spacing: -0.8px;
+}
+.wg-plan .benefit-list {
+  gap: 16px;
+}
+.wg-plan .benefit-list li:not(.benefit_title) span {
+  color: var(--white-64);
+}
+.wg-plan .bg-img {
+  position: absolute;
+  inset: 0;
+}
+.wg-plan .bg-img.bg-img_1 {
+  background-image: url("./../../assets/images/item/start.png");
+  background-repeat: repeat-y;
+  background-position: center;
+  animation: moveUp 60s linear infinite;
+}
+.wg-plan .bg-img.bg-img_2 {
+  display: flex;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+}
+.wg-plan .bg-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.wg-plan.style-2 {
+  border: 1px solid rgba(var(--primary-rgb), 0.16);
+  backdrop-filter: blur(6px);
+  overflow: hidden;
+}
+@media (min-width: 1200px) {
+  .wg-plan .br-line {
+    margin-bottom: 46px;
+  }
+}
+@media (max-width: 1199px) {
+  .wg-plan {
+    padding: 20px 15px;
+    padding-top: 0;
+  }
+}
+
+.preloader {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 9999999;
+  --preloader-clip: 0;
+  clip-path: inset(0 0 0 var(--preloader-clip));
+  background-color: var(--black);
+}
+.preloader span {
+  font-size: 80px;
+  font-weight: 800;
+  color: #fff;
+  text-transform: uppercase;
+  overflow-x: hidden;
+}
+.preloader .preloader-gutters {
+  background-color: transparent;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  display: flex;
+}
+.preloader .preloader-gutters .bar {
+  width: 12.5%;
+  height: 100%;
+  background: transparent;
+  position: relative;
+}
+.preloader .preloader-gutters .bar .inner-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 100%;
+  background-color: var(--primary);
+}
+.preloader .site-name {
+  background-color: var(--secondary);
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  align-content: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+.preloader .site-name span {
+  font-size: 80px;
+}
+
+@media only screen and (max-width: 767px) {
+  .preloader .site-name span {
+    font-size: 40px;
+  }
+}
+/*-- Button Go Top --*/
+#goTop {
+  position: fixed;
+  padding: 0;
+  bottom: 40px;
+  right: 20px;
+  width: 38px;
+  height: 38px;
+  background: var(--black);
+  color: var(--white);
+  font-size: 20px;
+  text-align: center;
+  line-height: 50px;
+  cursor: pointer;
+  border: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+  box-shadow: 0px 4px 20px 0px rgba(255, 255, 255, 0.1019607843);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+#goTop .border-progress {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  border: 1px solid var(--primary);
+  mask-image: conic-gradient(var(--primary) var(--progress-angle, 0deg), transparent 0);
+  -webkit-mask-image: conic-gradient(var(--primary) var(--progress-angle, 0deg), transparent 0);
+  content: "";
+  z-index: 1;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+#goTop.show {
+  opacity: 1;
+  visibility: visible;
+}
+#goTop .icon {
+  font-size: 12px;
+  color: var(--primary);
+  transform: rotate(-90deg);
+  aspect-ratio: 1;
+}
+#goTop .ic-wrap {
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  animation: iconBounce 2s linear 0s infinite;
+  display: flex;
+}
+#goTop:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+@media (min-width: 992px) {
+  #goTop {
+    right: 40px;
+  }
+}
+.tf-left-bar .btn-setting-color {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 20px;
+  background-color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--black);
+  animation: spin 10s infinite ease;
+  margin-bottom: 30px;
+}
+
+.settings-color {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 26px;
+}
+.settings-color .choose-item {
+  display: block;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  position: relative;
+}
+.settings-color .choose-item:nth-child(1) {
+  background: #07C42C;
+}
+.settings-color .choose-item:nth-child(2) {
+  background: #f8c736;
+}
+.settings-color .choose-item:nth-child(3) {
+  background: #f5772e;
+}
+.settings-color .choose-item:nth-child(4) {
+  background: #2ac6f8;
+}
+.settings-color .choose-item:nth-child(5) {
+  background: #8dca37;
+}
+.settings-color .choose-item:nth-child(6) {
+  background: #6c34fa;
+}
+.settings-color .choose-item:nth-child(7) {
+  background: #f14444;
+}
+.settings-color .choose-item:nth-child(8) {
+  background: #e14392;
+}
+.settings-color .choose-item::before {
+  position: absolute;
+  content: "";
+  border: 1px solid #fff;
+  border-radius: 50%;
+  width: calc(100% + 10px);
+  height: calc(100% + 10px);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+.settings-color .choose-item.active::before {
+  opacity: 1;
+}
+
+.logo-site .icon {
+  font-size: 40px;
+  color: var(--primary);
+}
+
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+.nice-select {
+  -webkit-tap-highlight-color: transparent;
+  background-color: #fff;
+  border: 1px solid #E5E5EA;
+  border-radius: 3px;
+  padding: 10px 20px;
+  box-sizing: border-box;
+  clear: both;
+  cursor: pointer;
+  display: block;
+  /* float: left; */
+  font-size: 16px;
+  font-weight: 400;
+  /* text-transform: capitalize; */
+  outline: none;
+  position: relative;
+  transition: all linear 0.2s;
+  user-select: none;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.nice-select:active,
+.nice-select.open,
+.nice-select:focus {
+  border-color: #999;
+}
+
+.nice-select:after {
+  border-bottom: 1.7px solid #3A3A3C;
+  border-right: 1.7px solid #3A3A3C;
+  content: "";
+  height: 8px;
+  width: 8px;
+  margin-top: -4px;
+  pointer-events: none;
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  -webkit-transform-origin: 66% 66%;
+  -ms-transform-origin: 66% 66%;
+  transform-origin: 66% 66%;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+  -webkit-transition: all 0.15s ease-in-out;
+  transition: all 0.15s ease-in-out;
+}
+
+.nice-select.open:after {
+  -webkit-transform: rotate(-135deg);
+  -ms-transform: rotate(-135deg);
+  transform: rotate(-135deg);
+  -moz-transform: rotate(-135deg);
+  -o-transform: rotate(-135deg);
+}
+
+.nice-select.open .list {
+  opacity: 1;
+  z-index: 10;
+  pointer-events: auto;
+  -webkit-transform: scale(1) translateY(0);
+  -ms-transform: scale(1) translateY(0);
+  transform: scale(1) translateY(0);
+  width: 100%;
+  -moz-transform: scale(1) translateY(0);
+  -o-transform: scale(1) translateY(0);
+}
+
+.nice-select.disabled {
+  border-color: #ededed;
+  color: #999;
+  pointer-events: none;
+}
+
+.nice-select.disabled:after {
+  border-color: #cccccc;
+}
+
+.nice-select.wide {
+  width: 100%;
+}
+
+.nice-select.wide .list {
+  left: 0 !important;
+  right: 0 !important;
+}
+
+.nice-select.right {
+  float: right;
+}
+
+.nice-select.right .list {
+  left: auto;
+  right: 0;
+}
+
+.nice-select.small {
+  font-size: 12px;
+  height: 36px;
+  line-height: 34px;
+}
+
+.nice-select.small:after {
+  height: 4px;
+  width: 4px;
+}
+
+.nice-select.small .option {
+  line-height: 34px;
+  min-height: 34px;
+}
+
+.nice-select .list {
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 0 0 1px rgba(68, 68, 68, 0.11);
+  box-sizing: border-box;
+  margin-top: 4px;
+  opacity: 0;
+  overflow: hidden;
+  padding: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  -webkit-transform-origin: 50% 0;
+  -ms-transform-origin: 50% 0;
+  transform-origin: 50% 0;
+  -webkit-transform: scale(0.75) translateY(-21px);
+  -ms-transform: scale(0.75) translateY(-21px);
+  transform: scale(0.75) translateY(-21px);
+  -webkit-transition: all 0.2s cubic-bezier(0.5, 0, 0, 1.25), opacity 0.15s ease-out;
+  transition: all 0.2s cubic-bezier(0.5, 0, 0, 1.25), opacity 0.15s ease-out;
+  z-index: 9;
+  width: 100%;
+  font-size: 14px;
+  max-height: 160px;
+  overflow: auto;
+}
+
+.nice-select .list.style {
+  max-height: unset;
+}
+
+.nice-select .list::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: #f5f5f5;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  -webkit-transform: translate3d(0, 0, 0);
+  -moz-transform: translate3d(0, 0, 0);
+}
+
+.nice-select .list::-webkit-scrollbar-thumb {
+  background-color: #a7a7a7;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  -webkit-transform: translate3d(0, 0, 0);
+  -moz-transform: translate3d(0, 0, 0);
+}
+
+.nice-select .list::-webkit-scrollbar {
+  width: 6px;
+  height: 4px;
+  background-color: #f5f5f5;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  -webkit-transform: translate3d(0, 0, 0);
+  -moz-transform: translate3d(0, 0, 0);
+}
+
+.nice-select .list:hover .option:not(:hover) {
+  background-color: transparent !important;
+}
+
+.nice-select .option {
+  cursor: pointer;
+  font-weight: 400;
+  line-height: 40px;
+  list-style: none;
+  min-height: 40px;
+  outline: none;
+  padding-left: 18px;
+  padding-right: 29px;
+  text-align: left;
+  -webkit-transition: all 0.2s;
+  transition: all 0.2s;
+}
+
+.nice-select .option:hover,
+.nice-select .option.focus,
+.nice-select .option.selected.focus {
+  background-color: #f6f6f6;
+}
+
+.nice-select .option.selected {
+  font-weight: 600;
+  color: #111;
+}
+
+.nice-select .option.disabled {
+  background-color: transparent;
+  color: #999;
+  cursor: default;
+  pointer-events: none;
+}
+
+.no-csspointerevents .nice-select .list {
+  display: none;
+}
+
+.no-csspointerevents .nice-select.open .list {
+  display: block;
+}
+
+/*-- CSS Custom --*/
+.nice-select {
+  background-color: transparent;
+  border: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--white-16);
+  padding-bottom: 15px;
+}
+.nice-select .list {
+  background-color: var(--black);
+  border-radius: 0;
+  box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.15);
+}
+.nice-select::after {
+  content: none;
+}
+.nice-select::before {
+  content: "\e906";
+  font-family: "icomoon";
+  position: absolute;
+  right: 9px;
+  top: 7px;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--white-64);
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+.nice-select .option {
+  background-color: transparent !important;
+  color: var(--white-64);
+}
+.nice-select .option.selected {
+  color: var(--primary);
+}
+.nice-select .option:hover {
+  color: var(--primary);
+}
+.nice-select.open {
+  border-color: var(--primary);
+}
+.nice-select.open::before {
+  transform: rotate(180deg);
+}
+
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+
+.accordion-action {
+  padding-top: 32px;
+  padding-bottom: 0;
+  margin-bottom: 24px;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+.accordion-action .icon {
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  transform: rotate(180deg);
+}
+.accordion-action.collapsed {
+  margin-bottom: 0px;
+  padding-bottom: 32px;
+}
+.accordion-action.collapsed .icon {
+  transform: rotate(0deg);
+}
+@media (max-width: 991px) {
+  .accordion-action {
+    padding-top: 20px;
+  }
+  .accordion-action.collapsed {
+    padding-bottom: 20px;
+  }
+}
+
+.accordion-faq_item {
+  border-bottom: 1px solid var(--white-16);
+}
+.accordion-faq_item .accordion-action {
+  padding-top: 0;
+  padding-bottom: 24px;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.accordion-faq_item .accordion-action.collapsed {
+  padding-bottom: 31px;
+}
+.accordion-faq_item .ic-wrap {
+  justify-content: end;
+  padding-right: 9px;
+}
+.accordion-faq_item .accordion-content {
+  padding-bottom: 31px;
+}
+.accordion-faq_item .accordion-order,
+.accordion-faq_item .ic-wrap {
+  width: 100%;
+  max-width: 97px;
+}
+.accordion-faq_item .accordion-text {
+  width: 100%;
+  max-width: 642px;
+}
+@media (min-width: 1200px) {
+  .accordion-faq_item .accordion-content {
+    width: 100%;
+    max-width: 642px;
+    margin: 0 auto;
+  }
+}
+@media (max-width: 575px) {
+  .accordion-faq_item .accordion-order,
+  .accordion-faq_item .ic-wrap {
+    max-width: 30px;
+  }
+  .accordion-faq_item .accordion-action.collapsed {
+    padding-bottom: 24px;
+  }
+  .accordion-faq_item .accordion-content {
+    padding-bottom: 24px;
+  }
+}
+
+.accordion-faq_list {
+  display: grid;
+  gap: 32px;
+}
+.accordion-faq_list .accordion-faq_item:last-child {
+  border: 0;
+}
+.accordion-faq_list .accordion-faq_item:last-child .accordion-action.collapsed {
+  padding-bottom: 0;
+}
+.accordion-faq_list .accordion-faq_item:last-child .accordion-content {
+  padding-bottom: 0;
+}
+.service-accordion_item .accordion-action.collapsed {
+  color: var(--white-32);
+  margin-bottom: 0;
+}
+
+/*------------ Footer ---------------- */
+/* ---------------------------------------------------------
+    * Name: Davies - Personal Portfolio HTML Template
+    * Version: 1.0.0
+    * Author: Themesflat
+    * Author URI: http://themesflat.com 
+
+	* Abstracts variable
+
+    * Core CSS
+
+    * Components
+        * Blog
+        * Layout
+        * Header
+        * Accordion
+        * Animation
+        * Box Icon
+        * Button
+        * Carousel
+        * Form
+        * Hover
+        * Nice Select
+        * Popup
+        * Section
+        * Slider
+        * Tabs
+        * Testimonial
+        * Widget
+        * Footer
+
+ ------------------------------------------------------------------------------ */
+/*--------- Abstracts variable ---------- */
+.tf-footer .footer-inner {
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+.tf-footer .br-line {
+  background-color: var(--white-16);
+  display: flex;
+}
+.tf-footer.style-2 .footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.tf-footer.style-2 .footer-bottom {
+  padding-bottom: 28px;
+}
+.tf-footer.style-2 .footer-bottom .right {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+@media (min-width: 1200px) {
+  .tf-footer.style-2 .footer-bottom .img-agency {
+    height: 290px;
+  }
+}
+@media (max-width: 575px) {
+  .tf-footer.style-2 .footer-bottom .bottom {
+    justify-content: center;
+  }
+  .tf-footer.style-2 .footer-bottom .right {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.footer-menu-list {
+  display: grid;
+  gap: 4px;
+}
+.footer-menu-list a {
+  font-weight: 450;
+}
+
+.footer-bottom {
+  padding-bottom: 60px;
+}
+.footer-bottom .img-agency {
+  margin-bottom: 40px;
+  display: flex;
+}
+.footer-bottom .bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+@media (min-width: 1200px) {
+  .footer-bottom .img-agency {
+    height: 269px;
+  }
+}
+
+.action-go-top {
+  gap: 6px;
+}
+.action-go-top .icon-arrow-long-right {
+  transform: rotate(-90deg);
+}
+
+.footer-inner .title {
+  margin-bottom: 30px;
+}
+.footer-inner .footer-menu-list {
+  margin-bottom: 30px;
+}
