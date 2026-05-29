@@ -8,3 +8,4 @@ agentdb.rvf
 agentdb.rvf.lock
 *.sqlite
 *.sqlite3
+assets/css/dist/
