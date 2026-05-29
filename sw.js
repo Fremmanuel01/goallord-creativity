@@ -6,7 +6,7 @@
  *  - Cross-origin GETs: best-effort cache-first
  */
 
-const VERSION = 'goallord-v4-2026-05-29';
+const VERSION = 'goallord-v5-2026-05-29';
 const SHELL_CACHE   = `${VERSION}-shell`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const IMAGE_CACHE   = `${VERSION}-images`;
@@ -88,6 +88,11 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
   if (url.origin === self.location.origin && shouldSkip(url)) return;
+
+  // Never intercept cross-origin requests (Cloudinary images, CDN scripts, etc.).
+  // The image handler's opaque-response path was breaking cross-origin images —
+  // let the browser fetch them natively instead.
+  if (url.origin !== self.location.origin) return;
 
   // 1) HTML navigations -> network-first
   if (isNavigation(request)) {
