@@ -44,82 +44,82 @@
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
 
-  function avatarHtml(s) {
-    var size = 'width:56px;height:56px;border-radius:50%;flex-shrink:0;';
-    if (s.photo) {
-      // If the photo URL fails to load, swap in an initials avatar. The name
-      // is carried on data-name (already escaped) so there is no inline-JS
-      // string-escaping to get wrong.
-      return '<img loading="lazy" src="' + esc(s.photo) + '" alt="' + esc(s.name) +
-        '" data-name="' + esc(s.name) + '" style="' + size + 'object-fit:cover;" ' +
-        'onerror="GoallordDirectory._fallback(this)">';
-    }
-    var theme = AVATAR_THEMES[hash(s.name || s.track || 'x') % AVATAR_THEMES.length];
-    return '<span style="' + size + 'display:inline-flex;align-items:center;justify-content:center;' +
-      'background:linear-gradient(135deg,' + theme[0] + ',' + theme[1] + ');' +
-      'color:#fff;font-weight:600;font-size:18px;letter-spacing:0.5px;">' +
-      esc(initials(s.name)) + '</span>';
+  // Full-bleed gradient + large initials, used as the portrait image for
+  // students without a photo (and as the broken-photo fallback). Fills its
+  // parent (.feature-image) edge to edge so the grid stays uniform.
+  function gradientBlock(name, track) {
+    var theme = AVATAR_THEMES[hash(name || track || 'x') % AVATAR_THEMES.length];
+    return '<div class="gl-dir-ph" style="position:absolute;inset:0;display:flex;align-items:center;' +
+      'justify-content:center;background:linear-gradient(150deg,' + theme[0] + ' 0%,' + theme[1] + ' 100%);">' +
+      '<span style="font-size:clamp(44px,7vw,72px);font-weight:600;color:rgba(255,255,255,.94);' +
+      'letter-spacing:1px;line-height:1;">' + esc(initials(name)) + '</span></div>';
   }
 
-  // Standalone node used as the <img> onerror fallback (broken photo URLs).
-  function initialsNode(name) {
-    var theme = AVATAR_THEMES[hash(name || 'x') % AVATAR_THEMES.length];
-    var el = document.createElement('span');
-    el.style.cssText = 'width:56px;height:56px;border-radius:50%;flex-shrink:0;' +
-      'display:inline-flex;align-items:center;justify-content:center;' +
-      'background:linear-gradient(135deg,' + theme[0] + ',' + theme[1] + ');' +
-      'color:#fff;font-weight:600;font-size:18px;letter-spacing:0.5px;';
-    el.textContent = initials(name);
-    return el;
+  function photoMarkup(s) {
+    if (s.photo) {
+      // data-name carries the (escaped) name so the onerror handler can build
+      // an initials placeholder without any inline-JS string escaping.
+      return '<img loading="lazy" width="400" height="500" src="' + esc(s.photo) +
+        '" alt="' + esc(s.name) + '" data-name="' + esc(s.name) +
+        '" style="position:absolute;inset:0;" onerror="GoallordDirectory._fallbackImg(this)">';
+    }
+    return gradientBlock(s.name, s.track);
+  }
+
+  // <img> onerror → replace the broken photo with a full-bleed initials block.
+  function fallbackImg(img) {
+    try {
+      var holder = document.createElement('div');
+      holder.innerHTML = gradientBlock(img.getAttribute('data-name') || '');
+      img.replaceWith(holder.firstChild);
+    } catch (e) { img.style.visibility = 'hidden'; }
   }
 
   function cardHtml(s, type) {
-    var metaBits = [];
-    if (s.batchName)             metaBits.push(esc(s.batchName.toUpperCase()));
-    if (type === 'alumni' && s.year) metaBits.push('CLASS OF ' + esc(s.year));
-    else if (s.track)            metaBits.push(esc(s.track.toUpperCase()) + ' TRACK');
-    if (s.location)              metaBits.push(esc(s.location.toUpperCase()));
-    var meta = metaBits.join(' &nbsp;·&nbsp; ');
+    // Eyebrow tag: track + cohort, on one muted line.
+    var tagBits = [];
+    if (s.track) tagBits.push(esc(s.track));
+    if (s.batchName) tagBits.push(esc(s.batchName));
+    var tag = tagBits.join(' &nbsp;·&nbsp; ');
 
-    var bio = s.bio
-      ? '<p class="text-white-64 fs-14 mb-0" style="line-height:1.7;">' + esc(s.bio) + '</p>'
-      : '<p class="text-white-64 fs-14 mb-0" style="line-height:1.7;opacity:.7;">' +
-        (type === 'alumni'
-          ? 'Proud graduate of the ' + esc(s.track || 'academy') + ' programme.'
-          : 'Currently training in the ' + esc(s.track || 'academy') + ' programme.') +
-        '</p>';
+    // Corner badge: graduation year for alumni, batch number for current.
+    var badgeText = (type === 'alumni')
+      ? (s.year ? 'CLASS OF ' + esc(s.year) : 'GRADUATE')
+      : (s.batchNumber != null ? 'BATCH ' + esc(s.batchNumber) : 'IN TRAINING');
+    var badge =
+      '<span style="position:absolute;top:16px;left:16px;z-index:2;background:rgba(8,8,8,.55);' +
+      'backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.14);' +
+      'color:#fff;padding:6px 12px;border-radius:999px;font-size:10.5px;font-weight:600;letter-spacing:1px;">' +
+      badgeText + '</span>';
 
-    var badge = (type === 'alumni')
-      ? '<span class="text-caption fw-medium" style="background:rgba(214,106,31,0.14);color:var(--primary);' +
-        'padding:4px 10px;border-radius:999px;font-size:11px;letter-spacing:.5px;">GRADUATE</span>'
-      : '<span class="text-caption fw-medium" style="background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);' +
-        'padding:4px 10px;border-radius:999px;font-size:11px;letter-spacing:.5px;">IN TRAINING</span>';
+    var locationLine = s.location
+      ? '<p class="tag text-white-64 letter-space--1 mb-0" style="font-size:12px;opacity:.85;margin-top:6px;">' +
+        '<span class="text-primary">/</span> ' + esc(s.location) + '</p>'
+      : '';
 
     return '' +
       '<div class="col-md-6 col-lg-4 gl-dir-item effectFade fadeUp" ' +
         'data-track="' + esc(s.track || '') + '" data-name="' + esc((s.name || '').toLowerCase()) + '">' +
-        '<div class="wg-process gl-dir-card" style="background:var(--gl-card);border:1px solid var(--gl-border);' +
-          'border-radius:8px;padding:32px 28px;height:100%;transition:border-color .3s ease,transform .3s ease;">' +
-          '<div class="d-flex align-items-center justify-content-between mb-4">' +
-            '<div class="d-flex align-items-center gap-3" style="min-width:0;">' +
-              avatarHtml(s) +
-              '<div style="min-width:0;">' +
-                '<h5 class="mb-0 letter-space--2 text-truncate">' + esc(s.name) + '</h5>' +
-                '<p class="text-primary text-caption fw-medium letter-space--1 mb-0">' + esc(s.track || '—') + '</p>' +
-              '</div>' +
-            '</div>' + badge +
+        '<div class="wg-feature-v01 hover-img gl-dir-card" style="height:100%;border-radius:10px;overflow:hidden;">' +
+          '<div class="feature-image img-style" style="position:relative;aspect-ratio:4/5;">' +
+            badge + photoMarkup(s) +
           '</div>' +
-          (meta ? '<p class="text-caption text-white-64 mb-3">' + meta + '</p>' : '') +
-          '<div class="br-line mb-3"></div>' +
-          bio +
+          '<div class="feature-content">' +
+            '<div class="info" style="min-width:0;">' +
+              (tag ? '<p class="tag text-white-64 letter-space--1">' + tag + '</p>' : '') +
+              '<h5 class="name letter-space--2 mb-0">' + esc(s.name) + '</h5>' +
+              locationLine +
+            '</div>' +
+          '</div>' +
         '</div>' +
       '</div>';
   }
 
   function skeleton(n) {
     var one = '<div class="col-md-6 col-lg-4">' +
-      '<div style="background:var(--gl-card);border:1px solid var(--gl-border);border-radius:8px;' +
-      'padding:32px 28px;height:220px;" class="gl-dir-skel"></div></div>';
+      '<div style="border-radius:10px;aspect-ratio:4/5;background:' +
+      'linear-gradient(110deg,var(--gl-card) 30%,rgba(255,255,255,.05) 50%,var(--gl-card) 70%);' +
+      'background-size:200% 100%;animation:glDirShimmer 1.4s ease-in-out infinite;" class="gl-dir-skel"></div></div>';
     return new Array(n).fill(one).join('');
   }
 
@@ -221,11 +221,21 @@
     }
   }
 
-  // <img> onerror handler: replace a broken photo with its initials avatar.
-  function fallback(img) {
-    try { img.replaceWith(initialsNode(img.getAttribute('data-name') || '')); }
-    catch (e) { img.style.visibility = 'hidden'; }
-  }
+  // One-time injected styles: skeleton shimmer + premium card hover lift.
+  (function injectStyles() {
+    if (document.getElementById('gl-dir-styles')) return;
+    var css =
+      '@keyframes glDirShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}' +
+      '.gl-dir-card{transition:transform .45s cubic-bezier(.16,1,.3,1),box-shadow .45s ease;}' +
+      '.gl-dir-item:hover .gl-dir-card{transform:translateY(-6px);' +
+      'box-shadow:0 18px 40px -18px rgba(0,0,0,.7),0 0 0 1px rgba(214,106,31,.35) inset;}' +
+      '.gl-dir-card .feature-content .name{transition:color .3s ease;}' +
+      '.gl-dir-item:hover .gl-dir-card .name{color:var(--primary);}';
+    var el = document.createElement('style');
+    el.id = 'gl-dir-styles';
+    el.textContent = css;
+    document.head.appendChild(el);
+  })();
 
-  window.GoallordDirectory = { init: init, _fallback: fallback, _initialsNode: initialsNode, _esc: esc };
+  window.GoallordDirectory = { init: init, _fallbackImg: fallbackImg, _esc: esc };
 })(window, document);
