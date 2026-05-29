@@ -152,6 +152,11 @@ app.get('/sitemap.xml', async (req, res) => {
       { url: '/pricing.html', priority: '0.7', freq: 'monthly' },
       { url: '/apply.html',   priority: '0.6', freq: 'monthly' },
       { url: '/alumni.html',  priority: '0.6', freq: 'monthly' },
+      { url: '/shop.html',    priority: '0.7', freq: 'weekly'  },
+      { url: '/learn-coding-onitsha.html', priority: '0.8', freq: 'monthly' },
+      { url: '/privacy-policy.html', priority: '0.3', freq: 'yearly' },
+      { url: '/terms.html',          priority: '0.3', freq: 'yearly' },
+      { url: '/refund-policy.html',  priority: '0.3', freq: 'yearly' },
     ];
     const urlTags = [
       ...staticPages.map(p =>
@@ -274,9 +279,14 @@ io.on('connection', socket => {
   });
 });
 
-// ─── FALLBACK: serve index.html for any unmatched GET ─────────
+// ─── FALLBACK: real 404 for any unmatched GET ─────────────────
+// (Previously served index.html at 200 → site-wide soft-404 + duplicate
+//  content. Now returns a proper 404 so crawlers and users get the truth.)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  res.status(404).sendFile(path.join(__dirname, '404.html'));
 });
 
 // ─── SEED + START ─────────────────────────────────────────────
