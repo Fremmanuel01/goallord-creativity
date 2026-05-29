@@ -98,7 +98,7 @@
       : '';
 
     return '' +
-      '<div class="col-6 col-md-4 col-lg-3 gl-dir-item effectFade fadeUp" ' +
+      '<div class="gl-dir-item effectFade fadeUp" ' +
         'data-track="' + esc(s.track || '') + '" data-name="' + esc((s.name || '').toLowerCase()) + '">' +
         '<div class="wg-feature-v01 hover-img gl-dir-card" style="height:100%;border-radius:10px;overflow:hidden;">' +
           '<div class="feature-image img-style" style="position:relative;aspect-ratio:4/5;">' +
@@ -116,7 +116,7 @@
   }
 
   function skeleton(n) {
-    var one = '<div class="col-6 col-md-4 col-lg-3">' +
+    var one = '<div class="gl-dir-item">' +
       '<div style="border-radius:10px;aspect-ratio:4/5;background:' +
       'linear-gradient(110deg,var(--gl-card) 30%,rgba(255,255,255,.05) 50%,var(--gl-card) 70%);' +
       'background-size:200% 100%;animation:glDirShimmer 1.4s ease-in-out infinite;" class="gl-dir-skel"></div></div>';
@@ -134,6 +134,12 @@
     var type = opts.type === 'alumni' ? 'alumni' : 'current';
     var grid = document.getElementById(opts.gridId);
     if (!grid) { console.error('[directory] grid not found:', opts.gridId); return; }
+
+    // Detach from Bootstrap's grid (its column classes are stripped by the
+    // site's PurgeCSS build, so JS-injected col-* don't get widths). Use a
+    // self-contained CSS Grid instead — reliable and exactly 3-up on desktop.
+    grid.classList.remove('row', 'g-1', 'g-2', 'g-3', 'g-4', 'g-5');
+    grid.classList.add('gl-dir-grid');
 
     var filterWrap = opts.filterId ? document.getElementById(opts.filterId) : null;
     var searchEl   = opts.searchId ? document.getElementById(opts.searchId) : null;
@@ -226,6 +232,11 @@
     if (document.getElementById('gl-dir-styles')) return;
     var css =
       '@keyframes glDirShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}' +
+      // Self-contained responsive grid — 3-up desktop, 2-up tablet, 1-up phone.
+      '.gl-dir-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;}' +
+      '@media (max-width:991px){.gl-dir-grid{grid-template-columns:repeat(2,1fr);gap:20px;}}' +
+      '@media (max-width:575px){.gl-dir-grid{grid-template-columns:1fr;}}' +
+      '.gl-dir-grid .gl-dir-item{width:auto;max-width:none;margin:0;padding:0;}' +
       '.gl-dir-card{transition:transform .45s cubic-bezier(.16,1,.3,1),box-shadow .45s ease;}' +
       '.gl-dir-item:hover .gl-dir-card{transform:translateY(-6px);' +
       'box-shadow:0 18px 40px -18px rgba(0,0,0,.7),0 0 0 1px rgba(214,106,31,.35) inset;}' +
