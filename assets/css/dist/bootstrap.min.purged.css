@@ -671,6 +671,22 @@ progress {
     --bs-gutter-y: 0;
 }
 
+.g-1 {
+    --bs-gutter-x: 0.25rem;
+}
+
+.g-1 {
+    --bs-gutter-y: 0.25rem;
+}
+
+.g-2 {
+    --bs-gutter-x: 0.5rem;
+}
+
+.g-2 {
+    --bs-gutter-y: 0.5rem;
+}
+
 .g-3 {
     --bs-gutter-x: 1rem;
 }
@@ -685,6 +701,14 @@ progress {
 
 .g-4 {
     --bs-gutter-y: 1.5rem;
+}
+
+.g-5 {
+    --bs-gutter-x: 3rem;
+}
+
+.g-5 {
+    --bs-gutter-y: 3rem;
 }
 
 @media (min-width: 576px) {
@@ -4984,6 +5008,10 @@ fieldset:disabled .btn {
 
     .mb-lg-0 {
         margin-bottom: 0 !important;
+    }
+
+    .text-lg-end {
+        text-align: right !important;
     }
 }
 

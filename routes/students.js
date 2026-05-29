@@ -478,6 +478,77 @@ router.post('/sync-names-from-applicants', requireAuth, async (req, res) => {
   }
 });
 
+// ── GET /api/students/directory — PUBLIC: showcase current students / alumni ──
+// No auth. Powers the public "Our Students" and "Alumni" pages. Returns ONLY
+// safe, display-only fields — never email, phone, password, notes, payment
+// data, applicant_ref or reset tokens. Must stay registered BEFORE `/:id`
+// so the literal path is not captured by the id param route.
+const directoryLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' }
+});
+router.get('/directory', directoryLimiter, async (req, res) => {
+  try {
+    const type   = req.query.type === 'alumni' ? 'alumni' : 'current';
+    const status = type === 'alumni' ? 'Graduated' : 'Active';
+
+    const { data: rows } = await studentsDb.find({
+      filter: { status },
+      populate: 'batch',
+      sort: '-enrolled_at',
+      limit: 1000
+    });
+
+    // Enrich with the location + goal the student gave on their application,
+    // in a single batched query. Best-effort: missing applicants are skipped.
+    const refs = [...new Set((rows || []).map(s => s.applicant_ref).filter(Boolean))];
+    const applicantsById = {};
+    if (refs.length) {
+      const { data: apps } = await supabase
+        .from('applicants')
+        .select('id, location, goal')
+        .in('id', refs);
+      for (const a of (apps || [])) applicantsById[a.id] = a;
+    }
+
+    const students = (rows || []).map(s => {
+      const app      = s.applicant_ref ? applicantsById[s.applicant_ref] : null;
+      const batch    = s.batch || null;
+      const fullName = (s.full_name || '').trim();
+      const when     = s.enrolled_at ? new Date(s.enrolled_at) : null;
+      const bioRaw   = ((app && app.goal) || '').trim();
+      return {
+        name:        fullName,
+        firstName:   fullName.split(/\s+/)[0] || fullName,
+        track:       s.track || '',
+        batchName:   batch ? (batch.name || ('Batch ' + batch.number)) : '',
+        batchNumber: batch ? (batch.number ?? null) : null,
+        photo:       (s.profile_picture || '').trim(),
+        location:    ((app && app.location) || '').trim(),
+        bio:         bioRaw.length > 160 ? bioRaw.slice(0, 157).trimEnd() + '…' : bioRaw,
+        year:        when && !isNaN(when) ? when.getUTCFullYear() : null,
+        since:       s.enrolled_at || null
+      };
+    });
+
+    // Current cohort: newest batch first, then alphabetical. Alumni keep the
+    // most-recently-enrolled-first order from the query.
+    if (type === 'current') {
+      students.sort((a, b) =>
+        (b.batchNumber || 0) - (a.batchNumber || 0) || a.name.localeCompare(b.name));
+    }
+
+    res.set('Cache-Control', 'public, max-age=300');
+    res.json({ type, total: students.length, students });
+  } catch (err) {
+    console.error('students/directory error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── GET /api/students/:id — admin: single ──────────────────────
 router.get('/:id', requireAuth, async (req, res) => {
   try {

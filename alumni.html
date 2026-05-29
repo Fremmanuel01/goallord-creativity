@@ -103,7 +103,7 @@
                                     <li class="menu-item"><a href="services.html" class="item-link link text-caption"><span>02 /</span>SERVICES</a></li>
                                     <li class="menu-item"><a href="portfolio.html" class="item-link link text-caption"><span>03 /</span>PORTFOLIO</a></li>
                                     <li class="menu-item"><a href="about.html" class="item-link link text-caption"><span>04 /</span>ABOUT</a></li>
-                                    <li class="menu-item"><a href="academy.html" class="item-link link text-caption active"><span>05 /</span>ACADEMY</a></li>
+                                    <li class="menu-item has-child"><a href="academy.html" class="item-link link text-caption active"><span>05 /</span>ACADEMY</a><ul class="sub-menu"><li class="menu-item"><a href="academy.html" class="link text-caption">The Academy</a></li><li class="menu-item"><a href="students.html" class="link text-caption">Our Students</a></li><li class="menu-item"><a href="alumni.html" class="link text-caption">Alumni</a></li></ul></li>
                                     <li class="menu-item"><a href="blog.html" class="item-link link text-caption"><span>06 /</span>BLOG</a></li>
                                 </ul>
                             </div>
@@ -151,7 +151,7 @@
                     <div class="col-6 col-md-3">
                         <div class="wg-indicator">
                             <div class="indicate-counter">
-                                <span class="odometer text-display-2 fw-semibold" data-odometer-final="50">0</span><span class="text-display-2 fw-semibold text-primary">+</span>
+                                <span id="statGraduates" class="odometer text-display-2 fw-semibold" data-odometer-final="50">0</span><span class="text-display-2 fw-semibold text-primary">+</span>
                             </div>
                             <p class="text-caption text-white-64 letter-space--1 mt-2">GRADUATES</p>
                         </div>
@@ -195,99 +195,18 @@
                         <h2 class="text-display-2 fw-semibold letter-space--3 mt-3">Meet Our Alumni</h2>
                     </div>
                 </div>
-                <div class="row g-4">
-
-                    <div class="col-md-6 col-lg-4 effectFade fadeUp">
-                        <div class="wg-process" style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 32px 28px;">
-                            <div class="d-flex align-items-center gap-3 mb-4">
-                                <img loading="lazy" src="assets/images/avatar/avt-1.jpg" alt="Chidinma Okafor" width="56" height="56" style="border-radius: 50%; object-fit: cover; flex-shrink: 0;">
-                                <div>
-                                    <h5 class="mb-0 letter-space--2">Chidinma Okafor</h5>
-                                    <p class="text-primary text-caption fw-medium letter-space--1 mb-0">UI/UX Designer · Freelance</p>
-                                </div>
-                            </div>
-                            <p class="text-caption text-white-64 mb-3">BATCH 3 &nbsp;·&nbsp; WEB DESIGN TRACK</p>
-                            <div class="br-line mb-3"></div>
-                            <p class="text-white-64 fs-14">"I came in knowing nothing about design. 12 weeks later I landed my first ₦200k project. Goallord gave me both the skill and the confidence to charge my worth."</p>
-                        </div>
+                <div class="row align-items-center g-3 mb-5 effectFade fadeUp">
+                    <div class="col-lg-5">
+                        <input type="text" id="studentSearch" placeholder="Search alumni by name" style="background:var(--gl-card);border:1px solid var(--gl-border);color:#fff;border-radius:8px;padding:12px 16px;width:100%;">
                     </div>
-
-                    <div class="col-md-6 col-lg-4 effectFade fadeUp">
-                        <div class="wg-process" style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 32px 28px;">
-                            <div class="d-flex align-items-center gap-3 mb-4">
-                                <img loading="lazy" src="assets/images/avatar/avt-2.jpg" alt="Emeka Nwofor" width="56" height="56" style="border-radius: 50%; object-fit: cover; flex-shrink: 0;">
-                                <div>
-                                    <h5 class="mb-0 letter-space--2">Emeka Nwofor</h5>
-                                    <p class="text-primary text-caption fw-medium letter-space--1 mb-0">WordPress Dev · Agency Co-founder</p>
-                                </div>
-                            </div>
-                            <p class="text-caption text-white-64 mb-3">BATCH 5 &nbsp;·&nbsp; WORDPRESS TRACK</p>
-                            <div class="br-line mb-3"></div>
-                            <p class="text-white-64 fs-14">"I used my Goallord training to start my own digital agency in Awka. We've delivered 18 projects in our first year. The hands-on project work was the difference."</p>
-                        </div>
+                    <div class="col-lg-5">
+                        <div id="trackFilters" class="d-flex flex-wrap gap-2"></div>
                     </div>
-
-                    <div class="col-md-6 col-lg-4 effectFade fadeUp">
-                        <div class="wg-process" style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 32px 28px;">
-                            <div class="d-flex align-items-center gap-3 mb-4">
-                                <img loading="lazy" src="assets/images/avatar/avt-3.jpg" alt="Adaeze Eze" width="56" height="56" style="border-radius: 50%; object-fit: cover; flex-shrink: 0;">
-                                <div>
-                                    <h5 class="mb-0 letter-space--2">Adaeze Eze</h5>
-                                    <p class="text-primary text-caption fw-medium letter-space--1 mb-0">Brand Strategist · FMCG Company</p>
-                                </div>
-                            </div>
-                            <p class="text-caption text-white-64 mb-3">BATCH 6 &nbsp;·&nbsp; UI/UX DESIGN TRACK</p>
-                            <div class="br-line mb-3"></div>
-                            <p class="text-white-64 fs-14">"Three months after completing the UI/UX Design track I got a job at a Lagos FMCG company. The real-world projects in class made my portfolio credible."</p>
-                        </div>
+                    <div class="col-lg-2 text-lg-end">
+                        <span id="resultCount" class="text-caption text-white-64"></span>
                     </div>
-
-                    <div class="col-md-6 col-lg-4 effectFade fadeUp">
-                        <div class="wg-process" style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 32px 28px;">
-                            <div class="d-flex align-items-center gap-3 mb-4">
-                                <img loading="lazy" src="assets/images/avatar/avt-4.jpg" alt="Olumide Adeyemi" width="56" height="56" style="border-radius: 50%; object-fit: cover; flex-shrink: 0;">
-                                <div>
-                                    <h5 class="mb-0 letter-space--2">Olumide Adeyemi</h5>
-                                    <p class="text-primary text-caption fw-medium letter-space--1 mb-0">Frontend Dev · Fintech Startup</p>
-                                </div>
-                            </div>
-                            <p class="text-caption text-white-64 mb-3">BATCH 8 &nbsp;·&nbsp; WEB DESIGN TRACK</p>
-                            <div class="br-line mb-3"></div>
-                            <p class="text-white-64 fs-14">"I relocated from Onitsha to Lagos with a full portfolio and got hired within 6 weeks. The mentorship after graduation set Goallord apart — they didn't just wave goodbye."</p>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6 col-lg-4 effectFade fadeUp">
-                        <div class="wg-process" style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 32px 28px;">
-                            <div class="d-flex align-items-center gap-3 mb-4">
-                                <img loading="lazy" src="assets/images/avatar/avt-5.jpg" alt="Ifeoma Chukwu" width="56" height="56" style="border-radius: 50%; object-fit: cover; flex-shrink: 0;">
-                                <div>
-                                    <h5 class="mb-0 letter-space--2">Ifeoma Chukwu</h5>
-                                    <p class="text-primary text-caption fw-medium letter-space--1 mb-0">WordPress Consultant · Remote</p>
-                                </div>
-                            </div>
-                            <p class="text-caption text-white-64 mb-3">BATCH 9 &nbsp;·&nbsp; WORDPRESS TRACK</p>
-                            <div class="br-line mb-3"></div>
-                            <p class="text-white-64 fs-14">"I work with clients in the UK and Canada — all remote. Goallord taught me how to present and price my work professionally. That changed everything."</p>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6 col-lg-4 effectFade fadeUp">
-                        <div class="wg-process" style="background: var(--gl-card); border: 1px solid var(--gl-border); border-radius: 8px; padding: 32px 28px;">
-                            <div class="d-flex align-items-center gap-3 mb-4">
-                                <img loading="lazy" src="assets/images/avatar/avt-6.jpg" alt="Nnamdi Onwuka" width="56" height="56" style="border-radius: 50%; object-fit: cover; flex-shrink: 0;">
-                                <div>
-                                    <h5 class="mb-0 letter-space--2">Nnamdi Onwuka</h5>
-                                    <p class="text-primary text-caption fw-medium letter-space--1 mb-0">SEO Specialist · E-commerce</p>
-                                </div>
-                            </div>
-                            <p class="text-caption text-white-64 mb-3">BATCH 11 &nbsp;·&nbsp; BRAND IDENTITY TRACK</p>
-                            <div class="br-line mb-3"></div>
-                            <p class="text-white-64 fs-14">"I took the brand identity track while running my own business. The branding skills alone helped me win multiple new clients in 8 months. Best investment I made for my brand."</p>
-                        </div>
-                    </div>
-
                 </div>
+                <div class="row g-4" id="studentsGrid"></div>
             </div>
         </section>
         <!-- /Alumni Directory -->
@@ -332,6 +251,7 @@
                                 <li><a href="academy.html" class="link letter-space--2 h5">Academy</a></li>
                                 <li><a href="blog.html" class="link letter-space--2 h5">Blog</a></li>
                                 <li><a href="contact.html" class="link letter-space--2 h5">Contact</a></li>
+                                <li><a href="students.html" class="link letter-space--2 h5">Our Students</a></li>
                                 <li><a href="alumni.html" class="link letter-space--2 h5">Alumni</a></li>
                                 <li><a href="/privacy-policy.html" class="link letter-space--2 h5">Privacy</a></li>
                                 <li><a href="/terms.html" class="link letter-space--2 h5">Terms</a></li>
@@ -374,7 +294,7 @@
                 <li><div class="item close-mb-menu"><a href="services.html" class="mb-menu-link text-display-1"><span class="text">Services</span><div class="infiniteSlide_text_main"><div class="infiniteSlide infiniteSlide_text" data-clone="5"><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Our Services</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Our Services</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Our Services</p></div></div></a></div></li>
                 <li><div class="item close-mb-menu"><a href="portfolio.html" class="mb-menu-link text-display-1"><span class="text">Portfolio</span><div class="infiniteSlide_text_main"><div class="infiniteSlide infiniteSlide_text" data-clone="5"><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> View Work</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> View Work</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> View Work</p></div></div></a></div></li>
                 <li><div class="item close-mb-menu"><a href="contact.html" class="mb-menu-link text-display-1"><span class="text">Contact</span><div class="infiniteSlide_text_main"><div class="infiniteSlide infiniteSlide_text" data-clone="5"><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Start a Project</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Start a Project</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Start a Project</p></div></div></a></div></li>
-            </ul></div>
+            <li><div class="item close-mb-menu"><a href="students.html" class="mb-menu-link text-display-1"><span class="text">Our Students</span><div class="infiniteSlide_text_main"><div class="infiniteSlide infiniteSlide_text" data-clone="5"><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Current Cohort</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Current Cohort</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Current Cohort</p></div></div></a></div></li><li><div class="item close-mb-menu"><a href="alumni.html" class="mb-menu-link text-display-1"><span class="text">Alumni</span><div class="infiniteSlide_text_main"><div class="infiniteSlide infiniteSlide_text" data-clone="5"><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Our Graduates</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Our Graduates</p><p class="text-body-2 letter-space--1"><span class="text-primary">//</span> Our Graduates</p></div></div></a></div></li></ul></div>
             <div class="canvas_bot"><p class="text-caption text-white-64 letter-space--1">hello@goallordcreativity.com</p></div>
         </div></div></div>
     </div>
@@ -392,6 +312,21 @@
     <script src="assets/js/gsapAnimation.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/scroll-reveal.js"></script>
+    <script src="assets/js/student-directory.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      GoallordDirectory.init({
+        type:'alumni', gridId:'studentsGrid', filterId:'trackFilters',
+        searchId:'studentSearch', countId:'resultCount',
+        emptyTitle:'Our first graduates are on the way',
+        emptyText:'As soon as our pioneer cohort graduates, they will be celebrated right here.',
+        onLoaded:function(students){
+          var el=document.getElementById('statGraduates');
+          if(el) el.textContent=students.length;
+        }
+      });
+    });
+    </script>
 <script>
 (function(){
   fetch('/api/content/analytics').then(function(r){return r.ok?r.json():null;}).then(function(res){
