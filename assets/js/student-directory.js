@@ -98,7 +98,7 @@
       : '';
 
     return '' +
-      '<div class="col-md-6 col-lg-4 gl-dir-item effectFade fadeUp" ' +
+      '<div class="col-6 col-md-4 col-lg-3 gl-dir-item effectFade fadeUp" ' +
         'data-track="' + esc(s.track || '') + '" data-name="' + esc((s.name || '').toLowerCase()) + '">' +
         '<div class="wg-feature-v01 hover-img gl-dir-card" style="height:100%;border-radius:10px;overflow:hidden;">' +
           '<div class="feature-image img-style" style="position:relative;aspect-ratio:4/5;">' +
@@ -116,7 +116,7 @@
   }
 
   function skeleton(n) {
-    var one = '<div class="col-md-6 col-lg-4">' +
+    var one = '<div class="col-6 col-md-4 col-lg-3">' +
       '<div style="border-radius:10px;aspect-ratio:4/5;background:' +
       'linear-gradient(110deg,var(--gl-card) 30%,rgba(255,255,255,.05) 50%,var(--gl-card) 70%);' +
       'background-size:200% 100%;animation:glDirShimmer 1.4s ease-in-out infinite;" class="gl-dir-skel"></div></div>';
