@@ -1,0 +1,2844 @@
+/* ============================================================
+   GOALLORD CREATIVITY LIMITED — Brand Override CSS
+   Applied ON TOP of styles.css to remap Davies template
+   to Goallord color palette, typography, and identity.
+   ============================================================ */
+
+/* ── 1. FONT OVERRIDE ──────────────────────────────────────── */
+*, *::before, *::after {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+        "San Francisco", "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+/* ── 1b. LOGO IMAGE ─────────────────────────────────────────── */
+/* Replace text logo-site with image */
+a.logo-site { display: inline-flex; align-items: center; }
+a.logo-site img { height: 40px; width: auto; display: block; }
+
+/* ── 2. BRAND COLOR TOKENS ─────────────────────────────────── */
+:root {
+    --gl-orange:       #D66A1F;   /* Burnt Orange — Primary */
+    --gl-orange-light: #FF8A2A;   /* Orange Highlight */
+    --gl-blue:         #1E4BFF;   /* Deep Blue — Secondary */
+    --gl-blue-light:   #5B7CFF;   /* Blue Glow */
+    --gl-black:        #050607;
+    --gl-bg:           #0F1115;   /* Premium Gray bg */
+    --gl-card:         #171A21;   /* Card surface */
+    --gl-border:       #2A2F3A;
+    --gl-text:         #F4F6FA;
+    --gl-muted:        #A0A6B3;
+
+    /* Override template's green --primary with burnt orange */
+    --primary:         #D66A1F;
+    --primary-color:   #D66A1F;
+}
+
+/* ── 3. PRIMARY ACCENT (was #07C42C green → now Burnt Orange) ─ */
+.text-primary,
+.text-primary * {
+    color: var(--gl-orange) !important;
+}
+.bg-primary {
+    background-color: var(--gl-orange) !important;
+}
+
+/* ── 4. GLOBAL BACKGROUND & TEXT ───────────────────────────── */
+body,
+#wrapper,
+main#wrapper {
+    background-color: var(--gl-bg) !important;
+    color: var(--gl-text) !important;
+}
+
+/* Prevent horizontal scroll caused by large hero text or absolute elements */
+body {
+    overflow-x: hidden !important;
+}
+
+/* Selected Work slider — contain image overflow before Slick init */
+.slick-for {
+    overflow: hidden;
+}
+.slick-for .image img {
+    width: 100%;
+    min-height: 350px;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.slick-for .image {
+    overflow: hidden;
+}
+
+/* ── Selected Works — Drum Wheel UX ────────────────────────── */
+
+/* Drum wheel outer container */
+.gl-drum-outer {
+    position: relative;
+    height: 520px;
+    perspective: 800px;
+    perspective-origin: 50% 30%;
+    overflow: hidden;
+    margin-top: 24px;
+}
+
+/* Scrollable cursor hint */
+.gl-drum-outer { cursor: ns-resize; }
+
+/* Rotation anchor at 30% from top */
+.gl-drum-scene {
+    position: absolute;
+    top: 30%;
+    left: 0;
+    right: 0;
+    height: 0;
+    transform-style: preserve-3d;
+}
+
+/* Individual drum items */
+.gl-drum-item {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -40px;           /* -itemH/2 so center is at scene origin */
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    cursor: pointer;
+    transform-origin: center center;
+    will-change: transform, opacity;
+    padding-left: 2px;
+    border-radius: 4px;
+}
+
+.gl-drum-cat {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: var(--gl-orange);
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 5px;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+}
+.gl-drum-item.is-active .gl-drum-cat {
+    opacity: 1;
+}
+
+.gl-drum-title {
+    font-size: clamp(17px, 1.9vw, 26px);
+    font-weight: 700;
+    color: rgba(244,246,250,0.2);
+    line-height: 1.15;
+    margin: 0;
+    white-space: normal;
+    transition: color 0.35s ease, font-size 0.35s ease;
+}
+.gl-drum-item.is-active .gl-drum-title {
+    color: #fff;
+    font-size: clamp(22px, 2.6vw, 34px);
+}
+
+/* Focus strip — orange hairlines at center */
+.gl-drum-focus-strip {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(30% - 40px);
+    height: 80px;
+    border-top: 1px solid rgba(214,106,31,0.3);
+    border-bottom: 1px solid rgba(214,106,31,0.3);
+    background: rgba(214,106,31,0.04);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Gradient masks — top fade and heavy bottom fade ("half inside" illusion) */
+.gl-drum-outer::before,
+.gl-drum-outer::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    pointer-events: none;
+    z-index: 3;
+}
+.gl-drum-outer::before {
+    top: 0;
+    height: 22%;
+    background: linear-gradient(to bottom, #0F1115 0%, transparent 100%);
+}
+.gl-drum-outer::after {
+    bottom: 0;
+    height: 60%;
+    background: linear-gradient(to top, #0F1115 0%, rgba(15,17,21,0.7) 60%, transparent 100%);
+}
+
+/* CTA button overlaid on image slide */
+.gl-work-slide {
+    position: relative;
+}
+.gl-work-cta {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(15,17,21,0.78);
+    border: 1px solid rgba(255,255,255,0.14);
+    color: #fff !important;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-decoration: none !important;
+    border-radius: 4px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.35s ease, transform 0.35s ease, background 0.2s ease, border-color 0.2s ease;
+    pointer-events: none;
+    z-index: 4;
+}
+.gl-work-cta i { font-size: 14px; }
+.slick-for .slick-current .gl-work-cta {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+.gl-work-cta:hover {
+    background: var(--gl-orange) !important;
+    border-color: var(--gl-orange) !important;
+    color: #fff !important;
+}
+
+/* Slide counter */
+.gl-slide-counter {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: rgba(244,246,250,0.38);
+    margin-top: 10px;
+}
+
+/* Portfolio label replacing year */
+.gl-portfolio-label {
+    font-size: clamp(28px, 4vw, 56px) !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1 !important;
+    color: rgba(244,246,250,0.05) !important;
+    text-transform: uppercase;
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+    .gl-drum-outer {
+        height: 380px;
+        perspective: 500px;
+    }
+    .gl-drum-title { font-size: 18px !important; }
+    .gl-drum-item.is-active .gl-drum-title { font-size: 23px !important; }
+}
+
+/* ── Services — initial state for scroll-reveal stacking ────── */
+/* GSAP positions services 2-4 as absolute (position: absolute;
+   inset: 0) on desktop and animates them in via fromTo.
+   Without an explicit CSS opacity these services flash visible
+   before GSAP sets its initial states. Force them hidden here;
+   GSAP's inline style (higher specificity) overrides when needed. */
+@media (min-width: 1200px) {
+    .section-service-2 .wg-service-2:not(:first-child) {
+        opacity: 0;
+    }
+}
+
+/* ── Service SVG illustrations ──────────────────────────────── */
+/* Inline SVGs inside .image behave exactly like the old <img> */
+.wg-service-2 .image svg,
+.wg-service-2 .image-2 svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+/* Give the image-2 div a background that matches the SVG */
+.wg-service-2 .image-2 {
+    background: #1A1F2B;
+    overflow: hidden;
+}
+
+/* ── Why Choose Goallord — Expand Rows ─────────────────────── */
+.gl-why-section {
+    padding-bottom: 0;
+}
+
+.gl-reasons {
+    margin-top: 48px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Each row */
+.gl-reason-item {
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    transition: background 0.3s ease;
+}
+.gl-reason-item:hover,
+.gl-reason-item.is-open {
+    background: rgba(214,106,31,0.03);
+}
+
+/* Trigger row */
+.gl-reason-main {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 28px 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    color: inherit;
+    /* match container padding */
+    padding-left: max(24px, calc((100vw - 1320px) / 2 + 24px));
+    padding-right: max(24px, calc((100vw - 1320px) / 2 + 24px));
+    transition: padding 0.35s ease;
+}
+.gl-reason-item.is-open .gl-reason-main,
+.gl-reason-item:hover .gl-reason-main {
+    padding-top: 32px;
+    padding-bottom: 16px;
+}
+
+/* Number */
+.gl-reason-num {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: rgba(244,246,250,0.25);
+    min-width: 80px;
+    flex-shrink: 0;
+    transition: color 0.3s ease;
+}
+.gl-reason-item.is-open .gl-reason-num,
+.gl-reason-item:hover .gl-reason-num {
+    color: var(--gl-orange);
+}
+
+/* Title */
+.gl-reason-title {
+    flex: 1;
+    font-size: clamp(22px, 3.2vw, 48px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: rgba(244,246,250,0.35);
+    transition: color 0.3s ease;
+}
+.gl-reason-item.is-open .gl-reason-title,
+.gl-reason-item:hover .gl-reason-title {
+    color: #fff;
+}
+
+/* +/× toggle icon */
+.gl-reason-toggle {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 50%;
+    position: relative;
+    transition: border-color 0.3s ease, background 0.3s ease, transform 0.4s ease;
+}
+.gl-reason-toggle::before,
+.gl-reason-toggle::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 14px; height: 1.5px;
+    background: rgba(244,246,250,0.5);
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s ease, background 0.3s ease;
+}
+.gl-reason-toggle::after {
+    transform: translate(-50%, -50%) rotate(90deg);
+}
+.gl-reason-item.is-open .gl-reason-toggle {
+    background: var(--gl-orange);
+    border-color: var(--gl-orange);
+    transform: rotate(45deg);
+}
+.gl-reason-item.is-open .gl-reason-toggle::before,
+.gl-reason-item.is-open .gl-reason-toggle::after {
+    background: #fff;
+}
+
+/* Expanding body — grid trick for smooth animation */
+.gl-reason-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.gl-reason-item.is-open .gl-reason-body {
+    grid-template-rows: 1fr;
+}
+.gl-reason-inner {
+    overflow: hidden;
+    padding-left: max(24px, calc((100vw - 1320px) / 2 + 24px + 80px));
+    padding-right: max(24px, calc((100vw - 1320px) / 2 + 24px + 56px));
+    padding-bottom: 0;
+    transition: padding-bottom 0.45s ease;
+}
+.gl-reason-item.is-open .gl-reason-inner {
+    padding-bottom: 36px;
+}
+.gl-reason-inner p {
+    font-size: clamp(14px, 1.1vw, 17px);
+    line-height: 1.75;
+    color: rgba(244,246,250,0.55);
+    max-width: 640px;
+    margin: 0 0 20px;
+}
+.gl-reason-inner em {
+    color: rgba(244,246,250,0.85);
+    font-style: normal;
+}
+
+/* Link */
+.gl-reason-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gl-orange) !important;
+    text-decoration: none !important;
+    transition: gap 0.2s ease;
+}
+.gl-reason-link:hover { gap: 14px; }
+.gl-reason-link i { font-size: 14px; }
+
+/* Mobile */
+@media (max-width: 767px) {
+    .gl-reason-main {
+        padding-left: 20px;
+        padding-right: 20px;
+        gap: 16px;
+        align-items: flex-start;
+    }
+    .gl-reason-num { min-width: 36px; font-size: 10px; padding-top: 6px; }
+    .gl-reason-toggle { width: 32px; height: 32px; margin-top: 4px; flex-shrink: 0; }
+    .gl-reason-inner {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    .gl-reason-item.is-open .gl-reason-inner { padding-bottom: 28px; }
+}
+
+/* ── 5. BUTTON RECOLORING ───────────────────────────────────── */
+.tf-btn {
+    border-color: var(--gl-border) !important;
+    color: var(--gl-text) !important;
+}
+.tf-btn:hover,
+.tf-btn.animate-btn:hover {
+    background-color: var(--gl-orange) !important;
+    border-color: var(--gl-orange) !important;
+    color: #fff !important;
+}
+
+.tf-btn.style-fill {
+    background-color: var(--gl-orange) !important;
+    border-color: var(--gl-orange) !important;
+    color: #fff !important;
+}
+.tf-btn.style-fill:hover {
+    background-color: var(--gl-orange-light) !important;
+    border-color: var(--gl-orange-light) !important;
+}
+
+.tf-btn.style-troke {
+    background: transparent !important;
+    border-color: var(--gl-border) !important;
+    color: var(--gl-text) !important;
+}
+.tf-btn.style-troke:hover {
+    background-color: var(--gl-orange) !important;
+    border-color: var(--gl-orange) !important;
+    color: #fff !important;
+}
+
+.tf-btn.style-fill-white {
+    background-color: var(--gl-text) !important;
+    border-color: var(--gl-text) !important;
+    color: var(--gl-black) !important;
+}
+.tf-btn.style-fill-white:hover {
+    background-color: var(--gl-orange) !important;
+    border-color: var(--gl-orange) !important;
+    color: #fff !important;
+}
+
+
+/* ── 5b. TF-BTN-2 BUTTON STYLE & INLINE SVG ARROW ──────────── */
+.tf-btn-2 {
+    background: rgba(30, 20, 10, 0.72) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+}
+.tf-btn-2 svg {
+    width: 40px !important;
+    height: 40px !important;
+    stroke: #fff !important;
+    fill: none !important;
+    display: block;
+    flex-shrink: 0;
+}
+
+/* ── 6. LOGO AREA ──────────────────────────────────────────── */
+.logo-site-text {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--gl-text);
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.logo-site-text span {
+    color: var(--gl-orange);
+}
+
+/* Nav hover accent */
+.nav-menu-main .item-link:hover,
+.nav-menu-main .item-link.active {
+    color: var(--gl-orange) !important;
+}
+
+/* ── 7. PRELOADER ───────────────────────────────────────────── */
+.preloader {
+    background-color: var(--gl-black) !important;
+}
+.preloader .site-name {
+    background-color: var(--gl-black) !important;
+}
+.preloader span {
+    overflow-x: visible !important;
+}
+.inner-bar {
+    background-color: var(--gl-orange) !important;
+}
+
+/* ── 8. HEADER ──────────────────────────────────────────────── */
+.tf-header {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999 !important;
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-bottom: none !important;
+    transition: background-color 0.6s ease,
+                backdrop-filter 0.6s ease,
+                border-color 0.6s ease,
+                box-shadow 0.6s ease,
+                opacity 0.6s ease,
+                transform 0.6s ease;
+}
+/* Visible on pause — slightly transparent */
+.tf-header.header-sticky {
+    background-color: rgba(5, 6, 7, 0.72) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+    box-shadow: 0 4px 40px rgba(0,0,0,0.3) !important;
+}
+/* Hidden while scrolling */
+.tf-header.header-hidden {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(-4px) !important;
+    transition: opacity 0.15s ease,
+                transform 0.15s ease !important;
+}
+.tf-header .header-inner .row {
+    min-height: 64px;
+}
+.tf-header .header-contact {
+    gap: 2px !important;
+    line-height: 1.3;
+}
+.tf-header .btn-mobile-menu {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+/* ── 9. HERO ────────────────────────────────────────────────── */
+.section-hero-v1 .video-overlay {
+    background: linear-gradient(180deg, rgba(5,6,7,0.55) 0%, rgba(15,17,21,0.92) 100%) !important;
+}
+.section-hero-v1 .video-overlay-2 {
+    background: linear-gradient(90deg, rgba(5,6,7,0.7) 0%, transparent 60%) !important;
+}
+
+/* Hero tag line row */
+.section-hero-v1 .tf-list a {
+    color: var(--gl-orange) !important;
+    border-color: var(--gl-border) !important;
+}
+.section-hero-v1 .tf-list a::before {
+    background-color: var(--gl-orange) !important;
+}
+
+/* Davies large title → Goallord agency name */
+
+/* ── 10. SERVICE SECTION ─────────────────────────────────────── */
+.section-service-2 .wg-service-2 .title {
+    color: var(--gl-text) !important;
+}
+.section-service-2 .tf-list li span.text-primary {
+    color: var(--gl-orange) !important;
+}
+.br-line {
+    background-color: var(--gl-border) !important;
+}
+
+/* ── 11. PRICING ────────────────────────────────────────────── */
+.wg-plan .br-line.bg-primary {
+    background-color: var(--gl-orange) !important;
+}
+.wg-plan.style-2 .bg-img_1 {
+    background: radial-gradient(ellipse at 50% 0%, rgba(214,106,31,0.18) 0%, transparent 65%) !important;
+}
+.plan-price .text-primary {
+    color: var(--gl-orange) !important;
+}
+.benefit-list li span {
+    color: var(--gl-orange) !important;
+}
+
+/* ── 12. STATS / INDICATORS ─────────────────────────────────── */
+.wg-indicator .indicate-counter .text-primary {
+    color: var(--gl-orange) !important;
+}
+
+/* ── 13. TESTIMONIALS ───────────────────────────────────────── */
+
+/* ── Section heading ── */
+
+/* ── Hero badge ── */
+.gl-tes-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--gl-orange);
+    background: rgba(214,106,31,0.1);
+    border: 1px solid rgba(214,106,31,0.25);
+    border-radius: 999px;
+    padding: 5px 12px;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+/* ── "More from our clients" label ── */
+
+/* ── Hero featured quote ── */
+.gl-tes-hero {
+    position: relative;
+    background: linear-gradient(135deg, #1a1d25 0%, #1c1814 100%);
+    border: 1px solid rgba(214,106,31,0.25);
+    border-left: 4px solid var(--gl-orange);
+    border-radius: 20px;
+    padding: 44px 52px 36px;
+    margin: 32px auto 0;
+    max-width: 800px;
+    overflow: hidden;
+    box-shadow: 0 4px 60px rgba(214,106,31,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.gl-tes-hero.is-fading {
+    opacity: 0;
+    transform: translateY(10px);
+}
+.gl-tes-qmark {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 180px;
+    line-height: 0.8;
+    color: var(--gl-orange);
+    opacity: 0.12;
+    position: absolute;
+    top: 16px;
+    left: 44px;
+    pointer-events: none;
+    user-select: none;
+    display: block;
+}
+.gl-tes-hero-text {
+    position: relative;
+    z-index: 1;
+    font-size: 1.3125rem;
+    line-height: 1.85;
+    color: #f0f2f7;
+    font-weight: 400;
+    font-style: normal;
+    border: none;
+    padding: 0;
+    margin: 0 0 36px;
+    letter-spacing: -0.01em;
+}
+.gl-tes-hero-footer {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.gl-tes-author-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+/* ── Avatar circle ── */
+.gl-tes-avatar {
+    flex-shrink: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(214,106,31,0.35);
+}
+.gl-tes-avatar img {
+    display: block;
+    object-fit: cover;
+    border-radius: 50%;
+}
+.gl-tes-avatar--lg,
+.gl-tes-avatar--lg img { width: 56px; height: 56px; }
+
+/* ── Stars ── */
+.gl-tes-stars {
+    color: #FBBF24;
+    font-size: 0.8125rem;
+    letter-spacing: 3px;
+    line-height: 1;
+    margin-bottom: 3px;
+}
+
+/* ── Name / Role ── */
+.gl-tes-name {
+    display: block;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--gl-text);
+}
+.gl-tes-role {
+    font-size: 0.8125rem;
+    color: var(--gl-muted);
+}
+
+/* ── Carousel card ── */
+
+/* ── Avatar selector row ── */
+.gl-tes-avatars {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    margin-top: 28px;
+    overflow-x: auto;
+    padding: 8px 0 4px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.gl-tes-avatars::-webkit-scrollbar { display: none; }
+
+.gl-tes-av-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    border-radius: 50%;
+    outline: none;
+    position: relative;
+}
+.gl-tes-av-btn::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    transition: border-color 0.3s ease;
+    pointer-events: none;
+}
+.gl-tes-av-btn.is-active::after {
+    border-color: var(--gl-orange);
+}
+.gl-tes-avatar--md,
+.gl-tes-avatar--md img { width: 52px; height: 52px; }
+
+.gl-tes-av-btn .gl-tes-avatar {
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.25s ease,
+                box-shadow 0.25s ease;
+    opacity: 0.45;
+    border-color: transparent;
+}
+.gl-tes-av-btn:hover .gl-tes-avatar,
+.gl-tes-av-btn.is-active .gl-tes-avatar {
+    opacity: 1;
+    transform: scale(1.18);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    border-color: var(--gl-orange);
+}
+
+/* ── Stats band ── */
+.gl-stats-band {
+    margin-top: 72px;
+    padding: 52px 0 0;
+    border-top: 1px solid var(--gl-border);
+}
+.gl-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+.gl-stat {
+    text-align: center;
+    padding: 0 24px 48px;
+    position: relative;
+}
+.gl-stat + .gl-stat::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1px;
+    height: 70%;
+    background: var(--gl-border);
+}
+.gl-stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gl-muted);
+    margin-bottom: 10px;
+}
+.gl-stat-label span { color: var(--gl-orange); }
+.gl-stat-num {
+    font-size: clamp(2.75rem, 6vw, 4.5rem);
+    font-weight: 700;
+    color: var(--gl-text);
+    line-height: 1;
+    margin-bottom: 10px;
+}
+.gl-stat-sub {
+    font-size: 0.8125rem;
+    color: var(--gl-muted);
+    line-height: 1.6;
+}
+
+/* ── Mobile ── */
+@media (max-width: 767px) {
+    .gl-tes-hero {
+        padding: 36px 24px 28px;
+        margin: 24px 0 36px;
+    }
+    .gl-tes-qmark { font-size: 90px; top: 4px; left: 16px; }
+    .gl-tes-hero-text { font-size: 1.0625rem; }
+    .gl-stats-grid { grid-template-columns: 1fr; }
+    .gl-stat + .gl-stat::before { display: none; }
+    .gl-stat { padding: 0 0 36px; }
+    .gl-stats-band { margin-top: 48px; padding-top: 40px; }
+}
+
+/* ── 14. FAQ ─────────────────────────────────────────────────── */
+.accordion-faq_item .accordion-action .accordion-order {
+    color: var(--gl-orange) !important;
+}
+
+/* ── 15. FOOTER ──────────────────────────────────────────────── */
+.tf-footer {
+    background-color: var(--gl-black) !important;
+}
+.tf-footer .footer-menu-list a:hover {
+    color: var(--gl-orange) !important;
+}
+.tf-footer .br-line {
+    background-color: var(--gl-border) !important;
+}
+.footer-bottom .text-nocopy {
+    color: var(--gl-muted) !important;
+}
+
+/* ── 16. SCROLL-TO-TOP BUTTON ───────────────────────────────── */
+#goTop .border-progress {
+    stroke: var(--gl-orange) !important;
+}
+#goTop:hover {
+    background-color: var(--gl-orange) !important;
+}
+
+/* ── 17. CTA LOGO BORDER LINES ──────────────────────────────── */
+.logo-custom .line-vertical,
+.logo-custom .line-horizontal {
+    background-color: var(--gl-orange) !important;
+}
+.logo-custom .logo-site-sv svg path {
+    fill: var(--gl-orange) !important;
+}
+
+/* ── Section gap: Process → Pricing ─────────────────────────── */
+.section-process { padding-bottom: 40px !important; }
+.section-pricing { padding-top: 40px !important; }
+
+/* ── 18. PROCESS TIMELINE ───────────────────────────────────── */
+.gl-process-wrapper {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    align-items: start;
+    margin-top: 56px;
+}
+
+@media (min-width: 1024px) {
+    .gl-process-wrapper {
+        grid-template-columns: 1fr 340px;
+        gap: 0 80px;
+    }
+}
+
+.gl-process-timeline {
+    /* inherits width from grid column */
+}
+
+/* Sticky panel */
+.gl-process-sticky {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .gl-process-sticky {
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+        position: sticky;
+        top: calc(50vh - 220px); /* keeps panel centered in viewport */
+        align-self: stretch;     /* stretches to match timeline height — no extra gap */
+    }
+}
+
+.gl-sticky-inner {
+    display: flex;
+    flex-direction: column;
+}
+
+.gl-sticky-num {
+    display: block;
+    font-size: clamp(7rem, 13vw, 11rem);
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 0.85;
+    color: var(--gl-orange);
+    transition: opacity 0.35s ease;
+    font-variant-numeric: tabular-nums;
+}
+
+.gl-sticky-dur {
+    display: inline-block;
+    margin-top: 16px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gl-orange);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 100px;
+    padding: 4px 12px;
+    transition: opacity 0.35s ease;
+    width: fit-content;
+}
+
+/* Step list below the number */
+
+.gl-sticky-step.is-done {
+    opacity: 0.55;
+}
+
+.gl-sticky-step.is-active {
+    opacity: 1;
+}
+
+/* Vertical connector line between dots */
+
+.gl-sticky-step.is-active .gl-sticky-step-dot {
+    background: var(--gl-orange);
+    transform: scale(1.5);
+}
+
+.gl-sticky-step.is-done .gl-sticky-step-dot {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.gl-sticky-step.is-active .gl-sticky-step-name {
+    font-weight: 600;
+    color: #fff;
+}
+
+.gl-sticky-step.is-active .gl-sticky-step-dur {
+    color: var(--gl-orange);
+}
+
+.gl-sticky-step.is-done .gl-sticky-step-dur {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.gl-process-step {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    gap: 0 40px;
+    position: relative;
+    cursor: default;
+    opacity: 0.55;
+    transition: opacity 0.35s ease;
+}
+
+.gl-process-step.is-active,
+.gl-process-step:hover {
+    opacity: 1;
+}
+
+.gl-process-step:hover .gl-pstep-num {
+    background: var(--gl-orange);
+    color: #000;
+}
+
+.gl-process-step:hover .gl-pstep-title {
+    color: var(--gl-orange);
+}
+
+.gl-pstep-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 6px;
+}
+
+.gl-pstep-num {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--gl-orange);
+    width: 40px;
+    height: 40px;
+    border: 1.5px solid var(--gl-orange);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: var(--font-1, monospace);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.gl-pstep-line {
+    flex: 1;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 14px 0;
+    min-height: 40px;
+}
+
+.gl-pstep-right {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 56px;
+}
+
+/* Header row: icon + body + toggle */
+.gl-pstep-top {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    cursor: pointer;
+}
+
+/* Stacked cards in right panel */
+.gl-sticky-cards {
+    display: grid;
+    margin-top: 20px;
+}
+
+.gl-sticky-card {
+    grid-area: 1 / 1;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 14px;
+    padding: 18px 20px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.gl-sticky-card.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    visibility: visible;
+}
+
+.gl-sticky-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.gl-pstep-card-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.35);
+    margin: 0 0 10px 0;
+}
+
+.gl-pstep-card-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.gl-pstep-card-list li {
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.72);
+    line-height: 1.5;
+    padding-left: 14px;
+    position: relative;
+}
+
+.gl-pstep-card-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--gl-orange);
+    opacity: 0.7;
+}
+
+.gl-pstep-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.gl-pstep-tag {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 100px;
+    padding: 3px 10px;
+    white-space: nowrap;
+}
+
+.gl-pstep-card-tools {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.45);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.gl-pstep-dur-badge {
+    margin-top: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--gl-orange);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 100px;
+    padding: 4px 12px;
+    width: fit-content;
+}
+
+.gl-pstep-dur-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gl-orange);
+    flex-shrink: 0;
+}
+
+.gl-pstep-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    color: var(--gl-orange);
+    opacity: 0.85;
+    margin-top: 2px;
+}
+
+.gl-pstep-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.gl-pstep-title {
+    font-size: 1.375rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    margin-bottom: 12px;
+    color: var(--white, #fff);
+    line-height: 1.2;
+    transition: color 0.3s ease;
+}
+
+.gl-pstep-desc {
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    max-width: 520px;
+    margin: 0;
+}
+
+/* Inline card — collapsed on desktop, expandable on mobile */
+.gl-pstep-inline-card {
+    display: grid;
+    grid-template-rows: 0fr;
+}
+
+.gl-pstep-inline-card-inner {
+    overflow: hidden;
+}
+
+.gl-pstep-card-mobile {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 14px;
+    margin-bottom: 4px;
+}
+
+/* ── Mobile: < 1024px (sticky panel hidden) ── */
+@media (max-width: 1023px) {
+    /* Full opacity — no hover dimming on touch */
+    .gl-process-step {
+        opacity: 1 !important;
+        cursor: pointer;
+    }
+
+    /* Disable desktop hover colour shifts */
+    .gl-process-step:hover .gl-pstep-num {
+        background: transparent;
+        color: var(--gl-orange);
+    }
+    .gl-process-step:hover .gl-pstep-title {
+        color: var(--white, #fff);
+    }
+
+    /* Active step on mobile */
+    .gl-process-step.is-active .gl-pstep-num {
+        background: var(--gl-orange);
+        color: #000;
+    }
+    .gl-process-step.is-active .gl-pstep-title {
+        color: var(--gl-orange);
+    }
+
+    /* Expand inline card on tap */
+    .gl-pstep-inline-card {
+        transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .gl-process-step.is-active .gl-pstep-inline-card {
+        grid-template-rows: 1fr;
+    }
+}
+
+/* ── Mobile: < 767px ── */
+@media (max-width: 767px) {
+    .gl-process-step {
+        grid-template-columns: 44px 1fr;
+        gap: 0 16px;
+    }
+    .gl-pstep-left {
+        padding-top: 2px;
+    }
+    .gl-pstep-num {
+        width: 34px;
+        height: 34px;
+        font-size: 0.6875rem;
+    }
+    .gl-pstep-right {
+        padding-bottom: 32px;
+    }
+    .gl-pstep-top {
+        gap: 14px;
+    }
+    .gl-pstep-icon {
+        width: 36px;
+        height: 36px;
+    }
+    .gl-pstep-title {
+        font-size: 1.0625rem;
+    }
+    .gl-pstep-desc {
+        font-size: 0.875rem;
+    }
+}
+
+/* ── 19. TECH STACK INFINITE BAND ───────────────────────────── */
+.wg-tech.active .tech_text p,
+.wg-tech.active .tech_text h6 {
+    color: var(--gl-orange) !important;
+}
+.wg-tech {
+    border-color: var(--gl-border) !important;
+}
+.wg-tech.active {
+    border-color: var(--gl-orange) !important;
+}
+.wg-tech:hover {
+    border-color: rgba(214,106,31,0.4) !important;
+}
+
+/* ── 20. BRAND/CLIENTS STRIP ────────────────────────────────── */
+
+/* ── 21. MOBILE MENU OFFCANVAS ──────────────────────────────── */
+.offcanvas-menu {
+    background-color: var(--gl-black) !important;
+}
+.nav-ul-mb .mb-menu-link .text-primary {
+    color: var(--gl-orange) !important;
+}
+.nav-ul-mb .mb-menu-link {
+    color: var(--gl-text) !important;
+}
+.nav-ul-mb .mb-menu-link:hover span.text {
+    color: var(--gl-orange) !important;
+}
+
+/* ── 22. NICE-SELECT DROPDOWN ───────────────────────────────── */
+.nice-select:hover,
+.nice-select.open {
+    border-color: var(--gl-orange) !important;
+}
+.nice-select .list .option.selected {
+    color: var(--gl-orange) !important;
+}
+.nice-select .list .option:hover {
+    background-color: rgba(214,106,31,0.1) !important;
+    color: var(--gl-orange) !important;
+}
+
+/* ── 23. FORM FOCUS STATES ──────────────────────────────────── */
+.tf-field .tf-input:focus ~ .tf-lable,
+.tf-field .tf-input:not(:placeholder-shown) ~ .tf-lable {
+    color: var(--gl-orange) !important;
+}
+.tf-field .tf-input:focus {
+    border-bottom-color: var(--gl-orange) !important;
+    box-shadow: 0 1px 0 var(--gl-orange) !important;
+}
+
+/* ── 24. TAB BUTTONS (pricing) ──────────────────────────────── */
+.tf-btn-tab.active,
+.tf-btn-tab:hover {
+    color: var(--gl-orange) !important;
+    border-color: var(--gl-orange) !important;
+}
+.tf-btn-tab.active .dot-active,
+.tf-btn-tab:hover .dot-active {
+    background-color: var(--gl-orange) !important;
+}
+
+/* ── 25. goTop scroll indicator ────────────────────────────── */
+:root {
+    --primary-color: var(--gl-orange);
+}
+
+/* ── 26. SECTION HEADER ACCENT LINE ─────────────────────────── */
+.s-header::before,
+.mini-title::before {
+    /* Remove any default accent if needed */
+}
+
+/* ── 27. IMAGES — subtle orange glow on hover ───────────────── */
+.hover-img:hover .feature-image img,
+.hover-img:hover .main-image .image img {
+    box-shadow: 0 0 40px rgba(214,106,31,0.15);
+}
+
+/* ── 28. CAREER / EXPERIENCE LIST ───────────────────────────── */
+.experience-list > li:first-child {
+    color: var(--gl-muted) !important;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* ── 29. AWARD / STATS COUNTER ──────────────────────────────── */
+
+/* ── 30. GLOBAL SELECTION HIGHLIGHT ─────────────────────────── */
+::selection {
+    background-color: rgba(214,106,31,0.3);
+    color: var(--gl-text);
+}
+
+/* ── 31. CURSOR TRAIL ───────────────────────────────────────── */
+canvas.cursor-trail {
+    mix-blend-mode: screen;
+    pointer-events: none;
+}
+
+/* ── 32. PAGE-SPECIFIC ADJUSTMENTS ─────────────────────────── */
+
+/* Academy page stats block */
+.academy-stats .stat-number {
+    color: var(--gl-orange);
+}
+
+/* Blog category tags */
+
+/* Portfolio filter buttons */
+.portfolio-filter .filter-btn.active {
+    background-color: var(--gl-orange) !important;
+    border-color: var(--gl-orange) !important;
+    color: #fff !important;
+}
+
+/* Contact success state */
+
+/* ── 33. AGENCY WORDMARK IN FOOTER ──────────────────────────── */
+.img-agency {
+    mix-blend-mode: screen;
+    pointer-events: none;
+    user-select: none;
+}
+.img-agency svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+/* ── 34. RESPONSIVE TWEAKS ───────────────────────────────────── */
+
+/* ── 35. BLOG — FEATURED POST ───────────────────────────────── */
+.gl-featured-post {
+    border: 1px solid var(--gl-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.gl-featured-img img {
+    width: 100%;
+    height: 100%;
+    min-height: 360px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s ease;
+}
+.gl-featured-img:hover img {
+    transform: scale(1.03);
+}
+.gl-featured-body {
+    padding: 48px 40px;
+}
+@media (max-width: 991px) {
+    .gl-featured-body { padding: 36px 28px; }
+    .gl-featured-img img { min-height: 260px; }
+}
+
+/* ── 36. BLOG — ARTICLE BODY ────────────────────────────────── */
+.gl-article-body h2 {
+    font-size: clamp(1.4rem, 2.5vw, 2rem);
+}
+.gl-pullquote {
+    border-left: 3px solid var(--gl-orange);
+    padding: 20px 28px;
+    background: var(--gl-card);
+    border-radius: 0 6px 6px 0;
+}
+
+/* ── 37. CONTACT — INFO CARDS ───────────────────────────────── */
+.gl-contact-card {
+    padding: 28px;
+    border: 1px solid var(--gl-border);
+    border-radius: 8px;
+    height: 100%;
+}
+
+/* ── 38. CONTACT — FORM SUCCESS ─────────────────────────────── */
+.gl-form-success {
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── 39. HERO TAGLINE ────────────────────────────────────────── */
+.gl-hero-tagline {
+    font-size: clamp(1rem, 2vw, 1.45rem);
+    font-weight: 500;
+    color: var(--gl-text);
+    line-height: 1.65;
+    margin-top: 28px;
+    max-width: 540px;
+}
+.gl-hero-tagline .word {
+    display: inline-block;
+    margin-right: 0.28em;
+    opacity: 0; /* GSAP reveals after preloader */
+}
+
+/* ── 29. PORTFOLIO GRID — equal-height cards ────────────────── */
+#portfolioGrid .col-md-4,
+#portfolioGrid .col-sm-6 {
+    display: flex;
+    flex-direction: column;
+}
+#portfolioGrid .wg-feature-v01 {
+    flex: 1;
+    overflow: hidden;
+}
+#portfolioGrid .wg-feature-v01 .feature-image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+}
+#portfolioGrid .wg-feature-v01 .feature-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ── 30. HERO VIDEO — fix stacking + dark abstract overlay ──── */
+
+/*
+ * ROOT CAUSE: .bg-video has z-index:-1 in styles.css. Because
+ * .section-hero-v1 only has position:relative (no z-index), it does
+ * NOT form a stacking context, so z-index:-1 on .bg-video places it
+ * BEHIND the body background (#0F1115), making the video invisible.
+ * FIX: Give .section-hero-v1 isolation:isolate to form a stacking
+ * context, then raise .bg-video to z-index:1 so it renders inside
+ * the hero. Bump content layers above it.
+ */
+.section-hero-v1 {
+    isolation: isolate;
+}
+.section-hero-v1 .overlay {
+    z-index: 2 !important;
+}
+.section-hero-v1 .content-wrap {
+    z-index: 3 !important;
+}
+.gl-hero-dark-overlay {
+    display: none;
+}
+
+/* ── 25a. WHY CHOOSE US — ICONS & PROOF PILLS ──────────────── */
+.gl-reason-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: rgba(214,106,31,0.1);
+    color: var(--gl-orange);
+    flex-shrink: 0;
+    margin-right: 2px;
+}
+.gl-reason-proof {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gl-orange);
+    background: rgba(214,106,31,0.12);
+    border: 1px solid rgba(214,106,31,0.2);
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 10px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+/* ── 25b. PORTFOLIO METRIC BADGE ───────────────────────────── */
+.gl-work-metric {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(15,17,21,0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(214,106,31,0.3);
+    border-radius: 8px;
+    padding: 10px 16px;
+    z-index: 4;
+    pointer-events: none;
+}
+.gl-work-metric-num {
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gl-orange);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+.gl-work-metric-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+/* ── 26. HERO SOCIAL PROOF ─────────────────────────────────── */
+.gl-hero-social-proof {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+}
+.gl-hero-stars {
+    color: #f5a623;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+.gl-hero-proof-text {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    color: rgba(255,255,255,0.45);
+}
+
+/* ── 27. NAV "START A PROJECT" CTA ─────────────────────────── */
+.gl-nav-cta {
+    background: var(--gl-orange) !important;
+    color: #fff !important;
+    border-color: var(--gl-orange) !important;
+    transition: opacity 0.2s;
+    max-width: 160px;
+    flex-shrink: 0;
+    min-width: 0;
+}
+.gl-nav-cta:hover { opacity: 0.88; }
+
+/* ── 28. PRICING — MOST POPULAR BADGE ──────────────────────── */
+.gl-plan-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gl-orange);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    z-index: 5;
+    box-shadow: 0 4px 16px rgba(214,106,31,0.4);
+}
+
+/* ── 29. PRICING — CUSTOM QUOTE CTA ────────────────────────── */
+.gl-pricing-custom-cta {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.45);
+}
+
+/* ── 30. ABOUT — FOUNDER PHOTO ─────────────────────────────── */
+.gl-founder-wrap {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    max-width: 420px;
+}
+.gl-founder-photo {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+    object-fit: cover;
+    aspect-ratio: 4 / 5;
+    filter: grayscale(12%);
+    transition: filter 0.4s;
+}
+.gl-founder-wrap:hover .gl-founder-photo { filter: grayscale(0%); }
+.gl-founder-card {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: rgba(15,17,21,0.82);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 14px 18px;
+}
+.gl-founder-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.3;
+}
+.gl-founder-title {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gl-orange);
+    letter-spacing: 0.5px;
+    margin-top: 3px;
+}
+
+/* ── 31. TEAM SECTION ──────────────────────────────────────── */
+.section-team { background: var(--bg-2, #0f1115); }
+
+.gl-team-grid {
+    display: grid;
+    gap: 28px;
+    margin-bottom: 28px;
+}
+.gl-team-grid--top  { grid-template-columns: repeat(3, 1fr); }
+.gl-team-grid--bottom {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: calc((100% - 28px) * 2 / 3 + 28px);
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 0;
+}
+
+/* ── Team card ── */
+.gl-team-card {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #16181d;
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: transform 0.4s cubic-bezier(.22,1,.36,1),
+                box-shadow 0.4s cubic-bezier(.22,1,.36,1),
+                border-color 0.4s;
+}
+.gl-team-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 50px rgba(214,106,31,0.15), 0 0 0 1px rgba(214,106,31,0.25);
+    border-color: rgba(214,106,31,0.3);
+}
+
+/* CEO featured card — subtle accent only */
+.gl-team-card--ceo {
+    border: 1px solid rgba(214,106,31,0.15);
+}
+.gl-team-card--ceo .gl-team-role svg { color: var(--gl-orange, #d66a1f); }
+
+/* Photo wrapper + gradient overlay */
+.gl-team-img-wrap {
+    position: relative;
+    overflow: hidden;
+}
+.gl-team-photo {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+    aspect-ratio: 4 / 5;
+    filter: grayscale(15%);
+    transition: filter 0.5s, transform 0.5s cubic-bezier(.22,1,.36,1);
+}
+.gl-team-card:hover .gl-team-photo {
+    filter: grayscale(0%);
+    transform: scale(1.04);
+}
+.gl-team-gradient {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 55%;
+    background: linear-gradient(to top, #16181d 0%, rgba(22,24,29,0.6) 50%, transparent 100%);
+    pointer-events: none;
+}
+
+/* Info block */
+.gl-team-info {
+    padding: 18px 20px 20px;
+    position: relative;
+    margin-top: -40px;
+    z-index: 2;
+}
+.gl-team-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.3;
+}
+.gl-team-role {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gl-orange, #d66a1f);
+    letter-spacing: 0.3px;
+    margin-top: 5px;
+}
+.gl-team-role svg {
+    flex-shrink: 0;
+    color: rgba(214,106,31,0.7);
+}
+
+/* Social links — appear on hover */
+.gl-team-socials {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.3s, transform 0.3s;
+}
+.gl-team-card:hover .gl-team-socials {
+    opacity: 1;
+    transform: translateY(0);
+}
+.gl-team-socials a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.5);
+    transition: background 0.25s, color 0.25s;
+}
+.gl-team-socials a:hover {
+    background: var(--gl-orange, #d66a1f);
+    color: #fff;
+}
+
+/* Staggered animation delays (GSAP will handle scroll-trigger,
+   but we add CSS delays for the initial reveal) */
+.gl-team-card:nth-child(1) { transition-delay: 0s; }
+.gl-team-card:nth-child(2) { transition-delay: 0.08s; }
+.gl-team-card:nth-child(3) { transition-delay: 0.16s; }
+
+@media (max-width: 991px) {
+    .gl-team-grid--top    { grid-template-columns: repeat(2, 1fr); }
+    .gl-team-grid--bottom {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 100%;
+    }
+}
+@media (max-width: 575px) {
+    .gl-team-grid--top,
+    .gl-team-grid--bottom { grid-template-columns: 1fr; max-width: 100%; }
+    .gl-team-card { max-width: 100%; }
+    .gl-team-socials { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 32. CUSTOM CURSOR ─────────────────────────────────────── */
+@media (pointer: fine) {
+    * { cursor: none !important; }
+
+    .gl-cursor {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 32px;
+        height: 32px;
+        border: 1.5px solid rgba(214,106,31,0.7);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 99999;
+        transition: width 0.25s ease, height 0.25s ease, background 0.25s ease, border-color 0.25s ease, opacity 0.3s;
+        mix-blend-mode: normal;
+    }
+    .gl-cursor.is-hover {
+        width: 52px;
+        height: 52px;
+        background: rgba(214,106,31,0.12);
+        border-color: var(--gl-orange);
+    }
+}
+@media (pointer: coarse) {
+    .gl-cursor { display: none; }
+}
+
+/* ── 32. AI CHAT WIDGET ─────────────────────────────────────── */
+
+/* FAB button */
+.gl-chat-fab {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--gl-orange);
+    color: #fff;
+    border-radius: 50px;
+    padding: 12px 18px 12px 14px;
+    box-shadow: 0 8px 28px rgba(214,106,31,0.45);
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s;
+    user-select: none;
+}
+.gl-chat-fab:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 36px rgba(214,106,31,0.55);
+}
+.gl-chat-fab.is-open { opacity: 0; pointer-events: none; transform: scale(0.85); }
+.gl-chat-fab-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+.gl-chat-fab-ring {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50px;
+    border: 2px solid rgba(214,106,31,0.4);
+    animation: gl-ring-pulse 2.5s ease-in-out infinite;
+}
+@keyframes gl-ring-pulse {
+    0%, 100% { transform: scale(1);    opacity: 0.6; }
+    50%       { transform: scale(1.06); opacity: 0; }
+}
+
+/* Chat panel */
+.gl-chat-panel {
+    position: fixed;
+    bottom: 100px;
+    right: 28px;
+    z-index: 9999;
+    width: 360px;
+    max-height: 560px;
+    display: flex;
+    flex-direction: column;
+    background: #13151c;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(214,106,31,0.08);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.gl-chat-panel.is-open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+}
+@media (max-width: 420px) {
+    .gl-chat-panel { width: calc(100vw - 32px); right: 16px; bottom: 90px; }
+    .gl-chat-fab   { right: 16px; bottom: 16px; }
+}
+
+/* Header */
+.gl-chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    background: linear-gradient(135deg, #1a1d25 0%, #1c1814 100%);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+}
+.gl-chat-header-left { display: flex; align-items: center; gap: 12px; }
+.gl-chat-avatar {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(214,106,31,0.15);
+    border: 1.5px solid rgba(214,106,31,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.gl-chat-online-dot {
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    width: 9px;
+    height: 9px;
+    background: #22c55e;
+    border-radius: 50%;
+    border: 2px solid #1a1d25;
+}
+.gl-chat-header-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    line-height: 1.2;
+}
+.gl-chat-header-sub {
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.4);
+    margin: 0;
+    letter-spacing: 0.3px;
+}
+.gl-chat-close {
+    background: rgba(255,255,255,0.06);
+    border: none;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    flex-shrink: 0;
+}
+.gl-chat-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+/* Messages area */
+.gl-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.08) transparent;
+}
+.gl-chat-messages::-webkit-scrollbar { width: 4px; }
+.gl-chat-messages::-webkit-scrollbar-track { background: transparent; }
+.gl-chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+
+/* Message bubbles */
+.gl-chat-msg {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 85%;
+    animation: gl-msg-in 0.25s ease both;
+}
+@keyframes gl-msg-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.gl-chat-msg--ai  { align-self: flex-start; align-items: flex-start; }
+.gl-chat-bubble {
+    padding: 11px 15px;
+    border-radius: 16px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #f4f6fa;
+    word-break: break-word;
+}
+.gl-chat-msg--ai  .gl-chat-bubble {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-bottom-left-radius: 4px;
+}
+/* Agent (human) bubble — warm teal to distinguish from AI */
+/* Agent name badge above bubble */
+.gl-chat-agent-name {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: rgba(32,178,170,0.9);
+    padding: 0 4px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+.gl-chat-time {
+    font-size: 10px;
+    color: rgba(255,255,255,0.25);
+    padding: 0 4px;
+}
+/* System announcement (handover notice) */
+.gl-chat-notice {
+    align-self: center;
+    max-width: 90%;
+    text-align: center;
+    animation: gl-msg-in 0.3s ease both;
+}
+.gl-chat-notice-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.5);
+    font-style: italic;
+}
+
+/* Typing indicator */
+.gl-chat-typing {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 12px 15px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
+    border-bottom-left-radius: 4px;
+    width: fit-content;
+}
+.gl-chat-typing span {
+    width: 6px;
+    height: 6px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 50%;
+    animation: gl-typing-dot 1.2s ease-in-out infinite;
+}
+.gl-chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+.gl-chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes gl-typing-dot {
+    0%, 60%, 100% { transform: translateY(0);   opacity: 0.4; }
+    30%            { transform: translateY(-5px); opacity: 1; }
+}
+
+/* Quick replies */
+.gl-chat-quick-replies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 4px;
+}
+.gl-chat-qr {
+    background: transparent;
+    border: 1px solid rgba(214,106,31,0.35);
+    color: rgba(214,106,31,0.9);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 11.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    text-align: left;
+}
+.gl-chat-qr:hover {
+    background: rgba(214,106,31,0.12);
+    border-color: var(--gl-orange);
+    color: #fff;
+}
+
+/* Inline links inside chat bubbles */
+.gl-chat-link {
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.gl-chat-link--path {
+    display: inline-block;
+    padding: 1px 10px 2px;
+    margin: 0 2px;
+    background: rgba(214,106,31,0.14);
+    border: 1px solid rgba(214,106,31,0.4);
+    border-radius: 999px;
+    color: #ffb97b;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    vertical-align: baseline;
+}
+.gl-chat-link--path::before {
+    content: "↗ ";
+    opacity: 0.7;
+    font-weight: 400;
+}
+.gl-chat-link--path:hover {
+    background: rgba(214,106,31,0.28);
+    border-color: var(--gl-orange);
+    color: #fff;
+}
+.gl-chat-link--ext {
+    color: #ffb97b;
+    text-decoration: underline;
+    text-decoration-color: rgba(214,106,31,0.45);
+    text-underline-offset: 3px;
+}
+.gl-chat-link--ext:hover {
+    color: #fff;
+    text-decoration-color: var(--gl-orange);
+}
+/* In the teal agent bubble, tone links to match */
+
+/* Input row */
+.gl-chat-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    background: #13151c;
+    flex-shrink: 0;
+}
+.gl-chat-input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #f4f6fa;
+    outline: none;
+    transition: border-color 0.2s;
+    min-width: 0;
+}
+.gl-chat-input::placeholder { color: rgba(255,255,255,0.25); }
+.gl-chat-input:focus { border-color: rgba(214,106,31,0.5); }
+.gl-chat-send {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--gl-orange);
+    border: none;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    flex-shrink: 0;
+}
+.gl-chat-send:hover  { opacity: 0.88; }
+.gl-chat-send:active { transform: scale(0.92); }
+.gl-chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
+.gl-chat-footer {
+    font-size: 9.5px;
+    color: rgba(255,255,255,0.2);
+    text-align: center;
+    padding: 0 14px 10px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+/* ── Pre-chat identity form ────────────────────────────────── */
+.gl-chat-body {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+.gl-prechat {
+    position: absolute;
+    inset: 0;
+    background: #13151e;
+    z-index: 10;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 28px 22px 22px;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.gl-prechat.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+}
+.gl-prechat-wave {
+    font-size: 34px;
+    margin-bottom: 14px;
+    line-height: 1;
+}
+.gl-prechat h3 {
+    font-size: 17px;
+    font-weight: 800;
+    color: #f0f2f7;
+    margin-bottom: 5px;
+    letter-spacing: -0.3px;
+}
+.gl-prechat-sub {
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 22px;
+    line-height: 1.5;
+}
+.gl-prechat-field {
+    margin-bottom: 13px;
+}
+.gl-prechat-field label {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.gl-prechat-field input {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 14px;
+    color: #f0f2f7;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+}
+.gl-prechat-field input:focus {
+    border-color: rgba(214,106,31,0.6);
+    box-shadow: 0 0 0 3px rgba(214,106,31,0.1);
+}
+.gl-prechat-error {
+    font-size: 11.5px;
+    color: #ef4444;
+    margin: -6px 0 10px;
+    display: none;
+}
+.gl-prechat-btn {
+    width: 100%;
+    background: var(--gl-orange, #D66A1F);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 2px;
+    transition: background 0.2s, transform 0.1s;
+    font-family: inherit;
+    letter-spacing: 0.2px;
+}
+.gl-prechat-btn:hover  { background: #c05d18; }
+.gl-prechat-btn:active { transform: scale(0.98); }
+.gl-prechat-privacy {
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.25);
+    text-align: center;
+    margin-top: 13px;
+    margin-bottom: 0;
+}
+
+/* ── 33. SCROLL REVEAL ─────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+    .gl-reason-item,
+    .gl-stat,
+    .wg-plan,
+    .accordion-faq_item,
+    .gl-founder-wrap,
+    .gl-hero-social-proof {
+        opacity: 0;
+        transform: translateY(24px);
+        transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    .gl-reason-item.gl-revealed,
+    .gl-stat.gl-revealed,
+    .wg-plan.gl-revealed,
+    .accordion-faq_item.gl-revealed,
+    .gl-founder-wrap.gl-revealed,
+    .gl-hero-social-proof.gl-revealed {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================================
+   PREMIUM POLISH — April 2026
+   ============================================================ */
+
+/* ── Noise texture overlay ─────────────────────────────────── */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9990;
+    pointer-events: none;
+    opacity: 0.028;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 180px;
+}
+
+/* ── CTA button glow ───────────────────────────────────────── */
+.tf-btn.style-fill {
+    position: relative;
+}
+.tf-btn.style-fill::after {
+    content: '';
+    position: absolute;
+    inset: -6px -10px;
+    border-radius: inherit;
+    background: radial-gradient(ellipse at center, rgba(214,106,31,0.3) 0%, transparent 70%);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    filter: blur(12px);
+}
+.tf-btn.style-fill:hover::after {
+    opacity: 1;
+}
+
+/* ── Section gradient transitions ──────────────────────────── */
+
+/* Specific section bleed */
+.gl-why-section::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(to bottom, transparent, var(--gl-bg));
+    pointer-events: none;
+}
+
+.section-service-2::before {
+    content: '';
+    position: absolute;
+    top: -80px;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(to bottom, transparent, var(--gl-bg));
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* ── Pricing cards 3D hover ────────────────────────────────── */
+.wg-plan {
+    transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+                box-shadow 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.wg-plan:hover {
+    transform: perspective(1000px) rotateY(-2deg) translateY(-8px);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(214,106,31,0.15);
+}
+
+/* ── Preloader letter stagger ──────────────────────────────── */
+.preloader .site-name span {
+    display: inline-flex;
+}
+.preloader .site-name .gl-preload-letter {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: gl-letter-in 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+@keyframes gl-letter-in {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Hero animated tagline ─────────────────────────────────── */
+.gl-hero-tagline {
+    font-size: clamp(1rem, 2vw, 1.35rem);
+    font-weight: 400;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.65;
+    margin-top: 20px;
+    max-width: 420px;
+}
+.gl-hero-tagline .gl-word {
+    display: inline-block;
+    margin-right: 0.25em;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.gl-hero-tagline .gl-word.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+@media (max-width: 767px) {
+    .gl-hero-tagline {
+        font-size: 13px;
+        margin-top: 14px;
+        max-width: 100%;
+    }
+}
+
+/* ── Video reel section ────────────────────────────────────── */
+.gl-reel-section {
+    position: relative;
+    height: 70vh;
+    min-height: 400px;
+    max-height: 700px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.gl-reel-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background:
+        radial-gradient(ellipse at 30% 50%, rgba(214,106,31,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 40%, rgba(30,75,255,0.08) 0%, transparent 55%),
+        linear-gradient(135deg, #0a0b0f 0%, #12141a 50%, #0f1115 100%);
+    animation: gl-reel-shift 12s ease-in-out infinite alternate;
+}
+@keyframes gl-reel-shift {
+    0%   { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+.gl-reel-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+        linear-gradient(to bottom, var(--gl-bg) 0%, transparent 15%),
+        linear-gradient(to top, var(--gl-bg) 0%, transparent 15%);
+    pointer-events: none;
+}
+.gl-reel-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 0 24px;
+}
+.gl-reel-eyebrow {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gl-orange);
+    margin-bottom: 20px;
+}
+.gl-reel-title {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: #fff;
+    margin: 0 0 16px;
+}
+.gl-reel-title span {
+    color: var(--gl-orange);
+}
+.gl-reel-subtitle {
+    font-size: clamp(0.9rem, 1.4vw, 1.1rem);
+    color: rgba(255,255,255,0.4);
+    max-width: 480px;
+    margin: 0 auto 32px;
+    line-height: 1.7;
+}
+.gl-reel-play {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 28px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 100px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background 0.3s, border-color 0.3s, transform 0.3s;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+.gl-reel-play:hover {
+    background: rgba(214,106,31,0.15);
+    border-color: var(--gl-orange);
+    transform: scale(1.05);
+    color: #fff;
+}
+.gl-reel-play svg {
+    width: 20px;
+    height: 20px;
+}
+/* Animated accent lines */
+.gl-reel-lines {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+}
+.gl-reel-lines::before,
+.gl-reel-lines::after {
+    content: '';
+    position: absolute;
+    width: 1px;
+    height: 40%;
+    background: linear-gradient(to bottom, transparent, rgba(214,106,31,0.2), transparent);
+    animation: gl-line-drift 8s ease-in-out infinite;
+}
+.gl-reel-lines::before { left: 15%; top: 10%; animation-delay: 0s; }
+.gl-reel-lines::after  { right: 20%; top: 20%; animation-delay: 4s; }
+@keyframes gl-line-drift {
+    0%, 100% { opacity: 0; transform: translateY(-20px); }
+    50%      { opacity: 1; transform: translateY(20px); }
+}
+
+/* ── Footer CTA ────────────────────────────────────────────── */
+.gl-footer-cta {
+    text-align: center;
+    padding: 80px 24px 60px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.gl-footer-cta-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #fff;
+    line-height: 1.1;
+    margin: 0 0 12px;
+}
+.gl-footer-cta-sub {
+    font-size: 1rem;
+    color: var(--gl-muted);
+    margin: 0 0 32px;
+}
+
+/* ── Page transition overlay ───────────────────────────────── */
+.gl-page-transition {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: var(--gl-black);
+    transform: scaleY(0);
+    transform-origin: bottom;
+    pointer-events: none;
+}
+.gl-page-transition.is-entering {
+    animation: gl-page-in 0.5s cubic-bezier(0.86, 0, 0.07, 1) forwards;
+    pointer-events: all;
+}
+@keyframes gl-page-in {
+    0%   { transform: scaleY(0); transform-origin: bottom; }
+    100% { transform: scaleY(1); transform-origin: bottom; }
+}
+
+/* ── Magnetic cursor ───────────────────────────────────────── */
+@media (pointer: fine) {
+    .gl-magnetic {
+        transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+}
+
+/* ── Social proof toast ────────────────────────────────────── */
+.gl-toast {
+    position: fixed;
+    bottom: 28px;
+    left: 28px;
+    z-index: 9997;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(23, 26, 33, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 14px 18px;
+    max-width: 320px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    pointer-events: none;
+}
+.gl-toast.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+.gl-toast-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #34d399;
+    flex-shrink: 0;
+    animation: gl-toast-pulse 2s ease-in-out infinite;
+}
+@keyframes gl-toast-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+}
+.gl-toast-text {
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.7);
+}
+.gl-toast-text strong {
+    color: #fff;
+    font-weight: 600;
+}
+.gl-toast-text span {
+    display: block;
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 2px;
+}
+@media (max-width: 575px) {
+    .gl-toast {
+        left: 16px;
+        right: 16px;
+        max-width: none;
+        bottom: 16px;
+    }
+}
+
+/* ============================================================
+   MOBILE UI CLEANUP — April 2026
+   ============================================================ */
+
+/* ── Fix #1: Header right column — flush-right on mobile ───── */
+@media (max-width: 767px) {
+    .tf-header .col-6.col-sm-3.col-md-3 {
+        flex: 0 0 auto;
+        width: auto;
+    }
+}
+
+/* ── Fix #3: Stats bar — stack vertically on small phones ──── */
+@media (max-width: 425px) {
+    .gl-hero-stats {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+    .gl-hero-stat {
+        width: 100%;
+    }
+    .gl-hero-stat-divider {
+        display: none;
+    }
+}
+
+/* ── Fix #4: Hero social proof — wrap on mobile ────────────── */
+@media (max-width: 767px) {
+    .gl-hero-social-proof {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+}
+
+/* ── Fix #5: Selected Works drum — tighter on mobile ───────── */
+@media (max-width: 575px) {
+    .gl-drum-outer {
+        height: 320px;
+        perspective: 450px;
+    }
+    .gl-drum-title { font-size: 16px !important; }
+    .gl-drum-item.is-active .gl-drum-title { font-size: 25px !important; }
+}
+
+/* ── Fix #6: Selected Works nav — hide PORTFOLIO label, center nav ── */
+@media (max-width: 767px) {
+    .gl-portfolio-label {
+        display: none !important;
+    }
+    .content-wrap-2 .group-btn-slider {
+        justify-content: center;
+    }
+    .content-wrap-2 .gl-slide-counter {
+        text-align: center;
+    }
+}
+
+/* ── Fix #7: Why Choose Us — smaller titles on mobile ──────── */
+@media (max-width: 575px) {
+    .gl-reason-title {
+        font-size: clamp(18px, 5vw, 22px) !important;
+    }
+    .gl-reason-proof {
+        display: none !important;
+    }
+}
+
+/* ── Fix #8: Why Choose Us — hide icon on small screens ────── */
+@media (max-width: 575px) {
+    .gl-reason-icon {
+        display: none !important;
+    }
+}
+
+/* ── Fix #9: Process timeline — hide step icons on small screens ── */
+@media (max-width: 575px) {
+    .gl-pstep-icon {
+        display: none !important;
+    }
+    .gl-pstep-top {
+        gap: 0;
+    }
+}
+
+/* ── Fix #10: Testimonial quote mark — smaller on tiny screens ── */
+@media (max-width: 425px) {
+    .gl-tes-qmark {
+        font-size: 60px;
+        top: 2px;
+        left: 12px;
+    }
+    .gl-tes-hero {
+        padding: 28px 18px 22px;
+    }
+    .gl-tes-hero-text {
+        font-size: 0.9375rem;
+    }
+}
+
+/* ── Fix #11: Chat FAB — offset above goTop on mobile ──────── */
+@media (max-width: 767px) {
+    .gl-chat-fab {
+        bottom: 80px;
+    }
+    .gl-chat-panel {
+        bottom: 148px;
+    }
+}
+
+/* ── Fix #13: Marquee logos — smaller on small phones ──────── */
+@media (max-width: 575px) {
+    .gl-marquee-item img {
+        height: 28px;
+    }
+    .gl-marquee-track {
+        gap: 36px;
+    }
+}
+
