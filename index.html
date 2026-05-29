@@ -115,8 +115,9 @@
     }
     </script>
 
-    <!-- Spline 3D viewer -->
-    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.12.70/build/spline-viewer.js"></script>
+    <!-- Spline 3D viewer — lazy-loaded after first paint (decorative hero background).
+         The <spline-viewer> element stays inert until this module loads; the dark
+         fallback shows behind the hero text meanwhile. -->
 
     <style>
         /* ── Hero layout ───────────────────────────────────────── */
@@ -628,6 +629,21 @@
                     background="transparent">
                 </spline-viewer>
             </div>
+            <script>
+            (function () {
+                // Lazy-load the heavy Spline module off the critical path. The
+                // <spline-viewer> stays inert until this loads, then upgrades and
+                // plays its own native intro animation (no extra CSS fade).
+                function loadSpline() {
+                    var s = document.createElement('script');
+                    s.type = 'module';
+                    s.src = 'https://unpkg.com/@splinetool/viewer@1.12.70/build/spline-viewer.js';
+                    document.head.appendChild(s);
+                }
+                if (document.readyState === 'complete') setTimeout(loadSpline, 200);
+                else window.addEventListener('load', function () { setTimeout(loadSpline, 200); });
+            })();
+            </script>
             <div class="video-overlay"></div>
             <div class="video-overlay-2"></div>
             <div class="gl-hero-dark-overlay"></div>
