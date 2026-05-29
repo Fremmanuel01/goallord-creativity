@@ -124,6 +124,11 @@
         <label>Password</label>
         <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
       </div>
+      <div class="form-group" id="twoFactorGroup" style="display:none;">
+        <label>Authentication Code</label>
+        <input type="text" id="totpCode" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" maxlength="20">
+        <p style="font-size:12px;color:var(--muted);margin-top:6px;">Enter the 6-digit code from your authenticator app, or a backup code.</p>
+      </div>
       <button class="btn-login" type="submit" id="loginBtn">Sign In</button>
     </form>
 
@@ -158,6 +163,7 @@
     const errorMsg = document.getElementById('errorMsg');
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
+    const totpCode = document.getElementById('totpCode').value.trim();
 
     btn.disabled = true;
     btn.textContent = 'Signing in…';
@@ -167,9 +173,18 @@
       const res = await fetch('/api/students/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, totpCode: totpCode || undefined })
       });
       const json = await res.json();
+
+      // Server asks for a second factor — reveal the code field and wait.
+      if (res.ok && json.twoFactorRequired) {
+        document.getElementById('twoFactorGroup').style.display = 'block';
+        document.getElementById('totpCode').focus();
+        btn.disabled = false;
+        btn.textContent = 'Verify & Sign In';
+        return;
+      }
 
       if (!res.ok) {
         errorMsg.textContent = json.error || 'Login failed.';
@@ -183,18 +198,19 @@
         }
         errorMsg.style.display = 'block';
         btn.disabled = false;
-        btn.textContent = 'Sign In';
+        btn.textContent = document.getElementById('twoFactorGroup').style.display === 'block' ? 'Verify & Sign In' : 'Sign In';
         return;
       }
 
-      localStorage.setItem('gl_student_token', json.token);
+      // Real JWT now lives in an httpOnly cookie; store only a marker.
+      localStorage.setItem('gl_student_token', 'cookie-session');
       localStorage.setItem('gl_student', JSON.stringify(json.student));
       window.location.href = 'student-dashboard.html';
     } catch (err) {
       errorMsg.textContent = 'Network error. Please try again.';
       errorMsg.style.display = 'block';
       btn.disabled = false;
-      btn.textContent = 'Sign In';
+      btn.textContent = document.getElementById('twoFactorGroup').style.display === 'block' ? 'Verify & Sign In' : 'Sign In';
     }
   }
 </script>

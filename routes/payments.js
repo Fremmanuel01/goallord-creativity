@@ -6,9 +6,26 @@ const notificationsDb = require('../db/notifications');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { requireStudent } = require('../middleware/studentAuth');
 const { sendMail } = require('../utils/mailer');
-const { receiptEmail, paymentReminderEmail, suspensionEmail, reactivationEmail } = require('../utils/emailTemplates');
+const { sendSms } = require('../utils/sms');
+const { receiptEmail, paymentReminderEmail, suspensionEmail, reactivationEmail, paymentRetryEmail, proformaInvoiceEmail } = require('../utils/emailTemplates');
+const supabase = require('../lib/supabase');
 
 const router = express.Router();
+
+const CAT_LABELS = {
+  application_fee: 'Application Fee', tuition_month_1: 'Tuition Month 1',
+  tuition_month_2: 'Tuition Month 2', tuition_month_3: 'Tuition Month 3',
+  full_tuition_payment: 'Full Tuition Payment'
+};
+
+// Sequential proforma invoice number, e.g. PRO-2026-0001
+async function generateProformaNumber() {
+  const { count } = await supabase
+    .from('payments')
+    .select('id', { count: 'exact', head: true })
+    .not('proforma_number', 'is', null);
+  return 'PRO-' + new Date().getFullYear() + '-' + String((count || 0) + 1).padStart(4, '0');
+}
 
 // ── GET /api/payments/me — student: own payments ───────────────
 router.get('/me', requireStudent, async (req, res) => {
@@ -144,6 +161,20 @@ router.post('/:id/paystack', requireStudent, async (req, res) => {
     if (String(payment.student_id) !== String(req.student.id))
       return res.status(403).json({ error: 'Forbidden' });
 
+    // Idempotency #1: if this payment is already settled, return success
+    // without re-verifying or re-crediting. Safe to call repeatedly.
+    if (Number(payment.amount_paid || 0) >= Number(payment.amount_due || 0)) {
+      return res.json({ payment, receiptNumber: payment.receipt_number, alreadyPaid: true });
+    }
+
+    // Idempotency #2: a Paystack reference may only ever settle ONE payment
+    // row. Reject replay of a reference already attached to another payment.
+    const { data: dupRows } = await supabase
+      .from('payments').select('id').eq('reference', reference).neq('id', req.params.id).limit(1);
+    if (dupRows && dupRows.length) {
+      return res.status(409).json({ error: 'This payment reference has already been used.' });
+    }
+
     // Verify with Paystack
     const psData = await new Promise((resolve, reject) => {
       const paystackReq = https.request({
@@ -162,10 +193,17 @@ router.post('/:id/paystack', requireStudent, async (req, res) => {
       paystackReq.end();
     });
 
-    if (!psData.data || psData.data.status !== 'success')
-      return res.status(400).json({ error: 'Paystack verification failed' });
-    if (psData.data.amount / 100 < payment.amount_due)
-      return res.status(400).json({ error: 'Amount paid is less than amount due' });
+    const verifyOk = psData.data && psData.data.status === 'success';
+    const amountOk = verifyOk && (psData.data.amount / 100 >= payment.amount_due);
+
+    if (!verifyOk || !amountOk) {
+      // Payment didn't complete — nudge the student to retry (best effort, once).
+      sendPaymentRetry(payment).catch(e => console.error('Retry email failed:', e.message));
+      return res.status(400).json({
+        error: verifyOk ? 'Amount paid is less than amount due' : 'Paystack verification failed',
+        retry: true
+      });
+    }
 
     const updated = await paymentsDb.update(req.params.id, {
       amount_paid: payment.amount_due,
@@ -180,6 +218,25 @@ router.post('/:id/paystack', requireStudent, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Send a "your payment didn't go through" email to the payment's student.
+// Throttled to once per hour per payment so repeated failed attempts don't spam.
+async function sendPaymentRetry(payment) {
+  const student = await studentsDb.findById(payment.student_id).catch(() => null);
+  if (!student || !student.email) return;
+  const lastSent = payment.retry_email_sent_at ? new Date(payment.retry_email_sent_at).getTime() : 0;
+  if (Date.now() - lastSent < 60 * 60 * 1000) return; // throttle: 1/hour
+  const loginUrl = (process.env.HOST || 'https://goallordcreativity.com') + '/student-login.html';
+  await sendMail({
+    to: student.email,
+    subject: 'Your payment didn\'t go through — Goallord Creativity Academy',
+    html: paymentRetryEmail({
+      fullName: student.full_name, category: payment.category,
+      amountDue: payment.amount_due, loginUrl
+    })
+  });
+  await paymentsDb.update(payment.id, { retry_email_sent_at: new Date().toISOString() });
+}
 
 // ── POST /api/payments/:id/bank-transfer — student: submit bank transfer ref ──
 router.post('/:id/bank-transfer', requireStudent, async (req, res) => {
@@ -264,6 +321,105 @@ router.post('/:id/confirm-cash', requireAuth, async (req, res) => {
     // Trigger auto-reactivate if applicable (same path as Paystack flow)
     checkAutoReactivate(payment.student_id).catch(() => {});
     res.json({ payment: updated, receiptNumber: updated.receipt_number });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/payments/:id/confirm-bank-transfer — admin: confirm a bank transfer ──
+router.post('/:id/confirm-bank-transfer', requireAuth, async (req, res) => {
+  try {
+    const payment = await paymentsDb.findById(req.params.id);
+    if (!payment) return res.status(404).json({ error: 'Payment not found' });
+    if (Number(payment.amount_paid || 0) >= Number(payment.amount_due || 0)) {
+      return res.status(400).json({ error: 'Payment already fully paid' });
+    }
+
+    const adminLabel = (req.user && (req.user.name || req.user.email)) || 'Admin';
+    const stamp = new Date().toISOString();
+    const newNotes = (payment.notes ? payment.notes + ' | ' : '') +
+      `bank transfer confirmed by ${adminLabel} at ${stamp}`;
+
+    const updated = await paymentsDb.update(req.params.id, {
+      amount_paid: payment.amount_due,
+      method: 'Bank Transfer',
+      notes: newNotes,
+      recorded_by: adminLabel + ' (Bank Transfer confirm)'
+    });
+
+    checkAutoReactivate(payment.student_id).catch(() => {});
+
+    // Notify the student: email receipt + SMS confirmation (both best-effort).
+    const student = await studentsDb.findById(payment.student_id).catch(() => null);
+    if (student) {
+      const label = CAT_LABELS[payment.category] || payment.category;
+      if (student.email && updated.receipt_number) {
+        sendMail({
+          to: student.email,
+          subject: `Payment Receipt ${updated.receipt_number} — Goallord Creativity Academy`,
+          html: receiptEmail({
+            receiptNumber: updated.receipt_number,
+            date: updated.receipt_issued_at || updated.paid_at || new Date(),
+            recipientName: student.full_name, recipientEmail: student.email,
+            description: label, amount: updated.amount_paid, currency: '₦',
+            method: 'Bank Transfer', reference: updated.reference || 'N/A',
+            issuedBy: 'Goallord Creativity Academy'
+          })
+        }).catch(e => console.error('Bank-transfer receipt email failed:', e.message));
+      }
+      if (student.phone) {
+        sendSms({
+          to: student.phone,
+          text: `Goallord: your bank transfer of N${Number(updated.amount_paid).toLocaleString()} for ${label} is confirmed. Receipt ${updated.receipt_number || ''}. Thank you!`
+        }).then(r => {
+          if (r.sent) paymentsDb.update(req.params.id, { confirmation_sms_sent_at: new Date().toISOString() }).catch(() => {});
+        }).catch(e => console.error('Confirmation SMS failed:', e.message));
+      }
+    }
+
+    res.json({ payment: updated, receiptNumber: updated.receipt_number });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/payments/:id/proforma — admin: issue a proforma invoice (corporate) ──
+router.post('/:id/proforma', requireAuth, async (req, res) => {
+  try {
+    const { companyName, companyAddress, contactEmail, contactName } = req.body || {};
+    const payment = await paymentsDb.findById(req.params.id);
+    if (!payment) return res.status(404).json({ error: 'Payment not found' });
+
+    const student = await studentsDb.findById(payment.student_id).catch(() => null);
+    const recipientEmail = (contactEmail || (student && student.email) || '').trim();
+    if (!recipientEmail) return res.status(400).json({ error: 'No recipient email — provide contactEmail.' });
+
+    // Reuse the existing number if a proforma was already issued for this row.
+    const proformaNumber = payment.proforma_number || await generateProformaNumber();
+    const issuedAt = new Date().toISOString();
+    const label = CAT_LABELS[payment.category] || payment.category;
+    const payUrl = (process.env.HOST || 'https://goallordcreativity.com') + '/student-login.html';
+
+    await sendMail({
+      to: recipientEmail,
+      subject: `Proforma Invoice ${proformaNumber} — Goallord Creativity Academy`,
+      html: proformaInvoiceEmail({
+        proformaNumber, date: issuedAt,
+        companyName: companyName || '', companyAddress: companyAddress || '',
+        studentName: (student && student.full_name) || contactName || '',
+        description: label, amount: payment.amount_due, currency: '₦',
+        dueDate: payment.due_date, payUrl
+      })
+    });
+
+    const updated = await paymentsDb.update(req.params.id, {
+      proforma_number: proformaNumber,
+      proforma_issued_at: issuedAt,
+      company_name: companyName || payment.company_name || null,
+      company_address: companyAddress || payment.company_address || null
+    });
+
+    res.json({ success: true, proformaNumber, sentTo: recipientEmail, payment: updated });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

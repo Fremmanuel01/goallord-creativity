@@ -568,4 +568,85 @@ function applicantPaymentReminderEmail({ fullName, track, paymentUrl }) {
 </td></tr></table></body></html>`;
 }
 
-module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail, suspensionEmail, graduationEmail, reactivationEmail, applicantPaymentReminderEmail };
+// ── Paystack failure — retry email ───────────────────────────
+function paymentRetryEmail({ fullName, category, amountDue, loginUrl }) {
+  const label = { application_fee:'Application Fee', tuition_month_1:'Tuition — Month 1', tuition_month_2:'Tuition — Month 2', tuition_month_3:'Tuition — Month 3', full_tuition_payment:'Full Tuition Payment' }[category] || category || 'your payment';
+  const amt = amountDue != null ? `<strong>₦${Number(amountDue).toLocaleString()}</strong>` : 'your balance';
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0F1115;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#171A21;border-radius:12px;border:1px solid #2A2F3A;overflow:hidden;">
+      <tr><td style="background:#D66A1F;padding:24px 32px;">
+        <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;">Your payment didn't go through</h1>
+        <p style="margin:4px 0 0;color:rgba(255,255,255,0.85);font-size:13px;">Goallord Creativity Academy</p>
+      </td></tr>
+      <tr><td style="padding:32px;">
+        <p style="color:#F4F6FA;font-size:15px;margin:0 0 16px;">Hi <strong>${esc(fullName)}</strong>,</p>
+        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 20px;">We couldn't confirm your payment of ${amt} for <strong>${esc(label)}</strong>. No money has been taken — if you were debited, it will be reversed automatically by your bank.</p>
+        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 24px;">Please sign in and try again. You can pay by card, bank transfer, or cash.</p>
+        <div style="text-align:center;margin:24px 0;">
+          <a href="${loginUrl}" style="display:inline-block;background:#D66A1F;color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">Retry Payment</a>
+        </div>
+        <hr style="border:none;border-top:1px solid #2A2F3A;margin:24px 0;">
+        <p style="color:#A0A6B3;font-size:12px;margin:0;">Trouble paying? Email <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;">hello@goallordcreativity.com</a> and we'll help.</p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
+// ── Proforma invoice (corporate payers) ──────────────────────
+function proformaInvoiceEmail({ proformaNumber, date, companyName, companyAddress, studentName, description, amount, currency = '₦', dueDate, issuedBy = 'Goallord Creativity Academy', payUrl }) {
+  const dateStr = new Date(date).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+  const dueStr  = dueDate ? new Date(dueDate).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }) : null;
+  const amt = `${currency}${Number(amount).toLocaleString()}`;
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0F1115;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;">
+    <table width="600" cellpadding="0" cellspacing="0" style="background:#171A21;border-radius:12px;border:1px solid #2A2F3A;overflow:hidden;">
+      <tr><td style="background:#1E4BFF;padding:24px 32px;">
+        <h1 style="margin:0;color:#fff;font-size:22px;font-weight:800;letter-spacing:0.5px;">PROFORMA INVOICE</h1>
+        <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);font-size:13px;">${esc(issuedBy)}</p>
+      </td></tr>
+      <tr><td style="padding:28px 32px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+          <tr>
+            <td style="vertical-align:top;">
+              <div style="color:#A0A6B3;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Billed To</div>
+              <div style="color:#F4F6FA;font-size:14px;font-weight:700;">${esc(companyName || studentName)}</div>
+              ${companyAddress ? `<div style="color:#A0A6B3;font-size:12px;line-height:1.5;margin-top:2px;">${esc(companyAddress)}</div>` : ''}
+              ${companyName && studentName ? `<div style="color:#A0A6B3;font-size:12px;margin-top:4px;">Re: ${esc(studentName)}</div>` : ''}
+            </td>
+            <td style="vertical-align:top;text-align:right;">
+              <div style="color:#A0A6B3;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Invoice No.</div>
+              <div style="color:#F4F6FA;font-size:14px;font-weight:700;font-family:monospace;">${esc(proformaNumber)}</div>
+              <div style="color:#A0A6B3;font-size:12px;margin-top:6px;">Date: ${dateStr}</div>
+              ${dueStr ? `<div style="color:#A0A6B3;font-size:12px;">Due: ${dueStr}</div>` : ''}
+            </td>
+          </tr>
+        </table>
+        <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #2A2F3A;border-radius:8px;overflow:hidden;">
+          <tr style="background:rgba(255,255,255,0.03);">
+            <td style="padding:11px 16px;color:#A0A6B3;font-size:12px;font-weight:600;">Description</td>
+            <td style="padding:11px 16px;color:#A0A6B3;font-size:12px;font-weight:600;text-align:right;">Amount</td>
+          </tr>
+          <tr>
+            <td style="padding:14px 16px;color:#F4F6FA;font-size:14px;border-top:1px solid #2A2F3A;">${esc(description)}</td>
+            <td style="padding:14px 16px;color:#F4F6FA;font-size:14px;font-weight:600;text-align:right;border-top:1px solid #2A2F3A;">${amt}</td>
+          </tr>
+          <tr>
+            <td style="padding:13px 16px;color:#F4F6FA;font-size:15px;font-weight:700;border-top:1px solid #2A2F3A;">Total Due</td>
+            <td style="padding:13px 16px;color:#D66A1F;font-size:16px;font-weight:800;text-align:right;border-top:1px solid #2A2F3A;">${amt}</td>
+          </tr>
+        </table>
+        ${payUrl ? `<div style="text-align:center;margin:26px 0 8px;"><a href="${payUrl}" style="display:inline-block;background:#1E4BFF;color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">Pay Invoice</a></div>` : ''}
+        <p style="color:#A0A6B3;font-size:12px;line-height:1.6;margin:22px 0 0;">This is a proforma invoice issued for payment authorisation. It is not a tax invoice/receipt. A receipt is issued once payment is confirmed.</p>
+        <hr style="border:none;border-top:1px solid #2A2F3A;margin:20px 0;">
+        <p style="color:#A0A6B3;font-size:12px;margin:0;">Questions? Email <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;">hello@goallordcreativity.com</a></p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
+module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail, suspensionEmail, graduationEmail, reactivationEmail, applicantPaymentReminderEmail, paymentRetryEmail, proformaInvoiceEmail };

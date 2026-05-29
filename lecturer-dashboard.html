@@ -66,7 +66,48 @@
   .stat-card .sl { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 6px; }
   .stat-card .sv { font-size: 26px; font-weight: 800; }
   .sv.orange { color: var(--orange); } .sv.blue { color: #6a9fff; } .sv.green { color: var(--green); }
-  @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } .topnav { padding: 0 16px; } .main { padding: 20px 14px 48px; } }
+  @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } .topnav { padding: 0 16px; } .main { padding: 20px 14px 48px; } .lec-name { display: none; } }
+
+  /* ── MOBILE-FIRST: cards over tables (≥375px) ── */
+  @media (max-width: 640px) {
+    /* Scrollable tab bar — all tabs reachable without wrapping into rows */
+    .tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { white-space: nowrap; flex-shrink: 0; padding: 10px 14px; }
+
+    .stat-card { padding: 16px; }
+    .stat-card .sv { font-size: 22px; }
+
+    /* Turn each data-table row into a self-contained card */
+    .table-wrap { border: none; background: transparent; overflow: visible; margin-bottom: 16px; }
+    .table-wrap table,
+    .table-wrap tbody,
+    .table-wrap tr,
+    .table-wrap td { display: block; width: 100%; }
+    .table-wrap thead { display: none; }
+    .table-wrap tr {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; margin-bottom: 12px; padding: 4px 2px;
+    }
+    .table-wrap tr:hover td { background: transparent; }
+    .table-wrap td {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      font-size: 14px; text-align: right; white-space: normal;
+    }
+    .table-wrap tr td:last-child { border-bottom: none; }
+    .table-wrap td::before {
+      content: attr(data-label);
+      font-size: 11px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      text-align: left; flex-shrink: 0;
+    }
+    /* Action cells keep their inline flex row of buttons; just drop the empty label and left-align */
+    .table-wrap td[data-label=""] { justify-content: flex-start; }
+    .table-wrap td[data-label=""]::before { content: none; }
+    .table-wrap td[colspan] { display: block; text-align: center; }
+    .table-wrap td[colspan]::before { content: none; }
+  }
   .bell-wrap { position: relative; }
   .bell-btn { background: transparent; border: 1px solid var(--border); border-radius: 7px; padding: 7px 11px; cursor: pointer; color: var(--muted); font-size: 16px; position: relative; transition: color 0.2s, border-color 0.2s; }
   .bell-btn:hover { color: var(--text); border-color: var(--muted); }
@@ -147,6 +188,8 @@
     <button class="tab" onclick="switchTab('attendance')">Attendance</button>
     <button class="tab" onclick="switchTab('curriculum')">Curriculum</button>
     <button class="tab" onclick="switchTab('students')">Students</button>
+    <button class="tab" onclick="switchTab('messages')">Messages<span id="msgTabBadge" style="display:none;margin-left:6px;background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;"></span></button>
+    <button class="tab" onclick="switchTab('security')">Security</button>
   </div>
 
   <!-- ── OVERVIEW ── -->
@@ -259,6 +302,21 @@
         <tbody id="stuTableBody"><tr><td colspan="5" class="loading">Loading…</td></tr></tbody>
       </table>
     </div>
+  </div>
+
+  <!-- ── MESSAGES ── -->
+  <div id="tab-messages" style="display:none">
+    <div style="margin-bottom:16px">
+      <div class="section-title" style="margin:0 0 4px">Messages</div>
+      <p style="color:var(--muted);font-size:13px;margin:0">Chat with your students and batch groups.</p>
+    </div>
+    <div id="chatPanel"></div>
+  </div>
+
+  <!-- ── SECURITY ── -->
+  <div id="tab-security" style="display:none">
+    <div class="section-title" style="margin-bottom:16px">Security</div>
+    <div id="twoFactorPanel"></div>
   </div>
 </main>
 
@@ -470,9 +528,9 @@ const lec = JSON.parse(localStorage.getItem(LEC_KEY) || '{}');
 document.getElementById('lecNameNav').textContent = lec.fullName || 'Lecturer';
 document.getElementById('pageTitle').textContent = 'Welcome, ' + (lec.fullName ? lec.fullName.split(' ')[0] : 'Lecturer');
 
-function logout() { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(LEC_KEY); window.location.href = 'lecturer-login.html'; }
+function logout() { try { fetch('/api/lecturers/logout', { method: 'POST', keepalive: true }).catch(function(){}); } catch(e){} localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(LEC_KEY); window.location.href = 'lecturer-login.html'; }
 
-const ALL_TABS = ['overview','materials','assignments','flashcards','attendance','curriculum','students'];
+const ALL_TABS = ['overview','materials','assignments','flashcards','attendance','curriculum','students','messages','security'];
 let loaded = {};
 
 function switchTab(tab) {
@@ -489,6 +547,29 @@ const LOADERS = {
   attendance:  loadAttendance,
   curriculum:  loadCurriculum,
   students:    loadStudents,
+  messages:    function () {
+    if (!window.initChat) return;
+    let me = {};
+    try { me = JSON.parse(localStorage.getItem(LEC_KEY) || '{}'); } catch (e) {}
+    initChat({
+      container: '#chatPanel',
+      base: '/api/messages',
+      token: function () { return localStorage.getItem('gl_lecturer_token'); },
+      self: { type: 'lecturer', id: me.id, name: me.fullName },
+      onUnread: function (n) {
+        const b = document.getElementById('msgTabBadge');
+        if (!b) return;
+        if (n > 0) { b.textContent = n; b.style.display = ''; } else { b.style.display = 'none'; }
+      }
+    });
+  },
+  security:    function () {
+    if (window.initTwoFactor) initTwoFactor({
+      container: '#twoFactorPanel',
+      base: '/api/lecturers',
+      token: function () { return localStorage.getItem('gl_lecturer_token'); }
+    });
+  },
 };
 
 // ── Helpers ─────────────────────────────────────────────────
@@ -579,12 +660,12 @@ async function loadMaterials() {
   const tbody = document.getElementById('matTableBody');
   if (!allMaterials.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">No materials yet.</td></tr>'; return; }
   tbody.innerHTML = allMaterials.map(m => `<tr>
-    <td style="font-weight:600">${escHtml(m.title)}</td>
-    <td><span style="background:rgba(30,75,255,0.12);color:#6a9fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${escHtml(m.type.toUpperCase())}</span></td>
-    <td>Week ${m.week}</td>
-    <td style="color:var(--muted)">${escHtml(m.topic || '—')}</td>
-    <td>${m.published ? '<span class="badge-pub">Published</span>' : '<span class="badge-draft">Draft</span>'}</td>
-    <td style="display:flex;gap:6px;flex-wrap:wrap">
+    <td data-label="Title" style="font-weight:600">${escHtml(m.title)}</td>
+    <td data-label="Type"><span style="background:rgba(30,75,255,0.12);color:#6a9fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${escHtml(m.type.toUpperCase())}</span></td>
+    <td data-label="Week">Week ${m.week}</td>
+    <td data-label="Topic" style="color:var(--muted)">${escHtml(m.topic || '—')}</td>
+    <td data-label="Status">${m.published ? '<span class="badge-pub">Published</span>' : '<span class="badge-draft">Draft</span>'}</td>
+    <td data-label="" style="display:flex;gap:6px;flex-wrap:wrap">
       <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openEditMaterial('${m._id}')">Edit</button>
       <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="togglePublish('${m._id}',${m.published},'mat')">${m.published ? 'Unpublish' : 'Publish'}</button>
       <button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="deleteMaterial('${m._id}')">Del</button>
@@ -670,13 +751,13 @@ async function loadAssignments() {
   tbody.innerHTML = allAssignments.map(a => {
     const isPast = new Date(a.deadline) < new Date();
     return `<tr>
-      <td style="font-weight:600">${escHtml(a.title)}</td>
-      <td>Week ${a.week}</td>
-      <td>${fmtDT(a.deadline)} ${isPast ? '<span style="color:var(--red);font-size:11px">(Closed)</span>' : ''}</td>
-      <td>${a.maxScore}</td>
-      <td>${a.published ? '<span class="badge-pub">Published</span>' : '<span class="badge-draft">Draft</span>'}</td>
-      <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="viewSubmissions('${a._id}','${a.title.replace(/'/g,'')}')">View</button></td>
-      <td style="display:flex;gap:6px;flex-wrap:wrap">
+      <td data-label="Title" style="font-weight:600">${escHtml(a.title)}</td>
+      <td data-label="Week">Week ${a.week}</td>
+      <td data-label="Deadline">${fmtDT(a.deadline)} ${isPast ? '<span style="color:var(--red);font-size:11px">(Closed)</span>' : ''}</td>
+      <td data-label="Max Score">${a.maxScore}</td>
+      <td data-label="Status">${a.published ? '<span class="badge-pub">Published</span>' : '<span class="badge-draft">Draft</span>'}</td>
+      <td data-label="Submissions"><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="viewSubmissions('${a._id}','${a.title.replace(/'/g,'')}')">View</button></td>
+      <td data-label="" style="display:flex;gap:6px;flex-wrap:wrap">
         <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openEditAssignment('${a._id}')">Edit</button>
         <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="togglePublish('${a._id}',${a.published},'asgn')">${a.published ? 'Unpublish' : 'Publish'}</button>
         <button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="deleteAssignment('${a._id}')">Del</button>
@@ -759,11 +840,11 @@ async function viewSubmissions(id, title) {
       <thead><tr><th>Student</th><th>Submitted</th><th>Late?</th><th>Score</th><th>Action</th></tr></thead>
       <tbody>` +
     subs.map(s => `<tr>
-      <td style="font-weight:600">${escHtml(s.student?.fullName || '—')}</td>
-      <td style="font-size:13px;color:var(--muted)">${fmtDT(s.submittedAt)}</td>
-      <td>${s.isLate ? '<span style="color:var(--red);font-size:12px;font-weight:600">Late</span>' : '<span style="color:var(--muted)">—</span>'}</td>
-      <td>${s.score !== undefined && s.score !== null ? `<span style="color:var(--green);font-weight:700">${s.score}</span>` : '<span style="color:var(--muted);font-size:12px">Unscored</span>'}</td>
-      <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px"
+      <td data-label="Student" style="font-weight:600">${escHtml(s.student?.fullName || '—')}</td>
+      <td data-label="Submitted" style="font-size:13px;color:var(--muted)">${fmtDT(s.submittedAt)}</td>
+      <td data-label="Late?">${s.isLate ? '<span style="color:var(--red);font-size:12px;font-weight:600">Late</span>' : '<span style="color:var(--muted)">—</span>'}</td>
+      <td data-label="Score">${s.score !== undefined && s.score !== null ? `<span style="color:var(--green);font-weight:700">${s.score}</span>` : '<span style="color:var(--muted);font-size:12px">Unscored</span>'}</td>
+      <td data-label=""><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px"
         onclick="openScoreModal('${s._id}','${id}','${(s.student?.fullName||'Student').replace(/'/g,'')}',${s.score ?? 'null'})">Score</button></td>
     </tr>`).join('') +
     '</tbody></table></div>';
@@ -808,12 +889,12 @@ async function loadFlashcards() {
   const tbody = document.getElementById('flashTableBody');
   if (!allFlashSets.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">No sets yet.</td></tr>'; return; }
   tbody.innerHTML = allFlashSets.map(s => `<tr>
-    <td style="font-weight:600">${escHtml(s.title)}</td>
-    <td>Week ${s.week}</td>
-    <td style="color:var(--muted)">${escHtml(s.topic || '—')}</td>
-    <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openCardEditor('${s._id}','${s.title.replace(/'/g,'')}')">Edit Cards</button></td>
-    <td>${s.published ? '<span class="badge-pub">Published</span>' : '<span class="badge-draft">Draft</span>'}</td>
-    <td style="display:flex;gap:6px">
+    <td data-label="Title" style="font-weight:600">${escHtml(s.title)}</td>
+    <td data-label="Week">Week ${s.week}</td>
+    <td data-label="Topic" style="color:var(--muted)">${escHtml(s.topic || '—')}</td>
+    <td data-label="Cards"><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openCardEditor('${s._id}','${s.title.replace(/'/g,'')}')">Edit Cards</button></td>
+    <td data-label="Status">${s.published ? '<span class="badge-pub">Published</span>' : '<span class="badge-draft">Draft</span>'}</td>
+    <td data-label="" style="display:flex;gap:6px">
       <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openEditFlashSet('${s._id}')">Edit</button>
       <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="togglePublish('${s._id}',${s.published},'flash')">${s.published ? 'Unpublish' : 'Publish'}</button>
       <button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="deleteFlashSet('${s._id}')">Del</button>
@@ -889,10 +970,10 @@ async function loadCards() {
   const tbody = document.getElementById('cardTableBody');
   if (!allCards.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty">No cards yet. Add one!</td></tr>'; return; }
   tbody.innerHTML = allCards.map((c, i) => `<tr>
-    <td style="color:var(--muted)">${i + 1}</td>
-    <td>${escHtml(c.question)}</td>
-    <td style="color:var(--muted)">${escHtml(c.correctAnswer)}</td>
-    <td style="display:flex;gap:6px">
+    <td data-label="#" style="color:var(--muted)">${i + 1}</td>
+    <td data-label="Question">${escHtml(c.question)}</td>
+    <td data-label="Answer" style="color:var(--muted)">${escHtml(c.correctAnswer)}</td>
+    <td data-label="" style="display:flex;gap:6px">
       <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openEditCard('${c._id}')">Edit</button>
       <button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="deleteCard('${c._id}')">Del</button>
     </td>
@@ -960,14 +1041,14 @@ async function loadAttendance() {
   const tbody = document.getElementById('attTableBody');
   if (!allAttendance.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">No sessions yet. Click "+ Take Attendance" to create one.</td></tr>'; return; }
   tbody.innerHTML = allAttendance.map(s => `<tr>
-    <td>${fmtDate(s.classDate)}</td>
-    <td>Week ${s.week}</td>
-    <td>${s.day}</td>
-    <td style="color:var(--muted);font-size:13px">${escHtml(s.topic || '—')}</td>
-    <td style="color:var(--green);font-weight:600">${s.presentStudents?.length || 0}</td>
-    <td style="color:var(--red);font-weight:600">${s.absentStudents?.length || 0}</td>
-    <td>${s.isOpen ? '<span style="color:var(--green);font-weight:600;font-size:12px">Open</span>' : '<span style="color:var(--muted);font-size:12px">Closed</span>'}</td>
-    <td style="display:flex;gap:6px;flex-wrap:wrap">
+    <td data-label="Date">${fmtDate(s.classDate)}</td>
+    <td data-label="Week">Week ${s.week}</td>
+    <td data-label="Day">${s.day}</td>
+    <td data-label="Topic" style="color:var(--muted);font-size:13px">${escHtml(s.topic || '—')}</td>
+    <td data-label="Present" style="color:var(--green);font-weight:600">${s.presentStudents?.length || 0}</td>
+    <td data-label="Absent" style="color:var(--red);font-weight:600">${s.absentStudents?.length || 0}</td>
+    <td data-label="Window">${s.isOpen ? '<span style="color:var(--green);font-weight:600;font-size:12px">Open</span>' : '<span style="color:var(--muted);font-size:12px">Closed</span>'}</td>
+    <td data-label="" style="display:flex;gap:6px;flex-wrap:wrap">
       ${s.isOpen
         ? `<button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="closeSession('${s._id}')">Close Window</button>`
         : `<button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--green);border-color:rgba(34,197,94,0.3)" onclick="openSession('${s._id}')">Open Window</button>`}
@@ -1034,11 +1115,11 @@ async function loadCurriculum() {
   const tbody = document.getElementById('curTableBody');
   if (!allCurriculum.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No entries yet.</td></tr>'; return; }
   tbody.innerHTML = allCurriculum.map(c => `<tr>
-    <td>Week ${c.week}</td>
-    <td>${c.day}</td>
-    <td style="font-weight:600">${escHtml(c.topic)}</td>
-    <td style="color:var(--muted);font-size:13px">${escHtml(c.objectives || '—')}</td>
-    <td style="display:flex;gap:6px">
+    <td data-label="Week">Week ${c.week}</td>
+    <td data-label="Day">${c.day}</td>
+    <td data-label="Topic" style="font-weight:600">${escHtml(c.topic)}</td>
+    <td data-label="Objectives" style="color:var(--muted);font-size:13px">${escHtml(c.objectives || '—')}</td>
+    <td data-label="" style="display:flex;gap:6px">
       <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openEditCurriculum('${c._id}')">Edit</button>
       <button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="deleteCurriculum('${c._id}')">Del</button>
     </td>
@@ -1123,11 +1204,11 @@ function renderStudentTable(students) {
     return;
   }
   tbody.innerHTML = students.map(s => `<tr>
-    <td style="font-weight:600">${escHtml(s.fullName)}</td>
-    <td style="color:var(--muted);font-size:13px">${escHtml(s.email)}</td>
-    <td>${escHtml(s.track || '—')}</td>
-    <td><span style="font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600;background:${s.status==='Active'?'rgba(34,197,94,0.15)':'rgba(239,68,68,0.12)'};color:${s.status==='Active'?'var(--green)':'var(--red)'}">${s.status}</span></td>
-    <td style="color:var(--muted);font-size:13px">${fmtDate(s.createdAt)}</td>
+    <td data-label="Name" style="font-weight:600">${escHtml(s.fullName)}</td>
+    <td data-label="Email" style="color:var(--muted);font-size:13px">${escHtml(s.email)}</td>
+    <td data-label="Track">${escHtml(s.track || '—')}</td>
+    <td data-label="Status"><span style="font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600;background:${s.status==='Active'?'rgba(34,197,94,0.15)':'rgba(239,68,68,0.12)'};color:${s.status==='Active'?'var(--green)':'var(--red)'}">${s.status}</span></td>
+    <td data-label="Enrolled" style="color:var(--muted);font-size:13px">${fmtDate(s.createdAt)}</td>
   </tr>`).join('');
 }
 
@@ -1193,6 +1274,8 @@ loadNotifications();
 </script>
   <!-- pwa:body-end-start -->
   <script src="/assets/js/csrf.js"></script>
+  <script src="/assets/js/two-factor-ui.js"></script>
+  <script src="/assets/js/chat-ui.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {

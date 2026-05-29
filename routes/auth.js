@@ -5,10 +5,21 @@ const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const usersDb = require('../db/users');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { createTwoFactorHandlers, verifyLoginCode } = require('../utils/twoFactor');
+const { sanitizeIdentity } = require('../lib/utils');
+const { recordAudit, clientIp } = require('../middleware/auditLog');
+const { passwordError } = require('../utils/passwordPolicy');
+const { setAuthCookie, clearAuthCookie } = require('../lib/authCookie');
 
 const { sendMail } = require('../utils/mailer');
 
 const router = express.Router();
+
+// Two-factor handlers for admin/staff accounts
+const twoFactor = createTwoFactorHandlers({
+  db: usersDb,
+  getIdentity: (req) => ({ id: req.user.id, email: req.user.email })
+});
 
 // Throttle credential attempts to slow brute-force. The unhashed bcrypt path
 // is the hot target; 5 attempts per 15min per IP is the OWASP starting point.
@@ -24,20 +35,44 @@ const loginLimiter = rateLimit({
 // POST /api/auth/login
 router.post('/login', loginLimiter, async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, totpCode } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
+    const loginFailed = (reason) => recordAudit({
+      actor_email: (email || '').toLowerCase(), action: 'auth.login_failed',
+      entity_type: 'auth', summary: `Failed login for ${email} (${reason})`,
+      method: 'POST', path: '/api/auth/login', status: 401, ip: clientIp(req)
+    });
+
     const user = await usersDb.findByEmail(email.toLowerCase());
-    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+    if (!user) { await loginFailed('unknown email'); return res.status(401).json({ error: 'Invalid credentials' }); }
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(401).json({ error: 'Invalid credentials' });
+    if (!match) { await loginFailed('bad password'); return res.status(401).json({ error: 'Invalid credentials' }); }
+
+    // Second factor: once the password is verified, require a valid TOTP /
+    // backup code if this account has 2FA enabled.
+    if (user.totp_enabled) {
+      if (!totpCode) return res.json({ twoFactorRequired: true });
+      const codeOk = await verifyLoginCode(usersDb, user, totpCode);
+      if (!codeOk) { await loginFailed('bad 2FA code'); return res.status(401).json({ error: 'Invalid authentication code' }); }
+    }
+
+    recordAudit({
+      actor_id: user.id, actor_name: user.name, actor_email: user.email, actor_role: user.role,
+      action: 'auth.login', entity_type: 'auth', entity_id: user.id,
+      summary: `${user.name || user.email} signed in`,
+      method: 'POST', path: '/api/auth/login', status: 200, ip: clientIp(req)
+    });
 
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role, name: user.name, permissions: user.permissions },
       process.env.JWT_SECRET,
       { expiresIn: '7d', algorithm: 'HS256' }
     );
+
+    // Primary credential: httpOnly cookie (not readable by JS → no XSS exfil).
+    setAuthCookie(res, 'gl_token', token);
 
     res.json({
       token,
@@ -85,6 +120,7 @@ router.post('/register', requireAuth, requireAdmin, async (req, res) => {
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Name, email and password are required' });
     }
+    { const e = passwordError(password); if (e) return res.status(400).json({ error: e }); }
     const validRoles = ['admin', 'staff'];
     const userRole = validRoles.includes(role) ? role : 'staff';
 
@@ -206,10 +242,7 @@ router.patch('/users/:id', requireAuth, requireAdmin, async (req, res) => {
     const user = await usersDb.update(req.params.id, updates);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Remove password from response
-    delete user.password;
-
-    res.json(user);
+    res.json(sanitizeIdentity(user));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -237,9 +270,7 @@ router.post('/change-password', requireAuth, async (req, res) => {
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ error: 'Current password and new password are required' });
     }
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: 'New password must be at least 6 characters' });
-    }
+    { const e = passwordError(newPassword); if (e) return res.status(400).json({ error: e }); }
 
     const user = await usersDb.findById(req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
@@ -309,7 +340,7 @@ router.post('/reset-password', resetLimiter, async (req, res) => {
   try {
     const { token, newPassword } = req.body;
     if (!token || !newPassword) return res.status(400).json({ error: 'Token and new password are required' });
-    if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    { const e = passwordError(newPassword); if (e) return res.status(400).json({ error: e }); }
 
     const user = await usersDb.findByResetToken(token);
     if (!user) return res.status(400).json({ error: 'Invalid or expired reset link' });
@@ -322,6 +353,18 @@ router.post('/reset-password', resetLimiter, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// POST /api/auth/logout — clear the auth cookie
+router.post('/logout', (req, res) => {
+  clearAuthCookie(res, 'gl_token');
+  res.json({ success: true });
+});
+
+// ── Two-factor authentication (admin/staff) ──────────────────────
+router.get('/2fa/status',   requireAuth, twoFactor.status);
+router.post('/2fa/setup',   requireAuth, twoFactor.setup);
+router.post('/2fa/enable',  requireAuth, twoFactor.enable);
+router.post('/2fa/disable', requireAuth, twoFactor.disable);
 
 module.exports = router;
 module.exports.seedAdmin = seedAdmin;

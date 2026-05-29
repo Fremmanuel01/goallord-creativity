@@ -217,8 +217,13 @@ app.get('/api/config/public', (req, res) => {
 // ─── CSRF check on all mutating API calls ────────────────────
 app.use('/api/', csrfCheck);
 
+// Audit trail: record state-changing actions by dashboard accounts.
+app.use('/api/', require('./middleware/auditLog').auditLogger);
+
 // ─── API ROUTES ───────────────────────────────────────────────
 app.use('/api/auth',          require('./routes/auth'));
+app.use('/api/audit',         require('./routes/audit'));
+app.use('/api/messages',      require('./routes/messages'));
 app.use('/api/applicants',    require('./routes/applicants'));
 app.use('/api/clients',       require('./routes/clients'));
 app.use('/api/products',      require('./routes/products'));
@@ -257,7 +262,9 @@ io.on('connection', socket => {
   // Agents authenticate and join the 'agents' room
   socket.on('agent:join', ({ token }) => {
     try {
-      const user = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
+      const { parseCookieHeader } = require('./lib/authCookie');
+      const cookieTok = parseCookieHeader(socket.handshake.headers.cookie, 'gl_token');
+      const user = jwt.verify(cookieTok || token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
       socket.user = user;
       socket.join('agents');
       socket.emit('agent:joined', { name: user.name });
@@ -270,6 +277,30 @@ io.on('connection', socket => {
   // Visitor joins their own session room
   socket.on('visitor:join', ({ sessionId }) => {
     socket.join(sessionId);
+  });
+
+  // ── In-app chat (students / lecturers / admin) ──
+  // Authenticate, then join a personal room (for thread-list pings) and
+  // allow joining/leaving individual conversation rooms.
+  socket.on('chat:join', ({ token }) => {
+    const { verifyChatToken } = require('./middleware/chatAuth');
+    const { parseCookieHeader } = require('./lib/authCookie');
+    const ck = socket.handshake.headers.cookie;
+    const tok = parseCookieHeader(ck, 'gl_student_token')
+      || parseCookieHeader(ck, 'gl_lecturer_token')
+      || parseCookieHeader(ck, 'gl_token')
+      || token;
+    const u = verifyChatToken(tok);
+    if (!u) { socket.emit('chat:error', { message: 'Invalid token' }); return; }
+    socket.chatUser = u;
+    socket.join(`user:${u.type}:${u.id}`);
+    socket.emit('chat:joined', { type: u.type, id: u.id });
+  });
+  socket.on('chat:open', ({ threadId }) => {
+    if (socket.chatUser && threadId) socket.join('thread:' + threadId);
+  });
+  socket.on('chat:leave', ({ threadId }) => {
+    if (threadId) socket.leave('thread:' + threadId);
   });
 
   socket.on('disconnect', () => {

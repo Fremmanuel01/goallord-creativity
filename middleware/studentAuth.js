@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken');
+const { extractToken } = require('../lib/authCookie');
 
 const JWT_VERIFY_OPTS = { algorithms: ['HS256'] };
 
 function requireStudent(req, res, next) {
-  const header = req.headers.authorization || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  const token = extractToken(req, 'gl_student_token');
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
@@ -19,8 +19,7 @@ function requireStudent(req, res, next) {
 
 // Alias used by academy routes - sets req.user instead of req.student
 function requireStudentAuth(req, res, next) {
-  const header = req.headers.authorization || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  const token = extractToken(req, 'gl_student_token');
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
   try {

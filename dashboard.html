@@ -2117,6 +2117,13 @@
       <span>Analytics</span>
     </div>
 
+    <div class="nav-item" data-page="audit" title="Audit Log">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="13" y2="11"/>
+      </svg>
+      <span>Audit Log</span>
+    </div>
+
     <div class="nav-item" data-page="settings" title="Settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/>
@@ -2467,6 +2474,35 @@
     </div>
 
     <!-- Contact View/Reply Modal -->
+    <div class="modal-overlay" id="proformaModal">
+      <div class="modal-box" style="max-width:480px;width:100%;">
+        <div class="modal-header">
+          <h3>Issue Proforma Invoice</h3>
+          <button class="modal-close" onclick="closeModal('proformaModal')">✕</button>
+        </div>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Generates a proforma invoice and emails it for corporate/sponsor payment authorisation. A receipt is still issued separately once payment is confirmed.</p>
+        <input type="hidden" id="proforma-payment-id">
+        <div style="display:grid;gap:12px;margin-bottom:18px;">
+          <div>
+            <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;">Company / Sponsor name</label>
+            <input class="form-input" id="proforma-company" placeholder="e.g. Acme Ltd">
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;">Company address (optional)</label>
+            <input class="form-input" id="proforma-address" placeholder="Street, city">
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;">Send to email</label>
+            <input class="form-input" id="proforma-email" type="email" placeholder="Defaults to the student's email">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button class="btn btn-secondary" onclick="closeModal('proformaModal')">Cancel</button>
+          <button class="btn btn-primary" id="proformaSendBtn" onclick="submitProforma()">Send Invoice</button>
+        </div>
+      </div>
+    </div>
+
     <div class="modal-overlay" id="contactModal">
       <div class="modal-box" style="max-width:620px;width:100%;">
         <div class="modal-header">
@@ -2997,6 +3033,9 @@
           </div>
         </div>
       </div>
+
+      <!-- Two-Factor Authentication -->
+      <div id="twoFactorPanel" style="max-width:560px;margin-bottom:24px"></div>
 
       <div class="settings-grid">
         <!-- Academy Settings -->
@@ -3749,6 +3788,39 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- ── AUDIT LOG PAGE ── -->
+    <div class="page" id="page-audit">
+      <div class="section-header" style="margin-bottom:20px">
+        <h2>Audit Log</h2>
+        <button class="btn btn-secondary" onclick="loadAuditPage()">⟳ Refresh</button>
+      </div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:18px;">Every state-changing action by an admin or staff account, plus sign-in events. Append-only, for accountability and dispute resolution.</p>
+      <!-- Filters -->
+      <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+        <select class="form-input" id="audit-action-filter" style="max-width:220px" onchange="auditApplyFilters()">
+          <option value="">All actions</option>
+        </select>
+        <input class="form-input" id="audit-from" type="date" style="max-width:170px" onchange="auditApplyFilters()" title="From date">
+        <input class="form-input" id="audit-to" type="date" style="max-width:170px" onchange="auditApplyFilters()" title="To date">
+        <input class="form-input" id="audit-search" placeholder="Search actor, summary, path…" style="max-width:240px" onkeydown="if(event.key==='Enter')auditApplyFilters()">
+        <button class="btn btn-secondary" onclick="auditApplyFilters()">Search</button>
+      </div>
+      <div class="table-wrapper">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">When</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Actor</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Action</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Summary</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Status</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">IP</th>
+          </tr></thead>
+          <tbody id="auditTableBody"><tr><td colspan="6" style="padding:24px;text-align:center;color:var(--muted)">Loading…</td></tr></tbody>
+        </table>
+      </div>
+      <div id="auditPager" style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;font-size:13px;color:var(--muted)"></div>
     </div>
 
     <!-- ── STUDENTS PAGE ── -->
@@ -4550,6 +4622,7 @@ const pageTitles = {
   payments:   'Payments',
   affiliate:  'Affiliate Links',
   analytics:  'Site Analytics',
+  audit:      'Audit Log',
   website:    'Website Content',
   contacts:   'Contacts',
   projects:   'Projects',
@@ -4583,7 +4656,15 @@ function navigate(page) {
   if (page === 'payments')   loadPaymentsPage();
   if (page === 'affiliate')  loadAffiliateLinks();
   if (page === 'analytics')  loadAnalyticsPage();
-  if (page === 'settings')   loadAnalyticsSettings();
+  if (page === 'audit')      loadAuditPage();
+  if (page === 'settings') {
+    loadAnalyticsSettings();
+    if (window.initTwoFactor) initTwoFactor({
+      container: '#twoFactorPanel',
+      base: '/api/auth',
+      token: function () { return localStorage.getItem('gl_token'); }
+    });
+  }
   if (page === 'projects')   loadProjects();
   if (page === 'mytasks')    loadMyTasks();
   if (page === 'store')      loadProductsFromAPI();
@@ -5581,6 +5662,7 @@ function revealTaskStep() { /* no-op */ }
 })();
 
 function glLogout() {
+  try { fetch('/api/auth/logout', { method: 'POST', keepalive: true }).catch(function(){}); } catch(e){}
   localStorage.removeItem('gl_token');
   localStorage.removeItem('gl_user');
   window.location.href = 'login.html';
@@ -8239,6 +8321,80 @@ const _anChartOpts = () => ({
   }
 });
 
+// ── Audit Log ─────────────────────────────────────────────────
+let auditState = { page: 1, limit: 50, actionsLoaded: false };
+
+async function loadAuditPage() {
+  if (!auditState.actionsLoaded) {
+    auditState.actionsLoaded = true;
+    const actions = await apiFetch('/api/audit/actions');
+    if (actions && Array.isArray(actions)) {
+      const sel = document.getElementById('audit-action-filter');
+      actions.forEach(a => { const o = document.createElement('option'); o.value = a; o.textContent = a; sel.appendChild(o); });
+    }
+  }
+  await fetchAuditPage();
+}
+
+function auditApplyFilters() { auditState.page = 1; fetchAuditPage(); }
+function auditGoto(p) { auditState.page = p; fetchAuditPage(); }
+
+async function fetchAuditPage() {
+  const body = document.getElementById('auditTableBody');
+  body.innerHTML = '<tr><td colspan="6" style="padding:24px;text-align:center;color:var(--muted)">Loading…</td></tr>';
+
+  const params = new URLSearchParams();
+  params.set('page', auditState.page);
+  params.set('limit', auditState.limit);
+  const action = document.getElementById('audit-action-filter').value;
+  const from   = document.getElementById('audit-from').value;
+  const to     = document.getElementById('audit-to').value;
+  const search = document.getElementById('audit-search').value.trim();
+  if (action) params.set('action', action);
+  if (from)   params.set('from', new Date(from + 'T00:00:00').toISOString());
+  if (to)     params.set('to',   new Date(to + 'T23:59:59').toISOString());
+  if (search) params.set('search', search);
+
+  const res = await apiFetch('/api/audit?' + params.toString());
+  if (!res) { body.innerHTML = '<tr><td colspan="6" style="padding:24px;text-align:center;color:#ff7070">Failed to load.</td></tr>'; return; }
+  const rows = res.data || [];
+  body.innerHTML = rows.length
+    ? rows.map(renderAuditRow).join('')
+    : '<tr><td colspan="6" style="padding:32px;text-align:center;color:var(--muted)">No audit entries match these filters.</td></tr>';
+  renderAuditPager(res.total || 0);
+}
+
+function renderAuditRow(r) {
+  const when = new Date(r.created_at).toLocaleString('en-NG', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  const actor = escapeHtml(r.actor_name || r.actor_email || '—')
+    + (r.actor_role ? ' <span style="color:var(--muted);font-size:11px">(' + escapeHtml(r.actor_role) + ')</span>' : '');
+  const failed = r.status && r.status >= 400;
+  const statusBadge = failed
+    ? '<span style="background:rgba(239,68,68,0.12);color:#ff8080;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">' + (r.status || '') + '</span>'
+    : '<span style="background:rgba(34,197,94,0.12);color:#22c55e;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">' + (r.status || 'OK') + '</span>';
+  const td = 'padding:11px 14px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:top';
+  return '<tr>'
+    + '<td style="' + td + ';white-space:nowrap;color:var(--muted)">' + escapeHtml(when) + '</td>'
+    + '<td style="' + td + '">' + actor + '</td>'
+    + '<td style="' + td + '"><code style="font-size:12px;color:#6a9fff">' + escapeHtml(r.action || '') + '</code></td>'
+    + '<td style="' + td + '">' + escapeHtml(r.summary || '') + '<div style="color:var(--muted);font-size:11px;margin-top:2px">' + escapeHtml((r.method || '') + ' ' + (r.path || '')) + '</div></td>'
+    + '<td style="' + td + '">' + statusBadge + '</td>'
+    + '<td style="' + td + ';color:var(--muted);font-size:12px">' + escapeHtml(r.ip || '—') + '</td>'
+    + '</tr>';
+}
+
+function renderAuditPager(total) {
+  const pager = document.getElementById('auditPager');
+  const pages = Math.max(1, Math.ceil(total / auditState.limit));
+  const cur = auditState.page;
+  pager.innerHTML =
+    '<span>' + total.toLocaleString() + ' entr' + (total === 1 ? 'y' : 'ies') + ' · page ' + cur + ' of ' + pages + '</span>'
+    + '<span style="display:flex;gap:8px">'
+    +   '<button class="btn btn-secondary" ' + (cur <= 1 ? 'disabled' : '') + ' onclick="auditGoto(' + (cur - 1) + ')">‹ Prev</button>'
+    +   '<button class="btn btn-secondary" ' + (cur >= pages ? 'disabled' : '') + ' onclick="auditGoto(' + (cur + 1) + ')">Next ›</button>'
+    + '</span>';
+}
+
 async function loadAnalyticsPage() {
   const data = await apiFetch('/api/analytics/summary');
   if (!data) return;
@@ -9746,6 +9902,7 @@ function renderPayTable(rows) {
         ${isCashPending ? `<button title="${(r.notes||'').replace(/"/g,'&quot;')}" style="padding:5px 10px;font-size:12px;background:#D66A1F;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick="confirmCashPayment('${r._id}')">Confirm Cash 💵</button>` : ''}
         ${(status === 'overdue' || status === 'pending') && !isPaid ? `<button style="padding:5px 10px;font-size:12px;background:rgba(214,106,31,0.15);color:#D66A1F;border:1px solid rgba(214,106,31,0.3);border-radius:6px;cursor:pointer;font-weight:600;" onclick="sendPaymentReminder('${r._id}')">Remind</button>` : ''}
         ${isPaid ? `<button style="padding:5px 10px;font-size:12px;background:#22c55e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick='openReceipt(${receiptData})'>Receipt</button>` : ''}
+        ${!isPaid ? `<button title="Email a proforma invoice for corporate/sponsor payers" style="padding:5px 10px;font-size:12px;background:transparent;color:#6a9fff;border:1px solid rgba(30,75,255,0.4);border-radius:6px;cursor:pointer;font-weight:600;" onclick="openProforma('${r._id}','${(r.student?.email||'').replace(/'/g,'')}')">Proforma</button>` : ''}
         ${(JSON.parse(localStorage.getItem('gl_user') || '{}').role === 'admin') ? `<button style="padding:5px 10px;font-size:12px;background:#ef4444;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick="deletePayment('${r._id}')">Delete</button>` : ''}
       </td>
     </tr>`;
@@ -10328,11 +10485,39 @@ function buildOrderReceipt(o) {
 }
 
 async function confirmBankTransfer(id, amountDue) {
-  if (!confirm('Confirm this bank transfer and mark as paid?')) return;
-  const res = await apiFetch(`/api/payments/${id}`, { method: 'PATCH', body: JSON.stringify({ amountPaid: amountDue }) });
+  if (!confirm('Confirm this bank transfer and mark as paid? The student will get an email receipt and an SMS confirmation.')) return;
+  const res = await apiFetch(`/api/payments/${id}/confirm-bank-transfer`, { method: 'POST' });
   if (!res) return;
+  if (res.error) { showToast(res.error, 'error'); return; }
+  showToast('Bank transfer confirmed. Student notified by email + SMS.', 'success');
   const updated = await apiFetch(`/api/payments/${id}`);
   if (updated) openReceipt(buildPaymentReceipt({ ...updated, _id: id }));
+  loadPaymentsPage();
+}
+
+function openProforma(id, studentEmail) {
+  document.getElementById('proforma-payment-id').value = id;
+  document.getElementById('proforma-company').value = '';
+  document.getElementById('proforma-address').value = '';
+  document.getElementById('proforma-email').value = studentEmail || '';
+  openModal('proformaModal');
+}
+
+async function submitProforma() {
+  const id = document.getElementById('proforma-payment-id').value;
+  const btn = document.getElementById('proformaSendBtn');
+  const body = {
+    companyName:    document.getElementById('proforma-company').value.trim(),
+    companyAddress: document.getElementById('proforma-address').value.trim(),
+    contactEmail:   document.getElementById('proforma-email').value.trim()
+  };
+  btn.disabled = true; btn.textContent = 'Sending…';
+  const res = await apiFetch(`/api/payments/${id}/proforma`, { method: 'POST', body: JSON.stringify(body) });
+  btn.disabled = false; btn.textContent = 'Send Invoice';
+  if (!res) return;
+  if (res.error) { showToast(res.error, 'error'); return; }
+  showToast('Proforma ' + res.proformaNumber + ' sent to ' + res.sentTo, 'success');
+  closeModal('proformaModal');
   loadPaymentsPage();
 }
 
@@ -10512,6 +10697,7 @@ async function loadProjectAnalytics() {
 </script>
   <!-- pwa:body-end-start -->
   <script src="/assets/js/csrf.js"></script>
+  <script src="/assets/js/two-factor-ui.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
