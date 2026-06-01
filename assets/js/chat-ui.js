@@ -60,7 +60,7 @@
       });
     }
 
-    const state = { threads: [], activeId: null, activeType: null, contacts: null, socket: null, pollT: null };
+    const state = { threads: [], activeId: null, activeType: null, activeMeta: null, contacts: null, socket: null, pollT: null };
 
     // ── Styles (CSS vars w/ fallbacks → looks right on any dashboard) ──
     const C = {
@@ -141,48 +141,82 @@
       if (state.socket) state.socket.emit('chat:open', { threadId: id });
       api('/threads/' + id + '/messages').then(function (r) {
         if (!r.ok) { convo.innerHTML = '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:#ff7070;padding:24px;">' + esc((r.json && r.json.error) || 'Could not load.') + '</div>'; return; }
-        renderConvo(t, r.json.messages || []);
+        state.activeMeta = r.json.thread || {};
+        renderConvo(t, r.json.messages || [], state.activeMeta);
         // The GET marks it read server-side — reflect locally.
         if (t) { t.unread = 0; renderThreads(); if (opts.onUnread) opts.onUnread(state.threads.reduce(function (s, x) { return s + (x.unread || 0); }, 0)); }
       });
     }
 
-    function renderConvo(thread, messages) {
+    function renderConvo(thread, messages, meta) {
+      meta = meta || {};
       const convo = document.getElementById('chatConvo');
       const title = thread ? (thread.title || 'Conversation') : 'Conversation';
       const isGroup = thread && thread.type === 'batch';
+      const announce = meta.postPolicy === 'announce';
+      const canPost = meta.canPost !== false;       // default allow unless server says otherwise
+      const canManage = !!meta.canManage;
+      const subtitle = isGroup
+        ? (announce ? 'Announcements · staff post only' : 'Batch group chat')
+        : 'Direct message';
+
+      const manageBtn = canManage
+        ? '<button id="chatPolicyBtn" title="Toggle announcement-only posting" style="background:none;border:1px solid var(--border,#2A2F3A);color:var(--muted,#A0A6B3);border-radius:7px;padding:5px 10px;font-size:11px;cursor:pointer;white-space:nowrap;flex-shrink:0;">' +
+            (announce ? '📢 Announce: ON' : '📢 Announce: OFF') +
+          '</button>'
+        : '';
+
+      const composer = canPost
+        ? '<div style="' + C.composer + '">' +
+            '<textarea id="chatInput" rows="1" placeholder="Type a message…" style="' + C.input + '"></textarea>' +
+            '<button id="chatSend" style="' + C.btn + '">Send</button>' +
+          '</div>'
+        : '<div style="padding:14px 16px;border-top:1px solid var(--border,#2A2F3A);color:var(--muted,#A0A6B3);font-size:13px;text-align:center;">🔒 Only staff can post in this announcement channel.</div>';
+
       convo.innerHTML =
         '<div style="padding:14px 16px;border-bottom:1px solid var(--border,#2A2F3A);display:flex;gap:10px;align-items:center;">' +
           '<button id="chatBack" style="background:none;border:none;color:var(--muted,#A0A6B3);font-size:20px;cursor:pointer;display:none;">‹</button>' +
           avatar(title, isGroup) +
-          '<div style="min-width:0;"><div style="font-weight:700;font-size:14px;">' + esc(title) + '</div>' +
-          '<div style="font-size:11px;color:var(--muted,#A0A6B3);">' + (isGroup ? 'Batch group chat' : 'Direct message') + '</div></div>' +
+          '<div style="min-width:0;flex:1;"><div style="font-weight:700;font-size:14px;">' + esc(title) + '</div>' +
+          '<div style="font-size:11px;color:var(--muted,#A0A6B3);">' + subtitle + '</div></div>' +
+          manageBtn +
         '</div>' +
         '<div id="chatMsgs" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;"></div>' +
-        '<div style="' + C.composer + '">' +
-          '<textarea id="chatInput" rows="1" placeholder="Type a message…" style="' + C.input + '"></textarea>' +
-          '<button id="chatSend" style="' + C.btn + '">Send</button>' +
-        '</div>';
+        composer;
       renderMessages(messages);
-      const input = document.getElementById('chatInput');
-      const send = function () {
-        const body = input.value.trim();
-        if (!body) return;
-        input.value = '';
-        api('/threads/' + state.activeId + '/messages', 'POST', { body: body }).then(function (r) {
-          if (!r.ok) { input.value = body; return; }
-          appendMessage(r.json);
-          const t = state.threads.find(function (x) { return x.id === state.activeId; });
-          if (t) { t.lastMessageAt = r.json.created_at; t.lastMessagePreview = body; renderThreads(); }
+
+      const pb = document.getElementById('chatPolicyBtn');
+      if (pb) pb.onclick = function () {
+        const next = (state.activeMeta && state.activeMeta.postPolicy === 'announce') ? 'open' : 'announce';
+        pb.disabled = true;
+        api('/threads/' + state.activeId + '/policy', 'POST', { policy: next }).then(function (r) {
+          if (!r.ok) { pb.disabled = false; return; }
+          openThread(state.activeId); // re-fetch meta + messages, re-render
         });
       };
-      document.getElementById('chatSend').onclick = send;
-      input.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
-      });
+
+      if (canPost) {
+        const input = document.getElementById('chatInput');
+        const send = function () {
+          const body = input.value.trim();
+          if (!body) return;
+          input.value = '';
+          api('/threads/' + state.activeId + '/messages', 'POST', { body: body }).then(function (r) {
+            if (!r.ok) { input.value = body; return; }
+            appendMessage(r.json);
+            const t = state.threads.find(function (x) { return x.id === state.activeId; });
+            if (t) { t.lastMessageAt = r.json.created_at; t.lastMessagePreview = body; renderThreads(); }
+          });
+        };
+        document.getElementById('chatSend').onclick = send;
+        input.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+        });
+        input.focus();
+      }
+
       const back = document.getElementById('chatBack');
       if (back) back.onclick = function () { el.querySelector('#chatList').style.display = ''; document.getElementById('chatConvo').style.display = 'none'; };
-      input.focus();
     }
 
     function renderMessages(messages) {
@@ -258,6 +292,7 @@
             }
           });
           socket.on('chat:thread-updated', function () { refreshThreads(); });
+          socket.on('chat:policy', function (p) { if (p && p.threadId === state.activeId) openThread(state.activeId); });
         } catch (e) { /* fall back to polling */ }
       });
       // Safety-net poll for the thread list (unread badge) regardless of socket.
