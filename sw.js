@@ -6,7 +6,7 @@
  *  - Cross-origin GETs: best-effort cache-first
  */
 
-const VERSION = 'goallord-v5-2026-05-29';
+const VERSION = 'goallord-v6-2026-06-02';
 const SHELL_CACHE   = `${VERSION}-shell`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const IMAGE_CACHE   = `${VERSION}-images`;
@@ -17,6 +17,9 @@ const PRECACHE_URLS = [
   '/',
   '/offline.html',
   '/manifest.json',
+  '/manifest.portal.json',
+  '/portal.html',
+  '/assets/js/portal-pwa.js',
   '/assets/images/icons/icon-192.png',
   '/assets/images/icons/icon-512.png',
   '/assets/images/logo/favicon.svg'
@@ -163,4 +166,45 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
+});
+
+// ---------- web push ----------
+self.addEventListener('push', (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; }
+  catch (_) { data = { body: event.data && event.data.text() }; }
+
+  const title = data.title || 'Goallord Portal';
+  const options = {
+    body: data.body || '',
+    icon: '/assets/images/icons/icon-192.png',
+    badge: '/assets/images/icons/icon-192-maskable.png',
+    tag: data.tag || 'goallord-notification',
+    renotify: true,
+    data: { url: data.url || '/portal.html' },
+    vibrate: [80, 40, 80]
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Focus an existing window for the target URL, or open a new one.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/portal.html';
+  event.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const targetPath = new URL(targetUrl, self.location.origin).pathname;
+    for (const client of all) {
+      const clientPath = new URL(client.url).pathname;
+      if (clientPath === targetPath && 'focus' in client) return client.focus();
+    }
+    // Fall back to any open window, navigating it to the target.
+    for (const client of all) {
+      if ('focus' in client && 'navigate' in client) {
+        await client.focus();
+        return client.navigate(targetUrl).catch(() => {});
+      }
+    }
+    if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
+  })());
 });

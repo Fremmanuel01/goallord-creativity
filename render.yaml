@@ -34,6 +34,13 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
+      # Web Push (VAPID) — portal PWA notifications
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_SUBJECT
+        sync: false
       - key: ADMIN_EMAIL
         sync: false
       - key: ADMIN_PASSWORD

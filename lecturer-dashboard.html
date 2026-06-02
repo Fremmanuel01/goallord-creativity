@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Lecturer Dashboard — Goallord Academy</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -126,6 +126,73 @@
   .notif-msg { font-size: 12px; color: var(--muted); line-height: 1.4; }
   .notif-time { font-size: 11px; color: var(--muted); margin-top: 4px; opacity: 0.7; }
   .notif-empty { padding: 32px 16px; text-align: center; color: var(--muted); font-size: 13px; }
+
+  /* ============================================================
+     MOBILE-FIRST POLISH — standalone PWA refinements
+     Safe-area insets (notch / home indicator), dynamic viewport,
+     ≥44px touch targets, sticky tab bar, bottom-sheet modals,
+     no iOS zoom-on-focus.
+     ============================================================ */
+  :root {
+    --safe-t: env(safe-area-inset-top, 0px);
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    --safe-l: env(safe-area-inset-left, 0px);
+    --safe-r: env(safe-area-inset-right, 0px);
+  }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body { min-height: 100vh; min-height: 100dvh; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
+
+  /* Sticky top bar clears the notch when installed/standalone */
+  .topnav {
+    height: auto; min-height: 60px;
+    padding-top: var(--safe-t);
+    padding-left: max(28px, var(--safe-l));
+    padding-right: max(28px, var(--safe-r));
+  }
+  /* Content clears side notches and the home indicator */
+  .main {
+    padding-left: max(24px, var(--safe-l));
+    padding-right: max(24px, var(--safe-r));
+    padding-bottom: calc(60px + var(--safe-b));
+  }
+  /* Notification panel never clips on narrow phones */
+  .notif-panel { width: min(320px, calc(100vw - 24px)); max-width: calc(100vw - 24px); }
+
+  @media (max-width: 640px) {
+    /* Comfortable touch targets (Apple HIG ≥44px) */
+    .tab { min-height: 44px; display: inline-flex; align-items: center; }
+    .btn-logout, .bell-btn { min-height: 40px; }
+    .btn { padding: 11px 16px; }
+
+    /* Tab bar stays put under the top nav on long, scrolling sections */
+    .tabs {
+      position: sticky; top: calc(60px + var(--safe-t)); z-index: 90;
+      background: var(--bg); padding: 4px 2px 0; margin-left: -2px; margin-right: -2px;
+    }
+
+    /* Notification panel aligns to the viewport, not the bell */
+    .notif-panel {
+      position: fixed; top: calc(60px + var(--safe-t) + 8px);
+      left: max(12px, var(--safe-l)); right: max(12px, var(--safe-r)); width: auto;
+    }
+
+    /* 16px form fields stop iOS from zooming when focused */
+    input, select, textarea { font-size: 16px; }
+  }
+
+  @media (max-width: 600px) {
+    .topnav { padding-left: max(16px, var(--safe-l)); padding-right: max(16px, var(--safe-r)); }
+    .main { padding-left: max(16px, var(--safe-l)); padding-right: max(16px, var(--safe-r)); padding-bottom: calc(48px + var(--safe-b)); }
+
+    /* Modals become bottom sheets — natural on a phone, clears the home bar */
+    .modal-overlay { align-items: flex-end; }
+    .modal {
+      max-width: 100%; width: 100%;
+      border-radius: 18px 18px 0 0;
+      max-height: 92vh;
+      padding-bottom: calc(28px + var(--safe-b));
+    }
+  }
 </style>
   <!-- pwa:head-start -->
   <meta name="theme-color" content="#D66A1F">
@@ -134,7 +201,7 @@
   <meta name="apple-mobile-web-app-title" content="Goallord">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="application-name" content="Goallord Creativity">
-  <link rel="manifest" href="/manifest.json">
+  <link rel="manifest" href="/manifest.portal.json">
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/icons/apple-touch-icon-180.png">
   <link rel="apple-touch-icon" sizes="167x167" href="/assets/images/icons/apple-touch-icon-167.png">
   <link rel="apple-touch-icon" sizes="152x152" href="/assets/images/icons/apple-touch-icon-152.png">
@@ -1285,5 +1352,6 @@ loadNotifications();
   </script>
   <script src="/assets/js/pwa-install.js" defer></script>
   <!-- pwa:body-end-end -->
+  <script defer src="/assets/js/portal-pwa.js"></script>
 </body>
 </html>

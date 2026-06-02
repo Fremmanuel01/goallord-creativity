@@ -240,6 +240,7 @@ app.use('/api/assignments',   require('./routes/assignments'));
 app.use('/api/flashcards',    require('./routes/flashcards'));
 app.use('/api/curriculum',    require('./routes/curriculum'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/push',          require('./routes/push'));
 app.use('/api/chat',          require('./routes/chat'));
 app.use('/api/conversations', require('./routes/conversations'));
 app.use('/api/agents',        require('./routes/agents'));

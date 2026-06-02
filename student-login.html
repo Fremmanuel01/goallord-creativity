@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Student Portal — Goallord Academy</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -61,6 +61,19 @@
     .brand-panel { flex: none; padding: 40px 28px 32px; }
     .login-panel { padding: 32px 24px; }
   }
+
+  /* ── MOBILE-FIRST POLISH: safe-area insets + no iOS zoom-on-focus ── */
+  :root {
+    --safe-t: env(safe-area-inset-top, 0px); --safe-b: env(safe-area-inset-bottom, 0px);
+    --safe-l: env(safe-area-inset-left, 0px); --safe-r: env(safe-area-inset-right, 0px);
+  }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body {
+    min-height: 100dvh; -webkit-tap-highlight-color: transparent;
+    padding-top: var(--safe-t); padding-bottom: var(--safe-b);
+    padding-left: var(--safe-l); padding-right: var(--safe-r);
+  }
+  @media (max-width: 640px) { input, select, textarea { font-size: 16px; } }
 </style>
   <!-- pwa:head-start -->
   <meta name="theme-color" content="#D66A1F">
@@ -69,7 +82,7 @@
   <meta name="apple-mobile-web-app-title" content="Goallord">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="application-name" content="Goallord Creativity">
-  <link rel="manifest" href="/manifest.json">
+  <link rel="manifest" href="/manifest.portal.json">
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/icons/apple-touch-icon-180.png">
   <link rel="apple-touch-icon" sizes="167x167" href="/assets/images/icons/apple-touch-icon-167.png">
   <link rel="apple-touch-icon" sizes="152x152" href="/assets/images/icons/apple-touch-icon-152.png">
@@ -225,5 +238,6 @@
   </script>
   <script src="/assets/js/pwa-install.js" defer></script>
   <!-- pwa:body-end-end -->
+  <script defer src="/assets/js/portal-pwa.js"></script>
 </body>
 </html>

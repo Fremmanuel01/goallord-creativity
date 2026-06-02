@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en-NG">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Goallord Portal</title>
+<meta name="description" content="Sign in to the Goallord Creativity portal.">
+<meta name="robots" content="noindex">
+
+<!-- PWA: this page is the installed app's launch screen -->
+<link rel="manifest" href="/manifest.portal.json">
+<meta name="theme-color" content="#0d0f14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Goallord Portal">
+<link rel="apple-touch-icon" href="/assets/images/icons/apple-touch-icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/images/icons/favicon-32.png">
+
+<style>
+  :root{
+    --bg:#0d0f14; --surface:#161a22; --surface-2:#1e232e;
+    --border:rgba(255,255,255,.08); --text:#f4f6fb; --muted:#9aa3b2;
+    --brand:#D66A1F; --brand-2:#f08a3c;
+    --radius:18px; --shadow:0 16px 40px rgba(0,0,0,.45);
+    --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:
+      radial-gradient(120% 60% at 50% -10%, rgba(214,106,31,.22), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,system-ui,sans-serif;
+    min-height:100dvh;
+    display:flex; flex-direction:column;
+    padding:max(24px,var(--safe-t)) 22px calc(28px + var(--safe-b));
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* loading splash (shown while we decide where to send the user) */
+  #splash{
+    position:fixed; inset:0; z-index:30;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+    background:var(--bg);
+    transition:opacity .35s ease;
+  }
+  #splash.hide{opacity:0; pointer-events:none}
+  .spinner{
+    width:42px;height:42px;border-radius:50%;
+    border:3px solid rgba(255,255,255,.15); border-top-color:var(--brand);
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .wrap{margin:auto 0; width:100%; max-width:420px; margin-left:auto; margin-right:auto;
+        opacity:0; transform:translateY(10px); animation:rise .5s ease forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+
+  .brand{display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px; margin-bottom:30px}
+  .logo{
+    width:66px;height:66px;border-radius:20px;display:grid;place-items:center;
+    background:linear-gradient(150deg,var(--brand),var(--brand-2));
+    box-shadow:0 10px 26px rgba(214,106,31,.4); font-weight:800; font-size:30px; color:#1a0f06;
+  }
+  h1{font-size:1.45rem; margin:0; letter-spacing:-.02em}
+  .sub{color:var(--muted); font-size:.95rem; margin:0; line-height:1.45}
+
+  .roles{display:flex; flex-direction:column; gap:12px}
+  .role{
+    display:flex; align-items:center; gap:14px; width:100%;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:16px 16px; color:var(--text); text-decoration:none; cursor:pointer;
+    transition:transform .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .role:active{transform:scale(.985); background:var(--surface-2)}
+  .role .ico{
+    flex:0 0 44px; height:44px; border-radius:12px; display:grid; place-items:center;
+    background:var(--surface-2); font-size:22px;
+  }
+  .role .meta{flex:1; min-width:0}
+  .role .meta b{display:block; font-size:1.02rem}
+  .role .meta span{display:block; color:var(--muted); font-size:.82rem; margin-top:2px}
+  .role .chev{color:var(--muted); font-size:1.3rem; flex:0 0 auto}
+  .role.primary{
+    background:linear-gradient(150deg,var(--brand),var(--brand-2)); border-color:transparent; color:#1a0f06;
+  }
+  .role.primary .ico{background:rgba(0,0,0,.15)}
+  .role.primary .meta span,.role.primary .chev{color:rgba(26,15,6,.7)}
+
+  .foot{text-align:center; color:var(--muted); font-size:.8rem; margin-top:26px; line-height:1.5}
+  .foot a{color:var(--brand-2); text-decoration:none}
+
+  /* Install banner */
+  #install{
+    display:none; margin-top:18px; align-items:center; gap:12px;
+    background:var(--surface); border:1px dashed var(--border); border-radius:14px; padding:12px 14px;
+  }
+  #install.show{display:flex}
+  #install p{margin:0; font-size:.85rem; color:var(--muted); flex:1}
+  #install button{
+    border:0; background:var(--brand); color:#1a0f06; font-weight:700;
+    padding:9px 14px; border-radius:10px; font-size:.85rem; cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+  <div id="splash" role="status" aria-label="Loading">
+    <div class="logo" style="width:60px;height:60px;font-size:28px">G</div>
+    <div class="spinner"></div>
+  </div>
+
+  <div class="wrap" id="chooser" hidden>
+    <div class="brand">
+      <div class="logo">G</div>
+      <h1>Goallord Portal</h1>
+      <p class="sub">Sign in to continue. Choose how you're joining today.</p>
+    </div>
+
+    <div class="roles">
+      <a class="role primary" href="/student-login.html">
+        <span class="ico">🎓</span>
+        <span class="meta"><b>Student</b><span>Courses, assignments &amp; messages</span></span>
+        <span class="chev">›</span>
+      </a>
+      <a class="role" href="/lecturer-login.html">
+        <span class="ico">📋</span>
+        <span class="meta"><b>Lecturer</b><span>Batches, attendance &amp; grading</span></span>
+        <span class="chev">›</span>
+      </a>
+      <a class="role" href="/login.html">
+        <span class="ico">🛠️</span>
+        <span class="meta"><b>Admin / Staff</b><span>Manage the whole ecosystem</span></span>
+        <span class="chev">›</span>
+      </a>
+    </div>
+
+    <div id="install">
+      <p>Install Goallord Portal as an app on your phone.</p>
+      <button id="installBtn" type="button">Install</button>
+    </div>
+
+    <p class="foot">
+      Goallord Creativity Limited · Onitsha, Nigeria<br>
+      <a href="/index.html">← Back to website</a>
+    </p>
+  </div>
+
+<script>
+(function () {
+  // ---- Smart launch redirect -------------------------------------------
+  // Each dashboard re-validates its own token and bounces to login if it's
+  // stale, so here we optimistically forward based on which token exists.
+  var go = new URLSearchParams(location.search).get('go'); // e.g. "messages"
+  var hash = go === 'messages' ? '#messages' : '';
+
+  function dest() {
+    if (localStorage.getItem('gl_student_token'))  return '/student-dashboard.html'  + hash;
+    if (localStorage.getItem('gl_lecturer_token')) return '/lecturer-dashboard.html' + hash;
+    if (localStorage.getItem('gl_token'))          return '/dashboard.html'          + hash;
+    return null;
+  }
+
+  var target = dest();
+  if (target) {
+    location.replace(target);
+    return; // splash stays up through the redirect
+  }
+
+  // No session → show the role chooser.
+  function reveal() {
+    var s = document.getElementById('splash');
+    var c = document.getElementById('chooser');
+    c.hidden = false;
+    s.classList.add('hide');
+    setTimeout(function () { s.style.display = 'none'; }, 400);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', reveal);
+  } else { reveal(); }
+})();
+</script>
+
+<!-- Shared PWA client: SW registration, install prompt, push subscription -->
+<script defer src="/assets/js/portal-pwa.js"></script>
+</body>
+</html>

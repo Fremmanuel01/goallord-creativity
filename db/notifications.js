@@ -3,6 +3,22 @@ const { clean } = require('../lib/utils');
 
 const TABLE = 'notifications';
 
+// Fire a Web Push for a notification row, best-effort (never throws).
+// Lazily required so a missing/misconfigured push setup can't break inserts.
+function pushNotify(doc) {
+  if (!doc || !doc.recipient_id) return;
+  try {
+    const push = require('../lib/push');
+    if (!push.isConfigured()) return;
+    push.sendToUser(doc.recipient_id, {
+      title: doc.title || 'Goallord Portal',
+      body:  doc.message || '',
+      url:   doc.link || '/portal.html',
+      tag:   doc.type || 'notification',
+    }).catch(() => {});
+  } catch (_) { /* push optional */ }
+}
+
 module.exports = {
   async find(filter = {}, limitCount = 50) {
     let q = supabase.from(TABLE).select('*');
@@ -39,6 +55,7 @@ module.exports = {
   async create(doc) {
     const { data, error } = await supabase.from(TABLE).insert(clean(doc)).select().single();
     if (error) throw error;
+    pushNotify(data);
     return data;
   },
 
@@ -46,6 +63,7 @@ module.exports = {
     if (!docs || docs.length === 0) return [];
     const { data, error } = await supabase.from(TABLE).insert(docs).select();
     if (error) throw error;
+    (data || []).forEach(pushNotify);
     return data;
   },
 
