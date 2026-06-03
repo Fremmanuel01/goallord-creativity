@@ -103,7 +103,7 @@ async function seedAdmin() {
   console.log('Admin user seeded');
 }
 
-// GET /api/auth/users — list all users (for assignee dropdowns)
+// GET /api/auth/users - list all users (for assignee dropdowns)
 router.get('/users', requireAuth, async (req, res) => {
   try {
     const users = await usersDb.findAll();
@@ -113,7 +113,7 @@ router.get('/users', requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/auth/register — create a staff/admin account (admin only)
+// POST /api/auth/register - create a staff/admin account (admin only)
 router.post('/register', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { name, email, password, role, permissions, avatar } = req.body;
@@ -218,7 +218,7 @@ router.post('/register', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// PATCH /api/auth/users/:id — update a user (admin only)
+// PATCH /api/auth/users/:id - update a user (admin only)
 router.patch('/users/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { name, email, password, role, permissions, avatar } = req.body;
@@ -248,7 +248,7 @@ router.patch('/users/:id', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// DELETE /api/auth/users/:id — delete a user (admin only)
+// DELETE /api/auth/users/:id - delete a user (admin only)
 router.delete('/users/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
     // Prevent self-deletion
@@ -263,7 +263,7 @@ router.delete('/users/:id', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// POST /api/auth/change-password — any logged-in user changes their own password
+// POST /api/auth/change-password - any logged-in user changes their own password
 router.post('/change-password', requireAuth, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -287,7 +287,7 @@ router.post('/change-password', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/auth/forgot-password — public, rate limited ────────
+// ── POST /api/auth/forgot-password - public, rate limited ────────
 const forgotLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 3, message: { error: 'Too many reset attempts. Try again later.' } });
 router.post('/forgot-password', forgotLimiter, async (req, res) => {
   try {
@@ -306,7 +306,7 @@ router.post('/forgot-password', forgotLimiter, async (req, res) => {
 
     await sendMail({
       to:      user.email,
-      subject: 'Reset your password — Goallord Dashboard',
+      subject: 'Reset your password - Goallord Dashboard',
       html: `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#080a0e;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
 <div style="max-width:560px;margin:0 auto">
@@ -334,7 +334,7 @@ router.post('/forgot-password', forgotLimiter, async (req, res) => {
   }
 });
 
-// ── POST /api/auth/reset-password — public, rate limited ─────────
+// ── POST /api/auth/reset-password - public, rate limited ─────────
 const resetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, message: { error: 'Too many reset attempts. Try again later.' } });
 router.post('/reset-password', resetLimiter, async (req, res) => {
   try {
@@ -354,7 +354,7 @@ router.post('/reset-password', resetLimiter, async (req, res) => {
   }
 });
 
-// POST /api/auth/logout — clear the auth cookie
+// POST /api/auth/logout - clear the auth cookie
 router.post('/logout', (req, res) => {
   clearAuthCookie(res, 'gl_token');
   res.json({ success: true });

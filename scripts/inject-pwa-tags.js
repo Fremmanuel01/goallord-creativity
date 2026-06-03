@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Goallord Creativity — PWA tag injector
+/* Goallord Creativity - PWA tag injector
  *
  * Inserts the PWA meta tags, manifest link, service-worker registration,
  * and install-prompt script into every *.html file in davies/.

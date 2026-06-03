@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Lecturer Dashboard — Goallord Academy</title>
+<title>Lecturer Dashboard - Goallord Academy</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -70,7 +70,7 @@
 
   /* ── MOBILE-FIRST: cards over tables (≥375px) ── */
   @media (max-width: 640px) {
-    /* Scrollable tab bar — all tabs reachable without wrapping into rows */
+    /* Scrollable tab bar - all tabs reachable without wrapping into rows */
     .tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
     .tabs::-webkit-scrollbar { display: none; }
     .tab { white-space: nowrap; flex-shrink: 0; padding: 10px 14px; }
@@ -128,7 +128,7 @@
   .notif-empty { padding: 32px 16px; text-align: center; color: var(--muted); font-size: 13px; }
 
   /* ============================================================
-     MOBILE-FIRST POLISH — standalone PWA refinements
+     MOBILE-FIRST POLISH - standalone PWA refinements
      Safe-area insets (notch / home indicator), dynamic viewport,
      ≥44px touch targets, sticky tab bar, bottom-sheet modals,
      no iOS zoom-on-focus.
@@ -184,7 +184,7 @@
     .topnav { padding-left: max(16px, var(--safe-l)); padding-right: max(16px, var(--safe-r)); }
     .main { padding-left: max(16px, var(--safe-l)); padding-right: max(16px, var(--safe-r)); padding-bottom: calc(48px + var(--safe-b)); }
 
-    /* Modals become bottom sheets — natural on a phone, clears the home bar */
+    /* Modals become bottom sheets - natural on a phone, clears the home bar */
     .modal-overlay { align-items: flex-end; }
     .modal {
       max-width: 100%; width: 100%;
@@ -195,7 +195,7 @@
   }
 
   /* ============================================================
-     MOBILE-FIRST APP SHELL — bottom navigation + sheet (≤640px)
+     MOBILE-FIRST APP SHELL - bottom navigation + sheet (≤640px)
      ============================================================ */
   :root { --nav-h: 58px; }
   .bottomnav { display: none; }
@@ -290,7 +290,7 @@
     </div>
   </div>
   <div class="topnav-right">
-    <div class="lec-name">Welcome, <strong id="lecNameNav">—</strong></div>
+    <div class="lec-name">Welcome, <strong id="lecNameNav">-</strong></div>
     <div class="bell-wrap">
       <button class="bell-btn" onclick="toggleNotifPanel()" title="Notifications">
         🔔
@@ -331,9 +331,9 @@
   <!-- ── OVERVIEW ── -->
   <div id="tab-overview">
     <div class="stats-row">
-      <div class="stat-card"><div class="sl">Materials</div><div class="sv blue" id="ov-mats">—</div></div>
-      <div class="stat-card"><div class="sl">Assignments</div><div class="sv orange" id="ov-asgn">—</div></div>
-      <div class="stat-card"><div class="sl">Flashcard Sets</div><div class="sv green" id="ov-flash">—</div></div>
+      <div class="stat-card"><div class="sl">Materials</div><div class="sv blue" id="ov-mats">-</div></div>
+      <div class="stat-card"><div class="sl">Assignments</div><div class="sv orange" id="ov-asgn">-</div></div>
+      <div class="stat-card"><div class="sl">Flashcard Sets</div><div class="sv green" id="ov-flash">-</div></div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <div class="section-title" style="margin:0">Active Batch</div>
@@ -544,7 +544,7 @@
     <input type="hidden" id="card-edit-id">
     <div class="form-group"><label>Question *</label><textarea id="card-question" rows="2"></textarea></div>
     <div class="form-group"><label>Correct Answer *</label><input id="card-answer" placeholder="The correct answer"></div>
-    <div class="form-group"><label>Options (comma-separated, optional — makes it MCQ)</label><input id="card-options" placeholder="Option A, Option B, Option C, Option D"></div>
+    <div class="form-group"><label>Options (comma-separated, optional - makes it MCQ)</label><input id="card-options" placeholder="Option A, Option B, Option C, Option D"></div>
     <div class="form-group"><label>Explanation</label><textarea id="card-explanation" rows="2" placeholder="Explain why this is correct…"></textarea></div>
     <div class="form-row">
       <div class="form-group"><label>Topic</label><input id="card-topic"></div>
@@ -636,7 +636,7 @@
     <input type="hidden" id="score-asgn-id">
     <div class="form-group" style="margin-bottom:14px">
       <label>Student</label>
-      <div id="score-student-name" style="font-weight:600;font-size:15px;padding:8px 0;color:var(--text)">—</div>
+      <div id="score-student-name" style="font-weight:600;font-size:15px;padding:8px 0;color:var(--text)">-</div>
     </div>
     <div class="form-group">
       <label>Score (0–<span id="score-max">100</span>)</label>
@@ -716,8 +716,8 @@ async function api(url, opts = {}) {
   if (res.status === 401) { logout(); return null; }
   return res.json().catch(() => null);
 }
-function fmtDate(d) { if (!d) return '—'; return new Date(d).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }); }
-function fmtDT(d) { if (!d) return '—'; return new Date(d).toLocaleString('en-NG', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+function fmtDate(d) { if (!d) return '-'; return new Date(d).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }); }
+function fmtDT(d) { if (!d) return '-'; return new Date(d).toLocaleString('en-NG', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
@@ -745,7 +745,7 @@ async function loadOverview() {
   document.getElementById('ov-flash').textContent = Array.isArray(flashRes) ? flashRes.length : (flashRes?.length || 0);
   const batchEl = document.getElementById('ov-batch');
   batchEl.innerHTML = activeBatch
-    ? `<strong>${escHtml(activeBatch.name)}</strong> — ${escHtml(activeBatch.track || 'All Tracks')} — ${activeBatch.totalWeeks} weeks
+    ? `<strong>${escHtml(activeBatch.name)}</strong> - ${escHtml(activeBatch.track || 'All Tracks')} - ${activeBatch.totalWeeks} weeks
        <span style="margin-left:16px;font-size:12px;color:var(--muted)">${activeBatch.startDate ? fmtDate(activeBatch.startDate) : ''} → ${activeBatch.endDate ? fmtDate(activeBatch.endDate) : 'TBD'}</span>`
     : '<span style="color:var(--muted)">No active batch. Contact admin to set one.</span>';
 }
@@ -800,7 +800,7 @@ async function loadMaterials() {
     <td data-label="Title" style="font-weight:600">${escHtml(m.title)}</td>
     <td data-label="Type"><span style="background:rgba(30,75,255,0.12);color:#6a9fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${escHtml(m.type.toUpperCase())}</span></td>
     <td data-label="Week">Week ${m.week}</td>
-    <td data-label="Topic" style="color:var(--muted)">${escHtml(m.topic || '—')}</td>
+    <td data-label="Topic" style="color:var(--muted)">${escHtml(m.topic || '-')}</td>
     <td data-label="Status">${m.published ? '<span class="badge-pub">Published</span>' : '<span class="badge-draft">Draft</span>'}</td>
     <td data-label="" style="display:flex;gap:6px;flex-wrap:wrap">
       <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openEditMaterial('${m._id}')">Edit</button>
@@ -965,7 +965,7 @@ let currentSubsTitle  = null;
 async function viewSubmissions(id, title) {
   currentSubsAsgnId = id;
   currentSubsTitle  = title;
-  document.getElementById('subsModalTitle').textContent = `Submissions — ${title}`;
+  document.getElementById('subsModalTitle').textContent = `Submissions - ${title}`;
   document.getElementById('subsContent').innerHTML = '<div class="loading">Loading…</div>';
   openModal('subsModal');
   const subs = await api(`/api/assignments/${id}/submissions`);
@@ -977,9 +977,9 @@ async function viewSubmissions(id, title) {
       <thead><tr><th>Student</th><th>Submitted</th><th>Late?</th><th>Score</th><th>Action</th></tr></thead>
       <tbody>` +
     subs.map(s => `<tr>
-      <td data-label="Student" style="font-weight:600">${escHtml(s.student?.fullName || '—')}</td>
+      <td data-label="Student" style="font-weight:600">${escHtml(s.student?.fullName || '-')}</td>
       <td data-label="Submitted" style="font-size:13px;color:var(--muted)">${fmtDT(s.submittedAt)}</td>
-      <td data-label="Late?">${s.isLate ? '<span style="color:var(--red);font-size:12px;font-weight:600">Late</span>' : '<span style="color:var(--muted)">—</span>'}</td>
+      <td data-label="Late?">${s.isLate ? '<span style="color:var(--red);font-size:12px;font-weight:600">Late</span>' : '<span style="color:var(--muted)">-</span>'}</td>
       <td data-label="Score">${s.score !== undefined && s.score !== null ? `<span style="color:var(--green);font-weight:700">${s.score}</span>` : '<span style="color:var(--muted);font-size:12px">Unscored</span>'}</td>
       <td data-label=""><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px"
         onclick="openScoreModal('${s._id}','${id}','${(s.student?.fullName||'Student').replace(/'/g,'')}',${s.score ?? 'null'})">Score</button></td>
@@ -1028,7 +1028,7 @@ async function loadFlashcards() {
   tbody.innerHTML = allFlashSets.map(s => `<tr>
     <td data-label="Title" style="font-weight:600">${escHtml(s.title)}</td>
     <td data-label="Week">Week ${s.week}</td>
-    <td data-label="Topic" style="color:var(--muted)">${escHtml(s.topic || '—')}</td>
+    <td data-label="Topic" style="color:var(--muted)">${escHtml(s.topic || '-')}</td>
     <td data-label="Cards"><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openCardEditor('${s._id}','${s.title.replace(/'/g,'')}')">Edit Cards</button></td>
     <td data-label="Status">${s.published ? '<span class="badge-pub">Published</span>' : '<span class="badge-draft">Draft</span>'}</td>
     <td data-label="" style="display:flex;gap:6px">
@@ -1089,7 +1089,7 @@ async function deleteFlashSet(id) {
 
 async function openCardEditor(setId, title) {
   activeSetId = setId;
-  document.getElementById('cardEditorTitle').textContent = `Cards — ${title}`;
+  document.getElementById('cardEditorTitle').textContent = `Cards - ${title}`;
   document.getElementById('cardEditor').style.display = '';
   document.getElementById('flashTableBody').closest('.table-wrap').style.display = 'none';
   await loadCards();
@@ -1181,7 +1181,7 @@ async function loadAttendance() {
     <td data-label="Date">${fmtDate(s.classDate)}</td>
     <td data-label="Week">Week ${s.week}</td>
     <td data-label="Day">${s.day}</td>
-    <td data-label="Topic" style="color:var(--muted);font-size:13px">${escHtml(s.topic || '—')}</td>
+    <td data-label="Topic" style="color:var(--muted);font-size:13px">${escHtml(s.topic || '-')}</td>
     <td data-label="Present" style="color:var(--green);font-weight:600">${s.presentStudents?.length || 0}</td>
     <td data-label="Absent" style="color:var(--red);font-weight:600">${s.absentStudents?.length || 0}</td>
     <td data-label="Window">${s.isOpen ? '<span style="color:var(--green);font-weight:600;font-size:12px">Open</span>' : '<span style="color:var(--muted);font-size:12px">Closed</span>'}</td>
@@ -1255,7 +1255,7 @@ async function loadCurriculum() {
     <td data-label="Week">Week ${c.week}</td>
     <td data-label="Day">${c.day}</td>
     <td data-label="Topic" style="font-weight:600">${escHtml(c.topic)}</td>
-    <td data-label="Objectives" style="color:var(--muted);font-size:13px">${escHtml(c.objectives || '—')}</td>
+    <td data-label="Objectives" style="color:var(--muted);font-size:13px">${escHtml(c.objectives || '-')}</td>
     <td data-label="" style="display:flex;gap:6px">
       <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openEditCurriculum('${c._id}')">Edit</button>
       <button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="deleteCurriculum('${c._id}')">Del</button>
@@ -1343,7 +1343,7 @@ function renderStudentTable(students) {
   tbody.innerHTML = students.map(s => `<tr>
     <td data-label="Name" style="font-weight:600">${escHtml(s.fullName)}</td>
     <td data-label="Email" style="color:var(--muted);font-size:13px">${escHtml(s.email)}</td>
-    <td data-label="Track">${escHtml(s.track || '—')}</td>
+    <td data-label="Track">${escHtml(s.track || '-')}</td>
     <td data-label="Status"><span style="font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600;background:${s.status==='Active'?'rgba(34,197,94,0.15)':'rgba(239,68,68,0.12)'};color:${s.status==='Active'?'var(--green)':'var(--red)'}">${s.status}</span></td>
     <td data-label="Enrolled" style="color:var(--muted);font-size:13px">${fmtDate(s.createdAt)}</td>
   </tr>`).join('');

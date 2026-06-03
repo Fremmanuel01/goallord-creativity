@@ -4,7 +4,7 @@ const { requireAuth, optionalAuth, requireAdmin } = require('../middleware/auth'
 
 const router = express.Router();
 
-// GET /api/products — public sees active only; admin sees all
+// GET /api/products - public sees active only; admin sees all
 router.get('/', optionalAuth, async (req, res) => {
   try {
     const filter = req.user ? {} : { active: true };
@@ -28,7 +28,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/products — admin only, with field whitelisting
+// POST /api/products - admin only, with field whitelisting
 router.post('/', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { name, category, price, currency, description, stock, active, image, type, demoUrl, features, downloadUrl } = req.body;
@@ -41,7 +41,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// PATCH /api/products/:id — admin only, with field whitelisting
+// PATCH /api/products/:id - admin only, with field whitelisting
 router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { name, category, price, currency, description, stock, active, image, type, demoUrl, features, downloadUrl } = req.body;
@@ -67,7 +67,7 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// DELETE /api/products/:id — admin only
+// DELETE /api/products/:id - admin only
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
     await productsDb.remove(req.params.id);
@@ -83,7 +83,7 @@ async function seedProducts() {
   if (count > 0) return;
 
   const defaults = [
-    // Application Fees (for academy — not shown in public store)
+    // Application Fees (for academy - not shown in public store)
     { name: 'AI Software Development Academy Fee', category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for AI Software Development track', type: '', features: [], demo_url: '', download_url: '' },
     { name: 'UI/UX Design Academy Fee',             category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for UI/UX Design track', type: '', features: [], demo_url: '', download_url: '' },
     { name: 'WordPress Academy Fee',                category: 'Application Fee', price: 25,   currency: 'USD', description: 'Application fee for WordPress track', type: '', features: [], demo_url: '', download_url: '' },

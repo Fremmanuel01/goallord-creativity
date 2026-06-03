@@ -1,5 +1,5 @@
 // ============================================================
-// routes/push.js — Web Push subscription endpoints for the portal PWA.
+// routes/push.js - Web Push subscription endpoints for the portal PWA.
 //   GET  /api/push/vapid-public-key   public VAPID key for the client
 //   POST /api/push/subscribe          { subscription } (auth: student/lecturer/admin)
 //   POST /api/push/unsubscribe        { endpoint }
@@ -12,7 +12,7 @@ const { requireChatUser } = require('../middleware/chatAuth');
 
 const router = express.Router();
 
-// Public VAPID key — the browser needs it to create a subscription.
+// Public VAPID key - the browser needs it to create a subscription.
 router.get('/vapid-public-key', (req, res) => {
   const key = push.publicKey();
   if (!key) return res.status(503).json({ error: 'Push not configured' });

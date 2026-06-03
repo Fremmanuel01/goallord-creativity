@@ -37,7 +37,7 @@ module.exports = {
     return { data: data || [], total: count || 0, page: p, limit: lim };
   },
 
-  // Distinct action names — powers the viewer's filter dropdown.
+  // Distinct action names - powers the viewer's filter dropdown.
   async distinctActions() {
     const { data, error } = await supabase.from(TABLE).select('action').limit(1000);
     if (error) throw error;

@@ -1,18 +1,18 @@
 /* ============================================================================
- * Goallord — Public Student Directory
+ * Goallord - Public Student Directory
  * Shared, dependency-free renderer for the "Our Students" (current) and
  * "Alumni" (graduated) pages. Consumes GET /api/students/directory?type=...
  *
  * Usage:
  *   GoallordDirectory.init({
  *     type:       'current' | 'alumni',
- *     gridId:     'studentsGrid',          // required — card container
- *     filterId:   'trackFilters',          // optional — track filter chips
- *     searchId:   'studentSearch',         // optional — search <input>
- *     countId:    'resultCount',           // optional — live "N students" label
+ *     gridId:     'studentsGrid',          // required - card container
+ *     filterId:   'trackFilters',          // optional - track filter chips
+ *     searchId:   'studentSearch',         // optional - search <input>
+ *     countId:    'resultCount',           // optional - live "N students" label
  *     emptyTitle: 'No students yet',       // optional
  *     emptyText:  'Check back soon.',       // optional
- *     onLoaded:   function(students){}      // optional — for hero stats etc.
+ *     onLoaded:   function(students){}      // optional - for hero stats etc.
  *   });
  *
  * Security: every value coming from the API is HTML-escaped before it touches
@@ -137,7 +137,7 @@
 
     // Detach from Bootstrap's grid (its column classes are stripped by the
     // site's PurgeCSS build, so JS-injected col-* don't get widths). Use a
-    // self-contained CSS Grid instead — reliable and exactly 3-up on desktop.
+    // self-contained CSS Grid instead - reliable and exactly 3-up on desktop.
     grid.classList.remove('row', 'g-1', 'g-2', 'g-3', 'g-4', 'g-5');
     grid.classList.add('gl-dir-grid');
 
@@ -164,7 +164,7 @@
           opts.emptyTitle || (type === 'alumni' ? 'Our first graduates are on the way' : 'No students to show yet'),
           opts.emptyText  || (type === 'alumni'
             ? 'As soon as our pioneer cohort graduates, they will be celebrated right here.'
-            : 'Enrolment is open — the next cohort will appear here once classes begin.'));
+            : 'Enrolment is open - the next cohort will appear here once classes begin.'));
       } else if (!list.length) {
         grid.innerHTML = stateBlock('No matches', 'Try a different track or clear your search.');
       } else {
@@ -232,7 +232,7 @@
     if (document.getElementById('gl-dir-styles')) return;
     var css =
       '@keyframes glDirShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}' +
-      // Self-contained responsive grid — 3-up desktop, 2-up tablet, 1-up phone.
+      // Self-contained responsive grid - 3-up desktop, 2-up tablet, 1-up phone.
       '.gl-dir-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;}' +
       '@media (max-width:991px){.gl-dir-grid{grid-template-columns:repeat(2,1fr);gap:20px;}}' +
       '@media (max-width:575px){.gl-dir-grid{grid-template-columns:1fr;}}' +

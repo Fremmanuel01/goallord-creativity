@@ -2,7 +2,7 @@ const supabase = require('../lib/supabase');
 
 // In-app chat: student ↔ lecturer DMs + per-batch group threads.
 // All ids are UUIDs from distinct tables, so a sender_id is globally unique
-// across user types — we rely on that for "not me" unread filtering.
+// across user types - we rely on that for "not me" unread filtering.
 
 const THREADS = 'chat_threads';
 const PARTS   = 'chat_participants';
@@ -91,7 +91,7 @@ module.exports = {
       const ins = await supabase.from(THREADS)
         .insert({ type: 'dm', dm_key: key, title: '' }).select().single();
       if (ins.error) {
-        // Lost a create race — fetch the winner.
+        // Lost a create race - fetch the winner.
         const { data: again } = await supabase.from(THREADS).select('*').eq('dm_key', key).limit(1);
         thread = again && again[0];
         if (!thread) throw ins.error;
@@ -111,7 +111,7 @@ module.exports = {
     let thread = existing && existing[0];
     if (!thread) {
       const ins = await supabase.from(THREADS)
-        .insert({ type: 'batch', batch_id: batchId, title: (batchName || 'Batch') + ' — Group Chat' })
+        .insert({ type: 'batch', batch_id: batchId, title: (batchName || 'Batch') + ' - Group Chat' })
         .select().single();
       if (ins.error) {
         const { data: again } = await supabase.from(THREADS).select('*')

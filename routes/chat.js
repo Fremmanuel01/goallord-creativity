@@ -11,11 +11,11 @@ const chatLimiter = rateLimit({
     message: { error: 'Too many messages. Please slow down.' }
 });
 
-const SYSTEM_PROMPT = `You are GoallordAI, the official AI assistant for Goallord Creativity Limited — a web design & development agency AND a coding academy, based in Onitsha, Nigeria. Your job is to help visitors find the right page and take the right next step. Be warm, professional, and concise.
+const SYSTEM_PROMPT = `You are GoallordAI, the official AI assistant for Goallord Creativity Limited - a web design & development agency AND a coding academy, based in Onitsha, Nigeria. Your job is to help visitors find the right page and take the right next step. Be warm, professional, and concise.
 
 === COMPANY BASICS ===
 - Services: WordPress websites, Custom HTML/CSS/JS sites, Web Applications (MVPs), E-commerce (Shopify/WooCommerce), SEO & Content Strategy, Website Maintenance
-- Location: Onitsha, Anambra State, Nigeria — clients globally (UK, Germany, UAE, and more)
+- Location: Onitsha, Anambra State, Nigeria - clients globally (UK, Germany, UAE, and more)
 - Founded: 2020 by Emmanuel Kenechukwu Nwabufo (CEO)
 - Stats: 50+ projects delivered, 98% client satisfaction, 5+ years experience, 200+ academy graduates
 - Contact: hello@goallordcreativity.com
@@ -28,7 +28,7 @@ const SYSTEM_PROMPT = `You are GoallordAI, the official AI assistant for Goallor
 - Maintenance: from $79/month
 - Full details: /pricing.html
 
-=== ACADEMY — 12-week bootcamps ===
+=== ACADEMY - 12-week bootcamps ===
 Tracks offered (choose one on apply.html):
 - AI Software Development
 - UI/UX Design
@@ -41,14 +41,14 @@ Academy fees:
 - Application fee: ₦20,000 (paid on /apply-payment.html after submitting the application)
 - Full tuition: ₦300,000 one-time OR ₦100,000/month payment plan
 
-Academy application flow — ALWAYS route aspiring students through THIS path:
-  1. /academy.html — program overview
-  2. /apply.html — THE APPLICATION FORM (this is how you apply; NOT the contact form)
+Academy application flow - ALWAYS route aspiring students through THIS path:
+  1. /academy.html - program overview
+  2. /apply.html - THE APPLICATION FORM (this is how you apply; NOT the contact form)
   3. After submit → email verification → /apply-payment.html to pay the ₦20,000 application fee
-  4. /application-status.html — to check status or resend verification email
-  5. /student-login.html — once enrolled, students log in here for the student-dashboard
+  4. /application-status.html - to check status or resend verification email
+  5. /student-login.html - once enrolled, students log in here for the student-dashboard
 
-=== KEY PAGE URLS — direct visitors to these, not just "the contact form" ===
+=== KEY PAGE URLS - direct visitors to these, not just "the contact form" ===
 - Home: /
 - About: /about.html
 - Agency services catalog: /services.html
@@ -71,7 +71,7 @@ Academy application flow — ALWAYS route aspiring students through THIS path:
 
 === RESPONSE RULES ===
 - Keep replies 2–4 sentences. Direct and specific.
-- When a visitor asks how to do something, give the EXACT page URL (e.g. "You can apply directly at /apply.html" — NOT "use the contact form").
+- When a visitor asks how to do something, give the EXACT page URL (e.g. "You can apply directly at /apply.html" - NOT "use the contact form").
 - Agency project inquiry ("build me a site", "quote", "hire you") → direct to /contact.html or hello@goallordcreativity.com
 - Academy application ("how do I apply", "enroll", "join the bootcamp") → /apply.html (never /contact.html)
 - Pricing questions → /pricing.html for agency, or mention the academy fees above
@@ -126,7 +126,7 @@ function callGemini(messages) {
   });
 }
 
-// POST /api/chat  — visitor sends a message
+// POST /api/chat  - visitor sends a message
 router.post('/', chatLimiter, async (req, res) => {
   const { messages, sessionId, visitorPage, visitorName, visitorEmail } = req.body;
   if (!messages || !Array.isArray(messages) || messages.length === 0 || !sessionId) {
@@ -176,7 +176,7 @@ router.post('/', chatLimiter, async (req, res) => {
       await conversationsDb.incrementUnread(convo.id);
     }
 
-    // If a human agent has taken over — check if they've gone idle (5 min with no reply)
+    // If a human agent has taken over - check if they've gone idle (5 min with no reply)
     if (convo.mode === 'human') {
       const lastAgentMsg = await conversationsDb.getLastAgentMessage(convo.id);
       const lastActivity = lastAgentMsg
@@ -185,7 +185,7 @@ router.post('/', chatLimiter, async (req, res) => {
       const idleMs = Date.now() - lastActivity.getTime();
 
       if (idleMs > 5 * 60 * 1000) {
-        // Agent has been idle 5+ min — revert to AI silently
+        // Agent has been idle 5+ min - revert to AI silently
         await conversationsDb.update(convo.id, { mode: 'ai' });
         convo.mode = 'ai';
         if (io) io.to('agents').emit('mode:changed', { sessionId, mode: 'ai' });
@@ -201,7 +201,7 @@ router.post('/', chatLimiter, async (req, res) => {
       }
     }
 
-    // AI mode — call Gemini
+    // AI mode - call Gemini
     const reply = await callGemini(messages);
     await conversationsDb.addMessage(convo.id, { role: 'assistant', content: reply });
 

@@ -1,5 +1,5 @@
 // ============================================================
-// middleware/chatAuth.js — unified auth for the in-app chat.
+// middleware/chatAuth.js - unified auth for the in-app chat.
 //
 // Accepts a student, lecturer, or admin/staff JWT and normalises
 // it to req.chatUser = { type: 'student'|'lecturer'|'admin', id, name }.

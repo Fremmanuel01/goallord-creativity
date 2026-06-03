@@ -1,4 +1,4 @@
-/* Goallord PWA — Install prompt (banner + iOS modal)
+/* Goallord PWA - Install prompt (banner + iOS modal)
  * - NEVER shows when already installed (display-mode standalone, iOS standalone,
  *   getInstalledRelatedApps, prior appinstalled, or localStorage flag).
  * - NEVER shows in iframes, in-app browsers (FB/IG/Twitter/LinkedIn/etc.),
@@ -7,7 +7,7 @@
  *   the moment install happens (even if the user installs from the address bar).
  * - Cooldowns: 14 days for "Not now"/close, 30 days for explicit dismiss.
  *
- * Self-contained ES5+ — no build step required.
+ * Self-contained ES5+ - no build step required.
  */
 (function () {
   'use strict';
@@ -124,7 +124,7 @@
         '</div>' +
         '<div class="gl-pwa-banner__body">' +
           '<p class="gl-pwa-banner__title">Install Goallord Creativity</p>' +
-          '<p class="gl-pwa-banner__sub">Faster access to the academy, dashboards, and updates — right from your home screen.</p>' +
+          '<p class="gl-pwa-banner__sub">Faster access to the academy, dashboards, and updates - right from your home screen.</p>' +
         '</div>' +
         '<div class="gl-pwa-banner__actions">' +
           '<button type="button" class="gl-pwa-btn gl-pwa-btn--primary" data-gl-pwa-install>Install</button>' +
@@ -138,7 +138,7 @@
     '<div class="gl-pwa-ios gl-pwa" role="dialog" aria-modal="true" aria-labelledby="gl-pwa-ios-title" aria-hidden="true">' +
       '<div class="gl-pwa-ios__sheet">' +
         '<h2 id="gl-pwa-ios-title" class="gl-pwa-ios__title">Add Goallord to your Home Screen</h2>' +
-        '<p class="gl-pwa-ios__sub">Get the full app experience on iPhone or iPad — open instantly, even offline.</p>' +
+        '<p class="gl-pwa-ios__sub">Get the full app experience on iPhone or iPad - open instantly, even offline.</p>' +
         '<ol class="gl-pwa-ios__steps">' +
           '<li><span class="gl-pwa-ios__num">1</span><span class="gl-pwa-ios__text">Tap the Share button' +
             '<span class="gl-pwa-ios__glyph" aria-hidden="true">' +
@@ -148,7 +148,7 @@
             '<span class="gl-pwa-ios__glyph" aria-hidden="true">' +
               '<svg viewBox="0 0 24 24" fill="none" stroke="#ffb37b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>' +
             '</span>.</span></li>' +
-          '<li><span class="gl-pwa-ios__num">3</span><span class="gl-pwa-ios__text">Tap <strong>Add</strong> in the top right corner — done.</span></li>' +
+          '<li><span class="gl-pwa-ios__num">3</span><span class="gl-pwa-ios__text">Tap <strong>Add</strong> in the top right corner - done.</span></li>' +
         '</ol>' +
         '<button type="button" class="gl-pwa-ios__close" data-gl-pwa-ios-close>Maybe later</button>' +
       '</div>' +
@@ -352,7 +352,7 @@
       if (installed) { hideBanner(); hideIOSModal(); }
     });
 
-    // iOS path — Safari doesn't fire beforeinstallprompt
+    // iOS path - Safari doesn't fire beforeinstallprompt
     if (isIOSSafari()) {
       waitForEngagement(showIOSModal);
     }

@@ -1,10 +1,10 @@
 // ============================================================
-// utils/sms.js — transactional SMS via Brevo
+// utils/sms.js - transactional SMS via Brevo
 //
 // Reuses the existing BREVO_API_KEY. Sender label comes from
 // BREVO_SMS_SENDER (alphanumeric, ≤11 chars, e.g. "Goallord").
 // If SMS isn't configured or no phone is given, this no-ops and
-// returns { sent:false, reason } instead of throwing — SMS is a
+// returns { sent:false, reason } instead of throwing - SMS is a
 // best-effort nicety layered on top of email, never a hard
 // dependency in a payment path.
 // ============================================================

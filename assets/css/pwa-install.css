@@ -1,8 +1,8 @@
-/* Goallord PWA — Install banner + iOS instruction modal
+/* Goallord PWA - Install banner + iOS instruction modal
  * Self-contained; uses prefixed class names so it can't collide with site CSS.
  */
 
-/* root vars — fall back gracefully if site doesn't define them */
+/* root vars - fall back gracefully if site doesn't define them */
 .gl-pwa, .gl-pwa * { box-sizing: border-box; }
 
 .gl-pwa-banner {

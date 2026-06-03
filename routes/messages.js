@@ -57,7 +57,7 @@ async function dmContacts(user) {
 }
 
 // Resolve the REAL type of a user id from the database. Never trust a
-// client-supplied type — that allowed a peer-DM bypass (claiming a target
+// client-supplied type - that allowed a peer-DM bypass (claiming a target
 // is an "admin" to skip the student↔student block).
 async function verifyUserType(id) {
   const { data: s } = await supabase.from('students').select('id').eq('id', id).limit(1);
@@ -107,7 +107,7 @@ async function authorizeThread(user, threadId) {
   if (thread.type === 'dm') {
     return (await messagesDb.isParticipant(threadId, user)) ? thread : null;
   }
-  // batch thread — must belong to that batch
+  // batch thread - must belong to that batch
   const batches = await accessibleBatches(user);
   return batches.some(b => b.id === thread.batch_id) ? thread : null;
 }
@@ -155,7 +155,7 @@ async function notifyBatchMembers(req, thread, preview, io) {
 
 // ── Routes ───────────────────────────────────────────────────
 
-// GET /api/messages/contacts — who I can DM + which group chats I have
+// GET /api/messages/contacts - who I can DM + which group chats I have
 router.get('/contacts', requireChatUser, async (req, res) => {
   try {
     const [people, batches] = await Promise.all([
@@ -168,7 +168,7 @@ router.get('/contacts', requireChatUser, async (req, res) => {
   }
 });
 
-// GET /api/messages/threads — my threads (DMs + batch groups) with unread counts
+// GET /api/messages/threads - my threads (DMs + batch groups) with unread counts
 router.get('/threads', requireChatUser, async (req, res) => {
   try {
     const batches = await accessibleBatches(req.chatUser);
@@ -179,7 +179,7 @@ router.get('/threads', requireChatUser, async (req, res) => {
   }
 });
 
-// GET /api/messages/unread-count — total unread (for the nav badge)
+// GET /api/messages/unread-count - total unread (for the nav badge)
 router.get('/unread-count', requireChatUser, async (req, res) => {
   try {
     const batches = await accessibleBatches(req.chatUser);
@@ -189,12 +189,12 @@ router.get('/unread-count', requireChatUser, async (req, res) => {
   }
 });
 
-// POST /api/messages/dm — find/create a DM thread with { withType, withId }
+// POST /api/messages/dm - find/create a DM thread with { withType, withId }
 router.post('/dm', requireChatUser, async (req, res) => {
   try {
     const { withId } = req.body || {};
     if (!withId) return res.status(400).json({ error: 'withId is required' });
-    // Resolve the real type from the DB — never trust client-supplied withType.
+    // Resolve the real type from the DB - never trust client-supplied withType.
     const verifiedType = await verifyUserType(withId);
     if (!verifiedType) return res.status(404).json({ error: 'User not found' });
     const target = { type: verifiedType, id: withId };
@@ -232,7 +232,7 @@ router.get('/threads/:id/messages', requireChatUser, async (req, res) => {
   }
 });
 
-// POST /api/messages/threads/:id/messages — send a message
+// POST /api/messages/threads/:id/messages - send a message
 router.post('/threads/:id/messages', requireChatUser, async (req, res) => {
   try {
     const body = (req.body && req.body.body || '').toString().trim();
@@ -283,7 +283,7 @@ router.post('/threads/:id/messages', requireChatUser, async (req, res) => {
   }
 });
 
-// POST /api/messages/threads/:id/read — mark a thread read
+// POST /api/messages/threads/:id/read - mark a thread read
 router.post('/threads/:id/read', requireChatUser, async (req, res) => {
   try {
     const thread = await authorizeThread(req.chatUser, req.params.id);
@@ -295,7 +295,7 @@ router.post('/threads/:id/read', requireChatUser, async (req, res) => {
   }
 });
 
-// POST /api/messages/threads/:id/policy — staff set a batch group's posting policy
+// POST /api/messages/threads/:id/policy - staff set a batch group's posting policy
 router.post('/threads/:id/policy', requireChatUser, async (req, res) => {
   try {
     const policy = (req.body && req.body.policy || '').toString();
@@ -315,7 +315,7 @@ router.post('/threads/:id/policy', requireChatUser, async (req, res) => {
   }
 });
 
-// Internal helpers exposed for unit tests only — attaching properties to the
+// Internal helpers exposed for unit tests only - attaching properties to the
 // router function has no effect on Express routing.
 router._test = { accessibleBatches, dmContacts, canDm, verifyUserType, lookupName, authorizeThread, notifyBatchMembers };
 

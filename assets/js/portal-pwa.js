@@ -1,5 +1,5 @@
 /* ============================================================
- * portal-pwa.js — shared PWA client for the Goallord Portal.
+ * portal-pwa.js - shared PWA client for the Goallord Portal.
  * Loaded on every portal page. Handles:
  *   1. Service worker registration
  *   2. "Install app" prompt (beforeinstallprompt)

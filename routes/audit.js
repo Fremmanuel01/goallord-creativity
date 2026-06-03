@@ -4,7 +4,7 @@ const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// GET /api/audit — admin: paginated, filterable audit trail
+// GET /api/audit - admin: paginated, filterable audit trail
 //   ?page=&limit=&actorId=&action=&entityType=&entityId=&search=&from=&to=
 router.get('/', requireAuth, requireAdmin, async (req, res) => {
   try {
@@ -24,7 +24,7 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// GET /api/audit/actions — distinct action names for the filter dropdown
+// GET /api/audit/actions - distinct action names for the filter dropdown
 router.get('/actions', requireAuth, requireAdmin, async (req, res) => {
   try {
     res.json(await auditDb.distinctActions());

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>My Dashboard — Goallord Academy</title>
+<title>My Dashboard - Goallord Academy</title>
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -221,7 +221,7 @@
   .sd-toast.info    { border-left:3px solid var(--blue);color:#7ea8ff; }
 
   /* ============================================================
-     MOBILE-FIRST POLISH — standalone PWA refinements
+     MOBILE-FIRST POLISH - standalone PWA refinements
      Safe-area insets (notch / home indicator), dynamic viewport,
      ≥44px touch targets, sticky tab bar, no iOS zoom-on-focus.
      ============================================================ */
@@ -278,7 +278,7 @@
   }
 
   /* ============================================================
-     MOBILE-FIRST APP SHELL — bottom navigation + sheet (≤640px)
+     MOBILE-FIRST APP SHELL - bottom navigation + sheet (≤640px)
      Thumb-zone nav replaces the top tab strip on phones.
      ============================================================ */
   :root { --nav-h: 58px; }
@@ -290,7 +290,7 @@
     /* The top tab strip is replaced by the bottom bar on phones */
     .tabs { display: none !important; }
 
-    /* Tighter, calmer page header — content leads, not chrome */
+    /* Tighter, calmer page header - content leads, not chrome */
     .page-header { margin-bottom: 20px; }
     .page-header h1 { font-size: 22px; letter-spacing: -0.01em; }
 
@@ -398,10 +398,10 @@
     <div style="display:flex;align-items:center;gap:10px">
       <div id="navAvatar" onclick="switchTab('profile')" style="width:36px;height:36px;border-radius:50%;background:rgba(214,106,31,0.15);border:2px solid rgba(214,106,31,0.4);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#D66A1F;flex-shrink:0;transition:border-color .2s;position:relative" title="Edit profile" onmouseenter="this.style.borderColor='#D66A1F'" onmouseleave="this.style.borderColor='rgba(214,106,31,0.4)'">
         <img id="navAvatarImg" src="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;border-radius:50%;z-index:1">
-        <span id="navAvatarInitials">—</span>
+        <span id="navAvatarInitials">-</span>
       </div>
       <div class="student-name">
-        Welcome, <strong id="studentNameNav">—</strong>
+        Welcome, <strong id="studentNameNav">-</strong>
       </div>
     </div>
     <div class="bell-wrap">
@@ -456,24 +456,24 @@
                     id="pg-ring-fill"></circle>
           </svg>
           <div class="pg-ring-pct">
-            <div class="num" id="pg-overall">—</div>
+            <div class="num" id="pg-overall">-</div>
             <div class="lbl">overall</div>
           </div>
         </div>
         <div class="pg-meta">
-          <div class="pg-title">Week <span class="pg-week-num" id="pg-week">—</span> <span id="pg-week-of">of —</span></div>
+          <div class="pg-title">Week <span class="pg-week-num" id="pg-week">-</span> <span id="pg-week-of">of -</span></div>
           <div class="pg-sub" id="pg-dates">Loading your bootcamp progress…</div>
           <div class="pg-bars">
             <div class="pg-bar">
-              <div class="pg-bar-head"><span class="lbl">Time</span><span class="val" id="pg-time-val">—</span></div>
+              <div class="pg-bar-head"><span class="lbl">Time</span><span class="val" id="pg-time-val">-</span></div>
               <div class="pg-bar-track"><div class="pg-bar-fill time" id="pg-time-fill" style="width:0%"></div></div>
             </div>
             <div class="pg-bar">
-              <div class="pg-bar-head"><span class="lbl">Assignments</span><span class="val" id="pg-asg-val">—</span></div>
+              <div class="pg-bar-head"><span class="lbl">Assignments</span><span class="val" id="pg-asg-val">-</span></div>
               <div class="pg-bar-track"><div class="pg-bar-fill asg" id="pg-asg-fill" style="width:0%"></div></div>
             </div>
             <div class="pg-bar">
-              <div class="pg-bar-head"><span class="lbl">Attendance</span><span class="val" id="pg-att-val">—</span></div>
+              <div class="pg-bar-head"><span class="lbl">Attendance</span><span class="val" id="pg-att-val">-</span></div>
               <div class="pg-bar-track"><div class="pg-bar-fill att" id="pg-att-fill" style="width:0%"></div></div>
             </div>
           </div>
@@ -487,22 +487,22 @@
       <div class="stats-grid">
         <div class="stat-card blue">
           <div class="stat-label">Classes Attended</div>
-          <div class="stat-value" id="ov-present">—</div>
-          <div class="stat-sub" id="ov-total-classes">of — total classes</div>
+          <div class="stat-value" id="ov-present">-</div>
+          <div class="stat-sub" id="ov-total-classes">of - total classes</div>
         </div>
         <div class="stat-card green" id="ov-rate-card">
           <div class="stat-label">Attendance Rate</div>
-          <div class="stat-value" id="ov-rate">—%</div>
+          <div class="stat-value" id="ov-rate">-%</div>
           <div class="progress-bar" style="margin-top:10px;"><div class="progress-fill" id="ov-rate-bar" style="width:0%"></div></div>
         </div>
         <div class="stat-card orange">
           <div class="stat-label">Total Paid</div>
-          <div class="stat-value" id="ov-paid">—</div>
+          <div class="stat-value" id="ov-paid">-</div>
           <div class="stat-sub">this session</div>
         </div>
         <div class="stat-card red">
           <div class="stat-label">Outstanding</div>
-          <div class="stat-value" id="ov-outstanding">—</div>
+          <div class="stat-value" id="ov-outstanding">-</div>
           <div class="stat-sub">balance due</div>
         </div>
       </div>
@@ -519,16 +519,16 @@
           <!-- Avatar circle -->
           <div onclick="switchTab('profile')" title="Upload photo" style="width:88px;height:88px;border-radius:50%;background:rgba(214,106,31,0.15);border:3px solid var(--card);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;color:#D66A1F;flex-shrink:0;position:relative;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.4)">
             <img id="ovAvatarImg" src="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;border-radius:50%;z-index:1">
-            <span id="ovAvatarInitials" style="position:relative;z-index:0">—</span>
+            <span id="ovAvatarInitials" style="position:relative;z-index:0">-</span>
           </div>
           <!-- Name/track/status info -->
           <div style="padding-top:20px;flex:1;min-width:0;">
-            <div style="font-size:20px;font-weight:800;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="ovProfileName">—</div>
-            <div style="font-size:13px;color:var(--muted);margin-bottom:10px" id="ovProfileSub">—</div>
+            <div style="font-size:20px;font-weight:800;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="ovProfileName">-</div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:10px" id="ovProfileSub">-</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
               <span id="ovStatusBadge" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(34,197,94,0.15);color:#22c55e">Active</span>
-              <span id="ovTrackBadge" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(30,75,255,0.15);color:#6a9fff">—</span>
-              <span id="ovCohortBadge" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(214,106,31,0.12);color:#D66A1F">—</span>
+              <span id="ovTrackBadge" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(30,75,255,0.15);color:#6a9fff">-</span>
+              <span id="ovCohortBadge" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(214,106,31,0.12);color:#D66A1F">-</span>
             </div>
           </div>
         </div>
@@ -536,19 +536,19 @@
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0;border-top:1px solid var(--border)">
           <div style="padding:14px 24px;border-right:1px solid var(--border)">
             <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Email</div>
-            <div style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="prof-email">—</div>
+            <div style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="prof-email">-</div>
           </div>
           <div style="padding:14px 24px;border-right:1px solid var(--border)">
             <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Full Name</div>
-            <div style="font-size:13px" id="prof-name">—</div>
+            <div style="font-size:13px" id="prof-name">-</div>
           </div>
           <div style="padding:14px 24px;border-right:1px solid var(--border)">
             <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Track</div>
-            <div style="font-size:13px" id="prof-track">—</div>
+            <div style="font-size:13px" id="prof-track">-</div>
           </div>
           <div style="padding:14px 24px;">
             <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Status</div>
-            <div style="font-size:13px" id="prof-status">—</div>
+            <div style="font-size:13px" id="prof-status">-</div>
           </div>
         </div>
       </div>
@@ -573,19 +573,19 @@
     <div id="attend-stats" class="stats-grid" style="margin-bottom:24px;">
       <div class="stat-card blue">
         <div class="stat-label">Total Classes</div>
-        <div class="stat-value" id="att-total">—</div>
+        <div class="stat-value" id="att-total">-</div>
       </div>
       <div class="stat-card green">
         <div class="stat-label">Present</div>
-        <div class="stat-value" id="att-present">—</div>
+        <div class="stat-value" id="att-present">-</div>
       </div>
       <div class="stat-card red">
         <div class="stat-label">Absent</div>
-        <div class="stat-value" id="att-absent">—</div>
+        <div class="stat-value" id="att-absent">-</div>
       </div>
       <div class="stat-card" style="">
         <div class="stat-label">Attendance Rate</div>
-        <div class="stat-value" id="att-rate" style="color:#6a9fff;">—%</div>
+        <div class="stat-value" id="att-rate" style="color:#6a9fff;">-%</div>
         <div class="progress-bar"><div class="progress-fill" id="att-rate-bar" style="width:0%"></div></div>
       </div>
     </div>
@@ -768,15 +768,15 @@
     <div class="pay-summary">
       <div class="stat-card orange">
         <div class="stat-label">Total Due</div>
-        <div class="stat-value" id="pay-due">—</div>
+        <div class="stat-value" id="pay-due">-</div>
       </div>
       <div class="stat-card green">
         <div class="stat-label">Total Paid</div>
-        <div class="stat-value" id="pay-paid">—</div>
+        <div class="stat-value" id="pay-paid">-</div>
       </div>
       <div class="stat-card red">
         <div class="stat-label">Outstanding</div>
-        <div class="stat-value" id="pay-outstanding">—</div>
+        <div class="stat-value" id="pay-outstanding">-</div>
       </div>
     </div>
     <div class="section-title">Payment History</div>
@@ -902,11 +902,11 @@
     return '₦' + Number(n).toLocaleString('en-NG');
   }
   function fmtDate(d) {
-    if (!d) return '—';
+    if (!d) return '-';
     return new Date(d).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' });
   }
   function fmtMonth(m) {
-    if (!m) return '—';
+    if (!m) return '-';
     const [y, mo] = m.split('-');
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return (months[parseInt(mo,10)-1] || mo) + ' ' + y;
@@ -962,8 +962,8 @@
       if (weeks.startDate) sub += ' · started ' + fmt(weeks.startDate);
       document.getElementById('pg-dates').textContent = sub;
     } else {
-      document.getElementById('pg-week').textContent = '—';
-      document.getElementById('pg-week-of').textContent = 'of —';
+      document.getElementById('pg-week').textContent = '-';
+      document.getElementById('pg-week-of').textContent = 'of -';
       document.getElementById('pg-dates').textContent = 'Your batch dates haven’t been set yet.';
     }
 
@@ -976,12 +976,12 @@
           ? data.submitted + '/' + data.total
           : data.present + '/' + data.total;
       } else {
-        el.textContent = (weeks && fillId === 'pg-time-fill') ? (pct + '%') : '—';
+        el.textContent = (weeks && fillId === 'pg-time-fill') ? (pct + '%') : '-';
       }
     };
     // Time bar uses weeks.pct (no submitted/total)
     document.getElementById('pg-time-fill').style.width = (weeks ? weeks.pct : 0) + '%';
-    document.getElementById('pg-time-val').textContent = weeks ? (weeks.pct + '%') : '—';
+    document.getElementById('pg-time-val').textContent = weeks ? (weeks.pct + '%') : '-';
     setBar('pg-asg-fill', 'pg-asg-val', p.assignments);
     setBar('pg-att-fill', 'pg-att-val', p.attendance);
 
@@ -1003,7 +1003,7 @@
       nextEl.onclick = function () { switchTab('assignments'); };
       nextEl.onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') switchTab('assignments'); };
     } else {
-      nextTxt.textContent = 'All caught up — no upcoming deadlines.';
+      nextTxt.textContent = 'All caught up - no upcoming deadlines.';
       nextEl.classList.add('is-empty');
       nextEl.onclick = null;
       nextEl.onkeydown = null;
@@ -1040,13 +1040,13 @@
 
     // ── Overview profile hero
     document.getElementById('ovAvatarInitials').textContent = initials;
-    document.getElementById('ovProfileName').textContent = s.fullName || '—';
-    document.getElementById('ovProfileSub').textContent = s.email || '—';
+    document.getElementById('ovProfileName').textContent = s.fullName || '-';
+    document.getElementById('ovProfileSub').textContent = s.email || '-';
     document.getElementById('ovStatusBadge').textContent = s.status || 'Active';
     document.getElementById('ovStatusBadge').style.background = s.status === 'Active' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.12)';
     document.getElementById('ovStatusBadge').style.color = s.status === 'Active' ? '#22c55e' : '#ef4444';
-    document.getElementById('ovTrackBadge').textContent = s.track || '—';
-    document.getElementById('ovCohortBadge').textContent = s.batch?.name || '—';
+    document.getElementById('ovTrackBadge').textContent = s.track || '-';
+    document.getElementById('ovCohortBadge').textContent = s.batch?.name || '-';
     if (s.profilePicture) {
       document.getElementById('ovAvatarImg').src = s.profilePicture;
       document.getElementById('ovAvatarImg').style.display = 'block';
@@ -1059,9 +1059,9 @@
     document.getElementById('pageSubtitle').textContent = s.track + (s.batch?.name ? ' · ' + s.batch.name : '');
 
     // ── Profile info grid (in hero card)
-    document.getElementById('prof-name').textContent = s.fullName || '—';
-    document.getElementById('prof-email').textContent = s.email || '—';
-    document.getElementById('prof-track').textContent = s.track || '—';
+    document.getElementById('prof-name').textContent = s.fullName || '-';
+    document.getElementById('prof-email').textContent = s.email || '-';
+    document.getElementById('prof-track').textContent = s.track || '-';
     document.getElementById('prof-status').innerHTML = '<span class="badge badge-' + (s.status === 'Active' ? 'present' : 'absent') + '">' + escHtml(s.status) + '</span>';
 
     // ── Attendance stats
@@ -1114,7 +1114,7 @@
       attBody.innerHTML = history.map(r =>
         '<tr>' +
         '<td data-label="Date">' + fmtDate(r.classDate) + '</td>' +
-        '<td data-label="Batch">' + escHtml(r.batch ? (r.batch.name || '—') : '—') + '</td>' +
+        '<td data-label="Batch">' + escHtml(r.batch ? (r.batch.name || '-') : '-') + '</td>' +
         '<td data-label="Week / Day">Week ' + (r.week || '?') + ' · ' + escHtml(r.day || '') + '</td>' +
         '<td data-label="Status">' + (r.present ? '<span class="badge badge-present">Present</span>' : '<span class="badge badge-absent">Absent</span>') + '</td>' +
         '<td data-label="Notes" style="color:var(--muted);font-size:13px;">' + escHtml(r.notes || '') + '</td>' +
@@ -1148,7 +1148,7 @@
           email: studentEmail,
           description: catLabel[p.category] || p.category,
           amount: p.amountPaid, currency: '₦',
-          method: p.method || '—', reference: p.reference || '—'
+          method: p.method || '-', reference: p.reference || '-'
         }).replace(/"/g, '&quot;');
         let actions = '';
         if (isPaid) {
@@ -1158,16 +1158,16 @@
                     `<button onclick="showBankTransfer('${p._id}')" style="padding:5px 10px;font-size:12px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:6px;cursor:pointer;margin-right:4px;">Bank Transfer</button>` +
                     `<button onclick="showCashPay('${p._id}')" style="padding:5px 10px;font-size:12px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:6px;cursor:pointer;">Pay in Cash</button>`;
         } else if (String(p.method || '').toLowerCase() === 'cash' && !isPaid) {
-          actions = `<span style="padding:4px 9px;font-size:11px;background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);border-radius:5px;font-weight:600;">Cash — awaiting admin</span>`;
+          actions = `<span style="padding:4px 9px;font-size:11px;background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);border-radius:5px;font-weight:600;">Cash - awaiting admin</span>`;
         }
         return '<tr>' +
-          '<td data-label="Category" style="font-weight:600">' + escHtml(catLabel[p.category] || p.category || '—') + '</td>' +
+          '<td data-label="Category" style="font-weight:600">' + escHtml(catLabel[p.category] || p.category || '-') + '</td>' +
           '<td data-label="Amount Due">' + fmt(p.amountDue) + '</td>' +
           '<td data-label="Amount Paid">' + fmt(p.amountPaid) + '</td>' +
           '<td data-label="Status"><span class="badge badge-' + statusClass(p.status) + '">' + escHtml(p.status) + '</span></td>' +
-          '<td data-label="Method" style="color:var(--muted)">' + escHtml(p.method || '—') + '</td>' +
-          '<td data-label="Reference" style="color:var(--muted);font-size:13px;">' + escHtml(p.reference || '—') + '</td>' +
-          '<td data-label="Date" style="color:var(--muted)">' + (p.paidAt ? fmtDate(p.paidAt) : (p.dueDate ? 'Due ' + fmtDate(p.dueDate) : '—')) + '</td>' +
+          '<td data-label="Method" style="color:var(--muted)">' + escHtml(p.method || '-') + '</td>' +
+          '<td data-label="Reference" style="color:var(--muted);font-size:13px;">' + escHtml(p.reference || '-') + '</td>' +
+          '<td data-label="Date" style="color:var(--muted)">' + (p.paidAt ? fmtDate(p.paidAt) : (p.dueDate ? 'Due ' + fmtDate(p.dueDate) : '-')) + '</td>' +
           '<td data-label="">' + actions + '</td>' +
           '</tr>';
       }).join('');
@@ -1188,7 +1188,7 @@
       if (data.session) {
         openSessionId = data.session._id;
         document.getElementById('selfMarkLabel').textContent =
-          `Week ${data.session.week} · ${data.session.day}${data.session.topic ? ' — ' + data.session.topic : ''}`;
+          `Week ${data.session.week} · ${data.session.day}${data.session.topic ? ' - ' + data.session.topic : ''}`;
         banner.style.display = 'flex';
       } else {
         openSessionId = null;
@@ -1332,8 +1332,8 @@
             <tbody>${byWeek[week].map(m => `<tr>
               <td data-label="Title" style="font-weight:600">${escHtml(m.title)}</td>
               <td data-label="Type"><span style="background:rgba(30,75,255,0.12);color:#6a9fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${escHtml(m.type.toUpperCase())}</span></td>
-              <td data-label="Topic" style="color:var(--muted)">${escHtml(m.topic || '—')}</td>
-              <td data-label="Link">${(m.fileUrl || m.linkUrl) ? `<a href="${m.fileUrl || m.linkUrl}" target="_blank" style="color:var(--orange);font-size:13px">Open ↗</a>` : '—'}</td>
+              <td data-label="Topic" style="color:var(--muted)">${escHtml(m.topic || '-')}</td>
+              <td data-label="Link">${(m.fileUrl || m.linkUrl) ? `<a href="${m.fileUrl || m.linkUrl}" target="_blank" style="color:var(--orange);font-size:13px">Open ↗</a>` : '-'}</td>
             </tr>`).join('')}</tbody></table>
           </div>
         </div>`).join('');
@@ -1528,7 +1528,7 @@
   function nextCard() {
     quizIdx++;
     if (quizIdx < quizCards.length) { showCard(); return; }
-    // All done — submit and show result
+    // All done - submit and show result
     submitQuiz();
   }
 
@@ -1675,11 +1675,11 @@
         document.getElementById('profPhotoRing').style.borderColor = '#22c55e';
         showToast('Profile photo updated!', 'success');
       } else {
-        showToast(data.error || 'Upload failed — try again', 'error');
+        showToast(data.error || 'Upload failed - try again', 'error');
       }
     } catch (err) {
       console.error('Photo upload error:', err);
-      showToast('Upload failed — check your connection', 'error');
+      showToast('Upload failed - check your connection', 'error');
     }
     spinner.style.display = 'none';
   });
@@ -1751,17 +1751,17 @@
       <div style="background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;padding:14px 16px;">
         <div style="font-size:11px;color:#A0A6B3;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:10px;">Account 1</div>
         <table style="width:100%;">
-          <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;width:100px;">Bank:</td><td id="bd-bank" style="color:#F4F6FA;font-size:12px;font-weight:600;padding:3px 0;">—</td></tr>
-          <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;">Acct No.:</td><td id="bd-number" style="color:#F4F6FA;font-size:13px;font-weight:700;font-family:monospace;padding:3px 0;letter-spacing:1px;">—</td></tr>
-          <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;">Name:</td><td id="bd-name" style="color:#F4F6FA;font-size:12px;font-weight:600;padding:3px 0;">—</td></tr>
+          <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;width:100px;">Bank:</td><td id="bd-bank" style="color:#F4F6FA;font-size:12px;font-weight:600;padding:3px 0;">-</td></tr>
+          <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;">Acct No.:</td><td id="bd-number" style="color:#F4F6FA;font-size:13px;font-weight:700;font-family:monospace;padding:3px 0;letter-spacing:1px;">-</td></tr>
+          <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;">Name:</td><td id="bd-name" style="color:#F4F6FA;font-size:12px;font-weight:600;padding:3px 0;">-</td></tr>
         </table>
       </div>
       <div style="background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;padding:14px 16px;">
         <div style="font-size:11px;color:#A0A6B3;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:10px;">Account 2</div>
         <table style="width:100%;">
-          <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;width:100px;">Bank:</td><td id="bd2-bank" style="color:#F4F6FA;font-size:12px;font-weight:600;padding:3px 0;">—</td></tr>
-          <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;">Acct No.:</td><td id="bd2-number" style="color:#F4F6FA;font-size:13px;font-weight:700;font-family:monospace;padding:3px 0;letter-spacing:1px;">—</td></tr>
-          <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;">Name:</td><td id="bd2-name" style="color:#F4F6FA;font-size:12px;font-weight:600;padding:3px 0;">—</td></tr>
+          <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;width:100px;">Bank:</td><td id="bd2-bank" style="color:#F4F6FA;font-size:12px;font-weight:600;padding:3px 0;">-</td></tr>
+          <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;">Acct No.:</td><td id="bd2-number" style="color:#F4F6FA;font-size:13px;font-weight:700;font-family:monospace;padding:3px 0;letter-spacing:1px;">-</td></tr>
+          <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;">Name:</td><td id="bd2-name" style="color:#F4F6FA;font-size:12px;font-weight:600;padding:3px 0;">-</td></tr>
         </table>
       </div>
     </div>
@@ -1852,7 +1852,7 @@
           <tr><td style="color:#A0A6B3;font-size:13px;padding:3px 0;">Reference:</td><td id="srcp-ref" style="color:#F4F6FA;font-size:13px;font-family:monospace;padding:3px 0;"></td></tr>
         </table>
       </div>
-      <p style="color:#A0A6B3;font-size:12px;text-align:center;border-top:1px solid #2A2F3A;padding-top:16px;margin-bottom:20px;">Thank you for your payment — <strong style="color:#F4F6FA;">Goallord Creativity Academy</strong></p>
+      <p style="color:#A0A6B3;font-size:12px;text-align:center;border-top:1px solid #2A2F3A;padding-top:16px;margin-bottom:20px;">Thank you for your payment - <strong style="color:#F4F6FA;">Goallord Creativity Academy</strong></p>
       <div class="no-print" style="display:flex;gap:10px;justify-content:flex-end;">
         <button onclick="window.print()" style="padding:8px 16px;background:#D66A1F;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">Print / PDF</button>
         <button onclick="closeStudentReceipt()" style="padding:8px 16px;background:transparent;color:#A0A6B3;border:1px solid #2A2F3A;border-radius:6px;font-size:13px;cursor:pointer;">Close</button>
@@ -1928,12 +1928,12 @@ let _btPaymentId = null;
 
 function showBankTransfer(paymentId) {
   _btPaymentId = paymentId;
-  document.getElementById('bd-bank').textContent    = bankDetails.name         || '—';
-  document.getElementById('bd-number').textContent  = bankDetails.number       || '—';
-  document.getElementById('bd-name').textContent    = bankDetails.accountName  || '—';
-  document.getElementById('bd2-bank').textContent   = bankDetails2.name        || '—';
-  document.getElementById('bd2-number').textContent = bankDetails2.number      || '—';
-  document.getElementById('bd2-name').textContent   = bankDetails2.accountName || '—';
+  document.getElementById('bd-bank').textContent    = bankDetails.name         || '-';
+  document.getElementById('bd-number').textContent  = bankDetails.number       || '-';
+  document.getElementById('bd-name').textContent    = bankDetails.accountName  || '-';
+  document.getElementById('bd2-bank').textContent   = bankDetails2.name        || '-';
+  document.getElementById('bd2-number').textContent = bankDetails2.number      || '-';
+  document.getElementById('bd2-name').textContent   = bankDetails2.accountName || '-';
   document.getElementById('bt-reference').value    = '';
   document.getElementById('bt-notes').value        = '';
   document.getElementById('bt-error').style.display   = 'none';
@@ -2023,16 +2023,16 @@ async function submitCashPay() {
 
 // ── Receipt modal ─────────────────────────────────────────────
 function openStudentReceipt(data) {
-  document.getElementById('srcp-number').textContent = data.receiptNumber || '—';
-  document.getElementById('srcp-date').textContent   = data.date ? new Date(data.date).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }) : '—';
-  document.getElementById('srcp-name').textContent   = data.name || '—';
+  document.getElementById('srcp-number').textContent = data.receiptNumber || '-';
+  document.getElementById('srcp-date').textContent   = data.date ? new Date(data.date).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }) : '-';
+  document.getElementById('srcp-name').textContent   = data.name || '-';
   document.getElementById('srcp-email').textContent  = data.email || '';
-  document.getElementById('srcp-desc').textContent   = data.description || '—';
+  document.getElementById('srcp-desc').textContent   = data.description || '-';
   const amtStr = (data.currency || '₦') + Number(data.amount || 0).toLocaleString();
   document.getElementById('srcp-amt').textContent    = amtStr;
   document.getElementById('srcp-total').textContent  = amtStr;
-  document.getElementById('srcp-method').textContent = data.method || '—';
-  document.getElementById('srcp-ref').textContent    = data.reference || '—';
+  document.getElementById('srcp-method').textContent = data.method || '-';
+  document.getElementById('srcp-ref').textContent    = data.reference || '-';
   document.getElementById('studentReceiptModal').style.display = 'block';
   document.body.style.overflow = 'hidden';
 }

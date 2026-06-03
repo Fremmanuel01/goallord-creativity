@@ -1,4 +1,4 @@
-/* Goallord Creativity — Webhooks
+/* Goallord Creativity - Webhooks
  *
  * Paystack webhook receiver.
  *
@@ -9,7 +9,7 @@
  * Idempotency: Paystack will retry the same event multiple times.
  * We look up the event's reference in the existing tables (payments,
  * orders, applicants). If we already recorded that reference, we ack
- * with 200 immediately — no duplicate side effects.
+ * with 200 immediately - no duplicate side effects.
  *
  * Action: this route does NOT auto-complete payments. Its job here is to
  *  - verify Paystack signature,
@@ -89,7 +89,7 @@ async function handlePaystackEvent(event) {
     return;
   }
   if (type === 'charge.failed') {
-    // A card attempt failed server-side — best-effort nudge the payer to retry.
+    // A card attempt failed server-side - best-effort nudge the payer to retry.
     await handleFailedCharge(data).catch(e => console.error('[webhook] failed-charge handler:', e.message));
     return;
   }
@@ -108,13 +108,13 @@ async function handlePaystackEvent(event) {
   }
 
   // Unknown reference. Log loudly so ops can reconcile. We deliberately do
-  // NOT auto-create payment / order / student records here — the enrollment
+  // NOT auto-create payment / order / student records here - the enrollment
   // and order flows have side effects (emails, downloads, accounts created)
   // that are safer to handle through their dedicated endpoints. Track this
   // as a follow-up backlog item.
   const meta = data.metadata || {};
   console.warn(
-    '[webhook] unrecognised charge.success — possible failed client-side verify',
+    '[webhook] unrecognised charge.success - possible failed client-side verify',
     {
       reference,
       amount: data.amount,
@@ -156,7 +156,7 @@ async function handleFailedCharge(data) {
   const loginUrl = (process.env.HOST || 'https://goallordcreativity.com') + '/student-login.html';
   await sendMail({
     to: student.email,
-    subject: 'Your payment didn\'t go through — Goallord Creativity Academy',
+    subject: 'Your payment didn\'t go through - Goallord Creativity Academy',
     html: paymentRetryEmail({
       fullName: student.full_name,
       category: payment ? payment.category : null,

@@ -4,7 +4,7 @@ const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// GET /api/content/:section — public
+// GET /api/content/:section - public
 router.get('/:section', async (req, res) => {
   try {
     const doc = await contentDb.findBySection(req.params.section);
@@ -15,7 +15,7 @@ router.get('/:section', async (req, res) => {
   }
 });
 
-// GET /api/content — list all sections (protected)
+// GET /api/content - list all sections (protected)
 router.get('/', requireAuth, async (req, res) => {
   try {
     const docs = await contentDb.findAll();
@@ -25,7 +25,7 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// PUT /api/content/:section — protected (upsert)
+// PUT /api/content/:section - protected (upsert)
 router.put('/:section', requireAuth, async (req, res) => {
   try {
     const doc = await contentDb.upsert(req.params.section, req.body.data);

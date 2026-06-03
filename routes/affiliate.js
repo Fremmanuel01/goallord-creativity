@@ -4,7 +4,7 @@ const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// ── GET /api/affiliate — list all links ──────────────────────────────────
+// ── GET /api/affiliate - list all links ──────────────────────────────────
 router.get('/', requireAuth, async (req, res) => {
   try {
     const links = await affiliateDb.findAllLinks();
@@ -12,7 +12,7 @@ router.get('/', requireAuth, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// ── GET /api/affiliate/stats — aggregate click stats ────────────────────
+// ── GET /api/affiliate/stats - aggregate click stats ────────────────────
 router.get('/stats', requireAuth, async (req, res) => {
   try {
     const supabase = require('../lib/supabase');
@@ -43,7 +43,7 @@ router.get('/stats', requireAuth, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// ── GET /api/affiliate/:slug/clicks — click breakdown for one link ───────
+// ── GET /api/affiliate/:slug/clicks - click breakdown for one link ───────
 router.get('/:slug/clicks', requireAuth, async (req, res) => {
   try {
     const clicks = await affiliateDb.findClicks({ link_slug: req.params.slug });

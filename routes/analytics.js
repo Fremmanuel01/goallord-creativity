@@ -7,7 +7,7 @@ const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Helper — build a "last N days" byDay map with zero-fill
+// Helper - build a "last N days" byDay map with zero-fill
 function buildDayMap(since) {
   const map = {};
   const now  = new Date();
@@ -19,7 +19,7 @@ function buildDayMap(since) {
   return map;
 }
 
-// GET /api/analytics/summary — full dashboard analytics (protected)
+// GET /api/analytics/summary - full dashboard analytics (protected)
 router.get('/summary', requireAuth, async (req, res) => {
   try {
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);

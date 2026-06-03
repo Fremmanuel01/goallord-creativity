@@ -1,14 +1,14 @@
-# Goallord Portal — Design System
+# Goallord Portal - Design System
 
 Dark, warm, app-native. Tokens below already exist in the dashboards; this file
 records the decisions and the mobile-first additions (bottom nav, sheet, scale).
 
-## Color (existing, kept — palette is on-brand and stable)
+## Color (existing, kept - palette is on-brand and stable)
 - `--bg #0F1115` base, `--card #171A21` surface, `--border #2A2F3A`
 - `--text #F4F6FA`, `--muted #A0A6B3`
 - Accent warm orange `--orange #D66A1F` (active nav, primary action, ≤10% of surface)
 - Secondary `--blue #1E4BFF`; status: green/red/yellow
-- Strategy: **Restrained** — tinted-dark neutrals + one warm accent. No gradient text,
+- Strategy: **Restrained** - tinted-dark neutrals + one warm accent. No gradient text,
   no decorative glass, no side-stripe accent borders.
 
 ## Mobile-first additions (this redesign)

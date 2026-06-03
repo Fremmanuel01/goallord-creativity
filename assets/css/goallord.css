@@ -1,5 +1,5 @@
 /* ============================================================
-   GOALLORD CREATIVITY LIMITED — Brand Override CSS
+   GOALLORD CREATIVITY LIMITED - Brand Override CSS
    Applied ON TOP of styles.css to remap Davies template
    to Goallord color palette, typography, and identity.
    ============================================================ */
@@ -17,9 +17,9 @@ a.logo-site img { height: 40px; width: auto; display: block; }
 
 /* ── 2. BRAND COLOR TOKENS ─────────────────────────────────── */
 :root {
-    --gl-orange:       #D66A1F;   /* Burnt Orange — Primary */
+    --gl-orange:       #D66A1F;   /* Burnt Orange - Primary */
     --gl-orange-light: #FF8A2A;   /* Orange Highlight */
-    --gl-blue:         #1E4BFF;   /* Deep Blue — Secondary */
+    --gl-blue:         #1E4BFF;   /* Deep Blue - Secondary */
     --gl-blue-light:   #5B7CFF;   /* Blue Glow */
     --gl-black:        #050607;
     --gl-bg:           #0F1115;   /* Premium Gray bg */
@@ -58,7 +58,7 @@ body {
     overflow-x: hidden !important;
 }
 
-/* Selected Work slider — contain image overflow before Slick init */
+/* Selected Work slider - contain image overflow before Slick init */
 .slick-for {
     overflow: hidden;
 }
@@ -73,7 +73,7 @@ body {
     overflow: hidden;
 }
 
-/* ── Selected Works — Drum Wheel UX ────────────────────────── */
+/* ── Selected Works - Drum Wheel UX ────────────────────────── */
 
 /* Drum wheel outer container */
 .gl-drum-outer {
@@ -144,7 +144,7 @@ body {
     font-size: clamp(22px, 2.6vw, 34px);
 }
 
-/* Focus strip — orange hairlines at center */
+/* Focus strip - orange hairlines at center */
 .gl-drum-focus-strip {
     position: absolute;
     left: 0;
@@ -158,7 +158,7 @@ body {
     z-index: 1;
 }
 
-/* Gradient masks — top fade and heavy bottom fade ("half inside" illusion) */
+/* Gradient masks - top fade and heavy bottom fade ("half inside" illusion) */
 .gl-drum-outer::before,
 .gl-drum-outer::after {
     content: '';
@@ -250,7 +250,7 @@ body {
     .gl-drum-item.is-active .gl-drum-title { font-size: 23px !important; }
 }
 
-/* ── Services — initial state for scroll-reveal stacking ────── */
+/* ── Services - initial state for scroll-reveal stacking ────── */
 /* GSAP positions services 2-4 as absolute (position: absolute;
    inset: 0) on desktop and animates them in via fromTo.
    Without an explicit CSS opacity these services flash visible
@@ -277,7 +277,7 @@ body {
     overflow: hidden;
 }
 
-/* ── Why Choose Goallord — Expand Rows ─────────────────────── */
+/* ── Why Choose Goallord - Expand Rows ─────────────────────── */
 .gl-why-section {
     padding-bottom: 0;
 }
@@ -383,7 +383,7 @@ body {
     background: #fff;
 }
 
-/* Expanding body — grid trick for smooth animation */
+/* Expanding body - grid trick for smooth animation */
 .gl-reason-body {
     display: grid;
     grid-template-rows: 0fr;
@@ -562,7 +562,7 @@ body {
                 opacity 0.6s ease,
                 transform 0.6s ease;
 }
-/* Visible on pause — slightly transparent */
+/* Visible on pause - slightly transparent */
 .tf-header.header-sticky {
     background-color: rgba(5, 6, 7, 0.72) !important;
     backdrop-filter: blur(20px) !important;
@@ -1018,7 +1018,7 @@ body {
         justify-content: flex-start;
         position: sticky;
         top: calc(50vh - 220px); /* keeps panel centered in viewport */
-        align-self: stretch;     /* stretches to match timeline height — no extra gap */
+        align-self: stretch;     /* stretches to match timeline height - no extra gap */
     }
 }
 
@@ -1388,7 +1388,7 @@ body {
     margin: 0;
 }
 
-/* Inline card — collapsed on desktop, expandable on mobile */
+/* Inline card - collapsed on desktop, expandable on mobile */
 .gl-pstep-inline-card {
     display: grid;
     grid-template-rows: 0fr;
@@ -1411,7 +1411,7 @@ body {
 
 /* ── Mobile: < 1024px (sticky panel hidden) ── */
 @media (max-width: 1023px) {
-    /* Full opacity — no hover dimming on touch */
+    /* Full opacity - no hover dimming on touch */
     .gl-process-step {
         opacity: 1 !important;
         cursor: pointer;
@@ -1556,7 +1556,7 @@ body {
     /* Remove any default accent if needed */
 }
 
-/* ── 27. IMAGES — subtle orange glow on hover ───────────────── */
+/* ── 27. IMAGES - subtle orange glow on hover ───────────────── */
 .hover-img:hover .feature-image img,
 .hover-img:hover .main-image .image img {
     box-shadow: 0 0 40px rgba(214,106,31,0.15);
@@ -1650,7 +1650,7 @@ canvas.cursor-trail {
     }
 }
 
-/* ── 35. BLOG — FEATURED POST ───────────────────────────────── */
+/* ── 35. BLOG - FEATURED POST ───────────────────────────────── */
 .gl-featured-post {
     border: 1px solid var(--gl-border);
     border-radius: 8px;
@@ -1675,7 +1675,7 @@ canvas.cursor-trail {
     .gl-featured-img img { min-height: 260px; }
 }
 
-/* ── 36. BLOG — ARTICLE BODY ────────────────────────────────── */
+/* ── 36. BLOG - ARTICLE BODY ────────────────────────────────── */
 .gl-article-body h2 {
     font-size: clamp(1.4rem, 2.5vw, 2rem);
 }
@@ -1686,7 +1686,7 @@ canvas.cursor-trail {
     border-radius: 0 6px 6px 0;
 }
 
-/* ── 37. CONTACT — INFO CARDS ───────────────────────────────── */
+/* ── 37. CONTACT - INFO CARDS ───────────────────────────────── */
 .gl-contact-card {
     padding: 28px;
     border: 1px solid var(--gl-border);
@@ -1694,7 +1694,7 @@ canvas.cursor-trail {
     height: 100%;
 }
 
-/* ── 38. CONTACT — FORM SUCCESS ─────────────────────────────── */
+/* ── 38. CONTACT - FORM SUCCESS ─────────────────────────────── */
 .gl-form-success {
     min-height: 400px;
     display: flex;
@@ -1717,7 +1717,7 @@ canvas.cursor-trail {
     opacity: 0; /* GSAP reveals after preloader */
 }
 
-/* ── 29. PORTFOLIO GRID — equal-height cards ────────────────── */
+/* ── 29. PORTFOLIO GRID - equal-height cards ────────────────── */
 #portfolioGrid .col-md-4,
 #portfolioGrid .col-sm-6 {
     display: flex;
@@ -1740,7 +1740,7 @@ canvas.cursor-trail {
     display: block;
 }
 
-/* ── 30. HERO VIDEO — fix stacking + dark abstract overlay ──── */
+/* ── 30. HERO VIDEO - fix stacking + dark abstract overlay ──── */
 
 /*
  * ROOT CAUSE: .bg-video has z-index:-1 in styles.css. Because
@@ -1794,7 +1794,7 @@ canvas.cursor-trail {
     display: none;
 }
 
-/* ── 25a. WHY CHOOSE US — ICONS & PROOF PILLS ──────────────── */
+/* ── 25a. WHY CHOOSE US - ICONS & PROOF PILLS ──────────────── */
 .gl-reason-icon {
     display: inline-flex;
     align-items: center;
@@ -1885,7 +1885,7 @@ canvas.cursor-trail {
 }
 .gl-nav-cta:hover { opacity: 0.88; }
 
-/* ── 28. PRICING — MOST POPULAR BADGE ──────────────────────── */
+/* ── 28. PRICING - MOST POPULAR BADGE ──────────────────────── */
 .gl-plan-badge {
     position: absolute;
     top: -12px;
@@ -1904,7 +1904,7 @@ canvas.cursor-trail {
     box-shadow: 0 4px 16px rgba(214,106,31,0.4);
 }
 
-/* ── 29. PRICING — CUSTOM QUOTE CTA ────────────────────────── */
+/* ── 29. PRICING - CUSTOM QUOTE CTA ────────────────────────── */
 .gl-pricing-custom-cta {
     text-align: center;
     margin-top: 40px;
@@ -1912,7 +1912,7 @@ canvas.cursor-trail {
     color: rgba(255,255,255,0.45);
 }
 
-/* ── 30. ABOUT — FOUNDER PHOTO ─────────────────────────────── */
+/* ── 30. ABOUT - FOUNDER PHOTO ─────────────────────────────── */
 .gl-founder-wrap {
     position: relative;
     display: inline-block;
@@ -1990,7 +1990,7 @@ canvas.cursor-trail {
     border-color: rgba(214,106,31,0.3);
 }
 
-/* CEO featured card — subtle accent only */
+/* CEO featured card - subtle accent only */
 .gl-team-card--ceo {
     border: 1px solid rgba(214,106,31,0.15);
 }
@@ -2049,7 +2049,7 @@ canvas.cursor-trail {
     color: rgba(214,106,31,0.7);
 }
 
-/* Social links — appear on hover */
+/* Social links - appear on hover */
 .gl-team-socials {
     display: flex;
     gap: 10px;
@@ -2309,7 +2309,7 @@ canvas.cursor-trail {
     color: #fff;
     border-bottom-right-radius: 4px;
 }
-/* Agent (human) bubble — warm teal to distinguish from AI */
+/* Agent (human) bubble - warm teal to distinguish from AI */
 .gl-chat-msg--agent .gl-chat-bubble {
     background: rgba(32,178,170,0.15);
     border: 1px solid rgba(32,178,170,0.25);
@@ -2638,7 +2638,7 @@ canvas.cursor-trail {
 }
 
 /* ============================================================
-   PREMIUM POLISH — April 2026
+   PREMIUM POLISH - April 2026
    ============================================================ */
 
 /* ── Noise texture overlay ─────────────────────────────────── */
@@ -2993,10 +2993,10 @@ body::before {
 }
 
 /* ============================================================
-   MOBILE UI CLEANUP — April 2026
+   MOBILE UI CLEANUP - April 2026
    ============================================================ */
 
-/* ── Fix #1: Header right column — flush-right on mobile ───── */
+/* ── Fix #1: Header right column - flush-right on mobile ───── */
 @media (max-width: 767px) {
     .tf-header .col-6.col-sm-3.col-md-3 {
         flex: 0 0 auto;
@@ -3004,7 +3004,7 @@ body::before {
     }
 }
 
-/* ── Fix #3: Stats bar — stack vertically on small phones ──── */
+/* ── Fix #3: Stats bar - stack vertically on small phones ──── */
 @media (max-width: 425px) {
     .gl-hero-stats {
         flex-direction: column;
@@ -3019,7 +3019,7 @@ body::before {
     }
 }
 
-/* ── Fix #4: Hero social proof — wrap on mobile ────────────── */
+/* ── Fix #4: Hero social proof - wrap on mobile ────────────── */
 @media (max-width: 767px) {
     .gl-hero-social-proof {
         flex-wrap: wrap;
@@ -3027,7 +3027,7 @@ body::before {
     }
 }
 
-/* ── Fix #5: Selected Works drum — tighter on mobile ───────── */
+/* ── Fix #5: Selected Works drum - tighter on mobile ───────── */
 @media (max-width: 575px) {
     .gl-drum-outer {
         height: 320px;
@@ -3037,7 +3037,7 @@ body::before {
     .gl-drum-item.is-active .gl-drum-title { font-size: 25px !important; }
 }
 
-/* ── Fix #6: Selected Works nav — hide PORTFOLIO label, center nav ── */
+/* ── Fix #6: Selected Works nav - hide PORTFOLIO label, center nav ── */
 @media (max-width: 767px) {
     .gl-portfolio-label {
         display: none !important;
@@ -3050,7 +3050,7 @@ body::before {
     }
 }
 
-/* ── Fix #7: Why Choose Us — smaller titles on mobile ──────── */
+/* ── Fix #7: Why Choose Us - smaller titles on mobile ──────── */
 @media (max-width: 575px) {
     .gl-reason-title {
         font-size: clamp(18px, 5vw, 22px) !important;
@@ -3060,14 +3060,14 @@ body::before {
     }
 }
 
-/* ── Fix #8: Why Choose Us — hide icon on small screens ────── */
+/* ── Fix #8: Why Choose Us - hide icon on small screens ────── */
 @media (max-width: 575px) {
     .gl-reason-icon {
         display: none !important;
     }
 }
 
-/* ── Fix #9: Process timeline — hide step icons on small screens ── */
+/* ── Fix #9: Process timeline - hide step icons on small screens ── */
 @media (max-width: 575px) {
     .gl-pstep-icon {
         display: none !important;
@@ -3077,7 +3077,7 @@ body::before {
     }
 }
 
-/* ── Fix #10: Testimonial quote mark — smaller on tiny screens ── */
+/* ── Fix #10: Testimonial quote mark - smaller on tiny screens ── */
 @media (max-width: 425px) {
     .gl-tes-qmark {
         font-size: 60px;
@@ -3092,7 +3092,7 @@ body::before {
     }
 }
 
-/* ── Fix #11: Chat FAB — offset above goTop on mobile ──────── */
+/* ── Fix #11: Chat FAB - offset above goTop on mobile ──────── */
 @media (max-width: 767px) {
     .gl-chat-fab {
         bottom: 80px;
@@ -3102,7 +3102,7 @@ body::before {
     }
 }
 
-/* ── Fix #13: Marquee logos — smaller on small phones ──────── */
+/* ── Fix #13: Marquee logos - smaller on small phones ──────── */
 @media (max-width: 575px) {
     .gl-marquee-item img {
         height: 28px;

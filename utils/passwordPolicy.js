@@ -1,5 +1,5 @@
 // ============================================================
-// utils/passwordPolicy.js — shared password strength policy
+// utils/passwordPolicy.js - shared password strength policy
 //
 // Minimum 8 characters with at least one letter and one digit.
 // Applied wherever a NEW password is set (register, change,

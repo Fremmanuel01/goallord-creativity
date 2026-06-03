@@ -6,7 +6,7 @@
  *   node scripts/activate-purged-css.js          # point HTML at purged CSS (go live)
  *   node scripts/activate-purged-css.js --revert # restore original CSS
  *
- * Also remember: production must generate the purged files at build time —
+ * Also remember: production must generate the purged files at build time -
  * set Render buildCommand to:  npm install --include=dev && npm run build:css
  * (devDeps are needed because NODE_ENV=production otherwise skips PurgeCSS.)
  */

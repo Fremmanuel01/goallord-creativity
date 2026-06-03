@@ -58,7 +58,7 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
   try {
     await sendMail({
       to:      applicant.email,
-      subject: `Welcome to Goallord Creativity Academy — Your Login Details`,
+      subject: `Welcome to Goallord Creativity Academy - Your Login Details`,
       html:    acceptanceEmail({ fullName: applicant.full_name, track: applicant.track || 'Other', duration, email: applicant.email, password: plainPassword, loginUrl })
     });
   } catch (e) {
@@ -127,7 +127,7 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
 
   await sendMail({
     to:      process.env.EMAIL_FROM,
-    subject: `New Student Enrolled: ${applicant.full_name} — ${applicant.track || 'Other'}`,
+    subject: `New Student Enrolled: ${applicant.full_name} - ${applicant.track || 'Other'}`,
     html:    adminAcceptanceNotificationEmail({ fullName: applicant.full_name, email: applicant.email, track: applicant.track || 'Other', studentId: student.id.toString(), dashboardUrl: `${host}/dashboard.html` })
   }).catch(e => console.error('Admin notification failed:', e.message));
 

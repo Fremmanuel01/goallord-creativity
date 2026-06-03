@@ -37,10 +37,10 @@ function buildEmail(task, user, project) {
 
     return {
         subject: isOverdue
-            ? `⚠️ Overdue: "${task.title}" — ${Math.abs(days)} days past deadline`
+            ? `⚠️ Overdue: "${task.title}" - ${Math.abs(days)} days past deadline`
             : isToday
                 ? `⏰ Due Today: "${task.title}"`
-                : `📋 Reminder: "${task.title}" — ${days} days left`,
+                : `📋 Reminder: "${task.title}" - ${days} days left`,
         html: `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#080a0e;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
 <div style="max-width:560px;margin:0 auto;padding:0">
@@ -169,7 +169,7 @@ async function sendTaskReminders() {
                 });
             }
         }
-        console.log(`[Reminders] Done — ${result.sent}/${result.total} emails sent`);
+        console.log(`[Reminders] Done - ${result.sent}/${result.total} emails sent`);
     } catch (err) {
         console.error('[Reminders] Error:', err.message);
     }
@@ -192,7 +192,7 @@ function restartCron(settings) {
     }
 
     if (!settings || !settings.enabled) {
-        console.log('[Reminders] Reminders disabled — cron not scheduled');
+        console.log('[Reminders] Reminders disabled - cron not scheduled');
         return;
     }
 
@@ -204,7 +204,7 @@ function restartCron(settings) {
         timezone: 'Africa/Lagos'
     });
 
-    console.log(`[Reminders] Cron scheduled — every ${settings.frequency} days at ${settings.send_time} WAT`);
+    console.log(`[Reminders] Cron scheduled - every ${settings.frequency} days at ${settings.send_time} WAT`);
 }
 
 async function startReminderCron() {

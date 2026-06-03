@@ -6,7 +6,7 @@ const { requireStudentAuth } = require('../middleware/studentAuth');
 
 const router = express.Router();
 
-// GET /api/notifications — returns notifications for the authenticated user
+// GET /api/notifications - returns notifications for the authenticated user
 router.get('/', async (req, res) => {
   try {
     // Accept both student and lecturer tokens
@@ -56,7 +56,7 @@ router.patch('/read-all', async (req, res) => {
   }
 });
 
-// POST /api/notifications/announce — broadcast to all active students in a batch
+// POST /api/notifications/announce - broadcast to all active students in a batch
 router.post('/announce', requireLecturer, async (req, res) => {
   try {
     const { batchId, title, message } = req.body;
@@ -79,7 +79,7 @@ router.post('/announce', requireLecturer, async (req, res) => {
   }
 });
 
-// POST /api/notifications — admin sends notification
+// POST /api/notifications - admin sends notification
 router.post('/', requireLecturer, async (req, res) => {
   try {
     const { recipient, recipientType, type, title, message } = req.body;

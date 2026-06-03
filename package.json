@@ -1,7 +1,7 @@
 {
   "name": "goallord-website",
   "version": "1.0.0",
-  "description": "Goallord Creativity Limited — Website + Dashboard Backend",
+  "description": "Goallord Creativity Limited - Website + Dashboard Backend",
   "main": "server.js",
   "engines": {
     "node": "18.x"

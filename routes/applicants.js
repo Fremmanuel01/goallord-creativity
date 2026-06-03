@@ -22,7 +22,7 @@ function isValidEmail(email) {
     return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/.test(email);
 }
 
-// POST /api/applicants/upload-photo — public (applicant uploads profile photo before submission)
+// POST /api/applicants/upload-photo - public (applicant uploads profile photo before submission)
 router.post('/upload-photo', async (req, res) => {
   try {
     const cloudinary = require('cloudinary').v2;
@@ -54,7 +54,7 @@ router.post('/upload-photo', async (req, res) => {
 
 const { createStudentFromApplicant, TRACK_DURATION } = require('../utils/enrolStudent');
 
-// POST /api/applicants — public (apply form)
+// POST /api/applicants - public (apply form)
 router.post('/', applyLimiter, async (req, res) => {
   try {
     // Honeypot check
@@ -97,7 +97,7 @@ router.post('/', applyLimiter, async (req, res) => {
       if (cloudName && typeof profilePhoto === 'string' && profilePhoto.startsWith('https://res.cloudinary.com/' + cloudName + '/')) {
         sanitized.profilePhoto = profilePhoto;
       }
-      // Silently ignore invalid URLs — don't block the application
+      // Silently ignore invalid URLs - don't block the application
     }
 
     const emailLower = sanitized.email;
@@ -118,7 +118,7 @@ router.post('/', applyLimiter, async (req, res) => {
             : 'An application with this email already exists. Check your inbox for the verification link, or contact admin if you need help.'
         });
       }
-      // Rejected — remove old record so they can reapply cleanly
+      // Rejected - remove old record so they can reapply cleanly
       await applicantsDb.remove(existingApplicant.id);
     }
 
@@ -148,7 +148,7 @@ router.post('/', applyLimiter, async (req, res) => {
     try {
       await sendMail({
         to:      applicant.email,
-        subject: 'Verify your email — Goallord Creativity Academy',
+        subject: 'Verify your email - Goallord Creativity Academy',
         html:    verificationEmail({ fullName: applicant.full_name, verifyUrl })
       });
     } catch (mailErr) {
@@ -159,7 +159,7 @@ router.post('/', applyLimiter, async (req, res) => {
     try {
       await sendMail({
         to:      process.env.EMAIL_FROM,
-        subject: `New application: ${applicant.full_name} — ${applicant.track || 'No track'}`,
+        subject: `New application: ${applicant.full_name} - ${applicant.track || 'No track'}`,
         html:    adminNewApplicationEmail({
           fullName:     applicant.full_name,
           email:        applicant.email,
@@ -178,7 +178,7 @@ router.post('/', applyLimiter, async (req, res) => {
   }
 });
 
-// GET /api/applicants/verify/:token — public (email verification link)
+// GET /api/applicants/verify/:token - public (email verification link)
 router.get('/verify/:token', async (req, res) => {
   try {
     // Find applicant by verify token that hasn't expired
@@ -201,11 +201,11 @@ h2{color:#D66A1F;margin:0 0 16px}p{color:#A0A6B3;margin:0 0 24px}a{color:#D66A1F
 <a href="/apply.html">Back to Apply</a></div></body></html>`);
     }
 
-    // Idempotent verify — do NOT null the token. Gmail/Outlook/spam scanners
+    // Idempotent verify - do NOT null the token. Gmail/Outlook/spam scanners
     // prefetch every link in every email to check for phishing; if we nulled
     // the token here the real user's click would always land on "Link
     // Expired". Keep the token valid until email_verify_expires and just
-    // flip email_verified — re-hitting the link is then a harmless no-op
+    // flip email_verified - re-hitting the link is then a harmless no-op
     // and the real click still redirects to the payment page.
     if (!applicant.email_verified) {
       await applicantsDb.update(applicant.id, { email_verified: true });
@@ -218,7 +218,7 @@ h2{color:#D66A1F;margin:0 0 16px}p{color:#A0A6B3;margin:0 0 24px}a{color:#D66A1F
   }
 });
 
-// GET /api/applicants/:id/payment-info — public (payment page fetches this)
+// GET /api/applicants/:id/payment-info - public (payment page fetches this)
 // Gate on email_verified: the verification step has already nulled the token,
 // and the flag proves the user clicked the link. Re-requiring the token here
 // locked every real applicant out of the payment page.
@@ -238,7 +238,7 @@ router.get('/:id/payment-info', async (req, res) => {
   }
 });
 
-// POST /api/applicants/:id/resend-verification — public (rescue path for stuck applicants)
+// POST /api/applicants/:id/resend-verification - public (rescue path for stuck applicants)
 router.post('/:id/resend-verification', applyLimiter, async (req, res) => {
   try {
     const applicant = await applicantsDb.findById(req.params.id);
@@ -257,7 +257,7 @@ router.post('/:id/resend-verification', applyLimiter, async (req, res) => {
     const verifyUrl = `${host}/api/applicants/verify/${token}`;
     await sendMail({
       to:      applicant.email,
-      subject: 'Verify your email — Goallord Creativity Academy',
+      subject: 'Verify your email - Goallord Creativity Academy',
       html:    verificationEmail({ fullName: applicant.full_name, verifyUrl })
     });
 
@@ -268,7 +268,7 @@ router.post('/:id/resend-verification', applyLimiter, async (req, res) => {
   }
 });
 
-// POST /api/applicants/:id/admin-resend-verification — protected (dashboard button)
+// POST /api/applicants/:id/admin-resend-verification - protected (dashboard button)
 router.post('/:id/admin-resend-verification', requireAuth, async (req, res) => {
   try {
     const applicant = await applicantsDb.findById(req.params.id);
@@ -286,7 +286,7 @@ router.post('/:id/admin-resend-verification', requireAuth, async (req, res) => {
     const verifyUrl = `${host}/api/applicants/verify/${token}`;
     await sendMail({
       to:      applicant.email,
-      subject: 'Verify your email — Goallord Creativity Academy',
+      subject: 'Verify your email - Goallord Creativity Academy',
       html:    verificationEmail({ fullName: applicant.full_name, verifyUrl })
     });
 
@@ -297,7 +297,7 @@ router.post('/:id/admin-resend-verification', requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/applicants/:id/pay-application — public (Paystack app fee payment)
+// POST /api/applicants/:id/pay-application - public (Paystack app fee payment)
 router.post('/:id/pay-application', async (req, res) => {
   try {
     const { reference, paymentPlan } = req.body;
@@ -332,7 +332,7 @@ router.post('/:id/pay-application', async (req, res) => {
       return res.status(400).json({ error: `Unexpected currency: ${psData.data.currency}` });
 
     // Ensure the Paystack metadata matches this applicant (blocks reference hijacking).
-    // Metadata is required — if absent we cannot prove the payment was initiated
+    // Metadata is required - if absent we cannot prove the payment was initiated
     // for this applicant, so we reject.
     const psMeta = psData.data.metadata || {};
     const psApplicantId = psMeta.applicantId || psMeta.applicant_id;
@@ -365,7 +365,7 @@ router.post('/:id/pay-application', async (req, res) => {
       status:               'Accepted'
     });
 
-    // Create student account — tuition also marked paid in same transaction
+    // Create student account - tuition also marked paid in same transaction
     const student = await createStudentFromApplicant(applicant, paymentPlan, {
       tuitionPaid: true, reference, method: 'Paystack'
     });
@@ -385,7 +385,7 @@ router.post('/:id/pay-application', async (req, res) => {
         email:        applicant.email,
         appFee,
         tuitionAmount: tuitionNow,
-        tuitionLabel:  paymentPlan === 'full' ? 'Full Tuition Payment' : 'Tuition — 1st Instalment',
+        tuitionLabel:  paymentPlan === 'full' ? 'Full Tuition Payment' : 'Tuition - 1st Instalment',
         totalAmount:   amountPaid,
         reference
       }
@@ -393,7 +393,7 @@ router.post('/:id/pay-application', async (req, res) => {
   } catch (err) {
     console.error('pay-application error:', err);
     // If the applicant ended up paid and has a student account, surface that
-    // as success — the user's money is not lost, their account is active.
+    // as success - the user's money is not lost, their account is active.
     try {
       const refreshed = await applicantsDb.findById(req.params.id);
       if (refreshed && refreshed.application_fee_paid) {
@@ -411,13 +411,13 @@ router.post('/:id/pay-application', async (req, res) => {
     } catch {}
     // Otherwise give a friendly, non-leaky error
     const msg = /duplicate key/i.test(err.message)
-      ? 'This payment is already being processed. Please wait a moment and refresh the page — do not pay again.'
+      ? 'This payment is already being processed. Please wait a moment and refresh the page - do not pay again.'
       : 'Something went wrong finalising your enrolment. Your payment is safe. Please contact admin with your reference.';
     res.status(500).json({ error: msg });
   }
 });
 
-// POST /api/applicants/:id/bank-transfer-fee — public (submit bank transfer ref, awaits admin confirm)
+// POST /api/applicants/:id/bank-transfer-fee - public (submit bank transfer ref, awaits admin confirm)
 router.post('/:id/bank-transfer-fee', async (req, res) => {
   try {
     const { reference, paymentPlan } = req.body;
@@ -444,7 +444,7 @@ router.post('/:id/bank-transfer-fee', async (req, res) => {
   }
 });
 
-// POST /api/applicants/:id/cash-application — public (record cash payment, admin confirms)
+// POST /api/applicants/:id/cash-application - public (record cash payment, admin confirms)
 router.post('/:id/cash-application', async (req, res) => {
   try {
     const { paymentPlan, collectedBy, notes } = req.body || {};
@@ -483,7 +483,7 @@ router.post('/:id/cash-application', async (req, res) => {
   }
 });
 
-// POST /api/applicants/:id/confirm-fee — admin: confirm bank/cash payment, create student
+// POST /api/applicants/:id/confirm-fee - admin: confirm bank/cash payment, create student
 router.post('/:id/confirm-fee', requireAuth, async (req, res) => {
   try {
     const applicant = await applicantsDb.findById(req.params.id);
@@ -505,7 +505,7 @@ router.post('/:id/confirm-fee', requireAuth, async (req, res) => {
     const existing = await studentsDb.findByEmail(applicant.email);
     if (existing) return res.status(400).json({ error: 'Student account already exists for this email' });
 
-    // Manual payment (bank or cash) covers full amount (app fee + tuition) — mark both as paid
+    // Manual payment (bank or cash) covers full amount (app fee + tuition) - mark both as paid
     const student = await createStudentFromApplicant(applicant, paymentPlan, {
       tuitionPaid: true,
       reference:   applicant.application_fee_ref,
@@ -518,7 +518,7 @@ router.post('/:id/confirm-fee', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/applicants/check-status — public (applicant checks their own status by email)
+// GET /api/applicants/check-status - public (applicant checks their own status by email)
 router.get('/check-status', async (req, res) => {
   try {
     const { email } = req.query;
@@ -552,7 +552,7 @@ router.get('/check-status', async (req, res) => {
   }
 });
 
-// GET /api/applicants — protected (dashboard)
+// GET /api/applicants - protected (dashboard)
 router.get('/', requireAuth, async (req, res) => {
   try {
     const { status, track, search, page = 1, limit = 50 } = req.query;
@@ -587,7 +587,7 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/applicants/:id — protected
+// GET /api/applicants/:id - protected
 router.get('/:id', requireAuth, async (req, res) => {
   try {
     const doc = await applicantsDb.findById(req.params.id);
@@ -598,7 +598,7 @@ router.get('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// PATCH /api/applicants/:id — protected (status, notes)
+// PATCH /api/applicants/:id - protected (status, notes)
 router.patch('/:id', requireAuth, async (req, res) => {
   try {
     const { status, notes } = req.body;
@@ -623,7 +623,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
         try {
           await sendMail({
             to:      process.env.EMAIL_FROM,
-            subject: `Accepted: ${doc.full_name} — ${doc.track || 'Other'}`,
+            subject: `Accepted: ${doc.full_name} - ${doc.track || 'Other'}`,
             html:    adminAcceptanceNotificationEmail({
               fullName:     doc.full_name,
               email:        doc.email,
@@ -646,7 +646,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// DELETE /api/applicants/:id — admin only
+// DELETE /api/applicants/:id - admin only
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
     await applicantsDb.remove(req.params.id);

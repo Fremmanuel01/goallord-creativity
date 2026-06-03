@@ -1,8 +1,8 @@
-# Deploy Checklist — SYSTEM_AUDIT M3–M10
+# Deploy Checklist - SYSTEM_AUDIT M3–M10
 
 Shipping the features built from `SYSTEM_AUDIT_REPORT.md` (milestones **M3–M10**).
 Work through top to bottom. Nothing here has been run against the live
-Supabase/Brevo/Paystack/Cloudinary stack yet — it is verified at the
+Supabase/Brevo/Paystack/Cloudinary stack yet - it is verified at the
 syntax/logic level only, so do a **staging pass first**.
 
 ---
@@ -10,28 +10,28 @@ syntax/logic level only, so do a **staging pass first**.
 ## 0. Pre-flight
 
 - [ ] Branch is up to date and the app boots locally (`npm install` then `npm start`).
-- [ ] `.npmrc` (now in the repo, `legacy-peer-deps=true`) is committed — Render's
+- [ ] `.npmrc` (now in the repo, `legacy-peer-deps=true`) is committed - Render's
       `npm install` needs it so multer 2.x doesn't `ERESOLVE` against
       `multer-storage-cloudinary@4`'s stale peer range.
-- [ ] Confirm the deploy host runs `npm install` (Render `buildCommand`) — not
+- [ ] Confirm the deploy host runs `npm install` (Render `buildCommand`) - not
       `npm ci`. (If you switch to `npm ci`, the committed `package-lock.json`
       already has multer 2.1.1, so it's fine either way.)
 
 ---
 
-## 1. Database migrations — APPLY IN ORDER
+## 1. Database migrations - APPLY IN ORDER
 
 Run against the production Supabase/Postgres DB **before** the new server code
 serves traffic. All are idempotent (`IF NOT EXISTS`), so re-running is safe.
 
-- [ ] `migrations/006_add_2fa.sql` — TOTP columns on `users`, `students`, `lecturers`
-- [ ] `migrations/007_audit_log.sql` — `audit_log` table (admin audit trail)
-- [ ] `migrations/008_payment_recovery.sql` — retry/SMS/proforma columns on `payments`
-- [ ] `migrations/009_chat.sql` — `chat_threads`, `chat_participants`, `chat_messages`
+- [ ] `migrations/006_add_2fa.sql` - TOTP columns on `users`, `students`, `lecturers`
+- [ ] `migrations/007_audit_log.sql` - `audit_log` table (admin audit trail)
+- [ ] `migrations/008_payment_recovery.sql` - retry/SMS/proforma columns on `payments`
+- [ ] `migrations/009_chat.sql` - `chat_threads`, `chat_participants`, `chat_messages`
 
 **Failure modes if skipped:**
 - 006 missing → logins still work (`totp_enabled` reads as falsy), but 2FA enrol throws.
-- 007 missing → audit writes fail **soft** (wrapped in try/catch, fire-and-forget after response) — requests still succeed.
+- 007 missing → audit writes fail **soft** (wrapped in try/catch, fire-and-forget after response) - requests still succeed.
 - 008 missing → payment confirm/proforma/retry endpoints throw on the new columns.
 - 009 missing → the Messages tab and all `/api/messages` calls throw.
 
@@ -45,10 +45,10 @@ serves traffic. All are idempotent (`IF NOT EXISTS`), so re-running is safe.
 Set in the Render dashboard (or host env). Existing secrets are already configured;
 these are the **new / relevant** ones:
 
-- [ ] `BREVO_SMS_SENDER` — **new.** Alphanumeric sender ID (≤11 chars, e.g. `Goallord`).
+- [ ] `BREVO_SMS_SENDER` - **new.** Alphanumeric sender ID (≤11 chars, e.g. `Goallord`).
       Required for bank-transfer **SMS** confirmations (M7). Without it, SMS
-      no-ops silently (logs a warning) and the email receipt still sends — safe to defer.
-- [ ] `NODE_ENV=production` — **important for M9.** The auth cookie is only marked
+      no-ops silently (logs a warning) and the email receipt still sends - safe to defer.
+- [ ] `NODE_ENV=production` - **important for M9.** The auth cookie is only marked
       `Secure` when `NODE_ENV==='production'`. Confirm it's set so the JWT cookie
       is HTTPS-only in prod. (Render: add it as an env var.)
 - [ ] Confirm existing: `JWT_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`,
@@ -69,7 +69,7 @@ these are the **new / relevant** ones:
 
 ## 4. Smoke tests after deploy (do these in a real browser)
 
-### 4a. 🔴 Auth cookie cutover (M9) — HIGHEST RISK, test first
+### 4a. 🔴 Auth cookie cutover (M9) - HIGHEST RISK, test first
 The JWT moved from localStorage to an httpOnly cookie. Cookie misconfig can't be
 caught without a real browser + domain.
 - [ ] Admin: log in at `/login.html` → lands on dashboard → refresh keeps session → **Sign Out** returns to login and the session is gone.
@@ -79,7 +79,7 @@ caught without a real browser + domain.
       `gl_lecturer_token` is present, **HttpOnly = true**, **Secure = true** (prod).
 - [ ] Confirm localStorage holds only the sentinel `'cookie-session'` (no real JWT).
 - [ ] Existing users who were logged in before deploy keep working (Bearer fallback)
-      until they re-login — verify one isn't force-logged-out.
+      until they re-login - verify one isn't force-logged-out.
 
 > **Rollback (if auth breaks):** revert the one-line token-store change in the 3
 > login pages (`login.html`, `student-login.html`, `lecturer-login.html`) back to
@@ -105,7 +105,7 @@ caught without a real browser + domain.
 - [ ] (If possible) trigger a failed Paystack charge → student receives the retry email.
 
 ### 4e. Audit log (M6)
-- [ ] As admin, perform an action (edit a student) then open **Audit Log** — the entry
+- [ ] As admin, perform an action (edit a student) then open **Audit Log** - the entry
       appears with actor, action, IP, status. Confirm logins (success + failure) are logged.
 - [ ] Confirm the Audit Log nav item is **hidden** for non-admin staff.
 
@@ -137,15 +137,15 @@ select column_name from information_schema.columns
 
 ## 6. Known follow-ups (NOT blocking this deploy)
 
-- [ ] **Cloudinary SDK CVE (HIGH)** — `npm audit` flags `cloudinary@1.x`
+- [ ] **Cloudinary SDK CVE (HIGH)** - `npm audit` flags `cloudinary@1.x`
       argument-injection (GHSA-g4mf-96x5-5m2c). Fix is a **cloudinary 2.x major
       upgrade** affecting `routes/upload.js`; needs live image/file-upload testing.
-      Tracked separately — do not bundle with this deploy.
-- [ ] **Chat socket hardening** — `chat:open` joins a thread room without re-verifying
+      Tracked separately - do not bundle with this deploy.
+- [ ] **Chat socket hardening** - `chat:open` joins a thread room without re-verifying
       participation (relies on unguessable thread UUIDs + REST being authoritative).
       Add a server-side participant check for defence-in-depth if desired.
 - [ ] `package.json` `engines` says `node: 18.x` but `render.yaml` sets
-      `NODE_VERSION: 20`. Harmless (warning only) — align when convenient.
+      `NODE_VERSION: 20`. Harmless (warning only) - align when convenient.
 
 ---
 
@@ -155,4 +155,4 @@ select column_name from information_schema.columns
 |------|----------|
 | Auth cookie (M9) | Revert token-store line in the 3 login pages; Bearer fallback keeps working. |
 | multer 2.x (M10) | `npm install multer@1.4.5-lts.2 --legacy-peer-deps` + revert `package.json`. |
-| Any feature | Migrations are additive (new tables/columns only) — leaving them applied is harmless even if code is rolled back. |
+| Any feature | Migrations are additive (new tables/columns only) - leaving them applied is harmless even if code is rolled back. |

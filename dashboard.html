@@ -1942,7 +1942,7 @@
   }
 
   /* ============================================================
-     MOBILE-FIRST POLISH — standalone PWA refinements
+     MOBILE-FIRST POLISH - standalone PWA refinements
      Safe-area insets (notch / home indicator), dynamic viewport
      height, and 16px inputs to stop iOS zoom-on-focus.
      env() insets are 0 on desktop → no visual change there.
@@ -1954,7 +1954,7 @@
   html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   body { -webkit-tap-highlight-color: transparent; }
 
-  /* App shell uses dynamic viewport height — no jump as the mobile bars show/hide */
+  /* App shell uses dynamic viewport height - no jump as the mobile bars show/hide */
   .sidebar { height: 100dvh; padding-top: var(--safe-t); }
   .main-wrapper { height: 100dvh; }
 
@@ -1987,7 +1987,7 @@
   @media (max-width: 640px) { input, select, textarea { font-size: 16px; } }
 
   /* ============================================================
-     MOBILE APP BAR (admin) — bottom bar + drawer menu (≤768px).
+     MOBILE APP BAR (admin) - bottom bar + drawer menu (≤768px).
      19 pages is too many for a tab bar, so the bar surfaces the 3
      most-used pages plus a Menu button that opens the full sidebar.
      ============================================================ */
@@ -2286,10 +2286,10 @@
         <div class="stat-card">
           <div class="stat-info">
             <div class="stat-label">Total Applicants</div>
-            <div class="stat-value" id="stat-total-applicants">—</div>
+            <div class="stat-value" id="stat-total-applicants">-</div>
             <div class="stat-trend up" id="stat-pending-trend">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
-              <span id="stat-pending-count">—</span> pending review
+              <span id="stat-pending-count">-</span> pending review
             </div>
           </div>
           <div class="stat-icon orange">
@@ -2303,7 +2303,7 @@
         <div class="stat-card">
           <div class="stat-info">
             <div class="stat-label">Active Clients</div>
-            <div class="stat-value" id="stat-total-clients">—</div>
+            <div class="stat-value" id="stat-total-clients">-</div>
             <div class="stat-trend up">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
               Total registered
@@ -2320,7 +2320,7 @@
         <div class="stat-card">
           <div class="stat-info">
             <div class="stat-label">Active Students</div>
-            <div class="stat-value" id="stat-total-students">—</div>
+            <div class="stat-value" id="stat-total-students">-</div>
             <div class="stat-trend up">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
               Currently enrolled
@@ -2337,7 +2337,7 @@
         <div class="stat-card">
           <div class="stat-info">
             <div class="stat-label">Accepted Students</div>
-            <div class="stat-value" id="stat-accepted-applicants">—</div>
+            <div class="stat-value" id="stat-accepted-applicants">-</div>
             <div class="stat-trend neutral">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
               From applicants
@@ -2357,7 +2357,7 @@
       <div class="charts-row">
         <div class="chart-card">
           <div class="chart-card-header">
-            <h3>Revenue — Last 6 Months</h3>
+            <h3>Revenue - Last 6 Months</h3>
             <div class="chart-legend">
               <div class="legend-item"><div class="legend-dot" style="background:#1E4BFF"></div> Templates &amp; Courses</div>
               <div class="legend-item"><div class="legend-dot" style="background:#D66A1F"></div> Academy Applications</div>
@@ -3380,7 +3380,7 @@
 
           <div class="form-group" style="margin-bottom:16px">
             <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Eyebrow Text</label>
-            <input class="form-input" type="text" id="heroEyebrow" placeholder="Web Agency — Onitsha, Nigeria">
+            <input class="form-input" type="text" id="heroEyebrow" placeholder="Web Agency - Onitsha, Nigeria">
           </div>
           <div class="form-group" style="margin-bottom:16px">
             <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Headline <span style="font-size:10px;opacity:.5">(use &lt;br&gt; for line breaks, &lt;span&gt; for orange text)</span></label>
@@ -3743,15 +3743,15 @@
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:24px" id="affiliateStatsRow">
         <div class="card" style="padding:20px">
           <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Total Links</div>
-          <div style="font-size:28px;font-weight:700" id="affStatLinks">—</div>
+          <div style="font-size:28px;font-weight:700" id="affStatLinks">-</div>
         </div>
         <div class="card" style="padding:20px">
           <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Total Clicks</div>
-          <div style="font-size:28px;font-weight:700;color:var(--orange)" id="affStatClicks">—</div>
+          <div style="font-size:28px;font-weight:700;color:var(--orange)" id="affStatClicks">-</div>
         </div>
         <div class="card" style="padding:20px">
           <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Top Performer</div>
-          <div style="font-size:14px;font-weight:600" id="affStatTop">—</div>
+          <div style="font-size:14px;font-weight:600" id="affStatTop">-</div>
           <div style="font-size:11px;color:var(--muted)" id="affStatTopClicks"></div>
         </div>
       </div>
@@ -3795,22 +3795,22 @@
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px">
           <div class="card" style="padding:20px">
             <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Published Posts</div>
-            <div style="font-size:32px;font-weight:700" id="an-totalPosts">—</div>
+            <div style="font-size:32px;font-weight:700" id="an-totalPosts">-</div>
           </div>
           <div class="card" style="padding:20px">
             <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Total Post Views</div>
-            <div style="font-size:32px;font-weight:700;color:var(--orange)" id="an-totalViews">—</div>
+            <div style="font-size:32px;font-weight:700;color:var(--orange)" id="an-totalViews">-</div>
           </div>
           <div class="card" style="padding:20px">
             <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Affiliate Clicks</div>
-            <div style="font-size:32px;font-weight:700;color:#1E4BFF" id="an-totalAffClicks">—</div>
+            <div style="font-size:32px;font-weight:700;color:#1E4BFF" id="an-totalAffClicks">-</div>
           </div>
         </div>
 
         <!-- Blog charts -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px">
           <div class="card" style="padding:20px">
-            <div style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px;margin-bottom:16px">AFFILIATE CLICKS — LAST 30 DAYS</div>
+            <div style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px;margin-bottom:16px">AFFILIATE CLICKS - LAST 30 DAYS</div>
             <div style="height:180px;position:relative"><canvas id="anAffChart"></canvas></div>
           </div>
           <div class="card" style="padding:20px">
@@ -3846,11 +3846,11 @@
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px">
           <div class="card" style="padding:20px">
             <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Total Leads</div>
-            <div style="font-size:32px;font-weight:700;color:var(--success)" id="an-totalContacts">—</div>
+            <div style="font-size:32px;font-weight:700;color:var(--success)" id="an-totalContacts">-</div>
           </div>
           <div class="card" style="padding:20px">
             <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">This Month</div>
-            <div style="font-size:32px;font-weight:700;color:var(--orange)" id="an-monthContacts">—</div>
+            <div style="font-size:32px;font-weight:700;color:var(--orange)" id="an-monthContacts">-</div>
           </div>
           <div class="card" style="padding:20px;display:flex;flex-direction:column;justify-content:space-between">
             <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">GA4 Full Site Stats</div>
@@ -3865,7 +3865,7 @@
         <!-- Site chart + info -->
         <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:28px">
           <div class="card" style="padding:20px">
-            <div style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px;margin-bottom:16px">CONTACT LEADS — LAST 30 DAYS</div>
+            <div style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px;margin-bottom:16px">CONTACT LEADS - LAST 30 DAYS</div>
             <div style="height:220px;position:relative"><canvas id="anContactChart"></canvas></div>
           </div>
           <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px">
@@ -4095,7 +4095,7 @@
 <!-- Toast -->
 <div id="gl-toast"><span class="toast-icon" id="gl-toast-icon">✓</span><span id="gl-toast-msg"></span></div>
 
-<!-- View Applicant Modal — Profile Card -->
+<!-- View Applicant Modal - Profile Card -->
 <div class="modal-overlay" id="viewApplicantModal">
   <div class="modal" style="max-width:660px;padding:0;overflow:hidden">
 
@@ -4108,7 +4108,7 @@
           <span id="vapInitials"></span>
         </div>
         <div style="min-width:0">
-          <div style="font-size:1.15rem;font-weight:800;color:var(--text);margin-bottom:8px" id="vapName">—</div>
+          <div style="font-size:1.15rem;font-weight:800;color:var(--text);margin-bottom:8px" id="vapName">-</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <span id="vapTrackBadge" style="background:rgba(214,106,31,0.15);color:#D66A1F;border:1px solid rgba(214,106,31,0.3);padding:3px 11px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.03em"></span>
             <span id="vapStatusBadge"></span>
@@ -4170,7 +4170,7 @@
           <span id="vsInitials"></span>
         </div>
         <div style="min-width:0">
-          <div style="font-size:1.1rem;font-weight:800;color:var(--text);margin-bottom:7px" id="vsName">—</div>
+          <div style="font-size:1.1rem;font-weight:800;color:var(--text);margin-bottom:7px" id="vsName">-</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <span id="vsTrackBadge" style="background:rgba(214,106,31,0.15);color:#D66A1F;border:1px solid rgba(214,106,31,0.3);padding:3px 11px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.03em"></span>
             <span id="vsStatusBadge"></span>
@@ -4551,7 +4551,7 @@
           </div>
           <div class="form-group"><label>Batch</label>
             <select class="form-input" id="stu-batch-select">
-              <option value="">— No batch —</option>
+              <option value="">- No batch -</option>
             </select>
           </div>
         </div>
@@ -4585,7 +4585,7 @@
         <div class="modal-form-row">
           <div class="form-group"><label>Batch</label>
             <select class="form-input" id="att-batch-input" onchange="loadStudentsForAttendance()">
-              <option value="">— Select batch —</option>
+              <option value="">- Select batch -</option>
             </select>
           </div>
           <div class="form-group"><label>Class Date</label><input class="form-input" id="att-date-input" type="date" onchange="autoFillAttDay();loadStudentsForAttendance()"></div>
@@ -4594,7 +4594,7 @@
           <div class="form-group"><label>Week #</label><input class="form-input" id="att-week-input" type="number" min="1" max="52" placeholder="e.g. 3"></div>
           <div class="form-group"><label>Day</label>
             <select class="form-input" id="att-day-input">
-              <option value="">— Select day —</option>
+              <option value="">- Select day -</option>
               <option>Tuesday</option>
               <option>Wednesday</option>
               <option>Thursday</option>
@@ -4628,13 +4628,13 @@
       <div class="modal-form">
         <div class="form-group"><label>Student *</label>
           <select class="form-input" id="pay-student-select">
-            <option value="">— Select student —</option>
+            <option value="">- Select student -</option>
           </select>
         </div>
         <div class="modal-form-row">
           <div class="form-group"><label>Category *</label>
             <select class="form-input" id="pay-category-input">
-              <option value="">— Select category —</option>
+              <option value="">- Select category -</option>
               <option value="application_fee">Application Fee</option>
               <option value="tuition_month_1">Tuition Month 1</option>
               <option value="tuition_month_2">Tuition Month 2</option>
@@ -4651,7 +4651,7 @@
         <div class="modal-form-row">
           <div class="form-group"><label>Method</label>
             <select class="form-input" id="pay-method-input">
-              <option value="">— Select method —</option>
+              <option value="">- Select method -</option>
               <option>Bank Transfer</option><option>Cash</option><option>POS</option><option>Paystack</option><option>Other</option>
             </select>
           </div>
@@ -4876,8 +4876,8 @@ function renderApplicants(list) {
         : a.applicationFeeRef
           ? '<span style="font-size:11px;padding:3px 8px;border-radius:10px;background:rgba(30,75,255,0.18);color:#60a5fa;font-weight:600;white-space:nowrap" title="Bank transfer awaiting admin confirmation">⌛ Awaiting</span>'
           : a.emailVerified
-            ? '<span style="font-size:11px;padding:3px 8px;border-radius:10px;background:rgba(214,106,31,0.18);color:#f59e0b;font-weight:600;white-space:nowrap" title="Verified but not paid — likely abandoned payment page">⚠ Unpaid</span>'
-            : '<span style="font-size:11px;padding:3px 8px;border-radius:10px;background:rgba(160,166,179,0.15);color:#a0a6b3;font-weight:600;white-space:nowrap">—</span>'}</td>
+            ? '<span style="font-size:11px;padding:3px 8px;border-radius:10px;background:rgba(214,106,31,0.18);color:#f59e0b;font-weight:600;white-space:nowrap" title="Verified but not paid - likely abandoned payment page">⚠ Unpaid</span>'
+            : '<span style="font-size:11px;padding:3px 8px;border-radius:10px;background:rgba(160,166,179,0.15);color:#a0a6b3;font-weight:600;white-space:nowrap">-</span>'}</td>
       <td id="app-badge-${a.id}">${badge(st)}</td>
       <td class="muted">${a.date}</td>
       <td>
@@ -4949,7 +4949,7 @@ function updateApplicantStatus(id, status) {
     if (cell) cell.innerHTML = badge(status);
     renderOverviewApplicants();
     if (data.studentCreated) {
-      showToast('Student account created — acceptance email sent!');
+      showToast('Student account created - acceptance email sent!');
     }
   })
   .catch(err => console.error('Status update failed:', err));
@@ -5000,7 +5000,7 @@ function glConfirmResolve(ok) {
 let _vapId = null;
 
 function viewApplicant(id) {
-  console.log('[viewApplicant] called with id:', id, '— APPLICANTS length:', (window.APPLICANTS || []).length);
+  console.log('[viewApplicant] called with id:', id, '- APPLICANTS length:', (window.APPLICANTS || []).length);
   try {
   _vapId = id;
   const a = (window.APPLICANTS || []).find(x => String(x.id) === String(id));
@@ -5010,7 +5010,7 @@ function viewApplicant(id) {
     return;
   }
   const st = getStatus(id);
-  const safeName = (a.name || '—').trim() || '—';
+  const safeName = (a.name || '-').trim() || '-';
 
   // Avatar
   const initials = safeName.split(' ').map(p => p[0] || '').join('').substring(0,2).toUpperCase() || '?';
@@ -5030,7 +5030,7 @@ function viewApplicant(id) {
   document.getElementById('vapDate').textContent = (a.emailVerified ? '✉ Verified · ' : '⚠ Unverified · ') + 'Applied ' + a.date;
   document.getElementById('vapNotes').value = a.notes || '';
 
-  // Journey Timeline — applied → verified → paid → accepted
+  // Journey Timeline - applied → verified → paid → accepted
   const feePaid = !!a.applicationFeePaid;
   const awaitingBank = !!a.applicationFeeRef && !feePaid;
   const accepted = st === 'Accepted';
@@ -5055,14 +5055,14 @@ function viewApplicant(id) {
     step(true, false, '1. Application Submitted', 'Filled out apply form · ' + a.date),
     step(a.emailVerified, !a.emailVerified, '2. Email Verified',
          a.emailVerified ? 'Clicked the verification link in their inbox'
-                         : 'Waiting — link may be in spam or email bounced'),
+                         : 'Waiting - link may be in spam or email bounced'),
     step(feePaid, awaitingBank, '3. Application Fee + Tuition Paid',
-         feePaid ? ('Paid · Ref: ' + (a.applicationFeeRef || '—') + (planLabel ? ' · ' + planLabel : ''))
-         : awaitingBank ? ('Bank transfer ref submitted — awaiting admin confirm · ' + a.applicationFeeRef + (planLabel ? ' · ' + planLabel : ''))
+         feePaid ? ('Paid · Ref: ' + (a.applicationFeeRef || '-') + (planLabel ? ' · ' + planLabel : ''))
+         : awaitingBank ? ('Bank transfer ref submitted - awaiting admin confirm · ' + a.applicationFeeRef + (planLabel ? ' · ' + planLabel : ''))
          : a.emailVerified ? 'Verified but abandoned payment page'
          : 'Blocked until email is verified'),
     step(accepted, false, '4. Accepted & Enrolled',
-         accepted ? 'Student account created — credentials emailed'
+         accepted ? 'Student account created - credentials emailed'
          : feePaid ? 'Payment captured, awaiting status update'
          : 'Blocked until fee is paid')
   ].join('');
@@ -5070,8 +5070,8 @@ function viewApplicant(id) {
   // Contact cards
   document.getElementById('vapContactRow').innerHTML = [
     { label: 'Email', val: a.email,    href: 'mailto:' + a.email },
-    { label: 'Phone', val: a.phone || '—', href: a.phone ? 'tel:' + a.phone : null },
-    { label: 'Location', val: a.location || '—', href: null }
+    { label: 'Phone', val: a.phone || '-', href: a.phone ? 'tel:' + a.phone : null },
+    { label: 'Location', val: a.location || '-', href: null }
   ].map(c => `
     <${c.href ? `a href="${c.href}"` : 'div'} class="vap-contact-card">
       <div class="vc-label">${c.label}</div>
@@ -5127,7 +5127,7 @@ async function vapResendVerification() {
     const res = await apiFetch('/api/applicants/' + _vapId + '/admin-resend-verification', { method: 'POST' });
     if (res && res.success) {
       btn.textContent = '✓ Sent';
-      if (typeof showToast === 'function') showToast('Verification email sent — ask applicant to check inbox and spam', 'success');
+      if (typeof showToast === 'function') showToast('Verification email sent - ask applicant to check inbox and spam', 'success');
       setTimeout(() => {
         btn.textContent = '↻ Resend Verify';
         btn.disabled = false;
@@ -5138,7 +5138,7 @@ async function vapResendVerification() {
     }
   } catch (err) {
     console.error('[vapResendVerification] failed:', err);
-    btn.textContent = 'Failed — retry';
+    btn.textContent = 'Failed - retry';
     btn.disabled = false;
     if (typeof showToast === 'function') showToast('Network error: ' + err.message, 'error');
   }
@@ -5558,7 +5558,7 @@ function renderOverviewApplicants() {
   const recent = [...source].slice(0, 5);
   tbody.innerHTML = recent.map(a => `<tr onclick="navigate('applicants')">
     <td style="font-weight:600">${a.name}</td>
-    <td class="muted">${a.track || '—'}</td>
+    <td class="muted">${a.track || '-'}</td>
     <td>${badge(a.status)}</td>
     <td class="muted">${a.date}</td>
   </tr>`).join('');
@@ -5733,7 +5733,7 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// ─── STEP-BY-STEP FORM LOGIC (disabled — all fields shown at once) ───
+// ─── STEP-BY-STEP FORM LOGIC (disabled - all fields shown at once) ───
 function initStepForm() { /* no-op: modals now show all fields */ }
 function stepInputKeyHandler() { /* no-op */ }
 
@@ -5841,7 +5841,7 @@ function applyPermissions() {
     document.querySelectorAll('.nav-label').forEach(labelEl => {
       const labelText = labelEl.textContent.trim();
       const rulePerms = NAV_LABEL_RULES[labelText];
-      if (!rulePerms) return; // Main, Website labels — always show
+      if (!rulePerms) return; // Main, Website labels - always show
       const anyActive = rulePerms.some(pk => perms[pk]);
       labelEl.style.display = anyActive ? '' : 'none';
     });
@@ -5923,7 +5923,7 @@ async function loadAdminNotifs() {
 
     // Build panel items
     if (totalActions === 0) {
-      list.innerHTML = '<div class="notif-empty">✓ All caught up — no pending actions.</div>';
+      list.innerHTML = '<div class="notif-empty">✓ All caught up - no pending actions.</div>';
       return;
     }
 
@@ -6042,7 +6042,7 @@ async function loadApplicantsFromAPI() {
     const created = createdRaw ? new Date(createdRaw) : null;
     return {
       id:                 a.id || a._id,
-      name:               a.fullName           || a.full_name            || '—',
+      name:               a.fullName           || a.full_name            || '-',
       email:              a.email              || '',
       phone:              a.phone              || '',
       location:           a.location           || '',
@@ -6062,7 +6062,7 @@ async function loadApplicantsFromAPI() {
       status:             a.status             || 'Pending',
       date: created && !isNaN(created)
         ? created.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
-        : '—'
+        : '-'
     };
   });
   if (typeof renderApplicants === 'function') renderApplicants(window.APPLICANTS);
@@ -6078,14 +6078,14 @@ async function loadClientsFromAPI() {
     const created = createdRaw ? new Date(createdRaw) : null;
     return {
       id:      c.id || c._id,
-      name:    c.name    || '—',
+      name:    c.name    || '-',
       email:   c.email   || '',
       service: c.service || '',
       budget:  c.budget  || '',
       status:  c.status  || 'Pending',
       started: created && !isNaN(created)
         ? created.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
-        : '—'
+        : '-'
     };
   });
   if (typeof renderClients === 'function') renderClients(window.CLIENTS);
@@ -6100,11 +6100,11 @@ async function loadOverviewStats() {
     apiFetch('/api/students?limit=1')
   ]);
 
-  if (applicants) document.getElementById('stat-total-applicants').textContent = applicants.total ?? '—';
-  if (pending)    document.getElementById('stat-pending-count').textContent    = pending.total ?? '—';
-  if (accepted)   document.getElementById('stat-accepted-applicants').textContent = accepted.total ?? '—';
-  if (clients)    document.getElementById('stat-total-clients').textContent    = clients.total ?? '—';
-  if (students)   document.getElementById('stat-total-students').textContent   = students.total ?? '—';
+  if (applicants) document.getElementById('stat-total-applicants').textContent = applicants.total ?? '-';
+  if (pending)    document.getElementById('stat-pending-count').textContent    = pending.total ?? '-';
+  if (accepted)   document.getElementById('stat-accepted-applicants').textContent = accepted.total ?? '-';
+  if (clients)    document.getElementById('stat-total-clients').textContent    = clients.total ?? '-';
+  if (students)   document.getElementById('stat-total-students').textContent   = students.total ?? '-';
 
   // Update donut chart with real track distribution
   if (window.APPLICANTS && window.APPLICANTS.length && window._donutChart) {
@@ -6142,7 +6142,7 @@ async function loadOrdersFromAPI() {
       category:   o.category || 'Other',
       date:       created && !isNaN(created)
         ? created.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
-        : '—',
+        : '-',
       createdAt:  createdRaw,
       status:     o.status || 'Pending'
     };
@@ -7037,7 +7037,7 @@ function renderProjects() {
   }
   grid.innerHTML = allProjects.map(p => {
     const pct = p.taskCount ? Math.round((p.tasksDone / p.taskCount) * 100) : 0;
-    const deadline = p.deadline ? new Date(p.deadline).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    const deadline = p.deadline ? new Date(p.deadline).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '-';
     const overdue = p.deadline && new Date(p.deadline) < new Date() && p.status !== 'completed';
     return '<div class="card pm-card-enter" style="padding:0;overflow:hidden;border-radius:12px;cursor:pointer" onclick="openProjectDetail(\''+p._id+'\')">' +
       '<div style="height:4px;background:'+(p.color||'var(--orange)')+'"></div>' +
@@ -7964,7 +7964,7 @@ function renderBlogTable(posts) {
     return;
   }
   tbody.innerHTML = posts.map(p => {
-    const date = p.publishedAt ? new Date(p.publishedAt).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : '—';
+    const date = p.publishedAt ? new Date(p.publishedAt).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : '-';
     const status = p.published
       ? '<span style="background:rgba(34,197,94,.15);color:#22c55e;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">Published</span>'
       : '<span style="background:rgba(255,255,255,.08);color:var(--muted);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">Draft</span>';
@@ -7973,7 +7973,7 @@ function renderBlogTable(posts) {
       : '';
     return `<tr>
       <td style="padding:12px 14px;font-size:13px;border-bottom:1px solid var(--border)">${(p.title||'').replace(/</g,'&lt;')}${featured}</td>
-      <td style="padding:12px 14px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border)">${p.category||'—'}</td>
+      <td style="padding:12px 14px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border)">${p.category||'-'}</td>
       <td style="padding:12px 14px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border)">${date}</td>
       <td style="padding:12px 14px;border-bottom:1px solid var(--border)">${status}</td>
       <td style="padding:12px 14px;border-bottom:1px solid var(--border)">
@@ -8155,11 +8155,11 @@ const _BLOG_FMT = {
   h2:      { open: '<h2 class="letter-space--2 mb-4">',         close: '</h2>\n',    label: 'H2',     style: '' },
   h3:      { open: '<h3 class="letter-space--2 mb-3">',         close: '</h3>\n',    label: 'H3',     style: '' },
   para:    { open: '<p class="text-white-64 mb-4">',            close: '</p>\n',     label: '¶',      style: '' },
-  quote:   { open: '<div class="gl-pullquote mb-5"><p class="h4 letter-space--2 mb-2">', close: '</p><p class="text-caption text-primary letter-space--1 mb-0">— GOALLORD CREATIVITY TEAM</p></div>\n', label: '" Quote', style: '' },
+  quote:   { open: '<div class="gl-pullquote mb-5"><p class="h4 letter-space--2 mb-2">', close: '</p><p class="text-caption text-primary letter-space--1 mb-0">- GOALLORD CREATIVITY TEAM</p></div>\n', label: '" Quote', style: '' },
   ul:      { open: '<ul class="text-white-64 mb-5" style="padding-left:1.5rem;line-height:2"><li>', close: '</li></ul>\n', label: '• List', style: '' },
   ol:      { open: '<ol class="text-white-64 mb-5" style="padding-left:1.5rem;line-height:2"><li>', close: '</li></ol>\n', label: '1. List', style: '' },
   link:    { open: '<a href="" class="link text-primary">',     close: '</a>',       label: 'Link',   style: '' },
-  hr:      { open: '<div class="br-line mb-5"></div>\n',        close: '',           label: '— HR',   style: '' },
+  hr:      { open: '<div class="br-line mb-5"></div>\n',        close: '',           label: '- HR',   style: '' },
 };
 
 // ── Affiliate block templates ─────────────────────────────────────────────
@@ -8329,7 +8329,7 @@ async function blogUploadCover(input) {
     }
   } catch {
     statusEl.style.color = '#ef4444';
-    statusEl.textContent = 'Upload failed — check connection';
+    statusEl.textContent = 'Upload failed - check connection';
   }
 }
 
@@ -8484,7 +8484,7 @@ async function fetchAuditPage() {
 
 function renderAuditRow(r) {
   const when = new Date(r.created_at).toLocaleString('en-NG', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
-  const actor = escapeHtml(r.actor_name || r.actor_email || '—')
+  const actor = escapeHtml(r.actor_name || r.actor_email || '-')
     + (r.actor_role ? ' <span style="color:var(--muted);font-size:11px">(' + escapeHtml(r.actor_role) + ')</span>' : '');
   const failed = r.status && r.status >= 400;
   const statusBadge = failed
@@ -8497,7 +8497,7 @@ function renderAuditRow(r) {
     + '<td style="' + td + '"><code style="font-size:12px;color:#6a9fff">' + escapeHtml(r.action || '') + '</code></td>'
     + '<td style="' + td + '">' + escapeHtml(r.summary || '') + '<div style="color:var(--muted);font-size:11px;margin-top:2px">' + escapeHtml((r.method || '') + ' ' + (r.path || '')) + '</div></td>'
     + '<td style="' + td + '">' + statusBadge + '</td>'
-    + '<td style="' + td + ';color:var(--muted);font-size:12px">' + escapeHtml(r.ip || '—') + '</td>'
+    + '<td style="' + td + ';color:var(--muted);font-size:12px">' + escapeHtml(r.ip || '-') + '</td>'
     + '</tr>';
 }
 
@@ -8520,12 +8520,12 @@ async function loadAnalyticsPage() {
   const days   = Object.keys(data.affByDay);
   const labels = days.map(d => { const p = d.split('-'); return p[2] + '/' + p[1]; });
 
-  // ── Blog tab — totals ────────────────────────────────────
-  document.getElementById('an-totalPosts').textContent     = data.totals.posts ?? '—';
+  // ── Blog tab - totals ────────────────────────────────────
+  document.getElementById('an-totalPosts').textContent     = data.totals.posts ?? '-';
   document.getElementById('an-totalViews').textContent     = (data.totals.views || 0).toLocaleString();
   document.getElementById('an-totalAffClicks').textContent = (data.totals.affiliateClicks || 0).toLocaleString();
 
-  // ── Site tab — totals ────────────────────────────────────
+  // ── Site tab - totals ────────────────────────────────────
   document.getElementById('an-totalContacts').textContent = (data.totals.contacts || 0).toLocaleString();
   const thisMonth = Object.entries(data.contactByDay)
     .filter(([d]) => d.startsWith(new Date().toISOString().slice(0,7)))
@@ -8577,7 +8577,7 @@ async function loadAnalyticsPage() {
       </td>
       <td style="padding:10px 14px;border-bottom:1px solid var(--border);text-align:right;font-weight:700;color:var(--orange);font-size:14px;padding-right:20px">${(p.views||0).toLocaleString()}</td>
     </tr>`).join('') :
-    '<tr><td colspan="3" style="padding:24px;text-align:center;color:var(--muted)">No views yet — share your posts to see data.</td></tr>';
+    '<tr><td colspan="3" style="padding:24px;text-align:center;color:var(--muted)">No views yet - share your posts to see data.</td></tr>';
 
   // ── Top affiliate links table ────────────────────────────
   const affBody = document.getElementById('anTopAffBody');
@@ -8612,13 +8612,13 @@ async function loadAffiliateLinks() {
   _affiliateLinks = links || [];
   renderAffiliateTable();
   if (stats) {
-    document.getElementById('affStatLinks').textContent  = stats.totalLinks  ?? '—';
-    document.getElementById('affStatClicks').textContent = stats.totalClicks ?? '—';
+    document.getElementById('affStatLinks').textContent  = stats.totalLinks  ?? '-';
+    document.getElementById('affStatClicks').textContent = stats.totalClicks ?? '-';
     if (stats.top) {
-      document.getElementById('affStatTop').textContent       = stats.top.name  || '—';
+      document.getElementById('affStatTop').textContent       = stats.top.name  || '-';
       document.getElementById('affStatTopClicks').textContent = stats.top.totalClicks + ' clicks';
     } else {
-      document.getElementById('affStatTop').textContent       = '—';
+      document.getElementById('affStatTop').textContent       = '-';
       document.getElementById('affStatTopClicks').textContent = '';
     }
   }
@@ -8635,7 +8635,7 @@ function renderAffiliateTable() {
     <tr>
       <td style="padding:12px 14px;border-bottom:1px solid var(--border)">${escHtml(link.name)}<br><span style="font-size:11px;color:var(--muted)">${escHtml(link.category||'')}</span></td>
       <td style="padding:12px 14px;border-bottom:1px solid var(--border)"><code style="font-size:12px;background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px">/go/${escHtml(link.slug)}</code></td>
-      <td style="padding:12px 14px;border-bottom:1px solid var(--border)">${escHtml(link.category||'—')}</td>
+      <td style="padding:12px 14px;border-bottom:1px solid var(--border)">${escHtml(link.category||'-')}</td>
       <td style="padding:12px 14px;border-bottom:1px solid var(--border);font-weight:600;color:var(--orange)">${link.totalClicks||0}</td>
       <td style="padding:12px 14px;border-bottom:1px solid var(--border)">
         <span style="font-size:11px;padding:2px 8px;border-radius:20px;${link.active ? 'background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.25)' : 'background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.25)'}">
@@ -9125,8 +9125,8 @@ function renderContacts() {
       <td>${i + 1}</td>
       <td>${escHtml(c.name)}</td>
       <td><a href="mailto:${escHtml(c.email)}" style="color:var(--orange)">${escHtml(c.email)}</a></td>
-      <td>${escHtml(c.service || '—')}</td>
-      <td>${escHtml(c.budget || '—')}</td>
+      <td>${escHtml(c.service || '-')}</td>
+      <td>${escHtml(c.budget || '-')}</td>
       <td><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${statusColor[c.status]}22;color:${statusColor[c.status]};border:1px solid ${statusColor[c.status]}44;">${c.status}</span></td>
       <td>${new Date(c.createdAt).toLocaleDateString()}</td>
       <td>
@@ -9147,8 +9147,8 @@ async function openContact(id) {
 
   document.getElementById('contactModalName').textContent = c.name;
   document.getElementById('cmEmail').textContent   = c.email;
-  document.getElementById('cmService').textContent = c.service || '—';
-  document.getElementById('cmBudget').textContent  = c.budget  || '—';
+  document.getElementById('cmService').textContent = c.service || '-';
+  document.getElementById('cmBudget').textContent  = c.budget  || '-';
   document.getElementById('cmDate').textContent    = new Date(c.createdAt).toLocaleString();
   document.getElementById('cmMessage').textContent = c.message || '(no message)';
   document.getElementById('contactReplyBody').value = '';
@@ -9213,7 +9213,7 @@ document.getElementById('contactSearch')?.addEventListener('input', renderContac
 document.getElementById('contactStatusFilter')?.addEventListener('change', renderContacts);
 
 // ═══════════════════════════════════════════════════════════
-//  ACADEMY — STUDENTS
+//  ACADEMY - STUDENTS
 // ═══════════════════════════════════════════════════════════
 let allStudents = [];
 let allBatchesAdmin = [];
@@ -9225,7 +9225,7 @@ async function loadStudents() {
   allStudents = res.data || [];
 
   // Normalise to camelCase across the table so a missed key transform
-  // (which has been seen on this codebase — see loadApplicantsFromAPI)
+  // (which has been seen on this codebase - see loadApplicantsFromAPI)
   // doesn't blank the row.
   allStudents = allStudents.map(s => ({
     ...s,
@@ -9238,7 +9238,7 @@ async function loadStudents() {
   }));
   if (allStudents.length) {
     // Helpful for diagnosing data-shape issues without server access.
-    // Logs a single sample to console — no PII risk because the admin is signed in.
+    // Logs a single sample to console - no PII risk because the admin is signed in.
     try { console.debug('[students] sample row keys:', Object.keys(allStudents[0])); } catch (_) {}
   }
 
@@ -9271,7 +9271,7 @@ async function loadStudents() {
     const el = document.getElementById(id);
     if (!el) return;
     const current = el.value;
-    const placeholder = id === 'stu-batch-select' ? '— No batch —' : '— Select batch —';
+    const placeholder = id === 'stu-batch-select' ? '- No batch -' : '- Select batch -';
     el.innerHTML = `<option value="">${placeholder}</option>` + allBatchesAdmin.map(b => `<option value="${b._id}">${b.name}</option>`).join('');
     el.value = current;
   });
@@ -9279,7 +9279,7 @@ async function loadStudents() {
   // Populate student selects for payment
   const pSelect = document.getElementById('pay-student-select');
   if (pSelect) {
-    pSelect.innerHTML = '<option value="">— Select student —</option>' +
+    pSelect.innerHTML = '<option value="">- Select student -</option>' +
       allStudents.filter(s => s.status === 'Active').map(s => `<option value="${s._id}">${s.fullName}${s.batch?.name ? ' (' + s.batch.name + ')' : ''}</option>`).join('');
   }
 
@@ -9306,7 +9306,7 @@ function filterStudents() {
   }
   const statusColors = { Active: 'var(--success)', Suspended: 'var(--warning)', Graduated: '#6a9fff' };
   const batchOptions = (selectedId) =>
-    '<option value="">— No batch —</option>' +
+    '<option value="">- No batch -</option>' +
     allBatchesAdmin.map(b =>
       `<option value="${b._id}" ${selectedId === b._id ? 'selected' : ''}>${escHtml(b.name)}</option>`
     ).join('');
@@ -9344,7 +9344,7 @@ function filterStudents() {
          </td>`;
     const currentBatchId = s.batch?._id || '';
     const batchCell = allBatchesAdmin.length === 0
-      ? `<td style="padding:12px 14px;font-size:12px;color:var(--muted);font-style:italic" onclick="event.stopPropagation()">No batches yet — create one in Batches</td>`
+      ? `<td style="padding:12px 14px;font-size:12px;color:var(--muted);font-style:italic" onclick="event.stopPropagation()">No batches yet - create one in Batches</td>`
       : `<td style="padding:8px 14px" onclick="event.stopPropagation()">
            <select class="form-input" data-student-id="${sid}" onchange="inlineAssignBatch('${sid}', this.value, this)" style="font-size:12px;padding:5px 10px;min-width:130px">
              ${batchOptions(currentBatchId)}
@@ -9353,8 +9353,8 @@ function filterStudents() {
     return `
     <tr style="cursor:pointer" onclick="viewStudent('${sid}')" onmouseenter="this.style.background='rgba(255,255,255,0.03)'" onmouseleave="this.style.background=''">
       ${nameCell}
-      <td style="padding:12px 14px;color:var(--muted);font-size:13px">${escHtml(s.email||'—')}</td>
-      <td style="padding:12px 14px;font-size:13px">${escHtml(s.track||'—')}</td>
+      <td style="padding:12px 14px;color:var(--muted);font-size:13px">${escHtml(s.email||'-')}</td>
+      <td style="padding:12px 14px;font-size:13px">${escHtml(s.track||'-')}</td>
       ${batchCell}
       <td style="padding:12px 14px"><span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:${statusColors[s.status]+'22'};color:${statusColors[s.status]}">${s.status}</span></td>
       <td style="padding:12px 14px" onclick="event.stopPropagation()">
@@ -9433,7 +9433,7 @@ async function syncStudentsFromApplicants(verbose) {
     const miss    = Number((res.missing || []).length);
     const part    = Number((res.partial || []).length);
     showToast(
-      `Scanned ${scanned} student${scanned === 1 ? '' : 's'} — ${ac} already complete, ${part} matched-but-blank, ${miss} unmatched.`,
+      `Scanned ${scanned} student${scanned === 1 ? '' : 's'} - ${ac} already complete, ${part} matched-but-blank, ${miss} unmatched.`,
       ac === scanned ? 'success' : 'error'
     );
     openSyncDiagnostic(res);
@@ -9457,7 +9457,7 @@ function openSyncDiagnostic(report) {
         <div id="syncDiagSummary" style="color:#A0A6B3;font-size:13px;line-height:1.6;margin-bottom:14px"></div>
         <div id="syncDiagTable" style="font-size:12px;color:#F4F6FA"></div>
         <div style="margin-top:14px;color:#A0A6B3;font-size:11.5px;line-height:1.5">
-          Tip — also open DevTools (⌥⌘I) console for the full payload as <code>window.__lastSyncReport</code>.
+          Tip - also open DevTools (⌥⌘I) console for the full payload as <code>window.__lastSyncReport</code>.
         </div>
       </div>`;
     document.body.appendChild(modal);
@@ -9474,7 +9474,7 @@ function openSyncDiagnostic(report) {
   const part = (report.partial || []);
   sum.innerHTML = `
     <div><b>API saw ${scanned} student row${scanned === 1 ? '' : 's'} in the database.</b></div>
-    <div>UI currently has <b>${allStudents.length}</b> row${allStudents.length === 1 ? '' : 's'} loaded.${scanned !== allStudents.length ? ' <span style="color:#f59e0b">Mismatch — some students are not being returned by /api/students.</span>' : ''}</div>
+    <div>UI currently has <b>${allStudents.length}</b> row${allStudents.length === 1 ? '' : 's'} loaded.${scanned !== allStudents.length ? ' <span style="color:#f59e0b">Mismatch - some students are not being returned by /api/students.</span>' : ''}</div>
     <div style="margin-top:8px">
       • <span style="color:#22c55e">${ac}</span> already have name + photo &nbsp;
       • <span style="color:#22c55e">${nu}</span> name${nu === 1 ? '' : 's'} updated this run &nbsp;
@@ -9501,12 +9501,12 @@ function openSyncDiagnostic(report) {
               noApplicantFound: '#ef4444'
             })[r.outcome] || '#A0A6B3';
             const inDb = [
-              r.hadName ? '✓ name' : '— no name',
-              r.hadPhoto ? '✓ photo' : '— no photo'
+              r.hadName ? '✓ name' : '- no name',
+              r.hadPhoto ? '✓ photo' : '- no photo'
             ].join(', ');
             const app = !r.matchedBy
               ? '<span style="color:#ef4444">no match</span>'
-              : `<span style="color:#A0A6B3">via ${r.matchedBy}</span> · ${r.applicantHasName ? '✓ name' : '— no name'}, ${r.applicantHasPhoto ? '✓ photo' : '— no photo'}`;
+              : `<span style="color:#A0A6B3">via ${r.matchedBy}</span> · ${r.applicantHasName ? '✓ name' : '- no name'}, ${r.applicantHasPhoto ? '✓ photo' : '- no photo'}`;
             return `<tr style="border-bottom:1px solid #1f2329">
               <td style="padding:8px 10px">${escHtml(r.email || r.id || '')}</td>
               <td style="padding:8px 10px;color:${outcomeColor};font-weight:600">${escHtml(r.outcome || '')}</td>
@@ -9591,7 +9591,7 @@ async function openBulkBatchAssign() {
   if (Number.isNaN(idx)) return;
   const batchId = idx === 0 ? null : (allBatchesAdmin[idx - 1] && allBatchesAdmin[idx - 1]._id);
   if (idx !== 0 && !batchId) { showToast('Invalid batch number.', 'error'); return; }
-  const batchName = idx === 0 ? '— no batch —' : allBatchesAdmin[idx - 1].name;
+  const batchName = idx === 0 ? '- no batch -' : allBatchesAdmin[idx - 1].name;
 
   if (!confirm(`Assign "${batchName}" to ${targets.length} student(s)?`)) return;
 
@@ -9709,8 +9709,8 @@ function viewStudent(id) {
   // Contact
   document.getElementById('vsContactRow').innerHTML = [
     { label: 'Email', val: s.email,               href: 'mailto:' + s.email },
-    { label: 'Phone', val: s.phone || '—',        href: s.phone ? 'tel:' + s.phone : null },
-    { label: 'Batch', val: s.batch?.name || '—',  href: null }
+    { label: 'Phone', val: s.phone || '-',        href: s.phone ? 'tel:' + s.phone : null },
+    { label: 'Batch', val: s.batch?.name || '-',  href: null }
   ].map(c => `
     <${c.href ? `a href="${c.href}"` : 'div'} class="vap-contact-card">
       <div class="vc-label">${c.label}</div>
@@ -9777,7 +9777,7 @@ async function reactivateStudent(id, name) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  ACADEMY — ATTENDANCE
+//  ACADEMY - ATTENDANCE
 // ═══════════════════════════════════════════════════════════
 async function loadAttendancePage() {
   if (allStudents.length === 0) await loadStudents();
@@ -9797,8 +9797,8 @@ async function loadAttendancePage() {
   tbody.innerHTML = docs.map(r => `
     <tr>
       <td style="padding:12px 14px;font-weight:600">${fmtDateAdmin(r.classDate)}</td>
-      <td style="padding:12px 14px">${r.batch?.name || '—'}</td>
-      <td style="padding:12px 14px;color:var(--muted);font-size:13px">${r.track || '—'}</td>
+      <td style="padding:12px 14px">${r.batch?.name || '-'}</td>
+      <td style="padding:12px 14px;color:var(--muted);font-size:13px">${r.track || '-'}</td>
       <td style="padding:12px 14px"><span style="color:var(--success);font-weight:700">${r.presentStudents?.length || 0}</span></td>
       <td style="padding:12px 14px"><span style="color:var(--danger);font-weight:700">${r.absentStudents?.length || 0}</span></td>
       <td style="padding:12px 14px;color:var(--muted);font-size:13px">${r.takenBy || 'Admin'}</td>
@@ -9904,7 +9904,7 @@ async function viewAttendanceSession(id) {
   openModal('viewAttendanceModal');
   const doc = await apiFetch('/api/attendance/' + id);
   if (!doc) { body.innerHTML = 'Failed to load.'; return; }
-  document.getElementById('viewAttTitle').textContent = 'Attendance — ' + fmtDateAdmin(doc.classDate);
+  document.getElementById('viewAttTitle').textContent = 'Attendance - ' + fmtDateAdmin(doc.classDate);
   const present = doc.presentStudents || [];
   const absent  = doc.absentStudents  || [];
   body.innerHTML = `
@@ -9923,7 +9923,7 @@ async function viewAttendanceSession(id) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  ACADEMY — PAYMENTS
+//  ACADEMY - PAYMENTS
 // ═══════════════════════════════════════════════════════════
 const PAY_CAT_LABEL = {
   application_fee:     'Application Fee',
@@ -10007,13 +10007,13 @@ function renderPayTable(rows) {
     const isBankPending = r.method === 'Bank Transfer' && status === 'pending';
     const isCashPending = String(r.method || '').toLowerCase() === 'cash' && !isPaid;
     return `<tr>
-      <td style="padding:12px 14px;font-weight:600">${r.student?.fullName || '—'}<br><span style="font-size:12px;color:var(--muted);font-weight:400">${r.student?.track || ''}</span></td>
-      <td style="padding:12px 14px">${PAY_CAT_LABEL[r.category] || r.category || '—'}</td>
+      <td style="padding:12px 14px;font-weight:600">${r.student?.fullName || '-'}<br><span style="font-size:12px;color:var(--muted);font-weight:400">${r.student?.track || ''}</span></td>
+      <td style="padding:12px 14px">${PAY_CAT_LABEL[r.category] || r.category || '-'}</td>
       <td style="padding:12px 14px">₦${Number(r.amountDue).toLocaleString()}</td>
       <td style="padding:12px 14px;font-weight:600">₦${Number(r.amountPaid || 0).toLocaleString()}</td>
       <td style="padding:12px 14px"><span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:${bg};color:${color}">${status.replace('_',' ')}</span></td>
-      <td style="padding:12px 14px;color:var(--muted);font-size:13px">${r.method || '—'}</td>
-      <td style="padding:12px 14px;color:var(--muted);font-size:13px">${r.dueDate ? fmtDateAdmin(r.dueDate) : '—'}</td>
+      <td style="padding:12px 14px;color:var(--muted);font-size:13px">${r.method || '-'}</td>
+      <td style="padding:12px 14px;color:var(--muted);font-size:13px">${r.dueDate ? fmtDateAdmin(r.dueDate) : '-'}</td>
       <td style="padding:12px 14px;display:flex;gap:6px;flex-wrap:wrap;">
         <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick='openEditPayment(${editData})'>Edit</button>
         ${isBankPending ? `<button style="padding:5px 10px;font-size:12px;background:#1E4BFF;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick="confirmBankTransfer('${r._id}',${r.amountDue})">Confirm</button>` : ''}
@@ -10103,7 +10103,7 @@ async function savePayment() {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  ACADEMY — BATCHES
+//  ACADEMY - BATCHES
 // ═══════════════════════════════════════════════════════════
 let allBatches = [];
 
@@ -10122,9 +10122,9 @@ function renderBatchTable(batches) {
   }
   tbody.innerHTML = batches.map(b => `<tr>
     <td style="padding:12px 14px;font-weight:600">${b.name}</td>
-    <td style="padding:12px 14px;color:var(--muted)">${b.track || '—'}</td>
-    <td style="padding:12px 14px">${b.startDate ? fmtDateAdmin(b.startDate) : '—'}</td>
-    <td style="padding:12px 14px">${b.endDate   ? fmtDateAdmin(b.endDate)   : '—'}</td>
+    <td style="padding:12px 14px;color:var(--muted)">${b.track || '-'}</td>
+    <td style="padding:12px 14px">${b.startDate ? fmtDateAdmin(b.startDate) : '-'}</td>
+    <td style="padding:12px 14px">${b.endDate   ? fmtDateAdmin(b.endDate)   : '-'}</td>
     <td style="padding:12px 14px">${b.totalWeeks}</td>
     <td style="padding:12px 14px">
       ${b.isActive
@@ -10224,7 +10224,7 @@ async function deleteBatch(id, name) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  ACADEMY — LECTURERS
+//  ACADEMY - LECTURERS
 // ═══════════════════════════════════════════════════════════
 let allLecturers = [];
 
@@ -10244,8 +10244,8 @@ function renderLecturerTable(lecs) {
   tbody.innerHTML = lecs.map(l => `<tr>
     <td style="padding:12px 14px;font-weight:600">${l.fullName}</td>
     <td style="padding:12px 14px;color:var(--muted)">${l.email}</td>
-    <td style="padding:12px 14px">${l.specialization || '—'}</td>
-    <td style="padding:12px 14px">${(l.batches || []).map(b => b.name || b).join(', ') || '—'}</td>
+    <td style="padding:12px 14px">${l.specialization || '-'}</td>
+    <td style="padding:12px 14px">${(l.batches || []).map(b => b.name || b).join(', ') || '-'}</td>
     <td style="padding:12px 14px">
       <span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:${l.status==='Active'?'rgba(34,197,94,0.15)':'rgba(160,166,179,0.1)'};color:${l.status==='Active'?'var(--success)':'var(--muted)'}">${l.status}</span>
     </td>
@@ -10329,11 +10329,11 @@ async function deleteLecturer(id, name) {
 //  SHARED HELPERS
 // ═══════════════════════════════════════════════════════════
 function fmtDateAdmin(d) {
-  if (!d) return '—';
+  if (!d) return '-';
   return new Date(d).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 function fmtMonth(m) {
-  if (!m) return '—';
+  if (!m) return '-';
   const [y, mo] = String(m).split('-');
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return (months[parseInt(mo,10)-1] || mo) + ' ' + y;
@@ -10510,7 +10510,7 @@ function showErr(el, msg) {
       </div>
       <!-- Footer message -->
       <p style="color:#A0A6B3;font-size:13px;text-align:center;border-top:1px solid #2A2F3A;padding-top:20px;margin-bottom:24px;">
-        Thank you for your payment — <strong style="color:#F4F6FA;">Goallord Creativity Academy</strong>
+        Thank you for your payment - <strong style="color:#F4F6FA;">Goallord Creativity Academy</strong>
       </p>
       <!-- Action buttons (no-print) -->
       <div class="no-print" style="display:flex;gap:10px;justify-content:flex-end;">
@@ -10537,16 +10537,16 @@ let _rcpContext = null; // { type: 'payment'|'order', id: '...' }
 
 function openReceipt(data) {
   _rcpContext = { type: data.type, id: data.id };
-  document.getElementById('rcp-number').textContent  = data.receiptNumber || '—';
-  document.getElementById('rcp-date').textContent    = data.date ? new Date(data.date).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }) : '—';
-  document.getElementById('rcp-name').textContent    = data.name || '—';
+  document.getElementById('rcp-number').textContent  = data.receiptNumber || '-';
+  document.getElementById('rcp-date').textContent    = data.date ? new Date(data.date).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }) : '-';
+  document.getElementById('rcp-name').textContent    = data.name || '-';
   document.getElementById('rcp-email').textContent   = data.email || '';
-  document.getElementById('rcp-desc').textContent    = data.description || '—';
+  document.getElementById('rcp-desc').textContent    = data.description || '-';
   const amtStr = (data.currency || '₦') + Number(data.amount || 0).toLocaleString();
   document.getElementById('rcp-amt').textContent     = amtStr;
   document.getElementById('rcp-total').textContent   = amtStr;
-  document.getElementById('rcp-method').textContent  = data.method || '—';
-  document.getElementById('rcp-ref').textContent     = data.reference || '—';
+  document.getElementById('rcp-method').textContent  = data.method || '-';
+  document.getElementById('rcp-ref').textContent     = data.reference || '-';
   document.getElementById('receiptModal').style.display = 'block';
   document.body.style.overflow = 'hidden';
 }
@@ -10577,13 +10577,13 @@ function buildPaymentReceipt(r) {
     type: 'payment', id: r._id,
     receiptNumber: r.receiptNumber || ('RCP-' + new Date().getFullYear() + '-????'),
     date: r.receiptIssuedAt || r.paidAt || new Date(),
-    name: r.student?.fullName || '—',
+    name: r.student?.fullName || '-',
     email: r.student?.email || '',
-    description: catLabels[r.category] || r.category || '—',
+    description: catLabels[r.category] || r.category || '-',
     amount: r.amountPaid || r.amountDue,
     currency: '₦',
-    method: r.method || '—',
-    reference: r.reference || '—'
+    method: r.method || '-',
+    reference: r.reference || '-'
   };
 }
 
@@ -10592,13 +10592,13 @@ function buildOrderReceipt(o) {
     type: 'order', id: o._id,
     receiptNumber: 'ORD-' + (o.orderId || o._id?.slice(-8)?.toUpperCase() || ''),
     date: o.createdAt || new Date(),
-    name: o.buyerName || '—',
+    name: o.buyerName || '-',
     email: o.buyerEmail || '',
     description: o.productId?.name || 'Digital Product',
     amount: o.amount,
     currency: o.currency === 'EUR' ? '€' : '₦',
     method: 'Online',
-    reference: o.orderId || o._id?.slice(-8)?.toUpperCase() || '—'
+    reference: o.orderId || o._id?.slice(-8)?.toUpperCase() || '-'
   };
 }
 

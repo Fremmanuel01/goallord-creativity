@@ -131,7 +131,7 @@ router.delete('/cards/:cardId', requireLecturer, async (req, res) => {
 
 // ── STUDENT READ ROUTES ──────────────────────────────────────
 
-// GET /api/flashcards/sets/student/progress — sets the student has completed + scores
+// GET /api/flashcards/sets/student/progress - sets the student has completed + scores
 router.get('/sets/student/progress', requireStudentAuth, async (req, res) => {
   try {
     const results = await flashcardsDb.getProgress(req.user.id);
@@ -141,7 +141,7 @@ router.get('/sets/student/progress', requireStudentAuth, async (req, res) => {
   }
 });
 
-// GET /api/flashcards/sets/student — student: published sets for their batch
+// GET /api/flashcards/sets/student - student: published sets for their batch
 router.get('/sets/student', requireStudentAuth, async (req, res) => {
   try {
     const student = await studentsDb.findById(req.user.id, { fields: 'id, batch_id' });
@@ -157,7 +157,7 @@ router.get('/sets/student', requireStudentAuth, async (req, res) => {
   }
 });
 
-// GET /api/flashcards/sets/:setId/cards/student — student: cards in a set
+// GET /api/flashcards/sets/:setId/cards/student - student: cards in a set
 router.get('/sets/:setId/cards/student', requireStudentAuth, async (req, res) => {
   try {
     const set = await flashcardsDb.findSetById(req.params.setId);

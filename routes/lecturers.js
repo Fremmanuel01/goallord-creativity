@@ -58,7 +58,7 @@ router.post('/login', loginLimiter, async (req, res) => {
   }
 });
 
-// POST /api/lecturers/logout — clear the auth cookie
+// POST /api/lecturers/logout - clear the auth cookie
 router.post('/logout', (req, res) => {
   clearAuthCookie(res, 'gl_lecturer_token');
   res.json({ success: true });
@@ -148,7 +148,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/lecturers/forgot-password — public, rate limited ───
+// ── POST /api/lecturers/forgot-password - public, rate limited ───
 const forgotLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 3, message: { error: 'Too many reset attempts. Try again later.' } });
 router.post('/forgot-password', forgotLimiter, async (req, res) => {
   try {
@@ -168,7 +168,7 @@ router.post('/forgot-password', forgotLimiter, async (req, res) => {
 
     await sendMail({
       to:      lecturer.email,
-      subject: 'Reset your password — Goallord Academy',
+      subject: 'Reset your password - Goallord Academy',
       html:    passwordResetEmail({ fullName: lecturer.full_name, resetUrl, role: 'lecturer' })
     }).catch(e => console.error('Reset email error:', e.message));
 
@@ -178,7 +178,7 @@ router.post('/forgot-password', forgotLimiter, async (req, res) => {
   }
 });
 
-// ── POST /api/lecturers/reset-password — public, rate limited ────
+// ── POST /api/lecturers/reset-password - public, rate limited ────
 const resetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, message: { error: 'Too many reset attempts. Try again later.' } });
 router.post('/reset-password', resetLimiter, async (req, res) => {
   try {

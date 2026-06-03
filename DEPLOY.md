@@ -1,12 +1,12 @@
-# Goallord Creativity — Deployment Guide
+# Goallord Creativity - Deployment Guide
 
 > **This app deploys on [Render](https://render.com)** via `render.yaml`
 > (`buildCommand: npm install`, `startCommand: node server.js`, auto-deploy on
 > push to the default branch). The Heroku steps below are **legacy reference
-> only** — the live host is Render.
+> only** - the live host is Render.
 >
 > **Shipping the SYSTEM_AUDIT M3–M10 features?** Follow
-> [`DEPLOY_CHECKLIST.md`](./DEPLOY_CHECKLIST.md) — it covers the required DB
+> [`DEPLOY_CHECKLIST.md`](./DEPLOY_CHECKLIST.md) - it covers the required DB
 > migrations (`006`–`009`), new env vars (set them in the **Render dashboard**),
 > the Paystack `charge.failed` webhook, per-feature smoke tests (incl. the
 > httpOnly auth-cookie cutover), and rollback steps.

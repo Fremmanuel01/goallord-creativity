@@ -6,7 +6,7 @@
 --   'announce' → only lecturers/admin may post; students read-only
 --
 -- Staff posts to a batch thread also generate notifications to all
--- batch members (see routes/messages.js) — fixing silently-missed
+-- batch members (see routes/messages.js) - fixing silently-missed
 -- group messages.
 --
 -- Idempotent: safe to re-run.

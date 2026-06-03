@@ -2,7 +2,7 @@ const router = require('express').Router();
 const academyDb = require('../db/academySettings');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 
-// GET /api/academy/settings — public
+// GET /api/academy/settings - public
 router.get('/settings', async (req, res) => {
     try {
         const settings = await academyDb.get();
@@ -12,7 +12,7 @@ router.get('/settings', async (req, res) => {
     }
 });
 
-// PUT /api/academy/settings — admin only
+// PUT /api/academy/settings - admin only
 router.put('/settings', requireAuth, requireAdmin, async (req, res) => {
     try {
         const settings = await academyDb.get();

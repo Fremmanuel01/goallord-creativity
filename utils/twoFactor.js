@@ -1,11 +1,11 @@
 // ============================================================
-// utils/twoFactor.js — shared 2FA route handlers
+// utils/twoFactor.js - shared 2FA route handlers
 //
 // One implementation reused by all three identity types
 // (admin/staff, students, lecturers). Each caller supplies:
-//   db          — module with findById(id) -> full row and update(id, updates)
-//   getIdentity — (req) => ({ id, email })  (reads req.user / req.student)
-//   issuer      — label shown in the authenticator app
+//   db          - module with findById(id) -> full row and update(id, updates)
+//   getIdentity - (req) => ({ id, email })  (reads req.user / req.student)
+//   issuer      - label shown in the authenticator app
 // ============================================================
 const bcrypt = require('bcryptjs');
 const totp = require('./totp');
@@ -13,7 +13,7 @@ const totp = require('./totp');
 // Verify a login-time code against an account that has 2FA enabled.
 // Accepts a live TOTP code OR a single-use backup code (which is then
 // consumed). Returns true if the code is valid. Safe to call when 2FA
-// is off — it returns true so the caller can treat it uniformly.
+// is off - it returns true so the caller can treat it uniformly.
 async function verifyLoginCode(db, row, code) {
   if (!row.totp_enabled) return true;
   if (!code) return false;
@@ -22,7 +22,7 @@ async function verifyLoginCode(db, row, code) {
   // TOTP path
   if (/^\d{6}$/.test(cleaned) && totp.verify(cleaned, row.totp_secret)) return true;
 
-  // Backup-code path — match a stored hash, then remove it (single use)
+  // Backup-code path - match a stored hash, then remove it (single use)
   const hash = totp.hashBackupCode(cleaned);
   const codes = row.totp_backup_codes || [];
   const idx = codes.indexOf(hash);
@@ -51,7 +51,7 @@ function createTwoFactorHandlers({ db, getIdentity, issuer = 'Goallord Academy' 
     }
   }
 
-  // POST …/2fa/setup — create a pending secret + provisioning URI
+  // POST …/2fa/setup - create a pending secret + provisioning URI
   async function setup(req, res) {
     try {
       const { id, email } = getIdentity(req);
@@ -71,7 +71,7 @@ function createTwoFactorHandlers({ db, getIdentity, issuer = 'Goallord Academy' 
     }
   }
 
-  // POST …/2fa/enable { code } — confirm the pending secret, turn 2FA on,
+  // POST …/2fa/enable { code } - confirm the pending secret, turn 2FA on,
   // return one-time backup codes (shown to the user exactly once)
   async function enable(req, res) {
     try {
@@ -99,7 +99,7 @@ function createTwoFactorHandlers({ db, getIdentity, issuer = 'Goallord Academy' 
     }
   }
 
-  // POST …/2fa/disable { password, code } — require a fresh re-auth
+  // POST …/2fa/disable { password, code } - require a fresh re-auth
   // (password + a valid TOTP or backup code) before tearing 2FA down
   async function disable(req, res) {
     try {

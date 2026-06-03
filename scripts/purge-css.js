@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * PurgeCSS build step — strips unused rules from the big shared stylesheets.
+ * PurgeCSS build step - strips unused rules from the big shared stylesheets.
  *
  * NON-DESTRUCTIVE: reads the originals in assets/css/, writes purged copies to
  * assets/css/dist/. Production only uses the purged files once the <link> tags
- * are switched (see README note) — until then nothing changes.
+ * are switched (see README note) - until then nothing changes.
  *
  * Content scanned: every *.html (incl. inline scripts) + assets/js/**.js, so a
- * class used anywhere — including ones built inside JS template literals — is
+ * class used anywhere - including ones built inside JS template literals - is
  * kept. Dynamically-concatenated class names (e.g. 'badge-' + status) can't be
  * seen by static analysis, so they're covered by the safelist below.
  *

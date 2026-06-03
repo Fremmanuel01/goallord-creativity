@@ -1,5 +1,5 @@
 -- ============================================================
--- Goallord Creativity Website — Full PostgreSQL Schema
+-- Goallord Creativity Website - Full PostgreSQL Schema
 -- Run this in your Supabase SQL Editor
 -- ============================================================
 
@@ -600,7 +600,7 @@ CREATE INDEX idx_reminder_logs_sent_at ON reminder_logs(sent_at DESC);
 CREATE TABLE academy_settings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   hero_headline TEXT NOT NULL DEFAULT 'Launch Your Career in Web Design & Development',
-  hero_subtext TEXT NOT NULL DEFAULT 'Hands-on, practical training in Onitsha, Nigeria. Learn web design, WordPress development, and digital marketing from real practitioners — not textbooks.',
+  hero_subtext TEXT NOT NULL DEFAULT 'Hands-on, practical training in Onitsha, Nigeria. Learn web design, WordPress development, and digital marketing from real practitioners - not textbooks.',
   tracks JSONB NOT NULL DEFAULT '[]',
   tuition JSONB NOT NULL DEFAULT '{"inPerson":150000,"inPersonInstallment":"3 monthly payments of ₦50,000","online":80000,"onlineNote":"One-time payment","duration":"12 weeks"}',
   schedule JSONB NOT NULL DEFAULT '{"weekday":"Tue / Wed / Thu, 4:00 PM – 7:00 PM","weekend":"Saturday, 10:00 AM – 3:00 PM"}',

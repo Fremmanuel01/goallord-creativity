@@ -1,9 +1,9 @@
 // ============================================================
-// test/chat.http.test.js — HTTP-layer integration tests
+// test/chat.http.test.js - HTTP-layer integration tests
 //
 // Drives the REAL Express /api/messages router (with requireChatUser
 // auth middleware) against the in-memory Supabase double, over real
-// HTTP. Verifies status codes / permission enforcement end-to-end —
+// HTTP. Verifies status codes / permission enforcement end-to-end -
 // the layer that pure unit tests of helpers cannot reach.
 // Run: node --test
 // ============================================================

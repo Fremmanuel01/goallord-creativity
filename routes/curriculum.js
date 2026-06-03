@@ -23,7 +23,7 @@ function dateForWeekDay(startMs, startDow, week, dayName) {
   return new Date(windowStart + offset * DAY).toISOString().slice(0, 10);
 }
 
-// GET /api/curriculum/student — student: curriculum for their batch
+// GET /api/curriculum/student - student: curriculum for their batch
 router.get('/student', requireStudentAuth, async (req, res) => {
   try {
     const student = await studentsDb.findById(req.user.id, { fields: 'id, batch_id' });
@@ -35,7 +35,7 @@ router.get('/student', requireStudentAuth, async (req, res) => {
   }
 });
 
-// GET /api/curriculum/calendar — student: week × day × topic × deadline syllabus calendar
+// GET /api/curriculum/calendar - student: week × day × topic × deadline syllabus calendar
 router.get('/calendar', requireStudentAuth, async (req, res) => {
   try {
     const student = await studentsDb.findById(req.user.id, { fields: 'id, batch_id' });

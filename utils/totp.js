@@ -1,5 +1,5 @@
 // ============================================================
-// utils/totp.js — RFC 6238 TOTP, dependency-free (Node crypto)
+// utils/totp.js - RFC 6238 TOTP, dependency-free (Node crypto)
 //
 // Google Authenticator / Authy compatible: base32 secret, SHA-1,
 // 6 digits, 30-second period. No external packages so there is

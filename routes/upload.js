@@ -28,7 +28,7 @@ const uploadImage = multer({
   limits: { fileSize: 5 * 1024 * 1024 }
 }).single('image');
 
-// File storage (raw, 50MB limit — for ZIP, RAR, PDF)
+// File storage (raw, 50MB limit - for ZIP, RAR, PDF)
 const fileStorage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
@@ -46,7 +46,7 @@ const uploadFile = multer({
   limits: { fileSize: 50 * 1024 * 1024 }
 }).single('image');
 
-// POST /api/upload — protected, single image
+// POST /api/upload - protected, single image
 router.post('/', requireAuth, (req, res) => {
   uploadImage(req, res, (err) => {
     if (err) {
@@ -60,7 +60,7 @@ router.post('/', requireAuth, (req, res) => {
   });
 });
 
-// POST /api/upload/file — protected, digital product file (ZIP, RAR, PDF)
+// POST /api/upload/file - protected, digital product file (ZIP, RAR, PDF)
 router.post('/file', requireAuth, (req, res) => {
   uploadFile(req, res, (err) => {
     if (err) {

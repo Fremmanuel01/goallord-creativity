@@ -70,7 +70,7 @@ function buildOrderConfirmationEmail(name, downloadLinks, reference, orders) {
 // ── Rate limiter for order creation ──
 const orderLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: 'Too many orders. Try again later.' } });
 
-// GET /api/orders — protected
+// GET /api/orders - protected
 router.get('/', requireAuth, async (req, res) => {
   try {
     const { status, page = 1, limit = 50 } = req.query;
@@ -83,12 +83,12 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/orders/paystack-key — public (returns public key only)
+// GET /api/orders/paystack-key - public (returns public key only)
 router.get('/paystack-key', (req, res) => {
     res.json({ key: process.env.PAYSTACK_PUBLIC_KEY });
 });
 
-// POST /api/orders — public (customer purchase) with rate limiting, validation, XSS
+// POST /api/orders - public (customer purchase) with rate limiting, validation, XSS
 router.post('/', orderLimiter, async (req, res) => {
     try {
         const { productId, buyerName, buyerEmail } = req.body;
@@ -115,7 +115,7 @@ router.post('/', orderLimiter, async (req, res) => {
     }
 });
 
-// POST /api/orders/verify-payment — public (verify Paystack payment and mark orders paid)
+// POST /api/orders/verify-payment - public (verify Paystack payment and mark orders paid)
 router.post('/verify-payment', async (req, res) => {
     try {
         const { orderIds, reference } = req.body;
@@ -188,7 +188,7 @@ router.post('/verify-payment', async (req, res) => {
     }
 });
 
-// GET /api/orders/download/:id — secure download (requires valid token)
+// GET /api/orders/download/:id - secure download (requires valid token)
 router.get('/download/:id', async (req, res) => {
     try {
         const { token } = req.query;
@@ -210,7 +210,7 @@ router.get('/download/:id', async (req, res) => {
     }
 });
 
-// PATCH /api/orders/:id — protected (update status)
+// PATCH /api/orders/:id - protected (update status)
 router.patch('/:id', requireAuth, async (req, res) => {
   try {
     const { status } = req.body;
@@ -222,7 +222,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// DELETE /api/orders/:id — admin only
+// DELETE /api/orders/:id - admin only
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
     try {
         await ordersDb.remove(req.params.id);
@@ -232,7 +232,7 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
     }
 });
 
-// POST /api/orders/:id/email-receipt — protected (email receipt to buyer)
+// POST /api/orders/:id/email-receipt - protected (email receipt to buyer)
 router.post('/:id/email-receipt', requireAuth, async (req, res) => {
   try {
     const order = await ordersDb.findById(req.params.id);

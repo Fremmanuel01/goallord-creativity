@@ -7,7 +7,7 @@ const { requireLecturer } = require('../middleware/lecturerAuth');
 
 const router = express.Router();
 
-// ── GET /api/attendance/me — student: own history ─────────────
+// ── GET /api/attendance/me - student: own history ─────────────
 router.get('/me', requireStudent, async (req, res) => {
   try {
     const studentId = req.student.id;
@@ -53,7 +53,7 @@ router.get('/me', requireStudent, async (req, res) => {
   }
 });
 
-// ── GET /api/attendance/open — student: find open session for their batch ──
+// ── GET /api/attendance/open - student: find open session for their batch ──
 router.get('/open', requireStudent, async (req, res) => {
   try {
     const studentId = req.student.id;
@@ -67,7 +67,7 @@ router.get('/open', requireStudent, async (req, res) => {
   }
 });
 
-// ── GET /api/attendance — admin/lecturer: list sessions ────────
+// ── GET /api/attendance - admin/lecturer: list sessions ────────
 router.get('/', requireAuth, async (req, res) => {
   try {
     const { batch, week, month, page = 1, limit = 50 } = req.query;
@@ -82,7 +82,7 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/attendance — admin/lecturer: record session ──────
+// ── POST /api/attendance - admin/lecturer: record session ──────
 router.post('/', requireLecturer, async (req, res) => {
   try {
     const { batchId, week, day, classDate, topic, presentStudentIds = [], notes } = req.body;
@@ -119,7 +119,7 @@ router.post('/', requireLecturer, async (req, res) => {
   }
 });
 
-// ── PATCH /api/attendance/:id/open — open self-mark window ────
+// ── PATCH /api/attendance/:id/open - open self-mark window ────
 router.patch('/:id/open', requireLecturer, async (req, res) => {
   try {
     const doc = await attendanceDb.update(req.params.id, { is_open: true, session_opened_at: new Date().toISOString() });
@@ -130,7 +130,7 @@ router.patch('/:id/open', requireLecturer, async (req, res) => {
   }
 });
 
-// ── PATCH /api/attendance/:id/close — close self-mark window ──
+// ── PATCH /api/attendance/:id/close - close self-mark window ──
 router.patch('/:id/close', requireLecturer, async (req, res) => {
   try {
     const doc = await attendanceDb.update(req.params.id, { is_open: false, session_closed_at: new Date().toISOString() });
@@ -141,7 +141,7 @@ router.patch('/:id/close', requireLecturer, async (req, res) => {
   }
 });
 
-// ── POST /api/attendance/:id/self-mark — student marks self ───
+// ── POST /api/attendance/:id/self-mark - student marks self ───
 router.post('/:id/self-mark', requireStudent, async (req, res) => {
   try {
     const studentId = req.student.id;
@@ -157,7 +157,7 @@ router.post('/:id/self-mark', requireStudent, async (req, res) => {
   }
 });
 
-// ── GET /api/attendance/student/:studentId — admin ─────────────
+// ── GET /api/attendance/student/:studentId - admin ─────────────
 router.get('/student/:studentId', requireAuth, async (req, res) => {
   try {
     const { studentId } = req.params;
@@ -192,7 +192,7 @@ router.get('/student/:studentId', requireAuth, async (req, res) => {
   }
 });
 
-// ── GET /api/attendance/:id — session detail ──────────────────
+// ── GET /api/attendance/:id - session detail ──────────────────
 router.get('/:id', requireAuth, async (req, res) => {
   try {
     const doc = await attendanceDb.findById(req.params.id);
@@ -203,7 +203,7 @@ router.get('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// ── DELETE /api/attendance/:id — admin only ──────────────────
+// ── DELETE /api/attendance/:id - admin only ──────────────────
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
     await attendanceDb.remove(req.params.id);

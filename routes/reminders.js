@@ -53,7 +53,7 @@ router.get('/logs', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// POST /api/reminders/send — manual trigger
+// POST /api/reminders/send - manual trigger
 router.post('/send', requireAuth, requireAdmin, async (req, res) => {
   try {
     const result = await sendTaskReminders();

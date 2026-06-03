@@ -1,7 +1,7 @@
 {
   "name": "Goallord Portal",
   "short_name": "Goallord Portal",
-  "description": "The Goallord Creativity portal — sign in as a student, lecturer, or admin to manage courses, messages, attendance, and more from your phone.",
+  "description": "The Goallord Creativity portal - sign in as a student, lecturer, or admin to manage courses, messages, attendance, and more from your phone.",
   "id": "/portal.html",
   "start_url": "/portal.html?source=pwa",
   "scope": "/",

@@ -14,7 +14,7 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/batches/active — optional ?track=<name> to scope to one track
+// GET /api/batches/active - optional ?track=<name> to scope to one track
 router.get('/active', async (req, res) => {
   try {
     const { track } = req.query;

@@ -68,7 +68,7 @@ function acceptanceEmail({ fullName, track, duration, email, password, loginUrl 
         </td></tr>
         <!-- Congratulations Banner -->
         <tr><td style="background:#1E4BFF;padding:20px 40px;text-align:center;">
-          <p style="margin:0;color:#ffffff;font-size:18px;font-weight:700;letter-spacing:1px;">Congratulations — You've Been Accepted!</p>
+          <p style="margin:0;color:#ffffff;font-size:18px;font-weight:700;letter-spacing:1px;">Congratulations - You've Been Accepted!</p>
         </td></tr>
         <!-- Body -->
         <tr><td style="padding:40px;">
@@ -173,7 +173,7 @@ function adminNewApplicationEmail({ fullName, email, phone, track, dashboardUrl 
               <table width="100%">
                 <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;width:120px;">Name:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;font-weight:600;">${esc(fullName)}</td></tr>
                 <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Email:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;">${esc(email)}</td></tr>
-                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Phone:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;">${esc(phone || '—')}</td></tr>
+                <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Phone:</td><td style="padding:6px 0;color:#F4F6FA;font-size:14px;">${esc(phone || '-')}</td></tr>
                 <tr><td style="padding:6px 0;color:#A0A6B3;font-size:14px;">Track:</td><td style="padding:6px 0;color:#D66A1F;font-size:14px;font-weight:600;">${esc(track || 'Not selected')}</td></tr>
               </table>
             </td></tr>
@@ -240,7 +240,7 @@ function passwordResetEmail({ fullName, resetUrl, role }) {
       <table width="600" cellpadding="0" cellspacing="0" style="background:#171A21;border-radius:12px;border:1px solid #2A2F3A;overflow:hidden;max-width:600px;width:100%;">
         <tr><td style="background:#D66A1F;padding:32px 40px;text-align:center;">
           <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700;letter-spacing:2px;">GOALLORD CREATIVITY</h1>
-          <p style="margin:8px 0 0;color:rgba(255,255,255,0.8);font-size:13px;letter-spacing:1px;">PASSWORD RESET — ${roleLabel.toUpperCase()} PORTAL</p>
+          <p style="margin:8px 0 0;color:rgba(255,255,255,0.8);font-size:13px;letter-spacing:1px;">PASSWORD RESET - ${roleLabel.toUpperCase()} PORTAL</p>
         </td></tr>
         <tr><td style="padding:40px;">
           <h2 style="color:#F4F6FA;font-size:22px;margin:0 0 16px;">Reset Your Password</h2>
@@ -365,10 +365,10 @@ function receiptEmail({ receiptNumber, date, recipientName, recipientEmail, desc
 
 // ── Payment reminder ──────────────────────────────────────────
 function paymentReminderEmail({ fullName, category, amountDue, dueDate, isOverdue, loginUrl }) {
-  const label = { tuition_month_1:'Tuition — Month 1', tuition_month_2:'Tuition — Month 2', tuition_month_3:'Tuition — Month 3', full_tuition_payment:'Full Tuition Payment' }[category] || category;
+  const label = { tuition_month_1:'Tuition - Month 1', tuition_month_2:'Tuition - Month 2', tuition_month_3:'Tuition - Month 3', full_tuition_payment:'Full Tuition Payment' }[category] || category;
   const dueDateStr = new Date(dueDate).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
   const headerBg  = isOverdue ? '#ef4444' : '#D66A1F';
-  const subject   = isOverdue ? `OVERDUE: ${label} — Action Required` : `Reminder: ${label} due ${dueDateStr}`;
+  const subject   = isOverdue ? `OVERDUE: ${label} - Action Required` : `Reminder: ${label} due ${dueDateStr}`;
   const headline  = isOverdue ? `⚠️ Payment Overdue` : `💳 Payment Reminder`;
   const bodyText  = isOverdue
     ? `Your <strong>${label}</strong> of <strong>₦${Number(amountDue).toLocaleString()}</strong> was due on <strong>${dueDateStr}</strong> and has not been received. Please log in and make your payment immediately to avoid suspension.`
@@ -433,13 +433,13 @@ function graduationEmail({ fullName, batchName, track, loginUrl }) {
       </td></tr>
       <tr><td style="padding:32px;">
         <p style="color:#F4F6FA;font-size:15px;margin:0 0 16px;">Hi <strong>${esc(fullName)}</strong>,</p>
-        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 16px;">We are incredibly proud to announce that you have successfully <strong>graduated</strong> from the <strong>${esc(track)}</strong> program at Goallord Creativity Academy${batchName ? ' — <strong>' + esc(batchName) + '</strong>' : ''}.</p>
+        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 16px;">We are incredibly proud to announce that you have successfully <strong>graduated</strong> from the <strong>${esc(track)}</strong> program at Goallord Creativity Academy${batchName ? ' - <strong>' + esc(batchName) + '</strong>' : ''}.</p>
         <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 24px;">Your dedication, hard work, and creativity throughout this journey have been outstanding. You are now equipped with the skills to build an amazing career. Go forth and create!</p>
         <div style="text-align:center;margin:24px 0;">
           <a href="${loginUrl}" style="display:inline-block;background:#D66A1F;color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">View Your Dashboard</a>
         </div>
         <hr style="border:none;border-top:1px solid #2A2F3A;margin:24px 0;">
-        <p style="color:#A0A6B3;font-size:12px;margin:0;">— The Goallord Creativity Academy Team &nbsp;·&nbsp; <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;">hello@goallordcreativity.com</a></p>
+        <p style="color:#A0A6B3;font-size:12px;margin:0;">- The Goallord Creativity Academy Team &nbsp;·&nbsp; <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;">hello@goallordcreativity.com</a></p>
       </td></tr>
     </table>
   </td></tr></table>
@@ -458,7 +458,7 @@ function reactivationEmail({ fullName, loginUrl }) {
       </td></tr>
       <tr><td style="padding:32px;">
         <p style="color:#F4F6FA;font-size:15px;margin:0 0 16px;">Hi <strong>${esc(fullName)}</strong>,</p>
-        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 24px;">Great news — your outstanding payment has been confirmed and your student account is now <strong>fully reactivated</strong>. You can log in and resume your studies.</p>
+        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 24px;">Great news - your outstanding payment has been confirmed and your student account is now <strong>fully reactivated</strong>. You can log in and resume your studies.</p>
         <div style="text-align:center;margin:24px 0;">
           <a href="${loginUrl}" style="display:inline-block;background:#22c55e;color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">Log In Now</a>
         </div>
@@ -521,7 +521,7 @@ function contactAutoReplyEmail({ name }) {
         <p style="color:#F4F6FA;font-size:15px;line-height:1.7;margin:0 0 16px;">We've received your message and will get back to you within <strong>24–48 hours</strong>.</p>
         <p style="color:#A0A6B3;font-size:13px;line-height:1.6;margin:0;">If your matter is urgent, email us directly at <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;">hello@goallordcreativity.com</a></p>
         <hr style="border:none;border-top:1px solid #2A2F3A;margin:24px 0;">
-        <p style="color:#A0A6B3;font-size:12px;margin:0;">— Goallord Creativity Team</p>
+        <p style="color:#A0A6B3;font-size:12px;margin:0;">- Goallord Creativity Team</p>
       </td></tr>
     </table>
   </td></tr></table>
@@ -541,7 +541,7 @@ function contactReplyEmail({ name, replyBody }) {
         <p style="color:#F4F6FA;font-size:15px;margin:0 0 8px;">Hi ${esc(name)},</p>
         <div style="color:#F4F6FA;font-size:14px;line-height:1.7;background:#0F1115;padding:14px;border-radius:8px;margin:16px 0;">${esc(replyBody).replace(/\n/g, '<br>')}</div>
         <hr style="border:none;border-top:1px solid #2A2F3A;margin:24px 0;">
-        <p style="color:#A0A6B3;font-size:12px;margin:0;">— Goallord Creativity Team &nbsp;·&nbsp; <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;">hello@goallordcreativity.com</a></p>
+        <p style="color:#A0A6B3;font-size:12px;margin:0;">- Goallord Creativity Team &nbsp;·&nbsp; <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;">hello@goallordcreativity.com</a></p>
       </td></tr>
     </table>
   </td></tr></table>
@@ -564,13 +564,13 @@ function applicantPaymentReminderEmail({ fullName, track, paymentUrl }) {
   <p style="color:#555;font-size:13px;margin-top:32px;line-height:1.6;">
     If you've already paid, please ignore this email. If you have questions, reply to this email or contact us at academy@goallordcreativity.com.
   </p>
-  <p style="color:#333;font-size:12px;margin-top:24px;">— Goallord Creativity Academy</p>
+  <p style="color:#333;font-size:12px;margin-top:24px;">- Goallord Creativity Academy</p>
 </td></tr></table></body></html>`;
 }
 
-// ── Paystack failure — retry email ───────────────────────────
+// ── Paystack failure - retry email ───────────────────────────
 function paymentRetryEmail({ fullName, category, amountDue, loginUrl }) {
-  const label = { application_fee:'Application Fee', tuition_month_1:'Tuition — Month 1', tuition_month_2:'Tuition — Month 2', tuition_month_3:'Tuition — Month 3', full_tuition_payment:'Full Tuition Payment' }[category] || category || 'your payment';
+  const label = { application_fee:'Application Fee', tuition_month_1:'Tuition - Month 1', tuition_month_2:'Tuition - Month 2', tuition_month_3:'Tuition - Month 3', full_tuition_payment:'Full Tuition Payment' }[category] || category || 'your payment';
   const amt = amountDue != null ? `<strong>₦${Number(amountDue).toLocaleString()}</strong>` : 'your balance';
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#0F1115;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
@@ -582,7 +582,7 @@ function paymentRetryEmail({ fullName, category, amountDue, loginUrl }) {
       </td></tr>
       <tr><td style="padding:32px;">
         <p style="color:#F4F6FA;font-size:15px;margin:0 0 16px;">Hi <strong>${esc(fullName)}</strong>,</p>
-        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 20px;">We couldn't confirm your payment of ${amt} for <strong>${esc(label)}</strong>. No money has been taken — if you were debited, it will be reversed automatically by your bank.</p>
+        <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 20px;">We couldn't confirm your payment of ${amt} for <strong>${esc(label)}</strong>. No money has been taken - if you were debited, it will be reversed automatically by your bank.</p>
         <p style="color:#F4F6FA;font-size:14px;line-height:1.7;margin:0 0 24px;">Please sign in and try again. You can pay by card, bank transfer, or cash.</p>
         <div style="text-align:center;margin:24px 0;">
           <a href="${loginUrl}" style="display:inline-block;background:#D66A1F;color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">Retry Payment</a>

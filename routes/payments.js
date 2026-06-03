@@ -27,7 +27,7 @@ async function generateProformaNumber() {
   return 'PRO-' + new Date().getFullYear() + '-' + String((count || 0) + 1).padStart(4, '0');
 }
 
-// ── GET /api/payments/me — student: own payments ───────────────
+// ── GET /api/payments/me - student: own payments ───────────────
 router.get('/me', requireStudent, async (req, res) => {
   try {
     const payments = await paymentsDb.findByStudent(req.student.id);
@@ -40,7 +40,7 @@ router.get('/me', requireStudent, async (req, res) => {
   }
 });
 
-// ── GET /api/payments — admin: list all ───────────────────────
+// ── GET /api/payments - admin: list all ───────────────────────
 router.get('/', requireAuth, async (req, res) => {
   try {
     const { status, category, studentId, batchId, page = 1, limit = 100 } = req.query;
@@ -63,7 +63,7 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// ── GET /api/payments/student/:studentId — admin: student detail
+// ── GET /api/payments/student/:studentId - admin: student detail
 router.get('/student/:studentId', requireAuth, async (req, res) => {
   try {
     const payments = await paymentsDb.findByStudent(req.params.studentId);
@@ -75,7 +75,7 @@ router.get('/student/:studentId', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/payments — admin: create payment record ─────────
+// ── POST /api/payments - admin: create payment record ─────────
 router.post('/', requireAuth, async (req, res) => {
   try {
     const { studentId, batchId, category, amountDue, amountPaid, method, reference, notes, dueDate } = req.body;
@@ -104,7 +104,7 @@ router.post('/', requireAuth, async (req, res) => {
   }
 });
 
-// ── GET /api/payments/:id — admin: single payment ─────────────
+// ── GET /api/payments/:id - admin: single payment ─────────────
 router.get('/:id', requireAuth, async (req, res) => {
   try {
     const { data: docs } = await paymentsDb.find({
@@ -119,7 +119,7 @@ router.get('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// ── PATCH /api/payments/:id — admin: update payment ───────────
+// ── PATCH /api/payments/:id - admin: update payment ───────────
 router.patch('/:id', requireAuth, async (req, res) => {
   try {
     const { amountPaid, method, reference, notes, status } = req.body;
@@ -140,7 +140,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// ── DELETE /api/payments/:id — admin only ─────────────────────
+// ── DELETE /api/payments/:id - admin only ─────────────────────
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
     await paymentsDb.remove(req.params.id);
@@ -150,7 +150,7 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// ── POST /api/payments/:id/paystack — student: verify Paystack payment ──
+// ── POST /api/payments/:id/paystack - student: verify Paystack payment ──
 router.post('/:id/paystack', requireStudent, async (req, res) => {
   try {
     const { reference } = req.body;
@@ -197,7 +197,7 @@ router.post('/:id/paystack', requireStudent, async (req, res) => {
     const amountOk = verifyOk && (psData.data.amount / 100 >= payment.amount_due);
 
     if (!verifyOk || !amountOk) {
-      // Payment didn't complete — nudge the student to retry (best effort, once).
+      // Payment didn't complete - nudge the student to retry (best effort, once).
       sendPaymentRetry(payment).catch(e => console.error('Retry email failed:', e.message));
       return res.status(400).json({
         error: verifyOk ? 'Amount paid is less than amount due' : 'Paystack verification failed',
@@ -229,7 +229,7 @@ async function sendPaymentRetry(payment) {
   const loginUrl = (process.env.HOST || 'https://goallordcreativity.com') + '/student-login.html';
   await sendMail({
     to: student.email,
-    subject: 'Your payment didn\'t go through — Goallord Creativity Academy',
+    subject: 'Your payment didn\'t go through - Goallord Creativity Academy',
     html: paymentRetryEmail({
       fullName: student.full_name, category: payment.category,
       amountDue: payment.amount_due, loginUrl
@@ -238,7 +238,7 @@ async function sendPaymentRetry(payment) {
   await paymentsDb.update(payment.id, { retry_email_sent_at: new Date().toISOString() });
 }
 
-// ── POST /api/payments/:id/bank-transfer — student: submit bank transfer ref ──
+// ── POST /api/payments/:id/bank-transfer - student: submit bank transfer ref ──
 router.post('/:id/bank-transfer', requireStudent, async (req, res) => {
   try {
     const { reference, notes } = req.body;
@@ -252,7 +252,7 @@ router.post('/:id/bank-transfer', requireStudent, async (req, res) => {
     const updated = await paymentsDb.update(req.params.id, {
       method: 'Bank Transfer',
       reference,
-      notes: 'Awaiting confirmation — ref: ' + reference + (notes ? (' | ' + notes) : ''),
+      notes: 'Awaiting confirmation - ref: ' + reference + (notes ? (' | ' + notes) : ''),
       recorded_by: 'Student (Bank Transfer)'
     });
 
@@ -262,7 +262,7 @@ router.post('/:id/bank-transfer', requireStudent, async (req, res) => {
   }
 });
 
-// ── POST /api/payments/:id/cash — student: record cash payment, awaits admin confirm ──
+// ── POST /api/payments/:id/cash - student: record cash payment, awaits admin confirm ──
 router.post('/:id/cash', requireStudent, async (req, res) => {
   try {
     const { collectedBy, notes } = req.body || {};
@@ -276,7 +276,7 @@ router.post('/:id/cash', requireStudent, async (req, res) => {
     const stamp = new Date().toISOString();
     const collected = (collectedBy || '').toString().trim().slice(0, 80);
     const note = (notes || '').toString().trim().slice(0, 280);
-    const noteLine = `Cash payment — awaiting admin confirmation` +
+    const noteLine = `Cash payment - awaiting admin confirmation` +
       (collected ? ` | collected by: ${collected}` : '') +
       (note ? ` | notes: ${note}` : '') +
       ` | submitted ${stamp}`;
@@ -294,7 +294,7 @@ router.post('/:id/cash', requireStudent, async (req, res) => {
   }
 });
 
-// ── POST /api/payments/:id/confirm-cash — admin: approve cash payment ──
+// ── POST /api/payments/:id/confirm-cash - admin: approve cash payment ──
 router.post('/:id/confirm-cash', requireAuth, async (req, res) => {
   try {
     const payment = await paymentsDb.findById(req.params.id);
@@ -326,7 +326,7 @@ router.post('/:id/confirm-cash', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/payments/:id/confirm-bank-transfer — admin: confirm a bank transfer ──
+// ── POST /api/payments/:id/confirm-bank-transfer - admin: confirm a bank transfer ──
 router.post('/:id/confirm-bank-transfer', requireAuth, async (req, res) => {
   try {
     const payment = await paymentsDb.findById(req.params.id);
@@ -356,7 +356,7 @@ router.post('/:id/confirm-bank-transfer', requireAuth, async (req, res) => {
       if (student.email && updated.receipt_number) {
         sendMail({
           to: student.email,
-          subject: `Payment Receipt ${updated.receipt_number} — Goallord Creativity Academy`,
+          subject: `Payment Receipt ${updated.receipt_number} - Goallord Creativity Academy`,
           html: receiptEmail({
             receiptNumber: updated.receipt_number,
             date: updated.receipt_issued_at || updated.paid_at || new Date(),
@@ -383,7 +383,7 @@ router.post('/:id/confirm-bank-transfer', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/payments/:id/proforma — admin: issue a proforma invoice (corporate) ──
+// ── POST /api/payments/:id/proforma - admin: issue a proforma invoice (corporate) ──
 router.post('/:id/proforma', requireAuth, async (req, res) => {
   try {
     const { companyName, companyAddress, contactEmail, contactName } = req.body || {};
@@ -392,7 +392,7 @@ router.post('/:id/proforma', requireAuth, async (req, res) => {
 
     const student = await studentsDb.findById(payment.student_id).catch(() => null);
     const recipientEmail = (contactEmail || (student && student.email) || '').trim();
-    if (!recipientEmail) return res.status(400).json({ error: 'No recipient email — provide contactEmail.' });
+    if (!recipientEmail) return res.status(400).json({ error: 'No recipient email - provide contactEmail.' });
 
     // Reuse the existing number if a proforma was already issued for this row.
     const proformaNumber = payment.proforma_number || await generateProformaNumber();
@@ -402,7 +402,7 @@ router.post('/:id/proforma', requireAuth, async (req, res) => {
 
     await sendMail({
       to: recipientEmail,
-      subject: `Proforma Invoice ${proformaNumber} — Goallord Creativity Academy`,
+      subject: `Proforma Invoice ${proformaNumber} - Goallord Creativity Academy`,
       html: proformaInvoiceEmail({
         proformaNumber, date: issuedAt,
         companyName: companyName || '', companyAddress: companyAddress || '',
@@ -425,7 +425,7 @@ router.post('/:id/proforma', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/payments/:id/email-receipt — admin: email receipt to student ──
+// ── POST /api/payments/:id/email-receipt - admin: email receipt to student ──
 router.post('/:id/email-receipt', requireAuth, async (req, res) => {
   try {
     const { data: docs } = await paymentsDb.find({
@@ -444,7 +444,7 @@ router.post('/:id/email-receipt', requireAuth, async (req, res) => {
 
     await sendMail({
       to: payment.student.email,
-      subject: `Payment Receipt ${payment.receipt_number} — Goallord Creativity Academy`,
+      subject: `Payment Receipt ${payment.receipt_number} - Goallord Creativity Academy`,
       html: receiptEmail({
         receiptNumber: payment.receipt_number,
         date: payment.receipt_issued_at || payment.paid_at || new Date(),
@@ -464,7 +464,7 @@ router.post('/:id/email-receipt', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/payments/:id/remind — admin: send payment reminder ──
+// ── POST /api/payments/:id/remind - admin: send payment reminder ──
 router.post('/:id/remind', requireAuth, async (req, res) => {
   try {
     const { data: docs } = await paymentsDb.find({
@@ -481,8 +481,8 @@ router.post('/:id/remind', requireAuth, async (req, res) => {
     await sendMail({
       to:      payment.student.email,
       subject: isOverdue
-        ? `OVERDUE: Payment required — Goallord Creativity Academy`
-        : `Payment reminder — Goallord Creativity Academy`,
+        ? `OVERDUE: Payment required - Goallord Creativity Academy`
+        : `Payment reminder - Goallord Creativity Academy`,
       html: paymentReminderEmail({
         fullName:  payment.student.full_name,
         category:  payment.category,
@@ -501,7 +501,7 @@ router.post('/:id/remind', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/payments/run-overdue-check — admin: mark overdue + send reminders ──
+// ── POST /api/payments/run-overdue-check - admin: mark overdue + send reminders ──
 router.post('/run-overdue-check', requireAuth, async (req, res) => {
   try {
     const result = await runOverdueCheck();
@@ -528,7 +528,7 @@ async function checkAutoReactivate(studentId) {
 
     sendMail({
       to:      student.email,
-      subject: 'Account reactivated — Goallord Creativity Academy',
+      subject: 'Account reactivated - Goallord Creativity Academy',
       html:    reactivationEmail({ fullName: student.full_name, loginUrl })
     }).catch(e => console.error('Reactivation email failed:', e.message));
 
@@ -572,7 +572,7 @@ async function runOverdueCheck() {
     if (p.student?.email) {
       sendMail({
         to:      p.student.email,
-        subject: `OVERDUE: Payment required — Goallord Creativity Academy`,
+        subject: `OVERDUE: Payment required - Goallord Creativity Academy`,
         html:    paymentReminderEmail({ fullName: p.student.full_name, category: p.category, amountDue: p.amount_due, dueDate: p.due_date, isOverdue: true, loginUrl })
       }).catch(e => console.error('Overdue email failed:', e.message));
     }
@@ -605,7 +605,7 @@ async function runOverdueCheck() {
     if (!p.student?.email) continue;
     sendMail({
       to:      p.student.email,
-      subject: `Reminder: Payment due soon — Goallord Creativity Academy`,
+      subject: `Reminder: Payment due soon - Goallord Creativity Academy`,
       html:    paymentReminderEmail({ fullName: p.student.full_name, category: p.category, amountDue: p.amount_due, dueDate: p.due_date, isOverdue: false, loginUrl })
     }).catch(e => console.error('Reminder email failed:', e.message));
 
@@ -642,7 +642,7 @@ async function runOverdueCheck() {
 
     sendMail({
       to:      student.email,
-      subject: 'Account suspended — Goallord Creativity Academy',
+      subject: 'Account suspended - Goallord Creativity Academy',
       html:    suspensionEmail({ fullName: student.full_name, loginUrl })
     }).catch(e => console.error('Suspension email failed:', e.message));
 

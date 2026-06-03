@@ -36,7 +36,7 @@ const loginLimiter = rateLimit({
   message: { error: 'Too many login attempts. Please try again in 15 minutes.' }
 });
 
-// ── POST /api/students/login — public ──────────────────────────
+// ── POST /api/students/login - public ──────────────────────────
 router.post('/login', loginLimiter, async (req, res) => {
   try {
     const { email, password, totpCode } = req.body;
@@ -76,7 +76,7 @@ router.post('/login', loginLimiter, async (req, res) => {
   }
 });
 
-// ── POST /api/students/logout — clear the auth cookie ──────────
+// ── POST /api/students/logout - clear the auth cookie ──────────
 router.post('/logout', (req, res) => {
   clearAuthCookie(res, 'gl_student_token');
   res.json({ success: true });
@@ -88,7 +88,7 @@ router.post('/2fa/setup',   requireStudent, twoFactor.setup);
 router.post('/2fa/enable',  requireStudent, twoFactor.enable);
 router.post('/2fa/disable', requireStudent, twoFactor.disable);
 
-// ── GET /api/students/me — student auth ────────────────────────
+// ── GET /api/students/me - student auth ────────────────────────
 router.get('/me', requireStudent, async (req, res) => {
   try {
     const student = await studentsDb.findById(req.student.id, { populate: 'batch' });
@@ -99,7 +99,7 @@ router.get('/me', requireStudent, async (req, res) => {
   }
 });
 
-// ── GET /api/students/me/progress — student dashboard hero ─────
+// ── GET /api/students/me/progress - student dashboard hero ─────
 // Behaviour-based progress, computed live from existing data:
 //   - weeks: today's position inside the batch's start_date..end_date window
 //   - assignments: submitted vs published for this batch
@@ -203,7 +203,7 @@ router.get('/me/progress', requireStudent, async (req, res) => {
   }
 });
 
-// ── PATCH /api/students/me — student: update own profile ───────
+// ── PATCH /api/students/me - student: update own profile ───────
 router.patch('/me', requireStudent, async (req, res) => {
   try {
     const { fullName, phone } = req.body;
@@ -217,7 +217,7 @@ router.patch('/me', requireStudent, async (req, res) => {
   }
 });
 
-// ── PATCH /api/students/me/password — student: change own password
+// ── PATCH /api/students/me/password - student: change own password
 router.patch('/me/password', requireStudent, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -236,7 +236,7 @@ router.patch('/me/password', requireStudent, async (req, res) => {
   }
 });
 
-// ── PATCH /api/students/me/photo — student: upload profile picture ──
+// ── PATCH /api/students/me/photo - student: upload profile picture ──
 router.patch('/me/photo', requireStudent, async (req, res) => {
   try {
     const cloudinary = require('cloudinary').v2;
@@ -267,7 +267,7 @@ router.patch('/me/photo', requireStudent, async (req, res) => {
   }
 });
 
-// ── POST /api/students/forgot-password — public ─────────────────
+// ── POST /api/students/forgot-password - public ─────────────────
 const resetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 3, message: { error: 'Too many reset attempts. Try again later.' } });
 router.post('/forgot-password', resetLimiter, async (req, res) => {
   try {
@@ -288,7 +288,7 @@ router.post('/forgot-password', resetLimiter, async (req, res) => {
 
     await sendMail({
       to:      student.email,
-      subject: 'Reset your password — Goallord Academy',
+      subject: 'Reset your password - Goallord Academy',
       html:    passwordResetEmail({ fullName: student.full_name, resetUrl, role: 'student' })
     }).catch(e => console.error('Reset email error:', e.message));
 
@@ -298,7 +298,7 @@ router.post('/forgot-password', resetLimiter, async (req, res) => {
   }
 });
 
-// ── POST /api/students/reset-password — public, rate limited ─────
+// ── POST /api/students/reset-password - public, rate limited ─────
 const studentResetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, message: { error: 'Too many reset attempts. Try again later.' } });
 router.post('/reset-password', studentResetLimiter, async (req, res) => {
   try {
@@ -321,7 +321,7 @@ router.post('/reset-password', studentResetLimiter, async (req, res) => {
   }
 });
 
-// ── GET /api/students — admin or lecturer: list (lecturer restricted to batch filter) ──
+// ── GET /api/students - admin or lecturer: list (lecturer restricted to batch filter) ──
 router.get('/', requireLecturer, async (req, res) => {
   try {
     const { track, status, batch, search, page = 1, limit = 100 } = req.query;
@@ -343,7 +343,7 @@ router.get('/', requireLecturer, async (req, res) => {
   }
 });
 
-// ── POST /api/students — admin: create ─────────────────────────
+// ── POST /api/students - admin: create ─────────────────────────
 router.post('/', requireAuth, async (req, res) => {
   try {
     const { fullName, email, password, phone, track, batch, applicantRef, notes } = req.body;
@@ -370,7 +370,7 @@ router.post('/', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/students/sync-names-from-applicants — admin ──────
+// ── POST /api/students/sync-names-from-applicants - admin ──────
 // Backfill student full_name + profile_picture from the linked applicant
 // row. Matches by applicant_ref (UUID) first, then by email
 // (case-insensitive). Each field is only overwritten when the student's
@@ -380,7 +380,7 @@ router.post('/sync-names-from-applicants', requireAuth, async (req, res) => {
   try {
     const debug = req.query.debug === '1' || req.body.debug === true;
 
-    // Scan ALL students — backfilling a photo even when the name is set,
+    // Scan ALL students - backfilling a photo even when the name is set,
     // and vice versa.
     const { data: rows, error } = await supabase
       .from('students')
@@ -478,9 +478,9 @@ router.post('/sync-names-from-applicants', requireAuth, async (req, res) => {
   }
 });
 
-// ── GET /api/students/directory — PUBLIC: showcase current students / alumni ──
+// ── GET /api/students/directory - PUBLIC: showcase current students / alumni ──
 // No auth. Powers the public "Our Students" and "Alumni" pages. Returns ONLY
-// safe, display-only fields — never email, phone, password, notes, payment
+// safe, display-only fields - never email, phone, password, notes, payment
 // data, applicant_ref or reset tokens. Must stay registered BEFORE `/:id`
 // so the literal path is not captured by the id param route.
 const directoryLimiter = rateLimit({
@@ -549,7 +549,7 @@ router.get('/directory', directoryLimiter, async (req, res) => {
   }
 });
 
-// ── GET /api/students/:id — admin: single ──────────────────────
+// ── GET /api/students/:id - admin: single ──────────────────────
 router.get('/:id', requireAuth, async (req, res) => {
   try {
     const student = await studentsDb.findById(req.params.id, { populate: 'batch' });
@@ -560,7 +560,7 @@ router.get('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// ── PATCH /api/students/:id — admin: update ────────────────────
+// ── PATCH /api/students/:id - admin: update ────────────────────
 router.patch('/:id', requireAuth, async (req, res) => {
   try {
     const { fullName, email, phone, track, batch, status, notes } = req.body;
@@ -581,7 +581,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/students/:id/graduate — admin ────────────────────
+// ── POST /api/students/:id/graduate - admin ────────────────────
 router.post('/:id/graduate', requireAuth, async (req, res) => {
   try {
     const student = await studentsDb.findById(req.params.id, { populate: 'batch' });
@@ -594,7 +594,7 @@ router.post('/:id/graduate', requireAuth, async (req, res) => {
 
     sendMail({
       to:      student.email,
-      subject: 'Congratulations on your graduation! — Goallord Creativity Academy',
+      subject: 'Congratulations on your graduation! - Goallord Creativity Academy',
       html:    graduationEmail({ fullName: student.full_name, batchName: student.batch?.name, track: student.track, loginUrl })
     }).catch(e => console.error('Graduation email failed:', e.message));
 
@@ -613,7 +613,7 @@ router.post('/:id/graduate', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/students/:id/reactivate — admin ──────────────────
+// ── POST /api/students/:id/reactivate - admin ──────────────────
 router.post('/:id/reactivate', requireAuth, async (req, res) => {
   try {
     const student = await studentsDb.findById(req.params.id);
@@ -627,7 +627,7 @@ router.post('/:id/reactivate', requireAuth, async (req, res) => {
     const { reactivationEmail } = require('../utils/emailTemplates');
     sendMail({
       to:      student.email,
-      subject: 'Account reactivated — Goallord Creativity Academy',
+      subject: 'Account reactivated - Goallord Creativity Academy',
       html:    reactivationEmail({ fullName: student.full_name, loginUrl })
     }).catch(e => console.error('Reactivation email failed:', e.message));
 
@@ -646,7 +646,7 @@ router.post('/:id/reactivate', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/students/:id/reset-password — admin ──────────────
+// ── POST /api/students/:id/reset-password - admin ──────────────
 router.post('/:id/reset-password', requireAuth, async (req, res) => {
   try {
     const { newPassword } = req.body;
@@ -659,7 +659,7 @@ router.post('/:id/reset-password', requireAuth, async (req, res) => {
   }
 });
 
-// ── DELETE /api/students/:id — admin ───────────────────────────
+// ── DELETE /api/students/:id - admin ───────────────────────────
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
     await studentsDb.remove(req.params.id);

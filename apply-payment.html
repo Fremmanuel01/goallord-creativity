@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Complete your Goallord Creativity Academy enrolment in Onitsha, Nigeria. Pay your application fee and tuition by card, bank transfer or cash to activate your student account.">
-<title>Complete Enrolment — Goallord Creativity Academy</title>
+<title>Complete Enrolment - Goallord Creativity Academy</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -287,7 +287,7 @@ body {
 
   <!-- Payment -->
   <div class="card" id="payCard">
-    <div class="card-label">Application Fee — Pay to Confirm Enrolment</div>
+    <div class="card-label">Application Fee - Pay to Confirm Enrolment</div>
 
     <div class="error-box" id="mainError"></div>
 
@@ -312,15 +312,15 @@ body {
       <div class="bank-grid">
         <div class="bank-tile">
           <div class="bank-tile-title">Account 1</div>
-          <div class="bank-tile-row">Bank: <b id="b1name">—</b></div>
-          <div class="bank-tile-row">No: <b class="num" id="b1num">—</b> <button class="copy-btn" onclick="copyNum(this,'b1num')">Copy</button></div>
-          <div class="bank-tile-row">Name: <b id="b1acct">—</b></div>
+          <div class="bank-tile-row">Bank: <b id="b1name">-</b></div>
+          <div class="bank-tile-row">No: <b class="num" id="b1num">-</b> <button class="copy-btn" onclick="copyNum(this,'b1num')">Copy</button></div>
+          <div class="bank-tile-row">Name: <b id="b1acct">-</b></div>
         </div>
         <div class="bank-tile">
           <div class="bank-tile-title">Account 2</div>
-          <div class="bank-tile-row">Bank: <b id="b2name">—</b></div>
-          <div class="bank-tile-row">No: <b class="num" id="b2num">—</b> <button class="copy-btn" onclick="copyNum(this,'b2num')">Copy</button></div>
-          <div class="bank-tile-row">Name: <b id="b2acct">—</b></div>
+          <div class="bank-tile-row">Bank: <b id="b2name">-</b></div>
+          <div class="bank-tile-row">No: <b class="num" id="b2num">-</b> <button class="copy-btn" onclick="copyNum(this,'b2num')">Copy</button></div>
+          <div class="bank-tile-row">Name: <b id="b2acct">-</b></div>
         </div>
       </div>
       <div class="field" style="margin-bottom:10px;">
@@ -372,27 +372,27 @@ body {
       <div class="rh-title">RECEIPT</div>
     </div>
     <div class="rm">
-      <div class="rm-item"><label>Receipt No.</label><strong id="rNumber">—</strong></div>
-      <div class="rm-item"><label>Date</label><strong id="rDate">—</strong></div>
+      <div class="rm-item"><label>Receipt No.</label><strong id="rNumber">-</strong></div>
+      <div class="rm-item"><label>Date</label><strong id="rDate">-</strong></div>
     </div>
     <div class="rb">
       <label>Bill To</label>
-      <div class="rb-name" id="rName">—</div>
-      <div class="rb-email" id="rEmail">—</div>
+      <div class="rb-name" id="rName">-</div>
+      <div class="rb-email" id="rEmail">-</div>
     </div>
     <table class="rt">
       <thead><tr><th>Description</th><th style="text-align:right;">Amount</th></tr></thead>
       <tbody id="rItems"></tbody>
       <tfoot>
-        <tr class="rt-total"><td>Total Paid</td><td style="text-align:right;" id="rTotal">—</td></tr>
+        <tr class="rt-total"><td>Total Paid</td><td style="text-align:right;" id="rTotal">-</td></tr>
       </tfoot>
     </table>
     <div class="rp">
-      <div><label>Method</label><strong id="rMethod">—</strong></div>
-      <div><label>Reference</label><strong id="rRef">—</strong></div>
+      <div><label>Method</label><strong id="rMethod">-</strong></div>
+      <div><label>Reference</label><strong id="rRef">-</strong></div>
     </div>
     <div class="rf">
-      Thank you for your payment — <strong>Goallord Creativity Academy</strong><br>
+      Thank you for your payment - <strong>Goallord Creativity Academy</strong><br>
       Your student account is now active. Check your email for login details.
     </div>
     <div class="receipt-btns">
@@ -409,7 +409,7 @@ body {
     <div class="result-title" style="color:#93c5fd;">Reference Submitted</div>
     <div class="result-body">
       Your transfer reference has been recorded.<br>Admin will confirm your payment within <strong style="color:var(--text);">24 hours</strong><br>and your login details will be sent to<br>
-      <span class="result-email" id="pendingEmail">—</span>
+      <span class="result-email" id="pendingEmail">-</span>
     </div>
     <a href="/academy.html" style="display:inline-block;padding:12px 28px;border-radius:8px;border:1px solid var(--border);color:var(--muted);font-size:14px;text-decoration:none;">Back to Academy</a>
   </div>
@@ -450,12 +450,12 @@ const fmtD = d => d.toLocaleDateString('en-GB', { day:'numeric', month:'short', 
     fees   = cfg.fees || fees;
 
     const b1 = cfg.bank || {}, b2 = cfg.bank2 || {};
-    setText('b1name', b1.name        || '—');
-    setText('b1num',  b1.number      || '—');
-    setText('b1acct', b1.accountName || '—');
-    setText('b2name', b2.name        || '—');
-    setText('b2num',  b2.number      || '—');
-    setText('b2acct', b2.accountName || '—');
+    setText('b1name', b1.name        || '-');
+    setText('b1num',  b1.number      || '-');
+    setText('b1acct', b1.accountName || '-');
+    setText('b2name', b2.name        || '-');
+    setText('b2num',  b2.number      || '-');
+    setText('b2acct', b2.accountName || '-');
 
     setText('displayFull',    '₦' + fmt(fees.fullTuition    || 300000));
     setText('displayMonthly', '₦' + fmt(fees.monthlyTuition || 100000));
@@ -464,7 +464,7 @@ const fmtD = d => d.toLocaleDateString('en-GB', { day:'numeric', month:'short', 
     if (!ar.ok) {
       const e = await ar.json().catch(() => ({}));
       if (ar.status === 403) {
-        // Email not verified — offer a one-click resend instead of a dead page
+        // Email not verified - offer a one-click resend instead of a dead page
         crash(e.error || 'Email not verified yet. Please click the link in your inbox first.');
         try {
           const box = document.getElementById('crash');
@@ -477,9 +477,9 @@ const fmtD = d => d.toLocaleDateString('en-GB', { day:'numeric', month:'short', 
               try {
                 const r = await fetch('/api/applicants/' + AID + '/resend-verification', { method: 'POST' });
                 const d = await r.json().catch(() => ({}));
-                btn.textContent = r.ok ? '✓ Sent — check your inbox and spam' : (d.error || 'Failed to resend');
+                btn.textContent = r.ok ? '✓ Sent - check your inbox and spam' : (d.error || 'Failed to resend');
               } catch {
-                btn.textContent = 'Network error — try again';
+                btn.textContent = 'Network error - try again';
                 btn.disabled = false;
               }
             };
@@ -524,7 +524,7 @@ function choosePlan(p) {
   const total   = p === 'full' ? appFee + full : appFee + monthly;
   const bankTotal = total;
 
-  setText('paystackBtn', 'Pay ₦' + fmt(total) + ' Now — Card or Bank (Paystack)');
+  setText('paystackBtn', 'Pay ₦' + fmt(total) + ' Now - Card or Bank (Paystack)');
   document.getElementById('paystackBtn').disabled = false;
 
   // Advance progress to step 3
@@ -582,7 +582,7 @@ function renderSchedule(p) {
       'Due ' + fmtD(d2) + ' · from your dashboard',
       '₦' + fmt(monthly), ''
     );
-    html += totalRow('₦' + fmt(firstTotal), 'Due today — remaining via dashboard');
+    html += totalRow('₦' + fmt(firstTotal), 'Due today - remaining via dashboard');
   }
 
   const el = document.getElementById('schedule');
@@ -658,7 +658,7 @@ function payWithPaystack() {
 
       onClose: function() {
         clearTimeout(psTimer);
-        if (!psRef) resetBtn(btn, 'Pay ₦' + fmt(totalCharge) + ' Now — Card or Bank (Paystack)');
+        if (!psRef) resetBtn(btn, 'Pay ₦' + fmt(totalCharge) + ' Now - Card or Bank (Paystack)');
       }
     });
   } catch (e) {
@@ -672,7 +672,7 @@ function payWithPaystack() {
   // Safety: re-enable after 45s if popup never fires
   psTimer = setTimeout(() => {
     if (!psRef) {
-      resetBtn(btn, 'Pay ₦' + fmt(totalCharge) + ' Now — Card or Bank (Paystack)');
+      resetBtn(btn, 'Pay ₦' + fmt(totalCharge) + ' Now - Card or Bank (Paystack)');
       errEl.textContent   = 'Payment window timed out or was closed. Please try again or use bank transfer.';
       errEl.style.display = 'block';
     }
@@ -681,7 +681,7 @@ function payWithPaystack() {
   try { handler.openIframe(); }
   catch (e) {
     clearTimeout(psTimer);
-    resetBtn(btn, 'Pay ₦' + fmt(appFee) + ' — Card or Bank (Paystack)');
+    resetBtn(btn, 'Pay ₦' + fmt(appFee) + ' - Card or Bank (Paystack)');
     errEl.textContent   = 'Could not open payment. Please use bank transfer.';
     errEl.style.display = 'block';
   }
@@ -703,7 +703,7 @@ async function createAccount(reference) {
     if (!res.ok) {
       errEl.textContent = data.error || 'Account activation failed.';
       var small = document.createElement('small');
-      small.innerHTML = 'Your payment reference: <strong style="color:var(--orange);">' + escHtml(reference) + '</strong> — contact admin if needed.';
+      small.innerHTML = 'Your payment reference: <strong style="color:var(--orange);">' + escHtml(reference) + '</strong> - contact admin if needed.';
       errEl.appendChild(document.createElement('br'));
       errEl.appendChild(small);
       errEl.style.display = 'block';
@@ -713,7 +713,7 @@ async function createAccount(reference) {
     }
 
     // Recovery response from server catch: payment succeeded but student
-    // creation had an error. No receipt object available — show a friendly
+    // creation had an error. No receipt object available - show a friendly
     // "you're in, go to login" state instead of calling showReceipt with
     // undefined which would render a broken overlay.
     if (data.recovered) {
@@ -735,7 +735,7 @@ async function createAccount(reference) {
       return;
     }
 
-    // Show receipt automatically — no extra click needed
+    // Show receipt automatically - no extra click needed
     showReceipt(data.receipt, reference);
 
     // If the acceptance email didn't send, tell the user clearly
@@ -749,7 +749,7 @@ async function createAccount(reference) {
   } catch {
     errEl.textContent = 'Network error. Your payment may have gone through.';
     var small2 = document.createElement('small');
-    small2.innerHTML = 'Reference: <strong style="color:var(--orange);">' + escHtml(reference) + '</strong> — contact admin.';
+    small2.innerHTML = 'Reference: <strong style="color:var(--orange);">' + escHtml(reference) + '</strong> - contact admin.';
     errEl.appendChild(document.createElement('br'));
     errEl.appendChild(small2);
     errEl.style.display = 'block';
@@ -866,13 +866,13 @@ function showReceipt(receipt, fallbackRef) {
   const appFee  = r.appFee       || fees.application    || 20000;
   const tuition = r.tuitionAmount|| (plan === 'full' ? (fees.fullTuition || 300000) : (fees.monthlyTuition || 100000));
   const total   = r.totalAmount  || (appFee + tuition);
-  const tuLabel = r.tuitionLabel || (plan === 'full' ? 'Full Tuition Payment' : 'Tuition — 1st Instalment');
+  const tuLabel = r.tuitionLabel || (plan === 'full' ? 'Full Tuition Payment' : 'Tuition - 1st Instalment');
 
   const dateStr = r.receiptIssuedAt
     ? new Date(r.receiptIssuedAt).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })
     : fmtD(new Date());
 
-  setText('rNumber', r.receiptNumber || '—');
+  setText('rNumber', r.receiptNumber || '-');
   setText('rDate',   dateStr);
   setText('rName',   r.name  || name);
   setText('rEmail',  r.email || email);
@@ -884,7 +884,7 @@ function showReceipt(receipt, fallbackRef) {
 
   setText('rTotal',  '₦' + fmtN(total));
   setText('rMethod', 'Paystack (Card / Bank)');
-  setText('rRef',    r.reference || fallbackRef || '—');
+  setText('rRef',    r.reference || fallbackRef || '-');
 
   document.getElementById('receiptOverlay').classList.add('show');
 }

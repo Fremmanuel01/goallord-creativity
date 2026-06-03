@@ -1,5 +1,5 @@
 // ============================================================
-// chat-ui.js — reusable in-app chat widget
+// chat-ui.js - reusable in-app chat widget
 //
 // Renders a two-pane messenger (threads + conversation) into a
 // container. Works for students, lecturers and admin against the
@@ -168,7 +168,7 @@
         if (!r.ok) { convo.innerHTML = '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:#ff7070;padding:24px;">' + esc((r.json && r.json.error) || 'Could not load.') + '</div>'; return; }
         state.activeMeta = r.json.thread || {};
         renderConvo(t, r.json.messages || [], state.activeMeta);
-        // The GET marks it read server-side — reflect locally.
+        // The GET marks it read server-side - reflect locally.
         if (t) { t.unread = 0; renderThreads(); if (opts.onUnread) opts.onUnread(state.threads.reduce(function (s, x) { return s + (x.unread || 0); }, 0)); }
       });
     }

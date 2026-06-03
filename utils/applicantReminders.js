@@ -32,7 +32,7 @@ async function runApplicantPaymentReminders() {
     try {
       await sendMail({
         to:      app.email,
-        subject: `Don't lose your spot — Complete your Goallord Academy enrolment`,
+        subject: `Don't lose your spot - Complete your Goallord Academy enrolment`,
         html:    applicantPaymentReminderEmail({ fullName: app.full_name, track: app.track, paymentUrl })
       });
 

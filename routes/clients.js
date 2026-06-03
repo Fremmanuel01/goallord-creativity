@@ -8,7 +8,7 @@ const router = express.Router();
 
 const clientLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5, message: { error: 'Too many submissions.' } });
 
-// POST /api/clients — public (contact form)
+// POST /api/clients - public (contact form)
 router.post('/', clientLimiter, async (req, res) => {
   try {
     const { name, email, phone, company, service, budget, timeline, message } = req.body;
@@ -29,7 +29,7 @@ router.post('/', clientLimiter, async (req, res) => {
   }
 });
 
-// GET /api/clients — protected
+// GET /api/clients - protected
 router.get('/', requireAuth, async (req, res) => {
   try {
     const { status, search, page = 1, limit = 50 } = req.query;
@@ -51,7 +51,7 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/clients/:id — protected
+// GET /api/clients/:id - protected
 router.get('/:id', requireAuth, async (req, res) => {
   try {
     const doc = await clientsDb.findById(req.params.id);
@@ -62,7 +62,7 @@ router.get('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// PATCH /api/clients/:id — protected
+// PATCH /api/clients/:id - protected
 router.patch('/:id', requireAuth, async (req, res) => {
   try {
     const { status, notes } = req.body;
@@ -77,7 +77,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// DELETE /api/clients/:id — protected
+// DELETE /api/clients/:id - protected
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
     await clientsDb.remove(req.params.id);

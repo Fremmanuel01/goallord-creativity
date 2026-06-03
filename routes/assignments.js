@@ -10,7 +10,7 @@ const router = express.Router();
 
 // ── ASSIGNMENTS ──────────────────────────────────────────────
 
-// GET /api/assignments/student — student: published assignments + own submission status
+// GET /api/assignments/student - student: published assignments + own submission status
 router.get('/student', requireStudentAuth, async (req, res) => {
   try {
     const student = await studentsDb.findById(req.user.id);

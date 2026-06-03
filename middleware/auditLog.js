@@ -1,5 +1,5 @@
 // ============================================================
-// middleware/auditLog.js — admin/staff action audit trail
+// middleware/auditLog.js - admin/staff action audit trail
 //
 // Mounted on the /api surface. For every state-changing request
 // (POST/PUT/PATCH/DELETE) made by a dashboard account, it records

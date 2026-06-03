@@ -1,22 +1,22 @@
-# Goallord Portal — Product Context
+# Goallord Portal - Product Context
 
-**Register:** product (app UI — the design serves the work, it is not the work).
+**Register:** product (app UI - the design serves the work, it is not the work).
 
 ## Product purpose
 The Goallord Portal is the logged-in side of Goallord Creativity Limited, a creative
 agency + coding/design academy based in Onitsha, Nigeria. It is a single installable
 PWA with three audiences sharing one codebase:
 
-- **Students** — check course progress, see the current week/lesson, submit assignments,
+- **Students** - check course progress, see the current week/lesson, submit assignments,
   track attendance, view payments/fees, and message lecturers. Highest-volume mobile users.
-- **Lecturers** — manage batches, mark attendance, post materials, grade submissions,
+- **Lecturers** - manage batches, mark attendance, post materials, grade submissions,
   and message students. Mixed phone/desktop.
-- **Admin/Staff** — run the whole operation: applicants, payments, content, products,
+- **Admin/Staff** - run the whole operation: applicants, payments, content, products,
   projects, team. Primarily desktop, occasionally phone.
 
 ## Primary context of use (the scene that forces design decisions)
-A student in Onitsha glancing at their phone in the evening — often on mobile data,
-sometimes a mid-range Android — to answer one question fast: *"Is anything due, and did
+A student in Onitsha glancing at their phone in the evening - often on mobile data,
+sometimes a mid-range Android - to answer one question fast: *"Is anything due, and did
 my lecturer reply?"* They are not sitting at a desk. They are checking, not browsing.
 
 This scene forces: **dark theme** (evening, glance, battery, OLED), **one answer per
@@ -30,7 +30,7 @@ screen** (not a wall of equal metrics), **thumb-reach navigation** (one-handed),
 
 ## Brand & tone
 - Confident, warm, locally proud (Onitsha / Nigerian creative scene), not corporate-sterile.
-- Accent is a warm burnt orange (#D66A1F) — energy, creativity. Secondary electric blue (#1E4BFF).
+- Accent is a warm burnt orange (#D66A1F) - energy, creativity. Secondary electric blue (#1E4BFF).
 - Tone of copy: direct, encouraging, plain. No filler, no hype.
 
 ## Anti-references (what it must NOT look like)

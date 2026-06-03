@@ -32,7 +32,7 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-// Check a specific permission — admins always pass, staff checked against permissions
+// Check a specific permission - admins always pass, staff checked against permissions
 function requirePermission(permKey) {
   return (req, res, next) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });

@@ -18,12 +18,12 @@ function isValidEmail(email) {
     return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/.test(email);
 }
 
-// POST /api/contacts — public (website contact form)
+// POST /api/contacts - public (website contact form)
 router.post('/', contactLimiter, async (req, res) => {
   try {
     const { name, email, service, budget, message, website } = req.body;
 
-    // Honeypot check — 'website' field is hidden, bots fill it
+    // Honeypot check - 'website' field is hidden, bots fill it
     if (website) return res.status(200).json({ message: 'Thank you!' }); // silent reject
 
     // Required fields
@@ -54,14 +54,14 @@ router.post('/', contactLimiter, async (req, res) => {
     // Notify admin
     sendMail({
       to:      process.env.EMAIL_FROM || 'hello@goallordcreativity.com',
-      subject: `New Contact: ${sanitized.name} — ${sanitized.service || 'General Enquiry'}`,
+      subject: `New Contact: ${sanitized.name} - ${sanitized.service || 'General Enquiry'}`,
       html:    adminContactEmail({ name: sanitized.name, email: sanitized.email, service: sanitized.service, budget: sanitized.budget, message: sanitized.message, dashboardUrl: `${host}/dashboard.html` })
     }).catch(e => console.error('Contact admin email failed:', e.message));
 
     // Auto-reply to sender
     sendMail({
       to:      sanitized.email,
-      subject: 'We received your message — Goallord Creativity',
+      subject: 'We received your message - Goallord Creativity',
       html:    contactAutoReplyEmail({ name: sanitized.name })
     }).catch(e => console.error('Contact auto-reply failed:', e.message));
 
@@ -71,7 +71,7 @@ router.post('/', contactLimiter, async (req, res) => {
   }
 });
 
-// GET /api/contacts — protected
+// GET /api/contacts - protected
 router.get('/', requireAuth, async (req, res) => {
   try {
     const { status, search, page = 1, limit = 50 } = req.query;
@@ -99,7 +99,7 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/contacts/:id — protected
+// GET /api/contacts/:id - protected
 router.get('/:id', requireAuth, async (req, res) => {
   try {
     const contact = await contactsDb.findById(req.params.id);
@@ -114,7 +114,7 @@ router.get('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/contacts/:id/reply — protected
+// POST /api/contacts/:id/reply - protected
 router.post('/:id/reply', requireAuth, async (req, res) => {
   try {
     const { body } = req.body;
@@ -138,7 +138,7 @@ router.post('/:id/reply', requireAuth, async (req, res) => {
   }
 });
 
-// PATCH /api/contacts/:id — protected (update status)
+// PATCH /api/contacts/:id - protected (update status)
 router.patch('/:id', requireAuth, async (req, res) => {
   try {
     const contact = await contactsDb.update(req.params.id, { status: req.body.status });
@@ -149,7 +149,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// DELETE /api/contacts/:id — protected
+// DELETE /api/contacts/:id - protected
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
     await contactsDb.remove(req.params.id);

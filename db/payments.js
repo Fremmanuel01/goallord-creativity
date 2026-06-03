@@ -3,7 +3,7 @@ const { clean } = require('../lib/utils');
 
 const TABLE = 'payments';
 
-// Replaces Payment.pre('save') hook — computes status fields
+// Replaces Payment.pre('save') hook - computes status fields
 function computePaymentStatus(payment) {
   const now = new Date();
   const p = { ...payment };
@@ -25,7 +25,7 @@ function computePaymentStatus(payment) {
   return p;
 }
 
-// Replaces Payment.post('save') hook — syncs student payment status
+// Replaces Payment.post('save') hook - syncs student payment status
 async function syncStudentPaymentStatus(studentId) {
   try {
     const { data: payments, error } = await supabase.from(TABLE).select('status').eq('student_id', studentId);

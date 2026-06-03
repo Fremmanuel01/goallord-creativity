@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>GoallordAI — Live Chat Dashboard</title>
+<title>GoallordAI - Live Chat Dashboard</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -275,7 +275,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
     #loginScreen { height: 100dvh; padding: 20px; align-items: flex-start; padding-top: calc(60px + env(safe-area-inset-top)); }
     .login-box { width: 100%; max-width: 420px; padding: 32px 24px; border-radius: 16px; }
 
-    /* Safe area — push headers below status bar */
+    /* Safe area - push headers below status bar */
     .sidebar-header { padding-top: calc(18px + env(safe-area-inset-top)); }
     .chat-header { padding-top: calc(14px + env(safe-area-inset-top)); }
 
@@ -283,14 +283,14 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
     #app { height: 100dvh; }
     .app-layout { display: block; position: relative; height: calc(100dvh - 56px); overflow: hidden; }
 
-    /* Sidebar panel — full screen, slides left when chat opens */
+    /* Sidebar panel - full screen, slides left when chat opens */
     .sidebar {
         display: flex; position: absolute; inset: 0; width: 100%;
         transform: translateX(0); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); z-index: 10;
     }
     .sidebar.mobile-away { transform: translateX(-100%); }
 
-    /* Chat main panel — full screen, slides in from right */
+    /* Chat main panel - full screen, slides in from right */
     .chat-main {
         position: absolute; inset: 0; width: 100%;
         transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); z-index: 10;
@@ -312,7 +312,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
     /* Prevent iOS input zoom */
     .reply-input, .modal-field input, .modal-field select, .login-field input { font-size: 16px !important; }
 
-    /* Chat messages — more breathing room */
+    /* Chat messages - more breathing room */
     .chat-messages { padding: 14px 12px; }
     .reply-area { padding: 10px 12px; }
 
@@ -453,8 +453,8 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                         </button>
                         <div>
-                            <div class="chat-header-session" id="viewSessionId">—</div>
-                            <div class="chat-header-meta" id="viewMeta">—</div>
+                            <div class="chat-header-session" id="viewSessionId">-</div>
+                            <div class="chat-header-meta" id="viewMeta">-</div>
                         </div>
                     </div>
                     <div class="chat-header-actions">
@@ -499,8 +499,8 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
         <div class="modal-field">
             <label>Role</label>
             <select id="modalRole">
-                <option value="agent">Agent — can chat with visitors</option>
-                <option value="admin">Admin — full access + manage team</option>
+                <option value="agent">Agent - can chat with visitors</option>
+                <option value="admin">Admin - full access + manage team</option>
             </select>
         </div>
         <p class="modal-error" id="modalError"></p>
@@ -537,7 +537,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
         var errEl = document.getElementById('loginError');
         errEl.style.display = 'none';
 
-        // Request notification permission & unlock AudioContext HERE — direct user gesture
+        // Request notification permission & unlock AudioContext HERE - direct user gesture
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
         }
@@ -639,7 +639,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
                     playBeep();
                 }
             } else {
-                // Brand-new conversation not yet in list — notify and reload
+                // Brand-new conversation not yet in list - notify and reload
                 var newTitle = data.visitorName ? data.visitorName : 'New visitor';
                 showToast(newTitle, data.message.content, data.sessionId);
                 playBeep();
@@ -964,7 +964,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
     function showToast(title, body, sessionId) {
         // Browser notification
         if (Notification.permission === 'granted') {
-            var n = new Notification('GoallordAI — ' + title, { body: body, icon: '/assets/images/logo/favicon.svg' });
+            var n = new Notification('GoallordAI - ' + title, { body: body, icon: '/assets/images/logo/favicon.svg' });
             n.onclick = function() { openConversation(sessionId); window.focus(); };
             setTimeout(function() { n.close(); }, 5000);
         }
@@ -1001,7 +1001,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
     }
 
     // ── Helpers ──────────────────────────────────────────────────
-    function shortId(sid) { return sid ? sid.slice(0, 14) + '…' : '—'; }
+    function shortId(sid) { return sid ? sid.slice(0, 14) + '…' : '-'; }
     function escHtml(str) {
         return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }

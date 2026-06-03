@@ -10,7 +10,7 @@ const router = express.Router();
 const commentLimiter = rateLimit({ windowMs: 60*60*1000, max: 10, message: { error: 'Too many comments. Try again later.' } });
 const reactLimiter = rateLimit({ windowMs: 60*1000, max: 20, message: { error: 'Slow down.' } });
 
-// ── GET /api/blog  — list published posts ──────────────────────────────────
+// ── GET /api/blog  - list published posts ──────────────────────────────────
 router.get('/', async (req, res) => {
   try {
     const limit   = Math.min(parseInt(req.query.limit)  || 20, 50);
@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
     const filter  = { published: true };
     if (exclude) filter.slug = exclude;  // handled specially below
 
-    // Build filter for findPosts — exclude slug needs neq, handled via supabase filter override
+    // Build filter for findPosts - exclude slug needs neq, handled via supabase filter override
     const postFilter = { published: true };
 
     const { data: posts, count: total } = await blogDb.findPosts({
@@ -41,7 +41,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ── GET /api/blog/comments/all — admin: all comments ──────────────────────
+// ── GET /api/blog/comments/all - admin: all comments ──────────────────────
 router.get('/comments/all', requireAuth, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 100;
@@ -65,7 +65,7 @@ router.get('/comments/all', requireAuth, async (req, res) => {
   }
 });
 
-// ── DELETE /api/blog/comments/:id — admin: delete comment ─────────────────
+// ── DELETE /api/blog/comments/:id - admin: delete comment ─────────────────
 router.delete('/comments/:id', requireAuth, async (req, res) => {
   try {
     await blogDb.deleteComment(req.params.id);
@@ -95,7 +95,7 @@ router.get('/:slug', async (req, res) => {
   }
 });
 
-// ── POST /api/blog  — create (admin) ──────────────────────────────────────
+// ── POST /api/blog  - create (admin) ──────────────────────────────────────
 router.post('/', requireAuth, async (req, res) => {
   try {
     const { title, slug, excerpt, content, coverImage, category, tags, author, authorAvatar, readTime, featured, published, hasAffiliate, affiliateCta } = req.body;
@@ -112,7 +112,7 @@ router.post('/', requireAuth, async (req, res) => {
   }
 });
 
-// ── PUT /api/blog/:slug  — update (admin) ─────────────────────────────────
+// ── PUT /api/blog/:slug  - update (admin) ─────────────────────────────────
 router.put('/:slug', requireAuth, async (req, res) => {
   try {
     const { title, slug, excerpt, content, coverImage, category, tags, author, authorAvatar, readTime, featured, published, publishedAt, hasAffiliate, affiliateCta } = req.body;
@@ -141,7 +141,7 @@ router.put('/:slug', requireAuth, async (req, res) => {
   }
 });
 
-// ── GET /api/blog/:slug/comments — public: approved comments ──────────────
+// ── GET /api/blog/:slug/comments - public: approved comments ──────────────
 router.get('/:slug/comments', async (req, res) => {
   try {
     const post = await blogDb.findPostBySlug(req.params.slug);
@@ -153,7 +153,7 @@ router.get('/:slug/comments', async (req, res) => {
   }
 });
 
-// ── POST /api/blog/:slug/comments — post a comment ───────────────────────
+// ── POST /api/blog/:slug/comments - post a comment ───────────────────────
 router.post('/:slug/comments', commentLimiter, async (req, res) => {
   try {
     const { name, email, content } = req.body;
@@ -180,7 +180,7 @@ router.post('/:slug/comments', commentLimiter, async (req, res) => {
   }
 });
 
-// ── POST /api/blog/:slug/react — emoji reaction ──────────────────────────
+// ── POST /api/blog/:slug/react - emoji reaction ──────────────────────────
 router.post('/:slug/react', reactLimiter, async (req, res) => {
   try {
     const { emoji } = req.body;
@@ -195,7 +195,7 @@ router.post('/:slug/react', reactLimiter, async (req, res) => {
   }
 });
 
-// ── DELETE /api/blog/:slug  — delete (admin) ──────────────────────────────
+// ── DELETE /api/blog/:slug  - delete (admin) ──────────────────────────────
 router.delete('/:slug', requireAuth, async (req, res) => {
   try {
     await blogDb.deletePostBySlug(req.params.slug);

@@ -1,5 +1,5 @@
 // ============================================================
-// test/chat.test.js — portal chat unit/integration tests
+// test/chat.test.js - portal chat unit/integration tests
 //
 // Runs the REAL chat code (db/messages, routes/messages helpers,
 // middleware/chatAuth) against an in-memory Supabase double.
@@ -253,7 +253,7 @@ test('notifyBatchMembers notifies active members, excludes sender', async () => 
   const { messagesDb, h, fake } = loadChat(seed());
   const batch = await messagesDb.ensureBatchThread('b1', 'Batch A');
   const req = { chatUser: L1, app: { get: () => null } };
-  await h.notifyBatchMembers(req, { id: batch.id, type: 'batch', batch_id: 'b1', title: 'Batch A — Group Chat' }, 'Class moved to 3pm', null);
+  await h.notifyBatchMembers(req, { id: batch.id, type: 'batch', batch_id: 'b1', title: 'Batch A - Group Chat' }, 'Class moved to 3pm', null);
   const notifs = fake._store.notifications;
   const recipientIds = notifs.map((n) => n.recipient_id).sort();
   assert.deepStrictEqual(recipientIds, ['s1', 's2'], 'both active b1 students notified; sender lecturer excluded; graduated excluded');
@@ -265,7 +265,7 @@ test('notifyBatchMembers: admin sender notifies all members incl. lecturers', as
   const { messagesDb, h, fake } = loadChat(seed());
   const batch = await messagesDb.ensureBatchThread('b1', 'Batch A');
   const req = { chatUser: ADMIN, app: { get: () => null } };
-  await h.notifyBatchMembers(req, { id: batch.id, type: 'batch', batch_id: 'b1', title: 'Batch A — Group Chat' }, 'Holiday notice', null);
+  await h.notifyBatchMembers(req, { id: batch.id, type: 'batch', batch_id: 'b1', title: 'Batch A - Group Chat' }, 'Holiday notice', null);
   const recipients = fake._store.notifications.map((n) => `${n.recipient_type}:${n.recipient_id}`).sort();
   // admin is not in the batch, so nobody is excluded: 2 active students + lecturer L1
   assert.deepStrictEqual(recipients, ['Lecturer:L1', 'Student:s1', 'Student:s2']);

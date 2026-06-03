@@ -11,7 +11,7 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 20
-      # Secrets — set these in the Render dashboard (marked sync:false)
+      # Secrets - set these in the Render dashboard (marked sync:false)
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_KEY
@@ -34,7 +34,7 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
-      # Web Push (VAPID) — portal PWA notifications
+      # Web Push (VAPID) - portal PWA notifications
       - key: VAPID_PUBLIC_KEY
         sync: false
       - key: VAPID_PRIVATE_KEY
@@ -47,7 +47,7 @@ services:
         sync: false
       - key: HOST
         sync: false
-      # Fees & bank details — non-secret config
+      # Fees & bank details - non-secret config
       - key: APPLICATION_FEE
         value: "20000"
       - key: FULL_TUITION_FEE

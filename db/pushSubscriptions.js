@@ -1,5 +1,5 @@
 // ============================================================
-// db/pushSubscriptions.js — storage for Web Push subscriptions.
+// db/pushSubscriptions.js - storage for Web Push subscriptions.
 //
 // One row per (user, browser/device endpoint). endpoint is unique;
 // re-subscribing upserts so a device never duplicates.

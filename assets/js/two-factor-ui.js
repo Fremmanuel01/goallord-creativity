@@ -1,5 +1,5 @@
 // ============================================================
-// two-factor-ui.js — reusable 2FA enrolment panel
+// two-factor-ui.js - reusable 2FA enrolment panel
 //
 // Renders the "Two-Factor Authentication" card into a container and
 // drives the setup → confirm → backup-codes → disable flow against
@@ -51,7 +51,7 @@
       });
     }
 
-    // Shared inline styles — use CSS vars with fallbacks so the card looks
+    // Shared inline styles - use CSS vars with fallbacks so the card looks
     // right on every dashboard regardless of which tokens it defines.
     var CARD = 'background:var(--card,#171A21);border:1px solid var(--border,#2A2F3A);border-radius:12px;padding:24px;';
     var BTN_PRIMARY = 'padding:11px 22px;background:var(--orange,#D66A1F);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;';
@@ -167,7 +167,7 @@
         + '</div>'
         + '<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:14px 16px;margin-bottom:16px;">'
         +   '<div style="font-size:13px;font-weight:700;color:#fbbf24;margin-bottom:6px;">⚠️ Save your backup codes</div>'
-        +   '<div style="font-size:12px;color:var(--muted,#A0A6B3);line-height:1.5;">Each code works once if you lose access to your authenticator. Store them somewhere safe — they will not be shown again.</div>'
+        +   '<div style="font-size:12px;color:var(--muted,#A0A6B3);line-height:1.5;">Each code works once if you lose access to your authenticator. Store them somewhere safe - they will not be shown again.</div>'
         + '</div>'
         + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:18px;">'
         +   codes.map(function (c) { return '<code style="background:#0F1115;border:1px solid #2A2F3A;border-radius:6px;padding:8px;text-align:center;font-size:13px;color:var(--text,#F4F6FA);letter-spacing:1px;">' + esc(c) + '</code>'; }).join('')

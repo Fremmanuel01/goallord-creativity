@@ -7,7 +7,7 @@ const { requireStudentAuth } = require('../middleware/studentAuth');
 
 const router = express.Router();
 
-// GET /api/materials/student — student: published materials for their batch
+// GET /api/materials/student - student: published materials for their batch
 router.get('/student', requireStudentAuth, async (req, res) => {
   try {
     const student = await studentsDb.findById(req.user.id, { fields: 'id, batch_id' });

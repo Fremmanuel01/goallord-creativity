@@ -1,4 +1,4 @@
-/* Goallord Creativity — Service Worker
+/* Goallord Creativity - Service Worker
  * Strategy:
  *  - HTML navigations: network-first, fall back to cache, fall back to /offline.html
  *  - Static assets (css/js/font/image): cache-first, revalidate in background
@@ -93,7 +93,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin === self.location.origin && shouldSkip(url)) return;
 
   // Never intercept cross-origin requests (Cloudinary images, CDN scripts, etc.).
-  // The image handler's opaque-response path was breaking cross-origin images —
+  // The image handler's opaque-response path was breaking cross-origin images -
   // let the browser fetch them natively instead.
   if (url.origin !== self.location.origin) return;
 
