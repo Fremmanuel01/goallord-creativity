@@ -210,6 +210,69 @@ router.delete('/cards/:cardId', requireLecturer, async (req, res) => {
 
 // ── STUDENT READ ROUTES ──────────────────────────────────────
 
+// GET /api/flashcards/overview - student: per-set completion dots for the dashboard.
+// Each published set becomes a dot: done (answered), missed (class day passed, not
+// done), or pending (available, not yet passed).
+const _DAY = 86400000;
+const _WEEKDAY = { Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6 };
+function _dateForWeekDay(startMs, startDow, week, dayName) {
+  const targetDow = _WEEKDAY[dayName];
+  if (targetDow === undefined) return null;
+  const windowStart = startMs + (week - 1) * 7 * _DAY;
+  const offset = (targetDow - startDow + 7) % 7;
+  return new Date(windowStart + offset * _DAY).toISOString().slice(0, 10);
+}
+router.get('/overview', requireStudentAuth, async (req, res) => {
+  try {
+    const student = await studentsDb.findById(req.user.id, { fields: 'id, batch_id' });
+    if (!student || !student.batch_id) return res.json({ items: [] });
+    const batchId = student.batch_id;
+
+    const sets = await flashcardsDb.findSets({ batch_id: batchId, published: true });
+    if (!sets.length) return res.json({ items: [] });
+    const setIds = sets.map(s => s.id);
+
+    const [{ data: batch }, { data: cardRows }, { data: respRows }, { data: curr }] = await Promise.all([
+      supabase.from('batches').select('start_date').eq('id', batchId).single(),
+      supabase.from('flashcards').select('set_id').in('set_id', setIds),
+      supabase.from('flashcard_responses').select('set_id, is_correct').eq('student_id', req.user.id).in('set_id', setIds),
+      supabase.from('curriculum_entries').select('week, day, topic').eq('batch_id', batchId),
+    ]);
+
+    const cardCount = {}; (cardRows || []).forEach(c => { cardCount[c.set_id] = (cardCount[c.set_id] || 0) + 1; });
+    const done = {}, correct = {};
+    (respRows || []).forEach(r => { done[r.set_id] = true; if (r.is_correct) correct[r.set_id] = (correct[r.set_id] || 0) + 1; });
+    const dayByKey = {}; (curr || []).forEach(e => { dayByKey[e.week + '|' + e.topic] = e.day; });
+
+    const startMs = batch && batch.start_date ? new Date(batch.start_date + 'T00:00:00Z').getTime() : null;
+    const startDow = startMs != null ? new Date(startMs).getUTCDay() : null;
+    const now = Date.now();
+
+    const items = sets.map(s => {
+      const day = dayByKey[s.week + '|' + s.topic] || null;
+      let date = null, passed = false;
+      if (startMs != null && day) {
+        date = _dateForWeekDay(startMs, startDow, s.week, day);
+        if (date) passed = new Date(date + 'T23:59:59Z').getTime() < now;
+      } else if (startMs != null) {
+        const wkEnd = startMs + s.week * 7 * _DAY;
+        date = new Date(wkEnd).toISOString().slice(0, 10);
+        passed = wkEnd < now;
+      }
+      const isDone = !!done[s.id];
+      return {
+        setId: s.id, week: s.week, day, topic: s.topic, date,
+        total: cardCount[s.id] || 0, correct: correct[s.id] || 0,
+        done: isDone, passed,
+        status: isDone ? 'done' : (passed ? 'missed' : 'pending'),
+      };
+    });
+    res.json({ items });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/flashcards/sets/student/progress - sets the student has completed + scores
 router.get('/sets/student/progress', requireStudentAuth, async (req, res) => {
   try {

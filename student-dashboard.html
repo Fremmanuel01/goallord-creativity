@@ -507,6 +507,20 @@
         </div>
       </div>
 
+      <!-- ── Flashcards completion ── -->
+      <div id="fcOverview" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 22px;margin-bottom:28px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+          <div class="section-title" style="margin:0">Flashcards</div>
+          <div style="display:flex;gap:14px;font-size:11px;color:var(--muted)">
+            <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:50%;background:#22c55e"></span>Done</span>
+            <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:50%;background:#ef4444"></span>Missed</span>
+            <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:50%;background:#3a4150"></span>Upcoming</span>
+          </div>
+        </div>
+        <div id="fcDots" style="display:flex;flex-wrap:wrap;gap:10px"></div>
+        <div id="fcSummary" style="font-size:12px;color:var(--muted);margin-top:12px"></div>
+      </div>
+
       <!-- ── Profile Hero Card ── -->
       <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:28px;">
         <!-- Banner gradient -->
@@ -935,9 +949,41 @@
 
       renderAll();
       if (progress) renderProgress(progress);
+      loadFlashcardOverview();
     } catch (err) {
       document.getElementById('loadingState').textContent = 'Failed to load data. Please refresh.';
     }
+  }
+
+  // ── Flashcards completion dots ───────────────────────────────
+  async function loadFlashcardOverview() {
+    try {
+      const res = await fetch('/api/flashcards/overview', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (!res.ok) return;
+      const data = await res.json();
+      renderFlashcardOverview(data.items || []);
+    } catch (e) { /* non-critical */ }
+  }
+  function renderFlashcardOverview(items) {
+    const wrap = document.getElementById('fcOverview');
+    if (!wrap) return;
+    if (!items.length) { wrap.style.display = 'none'; return; }
+    const colors = { done: '#22c55e', missed: '#ef4444', pending: '#3a4150' };
+    const labels = { done: 'Done', missed: 'Missed', pending: 'Upcoming' };
+    document.getElementById('fcDots').innerHTML = items.map(function (it) {
+      const c = colors[it.status] || '#3a4150';
+      let ttl = 'Week ' + it.week + (it.day ? ' · ' + it.day : '') + ' · ' + it.topic + ' — ' + labels[it.status];
+      if (it.done) ttl += ' (' + it.correct + '/' + it.total + ')';
+      ttl = ttl.replace(/"/g, '&quot;').replace(/</g, '&lt;');
+      return '<span title="' + ttl + '" onclick="switchTab(\'flashcards\')" ' +
+        'style="width:20px;height:20px;border-radius:50%;background:' + c + ';cursor:pointer;transition:transform .15s" ' +
+        'onmouseenter="this.style.transform=\'scale(1.25)\'" onmouseleave="this.style.transform=\'scale(1)\'"></span>';
+    }).join('');
+    const doneN = items.filter(function (i) { return i.status === 'done'; }).length;
+    const missedN = items.filter(function (i) { return i.status === 'missed'; }).length;
+    document.getElementById('fcSummary').textContent =
+      doneN + ' of ' + items.length + ' done' + (missedN ? ' · ' + missedN + ' missed' : '');
+    wrap.style.display = 'block';
   }
 
   // ── Progress hero renderer ────────────────────────────────────
