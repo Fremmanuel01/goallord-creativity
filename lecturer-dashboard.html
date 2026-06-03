@@ -314,6 +314,10 @@
   <div class="page-header">
     <h1 id="pageTitle">My Dashboard</h1>
     <p id="pageSubtitle" style="color:var(--muted);font-size:14px;">Loading…</p>
+    <div id="batchPickerWrap" style="display:none;align-items:center;gap:10px;margin-top:12px">
+      <label for="batchPicker" style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:0">Viewing batch</label>
+      <select id="batchPicker" onchange="onBatchChange()" style="max-width:280px;width:auto"></select>
+    </div>
   </div>
 
   <div class="tabs">
@@ -740,16 +744,55 @@ function populateWeekFilter(selId) {
 
 // ── OVERVIEW ────────────────────────────────────────────────
 let activeBatch = null;
+let myBatches = [];
+
+// Load the batches this lecturer is assigned to and wire up the picker.
+async function loadMyBatches() {
+  const res = await api('/api/lecturers/me/batches');
+  myBatches = Array.isArray(res) ? res : [];
+  const wrap = document.getElementById('batchPickerWrap');
+  const sel  = document.getElementById('batchPicker');
+  if (!myBatches.length) {
+    activeBatch = null;
+    if (wrap) wrap.style.display = 'none';
+    return;
+  }
+  // Keep the current selection if still valid, else default to the first batch.
+  const cur = activeBatch && myBatches.find(b => (b._id || b.id) === (activeBatch._id || activeBatch.id));
+  activeBatch = cur || myBatches[0];
+  if (sel) {
+    sel.innerHTML = myBatches.map(b => {
+      const id = b._id || b.id;
+      return `<option value="${id}">${escHtml(b.name)}${b.isActive === false ? ' (inactive)' : ''}</option>`;
+    }).join('');
+    sel.value = activeBatch._id || activeBatch.id;
+  }
+  if (wrap) wrap.style.display = myBatches.length > 1 ? 'flex' : 'none';
+}
+
+// Switch the active batch and reload the visible tab for the new batch.
+function onBatchChange() {
+  const sel = document.getElementById('batchPicker');
+  const b = myBatches.find(x => (x._id || x.id) === sel.value);
+  if (!b) return;
+  activeBatch = b;
+  loaded = {};                                  // force every tab to reload for the new batch
+  const idx = Array.from(document.querySelectorAll('.tab')).findIndex(t => t.classList.contains('active'));
+  const curTab = ALL_TABS[idx] || 'overview';
+  loaded[curTab] = true;
+  (LOADERS[curTab] || loadOverview)();
+  if (curTab !== 'overview') loadOverview();     // keep the header/subtitle fresh
+}
 
 async function loadOverview() {
-  const [batchRes, matsRes, asgnRes, flashRes] = await Promise.all([
-    api('/api/batches/active'),
+  // activeBatch is chosen via the batch picker (loadMyBatches); the counts below
+  // are the lecturer's overall library totals, not batch-scoped.
+  const [matsRes, asgnRes, flashRes] = await Promise.all([
     api('/api/materials'),
     api('/api/assignments'),
     api('/api/flashcards/sets'),
   ]);
-  activeBatch = batchRes?._id ? batchRes : null;
-  document.getElementById('pageSubtitle').textContent = activeBatch ? `Active Batch: ${activeBatch.name}` : 'No active batch set';
+  document.getElementById('pageSubtitle').textContent = activeBatch ? `Active Batch: ${activeBatch.name}` : 'No batch assigned yet';
   document.getElementById('ov-mats').textContent  = Array.isArray(matsRes)  ? matsRes.length  : (matsRes?.length  || 0);
   document.getElementById('ov-asgn').textContent  = Array.isArray(asgnRes)  ? asgnRes.length  : (asgnRes?.length  || 0);
   document.getElementById('ov-flash').textContent = Array.isArray(flashRes) ? flashRes.length : (flashRes?.length || 0);
@@ -1451,7 +1494,7 @@ async function markAllRead() {
 
 // ── INIT ─────────────────────────────────────────────────────
 loaded['overview'] = true;
-loadOverview();
+(async () => { await loadMyBatches(); loadOverview(); })();
 loadNotifications();
 </script>
   <!-- pwa:body-end-start -->

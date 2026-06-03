@@ -70,6 +70,16 @@ router.post('/2fa/setup',   requireLecturerOnly, twoFactor.setup);
 router.post('/2fa/enable',  requireLecturerOnly, twoFactor.enable);
 router.post('/2fa/disable', requireLecturerOnly, twoFactor.disable);
 
+// GET /api/lecturers/me/batches - batches the signed-in lecturer is assigned to
+router.get('/me/batches', requireLecturerOnly, async (req, res) => {
+  try {
+    const batches = await lecturersDb.batchesFor(req.user.id);
+    res.json(batches);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/lecturers
 router.get('/', requireAuth, async (req, res) => {
   try {

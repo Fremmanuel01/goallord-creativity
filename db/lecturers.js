@@ -80,5 +80,15 @@ module.exports = {
       .maybeSingle();
     if (error) throw error;
     return data;
+  },
+
+  // Batches this lecturer is assigned to (via the lecturer_batches junction).
+  async batchesFor(lecturerId) {
+    const { data, error } = await supabase
+      .from('lecturer_batches')
+      .select('batch:batches(*)')
+      .eq('lecturer_id', lecturerId);
+    if (error) throw error;
+    return (data || []).map(r => r.batch).filter(Boolean);
   }
 };
