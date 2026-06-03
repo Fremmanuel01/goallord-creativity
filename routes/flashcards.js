@@ -1,10 +1,74 @@
 const express      = require('express');
 const flashcardsDb = require('../db/flashcards');
 const studentsDb   = require('../db/students');
+const supabase     = require('../lib/supabase');
+const { generateContent } = require('../utils/gemini');
 const { requireLecturer } = require('../middleware/lecturerAuth');
 const { requireStudentAuth } = require('../middleware/studentAuth');
 
 const router = express.Router();
+
+// ── AI GENERATION ───────────────────────────────────────────
+// POST /api/flashcards/generate { batch, week, day, count } — build a flashcard
+// set from a curriculum day's notes using Gemini. Defaults to 10 questions.
+router.post('/generate', requireLecturer, async (req, res) => {
+  try {
+    const { batch, week } = req.body;
+    const day = req.body.day;
+    if (!batch || !week) return res.status(400).json({ error: 'batch and week are required' });
+    const lecturerId = req.user.role === 'lecturer' ? req.user.id : (req.body.lecturer || req.user.id);
+    const count = Math.min(Math.max(Number(req.body.count) || 10, 3), 15);
+
+    // Pull the curriculum for this week (optionally a specific day).
+    let q = supabase.from('curriculum_entries')
+      .select('topic, subtopics, objectives, resources, day')
+      .eq('batch_id', batch).eq('week', Number(week));
+    if (day) q = q.eq('day', day);
+    const { data: entries } = await q.order('day');
+    if (!entries || !entries.length) {
+      return res.status(404).json({ error: 'No curriculum found for this week. Add the curriculum first.' });
+    }
+
+    const title = entries[0].topic;
+    const source = entries.map(e =>
+      `Topic: ${e.topic}\nKey points: ${(e.subtopics || []).join('; ')}\nObjectives: ${e.objectives}\nTools: ${(e.resources || []).join(', ')}`
+    ).join('\n\n');
+
+    const prompt =
+      `You are creating revision flashcards for a practical, hands-on film and video bootcamp. ` +
+      `Using ONLY the curriculum notes below, write exactly ${count} multiple-choice questions that test real understanding of the key concepts and practical skills. ` +
+      `Each question must have exactly 4 distinct options with one clearly correct answer, plus a one-sentence explanation. ` +
+      `Keep them clear and practical for beginners; avoid trick questions.\n\n` +
+      `CURRICULUM (Week ${week}${day ? ', ' + day : ''}):\n${source}\n\n` +
+      `Return ONLY a JSON array (no markdown) of this exact shape:\n` +
+      `[{"question":"...","options":["...","...","...","..."],"correctAnswer":"<exact text of the correct option>","explanation":"..."}]`;
+
+    const raw = await generateContent({ prompt, json: true, maxOutputTokens: 4096, temperature: 0.5 });
+    let cards;
+    try { cards = JSON.parse(raw); }
+    catch { const m = raw.match(/\[[\s\S]*\]/); cards = m ? JSON.parse(m[0]) : null; }
+
+    const valid = (Array.isArray(cards) ? cards : []).filter(c =>
+      c && typeof c.question === 'string' && Array.isArray(c.options) &&
+      c.options.length >= 2 && c.correctAnswer && c.options.includes(c.correctAnswer)
+    ).slice(0, count);
+    if (!valid.length) return res.status(502).json({ error: 'The AI did not return usable flashcards. Please try again.' });
+
+    const set = await flashcardsDb.createSet({
+      batch_id: batch, lecturer_id: lecturerId, title,
+      topic: title, week: Number(week), generated_by: 'ai', published: false,
+    });
+    const rows = valid.map((c, i) => ({
+      set_id: set.id, batch_id: batch, question: c.question,
+      correct_answer: c.correctAnswer, options: c.options,
+      explanation: c.explanation || '', topic: title, week: Number(week), order: i,
+    }));
+    await flashcardsDb.createCards(rows);
+    res.status(201).json({ set, count: rows.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // ── FLASHCARD SETS ──────────────────────────────────────────
 

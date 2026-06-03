@@ -57,6 +57,13 @@ module.exports = {
     return data;
   },
 
+  async createCards(rows) {
+    if (!rows || !rows.length) return [];
+    const { data, error } = await supabase.from(CARDS).insert(rows).select();
+    if (error) throw error;
+    return data || [];
+  },
+
   async updateCard(id, updates) {
     const { data, error } = await supabase.from(CARDS).update(updates).eq('id', id).select().single();
     if (error) throw error;
