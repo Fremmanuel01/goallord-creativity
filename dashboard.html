@@ -10261,7 +10261,35 @@ function filterLecturers() {
   renderLecturerTable(allLecturers.filter(l => l.fullName.toLowerCase().includes(q) || l.email.toLowerCase().includes(q)));
 }
 
-function openAddLecturer() {
+// Make sure the batch list is loaded (it's otherwise populated lazily by the
+// Students/Batches pages, so it can be empty when the lecturer modal opens).
+async function ensureBatchesLoaded() {
+  if (allBatchesAdmin && allBatchesAdmin.length) return;
+  try {
+    const res = await apiFetch('/api/batches');
+    const list = Array.isArray(res) ? res : [];
+    allBatchesAdmin = list.slice().sort((a, b) => a.name.localeCompare(b.name));
+  } catch (e) { /* leave empty; UI shows a hint */ }
+}
+
+// Render the batch checkboxes in the lecturer modal, pre-ticking selectedIds.
+function renderLecBatchOptions(selectedIds) {
+  const wrap = document.getElementById('lec-batches');
+  if (!wrap) return;
+  const sel = new Set((selectedIds || []).map(String));
+  if (!allBatchesAdmin || !allBatchesAdmin.length) {
+    wrap.innerHTML = '<span style="font-size:12px;color:var(--muted)">No batches yet. Create a batch first, then assign it here.</span>';
+    return;
+  }
+  wrap.innerHTML = allBatchesAdmin.map(b => {
+    const id = b._id || b.id;
+    const on = sel.has(String(id)) ? 'checked' : '';
+    return `<label style="display:inline-flex;align-items:center;gap:7px;font-size:13px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:7px 11px;cursor:pointer">`
+      + `<input type="checkbox" class="lec-batch-cb" value="${id}" ${on} style="width:16px;height:16px;accent-color:var(--orange)"> ${escapeHtml(b.name)}</label>`;
+  }).join('');
+}
+
+async function openAddLecturer() {
   document.getElementById('lecModalTitle').textContent = 'Add Lecturer';
   document.getElementById('lec-edit-id').value = '';
   ['lec-fullname','lec-email','lec-password','lec-phone','lec-specialization','lec-bio'].forEach(id => {
@@ -10269,6 +10297,8 @@ function openAddLecturer() {
   });
   document.getElementById('lec-status').value = 'Active';
   document.getElementById('lec-password-row').style.display = '';
+  await ensureBatchesLoaded();
+  renderLecBatchOptions([]);
   openModal('lecturerModal');
 }
 
@@ -10285,6 +10315,8 @@ async function openEditLecturer(id) {
   document.getElementById('lec-bio').value           = l.bio || '';
   document.getElementById('lec-status').value        = l.status || 'Active';
   document.getElementById('lec-password-row').style.display = '';
+  await ensureBatchesLoaded();
+  renderLecBatchOptions((l.batches || []).map(b => b._id || b.id));
   openModal('lecturerModal');
 }
 
@@ -10297,6 +10329,7 @@ async function saveLecturer() {
     specialization: document.getElementById('lec-specialization').value.trim(),
     bio:            document.getElementById('lec-bio').value.trim(),
     status:         document.getElementById('lec-status').value,
+    batches:        Array.from(document.querySelectorAll('#lec-batches .lec-batch-cb:checked')).map(cb => cb.value),
   };
   const pwd = document.getElementById('lec-password').value;
   if (!editId && !pwd) { alert('Password is required for new lecturers.'); return; }
@@ -10445,6 +10478,11 @@ function showErr(el, msg) {
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
         </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Assigned Batches</label>
+        <div id="lec-batches" style="display:flex;flex-wrap:wrap;gap:8px;max-height:170px;overflow-y:auto;padding:2px 0"></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">The lecturer can take attendance, post materials, and message students for the batches you tick here.</div>
       </div>
     </div>
     <div class="modal-footer">

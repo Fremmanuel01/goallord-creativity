@@ -609,10 +609,20 @@
       <div class="form-group"><label>Class Date *</label><input id="att-date" type="date"></div>
       <div class="form-group"><label>Topic</label><input id="att-topic" placeholder="e.g. CSS Flexbox"></div>
     </div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Students can self-mark attendance once you open the window after creating the session.</p>
+    <div class="form-group" style="margin-bottom:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <label style="margin:0">Mark Students <span id="att-count" style="color:var(--muted);font-weight:400"></span></label>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="attMarkAll(true)">All present</button>
+          <button type="button" class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="attMarkAll(false)">All absent</button>
+        </div>
+      </div>
+      <div id="att-roster" style="max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:8px"></div>
+      <p style="font-size:12px;color:var(--muted);margin:8px 0 0">Toggle each student here, or leave them and open the session afterward so students can self-mark.</p>
+    </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('attModal')">Cancel</button>
-      <button class="btn btn-primary" id="saveAttBtn" onclick="saveAttendance()">Create Session</button>
+      <button class="btn btn-primary" id="saveAttBtn" onclick="saveAttendance()">Save Attendance</button>
     </div>
   </div>
 </div>
@@ -1201,7 +1211,41 @@ function openTakeAttendance() {
   document.getElementById('att-day').value   = '';
   document.getElementById('att-date').value  = new Date().toISOString().slice(0,10);
   document.getElementById('att-topic').value = '';
+  loadAttRoster();
   openModal('attModal');
+}
+
+// Load the batch roster into the modal (all present by default).
+async function loadAttRoster() {
+  const box = document.getElementById('att-roster');
+  box.innerHTML = '<div class="loading" style="padding:18px">Loading students…</div>';
+  let list = allBatchStudents;
+  if (!list || !list.length) {
+    const data = await api(`/api/students?batch=${activeBatch._id}&limit=200`);
+    list = (data && data.data) ? data.data : [];
+    allBatchStudents = list;
+  }
+  if (!list.length) {
+    box.innerHTML = '<div class="empty" style="padding:18px">No students in this batch yet.</div>';
+    document.getElementById('att-count').textContent = '';
+    return;
+  }
+  box.innerHTML = list.map(s => `
+    <label style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;border-bottom:1px solid var(--border);cursor:pointer">
+      <span style="font-size:14px;font-weight:600">${escHtml(s.fullName)}</span>
+      <input type="checkbox" class="att-cb" data-id="${s.id || s._id}" checked onchange="updateAttCount()" style="width:20px;height:20px;accent-color:var(--green)">
+    </label>`).join('');
+  updateAttCount();
+}
+function attMarkAll(present) {
+  document.querySelectorAll('#att-roster .att-cb').forEach(cb => { cb.checked = present; });
+  updateAttCount();
+}
+function updateAttCount() {
+  const all = document.querySelectorAll('#att-roster .att-cb').length;
+  const on  = document.querySelectorAll('#att-roster .att-cb:checked').length;
+  const el = document.getElementById('att-count');
+  if (el) el.textContent = all ? `· ${on}/${all} present` : '';
 }
 
 async function saveAttendance() {
@@ -1213,15 +1257,16 @@ async function saveAttendance() {
   if (!week || !day || !date) {
     errEl.textContent = 'Week, day and date are required.'; errEl.style.display = 'block'; return;
   }
+  const presentStudentIds = Array.from(document.querySelectorAll('#att-roster .att-cb:checked')).map(cb => cb.dataset.id);
   const btn = document.getElementById('saveAttBtn');
-  btn.disabled = true; btn.textContent = 'Creating…';
+  btn.disabled = true; btn.textContent = 'Saving…';
   const res = await api('/api/attendance', {
     method: 'POST',
-    body: JSON.stringify({ batchId: activeBatch._id, week: Number(week), day, classDate: date, topic, presentStudentIds: [] })
+    body: JSON.stringify({ batchId: activeBatch._id, week: Number(week), day, classDate: date, topic, presentStudentIds })
   });
-  btn.disabled = false; btn.textContent = 'Create Session';
+  btn.disabled = false; btn.textContent = 'Save Attendance';
   if (res?.success) { closeModal('attModal'); loadAttendance(); }
-  else { errEl.textContent = res?.error || 'Failed to create session.'; errEl.style.display = 'block'; }
+  else { errEl.textContent = res?.error || 'Failed to save attendance.'; errEl.style.display = 'block'; }
 }
 
 async function openSession(id) {
