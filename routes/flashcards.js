@@ -9,8 +9,32 @@ const { requireStudentAuth } = require('../middleware/studentAuth');
 const router = express.Router();
 
 // ── AI GENERATION ───────────────────────────────────────────
-// POST /api/flashcards/generate { batch, week, day, count } — build a flashcard
-// set from a curriculum day's notes using Gemini. Defaults to 10 questions.
+// Generate `count` validated MCQ cards from one curriculum entry (a day).
+async function generateCardsForEntry(entry, week, count) {
+  const source =
+    `Topic: ${entry.topic}\nKey points: ${(entry.subtopics || []).join('; ')}\n` +
+    `Objectives: ${entry.objectives}\nTools: ${(entry.resources || []).join(', ')}`;
+  const prompt =
+    `You are creating revision flashcards for a practical, hands-on film and video bootcamp. ` +
+    `Using ONLY the curriculum notes below, write exactly ${count} multiple-choice questions that test real understanding of the key concepts and practical skills. ` +
+    `Each question must have exactly 4 distinct options with one clearly correct answer, plus a one-sentence explanation. ` +
+    `Keep them clear and practical for beginners; avoid trick questions.\n\n` +
+    `CURRICULUM (Week ${week}, ${entry.day} - ${entry.topic}):\n${source}\n\n` +
+    `Return ONLY a JSON array (no markdown) of this exact shape:\n` +
+    `[{"question":"...","options":["...","...","...","..."],"correctAnswer":"<exact text of the correct option>","explanation":"..."}]`;
+
+  const raw = await generateContent({ prompt, json: true, maxOutputTokens: 4096, temperature: 0.5 });
+  let cards;
+  try { cards = JSON.parse(raw); }
+  catch { const m = raw.match(/\[[\s\S]*\]/); cards = m ? JSON.parse(m[0]) : null; }
+  return (Array.isArray(cards) ? cards : []).filter(c =>
+    c && typeof c.question === 'string' && Array.isArray(c.options) &&
+    c.options.length >= 2 && c.correctAnswer && c.options.includes(c.correctAnswer)
+  ).slice(0, count);
+}
+
+// POST /api/flashcards/generate { batch, week, day?, count } — build flashcard sets
+// from curriculum. With a day, one set; without (whole week), one set per class day.
 router.post('/generate', requireLecturer, async (req, res) => {
   try {
     const { batch, week } = req.body;
@@ -19,7 +43,6 @@ router.post('/generate', requireLecturer, async (req, res) => {
     const lecturerId = req.user.role === 'lecturer' ? req.user.id : (req.body.lecturer || req.user.id);
     const count = Math.min(Math.max(Number(req.body.count) || 10, 3), 15);
 
-    // Pull the curriculum for this week (optionally a specific day).
     let q = supabase.from('curriculum_entries')
       .select('topic, subtopics, objectives, resources, day')
       .eq('batch_id', batch).eq('week', Number(week));
@@ -29,42 +52,34 @@ router.post('/generate', requireLecturer, async (req, res) => {
       return res.status(404).json({ error: 'No curriculum found for this week. Add the curriculum first.' });
     }
 
-    const title = entries[0].topic;
-    const source = entries.map(e =>
-      `Topic: ${e.topic}\nKey points: ${(e.subtopics || []).join('; ')}\nObjectives: ${e.objectives}\nTools: ${(e.resources || []).join(', ')}`
-    ).join('\n\n');
-
-    const prompt =
-      `You are creating revision flashcards for a practical, hands-on film and video bootcamp. ` +
-      `Using ONLY the curriculum notes below, write exactly ${count} multiple-choice questions that test real understanding of the key concepts and practical skills. ` +
-      `Each question must have exactly 4 distinct options with one clearly correct answer, plus a one-sentence explanation. ` +
-      `Keep them clear and practical for beginners; avoid trick questions.\n\n` +
-      `CURRICULUM (Week ${week}${day ? ', ' + day : ''}):\n${source}\n\n` +
-      `Return ONLY a JSON array (no markdown) of this exact shape:\n` +
-      `[{"question":"...","options":["...","...","...","..."],"correctAnswer":"<exact text of the correct option>","explanation":"..."}]`;
-
-    const raw = await generateContent({ prompt, json: true, maxOutputTokens: 4096, temperature: 0.5 });
-    let cards;
-    try { cards = JSON.parse(raw); }
-    catch { const m = raw.match(/\[[\s\S]*\]/); cards = m ? JSON.parse(m[0]) : null; }
-
-    const valid = (Array.isArray(cards) ? cards : []).filter(c =>
-      c && typeof c.question === 'string' && Array.isArray(c.options) &&
-      c.options.length >= 2 && c.correctAnswer && c.options.includes(c.correctAnswer)
-    ).slice(0, count);
-    if (!valid.length) return res.status(502).json({ error: 'The AI did not return usable flashcards. Please try again.' });
-
-    const set = await flashcardsDb.createSet({
-      batch_id: batch, lecturer_id: lecturerId, title,
-      topic: title, week: Number(week), generated_by: 'ai', published: false,
-    });
-    const rows = valid.map((c, i) => ({
-      set_id: set.id, batch_id: batch, question: c.question,
-      correct_answer: c.correctAnswer, options: c.options,
-      explanation: c.explanation || '', topic: title, week: Number(week), order: i,
+    // One set per curriculum day. Independent so one day failing won't lose the others.
+    const results = await Promise.all(entries.map(async (entry) => {
+      try {
+        const valid = await generateCardsForEntry(entry, week, count);
+        if (!valid.length) return { day: entry.day, error: 'no usable cards' };
+        const set = await flashcardsDb.createSet({
+          batch_id: batch, lecturer_id: lecturerId, title: entry.topic,
+          topic: entry.topic, week: Number(week), generated_by: 'ai', published: false,
+        });
+        const rows = valid.map((c, i) => ({
+          set_id: set.id, batch_id: batch, question: c.question,
+          correct_answer: c.correctAnswer, options: c.options,
+          explanation: c.explanation || '', topic: entry.topic, week: Number(week), order: i,
+        }));
+        await flashcardsDb.createCards(rows);
+        return { day: entry.day, setId: set.id, title: entry.topic, count: rows.length };
+      } catch (e) {
+        return { day: entry.day, error: e.message };
+      }
     }));
-    await flashcardsDb.createCards(rows);
-    res.status(201).json({ set, count: rows.length });
+
+    const created = results.filter(r => r.setId);
+    if (!created.length) return res.status(502).json({ error: 'Could not generate flashcards. Please try again.' });
+    res.status(201).json({
+      sets: created,
+      totalCards: created.reduce((s, r) => s + r.count, 0),
+      failures: results.filter(r => r.error),
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

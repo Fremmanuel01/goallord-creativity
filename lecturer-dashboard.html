@@ -549,10 +549,10 @@
   <div class="modal" style="max-width:440px">
     <div class="modal-header"><h3>Generate flashcards</h3><button class="modal-close" onclick="closeModal('flashGenModal')">✕</button></div>
     <div class="error-msg" id="fgenErr"></div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Pick a curriculum session. The AI writes multiple-choice questions from that day's topic and key points.</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px">The AI writes multiple-choice questions from your curriculum. Pick a single day, or generate the whole week (a separate set for each class day) at once.</p>
     <div class="form-row">
       <div class="form-group"><label>Week *</label><select id="fgen-week"></select></div>
-      <div class="form-group"><label>Day</label><select id="fgen-day"><option value="">Whole week</option></select></div>
+      <div class="form-group"><label>Day</label><select id="fgen-day"><option value="">Whole week (one set per class day)</option></select></div>
     </div>
     <div class="form-group"><label>Questions</label><input id="fgen-count" type="number" min="3" max="15" value="10"></div>
     <div class="modal-footer">
@@ -1154,7 +1154,7 @@ function fgenUpdateDays() {
   const week = Number(document.getElementById('fgen-week').value);
   const days = _fgenEntries.filter(e => e.week === week);
   const dsel = document.getElementById('fgen-day');
-  dsel.innerHTML = '<option value="">Whole week</option>' +
+  dsel.innerHTML = '<option value="">Whole week (one set per class day)</option>' +
     days.map(e => `<option value="${e.day}">${e.day} - ${escHtml((e.topic || '').slice(0, 40))}</option>`).join('');
 }
 async function generateFlashcards() {
@@ -1170,10 +1170,14 @@ async function generateFlashcards() {
     body: JSON.stringify({ batch: activeBatch._id, week: Number(week), day: day || undefined, count: Number(count) })
   });
   btn.disabled = false; btn.textContent = '✨ Generate';
-  if (res && res.set) {
+  if (res && Array.isArray(res.sets) && res.sets.length) {
     closeModal('flashGenModal');
     loaded['flashcards'] = true; loadFlashcards();
-    alert(`Generated ${res.count} flashcards in "${res.set.title}". Review and publish them for students.`);
+    const n = res.sets.length;
+    const failed = (res.failures || []).length;
+    alert(`Generated ${n} set${n > 1 ? 's' : ''} with ${res.totalCards} questions` +
+      (failed ? ` (${failed} day could not be generated - try again)` : '') +
+      `. Review and publish them for students.`);
   } else {
     errEl.textContent = (res && res.error) || 'Generation failed. Please try again.';
     errEl.style.display = 'block';
