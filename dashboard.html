@@ -1985,6 +1985,39 @@
 
   /* 16px form fields stop iOS from zooming when focused */
   @media (max-width: 640px) { input, select, textarea { font-size: 16px; } }
+
+  /* ============================================================
+     MOBILE APP BAR (admin) — bottom bar + drawer menu (≤768px).
+     19 pages is too many for a tab bar, so the bar surfaces the 3
+     most-used pages plus a Menu button that opens the full sidebar.
+     ============================================================ */
+  .bottomnav { display: none; }
+  @media (max-width: 768px) {
+    .bottomnav {
+      display: flex; position: fixed; z-index: 140; left: 0; right: 0; bottom: 0;
+      padding-bottom: var(--safe-b);
+      background: var(--card); border-top: 1px solid var(--border);
+      box-shadow: 0 -8px 24px rgba(0,0,0,0.4);
+    }
+    .bn-item {
+      flex: 1; appearance: none; background: none; border: 0; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+      height: 58px; padding: 8px 4px 6px; color: var(--muted); font-size: 11px; font-weight: 600;
+      position: relative; transition: color 0.18s ease, transform 0.12s ease; -webkit-tap-highlight-color: transparent;
+    }
+    .bn-item svg { width: 23px; height: 23px; stroke: currentColor; fill: none; stroke-width: 1.9; }
+    .bn-item:active { transform: scale(0.92); }
+    .bn-item.active { color: var(--orange); }
+    .bn-badge {
+      position: absolute; top: 5px; left: calc(50% + 7px);
+      min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px;
+      background: var(--orange); color: #1a0f06; font-size: 10px; font-weight: 800;
+      display: none; align-items: center; justify-content: center; line-height: 1;
+    }
+    .bn-badge.show { display: flex; }
+    /* Reserve space so the bar never covers content */
+    .content-area { padding-bottom: calc(58px + var(--safe-b) + 16px) !important; }
+  }
 </style>
   <!-- pwa:head-start -->
   <meta name="theme-color" content="#D66A1F">
@@ -4758,8 +4791,9 @@ function initAdminChat() {
     self: { type: 'admin', id: me.id, name: me.name || me.email || 'Admin' },
     onUnread: function (n) {
       const b = document.getElementById('msgTabBadge');
-      if (!b) return;
-      if (n > 0) { b.textContent = n; b.style.display = ''; } else { b.style.display = 'none'; }
+      if (b) { if (n > 0) { b.textContent = n; b.style.display = ''; } else { b.style.display = 'none'; } }
+      const bn = document.getElementById('bnMsgBadge');
+      if (bn) { if (n > 0) { bn.textContent = n > 99 ? '99+' : n; bn.classList.add('show'); } else { bn.classList.remove('show'); } }
     }
   });
 }
@@ -10793,6 +10827,56 @@ async function loadProjectAnalytics() {
   </script>
   <script src="/assets/js/pwa-install.js" defer></script>
   <!-- pwa:body-end-end -->
+  <!-- ── MOBILE BOTTOM BAR (admin, phones only) ── -->
+  <nav class="bottomnav" id="bottomNav" aria-label="Primary">
+    <button class="bn-item active" data-page="overview" onclick="barNav('overview')" aria-label="Overview">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/><path d="M9.5 21v-6h5v6"/></svg>
+      <span>Overview</span>
+    </button>
+    <button class="bn-item" data-page="students" onclick="barNav('students')" aria-label="Students">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M17.5 20a5.2 5.2 0 0 0-3-4.7"/></svg>
+      <span>Students</span>
+    </button>
+    <button class="bn-item" data-page="messages" onclick="barNav('messages')" aria-label="Messages">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.2 7.6L3 21l1.9-5.8A8.5 8.5 0 1 1 21 11.5Z"/></svg>
+      <span class="bn-badge" id="bnMsgBadge"></span>
+      <span>Messages</span>
+    </button>
+    <button class="bn-item" data-page="menu" onclick="barMenu()" aria-label="Menu">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      <span>Menu</span>
+    </button>
+  </nav>
+
+  <script>
+  (function () {
+    var BAR_PAGES = { overview: 1, students: 1, messages: 1 };
+    function setActive(page) {
+      var items = document.querySelectorAll('.bn-item');
+      for (var i = 0; i < items.length; i++) {
+        var t = items[i].getAttribute('data-page');
+        // Highlight the matching page, or "Menu" when the active page lives in the drawer.
+        items[i].classList.toggle('active', (t === page) || (t === 'menu' && !BAR_PAGES[page]));
+      }
+    }
+    // Wrap navigate() so any navigation (bar or drawer) syncs the bar and closes the drawer.
+    var _origNav = window.navigate;
+    if (typeof _origNav === 'function') {
+      window.navigate = function (p) {
+        _origNav(p);
+        setActive(p);
+        if (typeof window.closeMobileSidebar === 'function') window.closeMobileSidebar();
+      };
+    }
+    window.barNav = function (page) { if (typeof window.navigate === 'function') window.navigate(page); };
+    window.barMenu = function () { document.body.classList.toggle('mobile-open'); };
+    document.addEventListener('DOMContentLoaded', function () {
+      var active = document.querySelector('.nav-item.active');
+      setActive(active ? active.getAttribute('data-page') : 'overview');
+    });
+  })();
+  </script>
+
   <script defer src="/assets/js/portal-pwa.js"></script>
 </body>
 </html>

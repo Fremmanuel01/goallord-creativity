@@ -158,6 +158,13 @@
       '<button class="yes" type="button">Enable</button>';
     document.body.appendChild(bar);
 
+    // If the page has a visible bottom nav, lift the bar above it so the two
+    // never overlap (and so the bar never blocks taps on the nav).
+    var nav = document.querySelector('.bottomnav');
+    if (nav && getComputedStyle(nav).display !== 'none') {
+      bar.style.bottom = (nav.offsetHeight + 12) + 'px';
+    }
+
     bar.querySelector('.yes').addEventListener('click', function () {
       enable().finally(function () { bar.remove(); });
     });

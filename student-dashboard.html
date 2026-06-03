@@ -276,6 +276,97 @@
     .topnav { padding-left: max(16px, var(--safe-l)); padding-right: max(16px, var(--safe-r)); }
     .main { padding-left: max(16px, var(--safe-l)); padding-right: max(16px, var(--safe-r)); padding-bottom: calc(48px + var(--safe-b)); }
   }
+
+  /* ============================================================
+     MOBILE-FIRST APP SHELL — bottom navigation + sheet (≤640px)
+     Thumb-zone nav replaces the top tab strip on phones.
+     ============================================================ */
+  :root { --nav-h: 58px; }
+
+  .bottomnav { display: none; }
+  .more-sheet, .sheet-scrim { display: none; }
+
+  @media (max-width: 640px) {
+    /* The top tab strip is replaced by the bottom bar on phones */
+    .tabs { display: none !important; }
+
+    /* Tighter, calmer page header — content leads, not chrome */
+    .page-header { margin-bottom: 20px; }
+    .page-header h1 { font-size: 22px; letter-spacing: -0.01em; }
+
+    /* Reserve room so the fixed bar never covers content */
+    .main { padding-bottom: calc(var(--nav-h) + var(--safe-b) + 20px) !important; }
+
+    /* Slim the top bar: drop the sub-label, keep brand + actions compact */
+    .topnav { min-height: 56px; }
+    .topnav-brand .logo-sub { display: none; }
+    .topnav-brand img { height: 38px !important; }
+
+    /* ── Bottom navigation ── */
+    .bottomnav {
+      display: flex; position: fixed; z-index: 120;
+      left: 0; right: 0; bottom: 0;
+      padding-bottom: var(--safe-b);
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      box-shadow: 0 -8px 24px rgba(0,0,0,0.35);
+    }
+    .bn-item {
+      flex: 1; appearance: none; background: none; border: 0; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+      height: var(--nav-h); padding: 8px 4px 6px;
+      color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 0.2px;
+      position: relative; transition: color 0.18s ease, transform 0.12s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .bn-item svg { width: 23px; height: 23px; stroke: currentColor; fill: none; stroke-width: 1.9; transition: transform 0.18s cubic-bezier(.22,.61,.36,1); }
+    .bn-item:active { transform: scale(0.92); }
+    .bn-item.active { color: var(--orange); }
+    .bn-item.active svg { transform: translateY(-1px); }
+    .bn-badge {
+      position: absolute; top: 5px; left: calc(50% + 7px);
+      min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px;
+      background: var(--orange); color: #1a0f06; font-size: 10px; font-weight: 800;
+      display: none; align-items: center; justify-content: center; line-height: 1;
+    }
+    .bn-badge.show { display: flex; }
+
+    /* ── "More" bottom sheet ── */
+    .sheet-scrim {
+      display: block; position: fixed; inset: 0; z-index: 130;
+      background: rgba(0,0,0,0.55); opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .sheet-scrim.open { opacity: 1; pointer-events: auto; }
+    .more-sheet {
+      display: block; position: fixed; z-index: 131;
+      left: 0; right: 0; bottom: 0;
+      transform: translateY(102%);
+      transition: transform 0.32s cubic-bezier(.22,.61,.36,1);
+      background: var(--card);
+      border-radius: 20px 20px 0 0;
+      border-top: 1px solid var(--border);
+      padding: 8px 12px calc(14px + var(--safe-b));
+      box-shadow: 0 -16px 40px rgba(0,0,0,0.5);
+    }
+    .more-sheet.open { transform: translateY(0); }
+    .more-grip { width: 38px; height: 4px; border-radius: 99px; background: var(--border); margin: 8px auto 10px; }
+    .more-title { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; padding: 0 8px 8px; }
+    .more-link {
+      width: 100%; appearance: none; background: none; border: 0; cursor: pointer;
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 10px; color: var(--text); font-size: 15px; font-weight: 600;
+      border-radius: 12px; text-align: left; transition: background 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .more-link:active { background: rgba(255,255,255,0.05); }
+    .more-link svg { width: 21px; height: 21px; stroke: var(--muted); fill: none; stroke-width: 1.9; flex-shrink: 0; }
+    .more-link .chev { margin-left: auto; color: var(--muted); font-size: 18px; }
+
+    /* Subtle content entrance when a destination changes */
+    .tab-enter { animation: tabEnter 0.22s cubic-bezier(.22,.61,.36,1); }
+    @keyframes tabEnter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  }
 </style>
   <!-- pwa:head-start -->
   <meta name="theme-color" content="#D66A1F">
@@ -781,8 +872,13 @@
       self: { type: 'student', id: me.id, name: me.fullName },
       onUnread: function (n) {
         const b = document.getElementById('msgTabBadge');
-        if (!b) return;
-        if (n > 0) { b.textContent = n; b.style.display = ''; } else { b.style.display = 'none'; }
+        if (b) {
+          if (n > 0) { b.textContent = n; b.style.display = ''; } else { b.style.display = 'none'; }
+        }
+        const bn = document.getElementById('bnMsgBadge');
+        if (bn) {
+          if (n > 0) { bn.textContent = n > 99 ? '99+' : n; bn.classList.add('show'); } else { bn.classList.remove('show'); }
+        }
       }
     });
   }
@@ -1964,6 +2060,78 @@ function closeStudentReceipt() {
   </script>
   <script src="/assets/js/pwa-install.js" defer></script>
   <!-- pwa:body-end-end -->
+  <!-- ── MOBILE BOTTOM NAVIGATION (phones only) ── -->
+  <nav class="bottomnav" id="bottomNav" aria-label="Primary">
+    <button class="bn-item active" data-tab="overview" onclick="navTo('overview')" aria-label="Home">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/><path d="M9.5 21v-6h5v6"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="bn-item" data-tab="assignments" onclick="navTo('assignments')" aria-label="Assignments">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4h6a1 1 0 0 1 1 1v0a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v0a1 1 0 0 1 1-1Z"/><path d="M8 5H6a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2"/><path d="m9 13 2 2 4-4"/></svg>
+      <span>Assignments</span>
+    </button>
+    <button class="bn-item" data-tab="messages" onclick="navTo('messages')" aria-label="Messages">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.2 7.6L3 21l1.9-5.8A8.5 8.5 0 1 1 21 11.5Z"/></svg>
+      <span class="bn-badge" id="bnMsgBadge"></span>
+      <span>Messages</span>
+    </button>
+    <button class="bn-item" data-tab="more" onclick="openMore()" aria-label="More">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+      <span>More</span>
+    </button>
+  </nav>
+
+  <!-- ── "More" bottom sheet ── -->
+  <div class="sheet-scrim" id="moreScrim" onclick="closeMore()"></div>
+  <div class="more-sheet" id="moreSheet" role="dialog" aria-label="More destinations">
+    <div class="more-grip"></div>
+    <div class="more-title">More</div>
+    <button class="more-link" onclick="navTo('attendance')"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg> Attendance <span class="chev">›</span></button>
+    <button class="more-link" onclick="navTo('payments')"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg> Payments <span class="chev">›</span></button>
+    <button class="more-link" onclick="navTo('curriculum')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M19 17H6a2 2 0 0 0-2 2"/></svg> Curriculum <span class="chev">›</span></button>
+    <button class="more-link" onclick="navTo('materials')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> Materials <span class="chev">›</span></button>
+    <button class="more-link" onclick="navTo('flashcards')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></svg> Flashcards <span class="chev">›</span></button>
+    <button class="more-link" onclick="navTo('profile')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg> Profile <span class="chev">›</span></button>
+  </div>
+
+  <script>
+  (function () {
+    var SHEET_TABS = { attendance: 1, payments: 1, curriculum: 1, materials: 1, flashcards: 1, profile: 1 };
+    function setActive(tab) {
+      var items = document.querySelectorAll('.bn-item');
+      for (var i = 0; i < items.length; i++) {
+        var t = items[i].getAttribute('data-tab');
+        var on = (t === tab) || (t === 'more' && SHEET_TABS[tab]);
+        items[i].classList.toggle('active', !!on);
+      }
+    }
+    // Keep the bottom bar in sync with ALL navigation, including the
+    // existing in-content buttons (e.g. "view assignments") and the
+    // header avatar, by wrapping the original switchTab.
+    var _origSwitch = window.switchTab;
+    if (typeof _origSwitch === 'function') {
+      window.switchTab = function (tab) { _origSwitch(tab); setActive(tab); };
+    }
+    window.navTo = function (tab) {
+      if (typeof window.switchTab === 'function') window.switchTab(tab);
+      else setActive(tab);
+      window.closeMore();
+      try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { window.scrollTo(0, 0); }
+      var main = document.querySelector('.main');
+      if (main) { main.classList.remove('tab-enter'); void main.offsetWidth; main.classList.add('tab-enter'); }
+    };
+    window.openMore = function () {
+      var s = document.getElementById('moreSheet'), c = document.getElementById('moreScrim');
+      if (s) s.classList.add('open'); if (c) c.classList.add('open');
+    };
+    window.closeMore = function () {
+      var s = document.getElementById('moreSheet'), c = document.getElementById('moreScrim');
+      if (s) s.classList.remove('open'); if (c) c.classList.remove('open');
+    };
+    document.addEventListener('DOMContentLoaded', function () { setActive('overview'); });
+  })();
+  </script>
+
   <script defer src="/assets/js/portal-pwa.js"></script>
 </body>
 </html>

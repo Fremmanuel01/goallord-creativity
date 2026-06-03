@@ -73,6 +73,29 @@
       btn: 'padding:0 18px;background:var(--orange,#D66A1F);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;'
     };
 
+    // ── Mobile single-pane behaviour ──
+    // Desktop keeps the two-column layout. On phones the thread list fills the
+    // width; opening a thread (or the contacts picker) slides a full-width
+    // conversation pane over it, with a back button to return.
+    function ensureChatStyles() {
+      if (document.getElementById('gl-chat-styles')) return;
+      const st = document.createElement('style');
+      st.id = 'gl-chat-styles';
+      st.textContent =
+        '@media (max-width:640px){' +
+          '.gl-chat{position:relative;height:calc(100dvh - 215px)!important;min-height:360px;}' +
+          '.gl-chat > #chatList{width:100%!important;border-right:none!important;}' +
+          '.gl-chat > #chatConvo{position:absolute;inset:0;z-index:2;background:var(--card,#171A21);' +
+            'transform:translateX(100%);transition:transform .28s cubic-bezier(.22,.61,.36,1);}' +
+          '.gl-chat.gl-chat--convo > #chatConvo{transform:translateX(0);}' +
+          '.gl-chat .gl-chat-back{display:inline-flex!important;align-items:center;}' +
+        '}';
+      document.head.appendChild(st);
+    }
+    function chatWrapEl() { return el.querySelector('#chatWrap'); }
+    function showConvoPane() { const w = chatWrapEl(); if (w) w.classList.add('gl-chat--convo'); }
+    function showListPane() { const w = chatWrapEl(); if (w) w.classList.remove('gl-chat--convo'); }
+
     function avatar(name, group) {
       const initials = group ? '👥' : (name || '?').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
       const bg = group ? 'rgba(30,75,255,0.18)' : 'rgba(214,106,31,0.18)';
@@ -81,8 +104,9 @@
     }
 
     function shell() {
+      ensureChatStyles();
       el.innerHTML =
-        '<div style="' + C.wrap + '">' +
+        '<div class="gl-chat" id="chatWrap" style="' + C.wrap + '">' +
           '<div style="' + C.list + '" id="chatList">' +
             '<div style="padding:12px 14px;border-bottom:1px solid var(--border,#2A2F3A);display:flex;gap:8px;align-items:center;">' +
               '<strong style="font-size:14px;flex:1;">Messages</strong>' +
@@ -132,6 +156,7 @@
     }
 
     function openThread(id) {
+      showConvoPane();
       state.activeId = id;
       const t = state.threads.find(function (x) { return x.id === id; });
       state.activeType = t ? t.type : null;
@@ -175,7 +200,7 @@
 
       convo.innerHTML =
         '<div style="padding:14px 16px;border-bottom:1px solid var(--border,#2A2F3A);display:flex;gap:10px;align-items:center;">' +
-          '<button id="chatBack" style="background:none;border:none;color:var(--muted,#A0A6B3);font-size:20px;cursor:pointer;display:none;">‹</button>' +
+          '<button id="chatBack" class="gl-chat-back" style="background:none;border:none;color:var(--muted,#A0A6B3);font-size:22px;cursor:pointer;display:none;padding:0 4px;line-height:1;">‹</button>' +
           avatar(title, isGroup) +
           '<div style="min-width:0;flex:1;"><div style="font-weight:700;font-size:14px;">' + esc(title) + '</div>' +
           '<div style="font-size:11px;color:var(--muted,#A0A6B3);">' + subtitle + '</div></div>' +
@@ -216,7 +241,7 @@
       }
 
       const back = document.getElementById('chatBack');
-      if (back) back.onclick = function () { el.querySelector('#chatList').style.display = ''; document.getElementById('chatConvo').style.display = 'none'; };
+      if (back) back.onclick = showListPane;
     }
 
     function renderMessages(messages) {
@@ -250,8 +275,16 @@
     }
 
     function openContacts() {
+      showConvoPane();
       const convo = document.getElementById('chatConvo');
-      convo.innerHTML = '<div style="padding:16px;"><div style="font-weight:700;font-size:14px;margin-bottom:12px;">Start a conversation</div><div id="chatContacts" style="color:var(--muted,#A0A6B3);font-size:13px;">Loading…</div></div>';
+      convo.innerHTML =
+        '<div style="padding:14px 16px;border-bottom:1px solid var(--border,#2A2F3A);display:flex;gap:8px;align-items:center;">' +
+          '<button class="gl-chat-back" id="chatContactsBack" style="background:none;border:none;color:var(--muted,#A0A6B3);font-size:22px;cursor:pointer;display:none;padding:0 4px;line-height:1;">‹</button>' +
+          '<div style="font-weight:700;font-size:15px;flex:1;">Start a conversation</div>' +
+        '</div>' +
+        '<div id="chatContacts" style="padding:14px 16px;overflow-y:auto;flex:1;color:var(--muted,#A0A6B3);font-size:13px;">Loading…</div>';
+      const cb = document.getElementById('chatContactsBack');
+      if (cb) cb.onclick = showListPane;
       const fill = function () {
         const box = document.getElementById('chatContacts');
         const people = (state.contacts && state.contacts.people) || [];
