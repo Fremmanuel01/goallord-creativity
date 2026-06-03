@@ -1,6 +1,7 @@
 const express      = require('express');
 const attendanceDb = require('../db/attendance');
 const studentsDb   = require('../db/students');
+const notificationsDb = require('../db/notifications');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { requireStudent } = require('../middleware/studentAuth');
 const { requireLecturer } = require('../middleware/lecturerAuth');
@@ -61,14 +62,20 @@ router.get('/open', requireStudent, async (req, res) => {
     if (!student || !student.batch_id) return res.json({ session: null });
 
     const session = await attendanceDb.findOpenSession(student.batch_id);
-    res.json({ session: session || null });
+    if (!session) return res.json({ session: null });
+
+    // Treat an expired window as closed; never leak the code to students.
+    const expired = session.auto_close_at && new Date(session.auto_close_at).getTime() < Date.now();
+    if (expired) return res.json({ session: null });
+    const { check_in_code, ...safe } = session;
+    res.json({ session: { ...safe, codeRequired: !!check_in_code } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 // ── GET /api/attendance - admin/lecturer: list sessions ────────
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireLecturer, async (req, res) => {
   try {
     const { batch, week, month, page = 1, limit = 50 } = req.query;
     const filter = {};
@@ -119,11 +126,62 @@ router.post('/', requireLecturer, async (req, res) => {
   }
 });
 
+// ── PATCH /api/attendance/:id - lecturer edits an existing session ──
+// Loads/edits marks by id (does NOT change week/day identity), so it never
+// blind-overwrites: the lecturer dashboard preloads current marks first.
+router.patch('/:id', requireLecturer, async (req, res) => {
+  try {
+    const { topic, presentStudentIds } = req.body || {};
+    const session = await attendanceDb.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Not found' });
+
+    const updates = {};
+    if (topic !== undefined) updates.topic = topic;
+    if (Array.isArray(presentStudentIds)) {
+      const allStudents = await studentsDb.findByBatch(session.batch_id);
+      const presentSet = new Set(presentStudentIds.map(String));
+      updates.present_students = presentStudentIds;
+      updates.absent_students = allStudents.map(s => s.id).filter(id => !presentSet.has(String(id)));
+    }
+    await attendanceDb.update(req.params.id, updates);
+    res.json({ success: true, sessionId: req.params.id });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 // ── PATCH /api/attendance/:id/open - open self-mark window ────
+// Optional { code } (students must enter it) and { minutes } (auto-close after).
 router.patch('/:id/open', requireLecturer, async (req, res) => {
   try {
-    const doc = await attendanceDb.update(req.params.id, { is_open: true, session_opened_at: new Date().toISOString() });
+    const { code, minutes } = req.body || {};
+    const base = { is_open: true, session_opened_at: new Date().toISOString() };
+    const codeVal = (code && String(code).trim()) ? String(code).trim() : null;
+    const autoCloseAt = minutes && Number(minutes) > 0
+      ? new Date(Date.now() + Number(minutes) * 60000).toISOString() : null;
+
+    let doc;
+    try {
+      // Full update incl. integrity fields (needs migration 012).
+      doc = await attendanceDb.update(req.params.id, { ...base, check_in_code: codeVal, auto_close_at: autoCloseAt });
+    } catch (e) {
+      // Columns not present yet → open without integrity fields (deploy-before-migrate safe).
+      doc = await attendanceDb.update(req.params.id, base);
+    }
     if (!doc) return res.status(404).json({ error: 'Not found' });
+
+    // Notify the batch's students that check-in is open (fires push via the chokepoint).
+    try {
+      const students = await studentsDb.findByBatch(doc.batch_id);
+      const notifs = (students || []).map(s => ({
+        recipient_id: s.id, recipient_type: 'Student', type: 'attendance_open',
+        title: 'Attendance is open',
+        message: `Mark yourself present for Week ${doc.week} (${doc.day})${codeVal ? ' — ask your lecturer for the code' : ''}`,
+        link: '/student-dashboard.html#attendance'
+      }));
+      if (notifs.length) await notificationsDb.insertMany(notifs);
+    } catch (_) { /* notification/push is best-effort */ }
+
     res.json(doc);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -133,7 +191,13 @@ router.patch('/:id/open', requireLecturer, async (req, res) => {
 // ── PATCH /api/attendance/:id/close - close self-mark window ──
 router.patch('/:id/close', requireLecturer, async (req, res) => {
   try {
-    const doc = await attendanceDb.update(req.params.id, { is_open: false, session_closed_at: new Date().toISOString() });
+    const base = { is_open: false, session_closed_at: new Date().toISOString() };
+    let doc;
+    try {
+      doc = await attendanceDb.update(req.params.id, { ...base, check_in_code: null, auto_close_at: null });
+    } catch (e) {
+      doc = await attendanceDb.update(req.params.id, base);
+    }
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
   } catch (err) {
@@ -147,9 +211,15 @@ router.post('/:id/self-mark', requireStudent, async (req, res) => {
     const studentId = req.student.id;
     const session = await attendanceDb.findById(req.params.id);
     if (!session) return res.status(404).json({ error: 'Session not found' });
-    if (!session.is_open) return res.status(403).json({ error: 'Attendance window is closed' });
 
-    // Add to present, remove from absent using markStudent
+    const expired = session.auto_close_at && new Date(session.auto_close_at).getTime() < Date.now();
+    if (!session.is_open || expired) return res.status(403).json({ error: 'Attendance window is closed' });
+
+    if (session.check_in_code) {
+      const given = (req.body && req.body.code ? String(req.body.code) : '').trim();
+      if (given !== session.check_in_code) return res.status(403).json({ error: 'Incorrect check-in code' });
+    }
+
     await attendanceDb.markStudent(req.params.id, studentId, 'present');
     res.json({ success: true });
   } catch (err) {
@@ -193,7 +263,7 @@ router.get('/student/:studentId', requireAuth, async (req, res) => {
 });
 
 // ── GET /api/attendance/:id - session detail ──────────────────
-router.get('/:id', requireAuth, async (req, res) => {
+router.get('/:id', requireLecturer, async (req, res) => {
   try {
     const doc = await attendanceDb.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });

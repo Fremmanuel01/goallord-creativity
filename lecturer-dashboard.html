@@ -601,12 +601,13 @@
 <!-- ── TAKE ATTENDANCE MODAL ── -->
 <div class="modal-overlay" id="attModal">
   <div class="modal">
-    <div class="modal-header"><h3>Take Attendance</h3><button class="modal-close" onclick="closeModal('attModal')">✕</button></div>
+    <div class="modal-header"><h3 id="attModalTitle">Take Attendance</h3><button class="modal-close" onclick="closeModal('attModal')">✕</button></div>
     <div class="error-msg" id="attErr"></div>
+    <input type="hidden" id="att-edit-id">
     <div class="form-row">
       <div class="form-group"><label>Week *</label><input id="att-week" type="number" min="1" max="16" placeholder="e.g. 3"></div>
       <div class="form-group"><label>Day *</label>
-        <select id="att-day"><option value="">Select day</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option></select>
+        <select id="att-day"><option value="">Select day</option></select>
       </div>
     </div>
     <div class="form-row">
@@ -627,6 +628,23 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('attModal')">Cancel</button>
       <button class="btn btn-primary" id="saveAttBtn" onclick="saveAttendance()">Save Attendance</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── OPEN CHECK-IN MODAL (self-mark window) ── -->
+<div class="modal-overlay" id="checkinModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header"><h3>Open check-in</h3><button class="modal-close" onclick="closeModal('checkinModal')">✕</button></div>
+    <input type="hidden" id="checkin-session-id">
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Students get a notification and can mark themselves present until you close the window.</p>
+    <div class="form-row">
+      <div class="form-group"><label>Check-in code <span style="color:var(--muted);font-weight:400">(optional)</span></label><input id="checkin-code" placeholder="e.g. 4821" maxlength="12"></div>
+      <div class="form-group"><label>Auto-close after <span style="color:var(--muted);font-weight:400">(min)</span></label><input id="checkin-minutes" type="number" min="1" max="240" placeholder="e.g. 15"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('checkinModal')">Cancel</button>
+      <button class="btn btn-primary" id="checkinOpenBtn" onclick="confirmOpenCheckin()">Open window</button>
     </div>
   </div>
 </div>
@@ -1237,47 +1255,86 @@ async function loadAttendance() {
     <td data-label="Topic" style="color:var(--muted);font-size:13px">${escHtml(s.topic || '-')}</td>
     <td data-label="Present" style="color:var(--green);font-weight:600">${s.presentStudents?.length || 0}</td>
     <td data-label="Absent" style="color:var(--red);font-weight:600">${s.absentStudents?.length || 0}</td>
-    <td data-label="Window">${s.isOpen ? '<span style="color:var(--green);font-weight:600;font-size:12px">Open</span>' : '<span style="color:var(--muted);font-size:12px">Closed</span>'}</td>
+    <td data-label="Window">${s.isOpen ? '<span style="color:var(--green);font-weight:600;font-size:12px">Open</span>' + (s.checkInCode ? ` · code <strong>${escHtml(s.checkInCode)}</strong>` : '') : '<span style="color:var(--muted);font-size:12px">Closed</span>'}</td>
     <td data-label="" style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openTakeAttendance('${s._id}')">Edit</button>
       ${s.isOpen
-        ? `<button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="closeSession('${s._id}')">Close Window</button>`
-        : `<button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--green);border-color:rgba(34,197,94,0.3)" onclick="openSession('${s._id}')">Open Window</button>`}
+        ? `<button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="closeSession('${s._id}')">Close</button>`
+        : `<button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--green);border-color:rgba(34,197,94,0.3)" onclick="openCheckinPrompt('${s._id}')">Open check-in</button>`}
     </td>
   </tr>`).join('');
 }
 
-function openTakeAttendance() {
-  if (!activeBatch) { alert('No active batch. Contact admin to set one.'); return; }
-  const errEl = document.getElementById('attErr');
-  errEl.style.display = 'none';
-  document.getElementById('att-week').value  = '';
-  document.getElementById('att-day').value   = '';
-  document.getElementById('att-date').value  = new Date().toISOString().slice(0,10);
-  document.getElementById('att-topic').value = '';
-  loadAttRoster();
+// Current week derived from the batch start date (1-based, clamped to total weeks).
+function currentWeek() {
+  const b = activeBatch;
+  if (!b || !b.startDate) return '';
+  const start = new Date(String(b.startDate).slice(0, 10) + 'T00:00:00');
+  const wk = Math.floor((Date.now() - start.getTime()) / (7 * 86400000)) + 1;
+  return Math.min(Math.max(wk, 1), b.totalWeeks || 12);
+}
+
+// Populate the Day select from the batch's class_days (any weekday).
+function fillDayOptions() {
+  const days = (activeBatch && Array.isArray(activeBatch.classDays) && activeBatch.classDays.length)
+    ? activeBatch.classDays
+    : ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  document.getElementById('att-day').innerHTML =
+    '<option value="">Select day</option>' + days.map(d => `<option>${escHtml(d)}</option>`).join('');
+  return days;
+}
+
+// New session (no id) or edit an existing one (id) — prefills + loads current marks.
+async function openTakeAttendance(sessionId) {
+  if (!activeBatch) { alert('No batch selected.'); return; }
+  document.getElementById('attErr').style.display = 'none';
+  const days = fillDayOptions();
+  if (sessionId) {
+    document.getElementById('attModalTitle').textContent = 'Edit Attendance';
+    const s = await api(`/api/attendance/${sessionId}`);
+    if (!s || !s._id) { alert('Could not load this session.'); return; }
+    document.getElementById('att-edit-id').value = sessionId;
+    document.getElementById('att-week').value  = s.week || '';
+    document.getElementById('att-day').value   = s.day || '';
+    document.getElementById('att-date').value  = (s.classDate || '').slice(0, 10);
+    document.getElementById('att-topic').value = s.topic || '';
+    await loadAttRoster(new Set((s.presentStudents || []).map(String)));
+  } else {
+    document.getElementById('attModalTitle').textContent = 'Take Attendance';
+    document.getElementById('att-edit-id').value = '';
+    document.getElementById('att-week').value  = currentWeek();
+    const today = new Date();
+    document.getElementById('att-date').value  = today.toISOString().slice(0, 10);
+    const todayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+    document.getElementById('att-day').value   = days.includes(todayName) ? todayName : (days[0] || '');
+    document.getElementById('att-topic').value = '';
+    await loadAttRoster();
+  }
   openModal('attModal');
 }
 
-// Load the batch roster into the modal (all present by default).
-async function loadAttRoster() {
+// Load the roster (fresh for the active batch). presentSet → pre-check only those
+// (edit); omitted → everyone present (new session).
+async function loadAttRoster(presentSet) {
   const box = document.getElementById('att-roster');
   box.innerHTML = '<div class="loading" style="padding:18px">Loading students…</div>';
-  let list = allBatchStudents;
-  if (!list || !list.length) {
-    const data = await api(`/api/students?batch=${activeBatch._id}&limit=200`);
-    list = (data && data.data) ? data.data : [];
-    allBatchStudents = list;
-  }
+  const data = await api(`/api/students?batch=${activeBatch._id}&limit=200`);
+  const list = (data && data.data) ? data.data : [];
+  allBatchStudents = list;
   if (!list.length) {
     box.innerHTML = '<div class="empty" style="padding:18px">No students in this batch yet.</div>';
     document.getElementById('att-count').textContent = '';
     return;
   }
-  box.innerHTML = list.map(s => `
+  box.innerHTML = list.map(s => {
+    const id = s.id || s._id;
+    const checked = presentSet ? (presentSet.has(String(id)) ? 'checked' : '') : 'checked';
+    return `
     <label style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;border-bottom:1px solid var(--border);cursor:pointer">
       <span style="font-size:14px;font-weight:600">${escHtml(s.fullName)}</span>
-      <input type="checkbox" class="att-cb" data-id="${s.id || s._id}" checked onchange="updateAttCount()" style="width:20px;height:20px;accent-color:var(--green)">
-    </label>`).join('');
+      <input type="checkbox" class="att-cb" data-id="${id}" ${checked} onchange="updateAttCount()" style="width:20px;height:20px;accent-color:var(--green)">
+    </label>`;
+  }).join('');
   updateAttCount();
 }
 function attMarkAll(present) {
@@ -1292,6 +1349,7 @@ function updateAttCount() {
 }
 
 async function saveAttendance() {
+  const editId = document.getElementById('att-edit-id').value;
   const week  = document.getElementById('att-week').value;
   const day   = document.getElementById('att-day').value;
   const date  = document.getElementById('att-date').value;
@@ -1303,17 +1361,37 @@ async function saveAttendance() {
   const presentStudentIds = Array.from(document.querySelectorAll('#att-roster .att-cb:checked')).map(cb => cb.dataset.id);
   const btn = document.getElementById('saveAttBtn');
   btn.disabled = true; btn.textContent = 'Saving…';
-  const res = await api('/api/attendance', {
-    method: 'POST',
-    body: JSON.stringify({ batchId: activeBatch._id, week: Number(week), day, classDate: date, topic, presentStudentIds })
-  });
+  let res;
+  if (editId) {
+    // Edit by id: never changes week/day identity, never blind-overwrites.
+    res = await api(`/api/attendance/${editId}`, { method: 'PATCH', body: JSON.stringify({ topic, presentStudentIds }) });
+  } else {
+    res = await api('/api/attendance', {
+      method: 'POST',
+      body: JSON.stringify({ batchId: activeBatch._id, week: Number(week), day, classDate: date, topic, presentStudentIds })
+    });
+  }
   btn.disabled = false; btn.textContent = 'Save Attendance';
   if (res?.success) { closeModal('attModal'); loadAttendance(); }
   else { errEl.textContent = res?.error || 'Failed to save attendance.'; errEl.style.display = 'block'; }
 }
 
-async function openSession(id) {
-  await api(`/api/attendance/${id}/open`, { method: 'PATCH' });
+// Open the self-mark window with an optional code + auto-close timer.
+function openCheckinPrompt(id) {
+  document.getElementById('checkin-session-id').value = id;
+  document.getElementById('checkin-code').value = '';
+  document.getElementById('checkin-minutes').value = '';
+  openModal('checkinModal');
+}
+async function confirmOpenCheckin() {
+  const id = document.getElementById('checkin-session-id').value;
+  const code = document.getElementById('checkin-code').value.trim();
+  const minutes = document.getElementById('checkin-minutes').value;
+  const btn = document.getElementById('checkinOpenBtn');
+  btn.disabled = true; btn.textContent = 'Opening…';
+  await api(`/api/attendance/${id}/open`, { method: 'PATCH', body: JSON.stringify({ code, minutes: minutes ? Number(minutes) : 0 }) });
+  btn.disabled = false; btn.textContent = 'Open window';
+  closeModal('checkinModal');
   loadAttendance();
 }
 
