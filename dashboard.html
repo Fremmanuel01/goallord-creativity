@@ -3947,6 +3947,7 @@
         </select>
         <button class="btn btn-ghost" id="syncFromApplicantsBtn" style="margin-left:auto" onclick="syncStudentsFromApplicants(true)" title="Pull missing names + photos from the applicants table">⟳ Sync from applicants</button>
         <button class="btn btn-ghost" id="bulkBatchBtn" onclick="openBulkBatchAssign()">Bulk assign batch ▾</button>
+        <button class="btn btn-ghost" onclick="openFlashcardMisses()" title="Students who keep missing their flashcards">⚑ Flashcard misses</button>
       </div>
       <div id="stuTableWrap" class="table-wrapper">
         <table style="width:100%;border-collapse:collapse">
@@ -9562,6 +9563,41 @@ async function inlineAssignBatch(studentId, batchId, selectEl) {
   filterStudents();
 }
 
+// ── Flashcard misses (who keeps missing) ──────────────────────
+async function openFlashcardMisses() {
+  const body = document.getElementById('flashMissBody');
+  body.innerHTML = '<div class="loading" style="padding:30px;text-align:center;color:var(--muted)">Loading…</div>';
+  openModal('flashMissModal');
+  try {
+    const batch = document.getElementById('stu-batch-filter')?.value || '';
+    const data = await apiFetch('/api/flashcards/missing-report' + (batch ? '?batch=' + encodeURIComponent(batch) : ''));
+    const rows = (data && data.students) || [];
+    if (!rows.length) {
+      body.innerHTML = '<div class="empty" style="padding:36px;text-align:center;color:var(--muted)">No past flashcard sets yet — nothing to report.</div>';
+      return;
+    }
+    const cell = (v, extra) => `<td style="padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;${extra || ''}">${v}</td>`;
+    const missColor = m => m >= 3 ? '#ef4444' : (m >= 1 ? '#f59e0b' : '#22c55e');
+    body.innerHTML =
+      '<table style="width:100%;border-collapse:collapse">' +
+      '<thead><tr>' +
+        ['Student', 'Batch', 'Missed', 'Done', 'Rate'].map(h =>
+          `<th style="padding:9px 12px;text-align:left;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)">${h}</th>`).join('') +
+      '</tr></thead><tbody>' +
+      rows.map(r =>
+        '<tr>' +
+        cell(`<strong>${escapeHtml(r.name)}</strong>`) +
+        cell(`<span style="color:var(--muted)">${escapeHtml(r.batch)}</span>`) +
+        cell(`<strong style="color:${missColor(r.missed)}">${r.missed}</strong>`) +
+        cell(`${r.done}/${r.total}`) +
+        cell(`<span style="color:${r.rate >= 70 ? '#22c55e' : r.rate >= 40 ? '#f59e0b' : '#ef4444'}">${r.rate}%</span>`) +
+        '</tr>').join('') +
+      '</tbody></table>';
+  } catch (e) {
+    body.innerHTML = '<div class="empty" style="padding:30px;text-align:center;color:#ef4444">Could not load the report.</div>';
+  }
+}
+
 // ── Bulk batch assignment ─────────────────────────────────────
 async function openBulkBatchAssign() {
   if (!allBatchesAdmin || allBatchesAdmin.length === 0) {
@@ -10488,6 +10524,20 @@ function showErr(el, msg) {
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('lecturerModal')">Cancel</button>
       <button class="btn btn-primary" id="saveLecBtn" onclick="saveLecturer()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FLASHCARD MISSES MODAL ═════════════════════════════════ -->
+<div class="modal-overlay" id="flashMissModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3>Flashcard misses</h3>
+      <button class="modal-close" onclick="closeModal('flashMissModal')">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 14px">Active students ranked by how many past flashcard sets they haven't completed.</p>
+    <div id="flashMissBody" style="max-height:60vh;overflow-y:auto">
+      <div class="loading" style="padding:30px;text-align:center;color:var(--muted)">Loading…</div>
     </div>
   </div>
 </div>

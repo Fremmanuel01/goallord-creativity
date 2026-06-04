@@ -5,6 +5,7 @@ const supabase     = require('../lib/supabase');
 const { generateContent } = require('../utils/gemini');
 const { requireLecturer } = require('../middleware/lecturerAuth');
 const { requireStudentAuth } = require('../middleware/studentAuth');
+const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -268,6 +269,69 @@ router.get('/overview', requireStudentAuth, async (req, res) => {
       };
     });
     res.json({ items });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/flashcards/missing-report?batch= - admin: students ranked by how many
+// past published flashcard sets they have NOT completed ("who keeps missing").
+router.get('/missing-report', requireAuth, async (req, res) => {
+  try {
+    let bq = supabase.from('batches').select('id, name, start_date').eq('is_active', true);
+    if (req.query.batch) bq = supabase.from('batches').select('id, name, start_date').eq('id', req.query.batch);
+    const { data: batches } = await bq;
+    const now = Date.now();
+    const rows = [];
+
+    for (const batch of batches || []) {
+      if (!batch.start_date) continue;
+      const startMs = new Date(batch.start_date + 'T00:00:00Z').getTime();
+      const startDow = new Date(startMs).getUTCDay();
+
+      const { data: sets } = await supabase.from('flashcard_sets')
+        .select('id, week, topic').eq('batch_id', batch.id).eq('published', true);
+      if (!sets || !sets.length) continue;
+
+      const { data: curr } = await supabase.from('curriculum_entries')
+        .select('week, day, topic').eq('batch_id', batch.id);
+      const dayByKey = {}; (curr || []).forEach(e => { dayByKey[e.week + '|' + e.topic] = e.day; });
+
+      // Only sets whose class day has already passed count toward "missed".
+      const pastSets = sets.filter(s => {
+        const day = dayByKey[s.week + '|' + s.topic];
+        let date;
+        if (day) date = _dateForWeekDay(startMs, startDow, s.week, day);
+        else date = new Date(startMs + s.week * 7 * _DAY).toISOString().slice(0, 10);
+        return date && new Date(date + 'T23:59:59Z').getTime() < now;
+      });
+      if (!pastSets.length) continue;
+      const pastIds = pastSets.map(s => s.id);
+
+      const { data: students } = await supabase.from('students')
+        .select('id, full_name').eq('batch_id', batch.id).eq('status', 'Active');
+      if (!students || !students.length) continue;
+      const ids = students.map(s => s.id);
+
+      const { data: resp } = await supabase.from('flashcard_responses')
+        .select('student_id, set_id').in('set_id', pastIds).in('student_id', ids);
+      const doneBy = {};
+      (resp || []).forEach(r => { (doneBy[r.student_id] = doneBy[r.student_id] || new Set()).add(r.set_id); });
+
+      const total = pastSets.length;
+      for (const s of students) {
+        const doneCount = (doneBy[s.id] || new Set()).size;
+        rows.push({
+          id: s.id, name: s.full_name, batch: batch.name,
+          missed: total - doneCount, done: doneCount, total,
+          rate: total ? Math.round((doneCount / total) * 100) : 0,
+        });
+      }
+    }
+
+    // Worst offenders first: most missed, then lowest completion rate.
+    rows.sort((a, b) => b.missed - a.missed || a.rate - b.rate);
+    res.json({ students: rows, generatedAt: new Date().toISOString() });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
