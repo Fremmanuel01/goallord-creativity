@@ -363,11 +363,16 @@ const PORT = process.env.PORT || 3000;
       setInterval(runDailyChecks, 24 * 60 * 60 * 1000);
     }, 30 * 1000);
 
-    // ── Flashcard reminders at 6 PM (West Africa Time) on class days ──
+    // ── Flashcard nudges (West Africa Time) ──────────────────────
     const cron = require('node-cron');
-    const { runFlashcardReminders } = require('./utils/flashcardReminders');
+    const { runFlashcardReminders, runFlashcardFollowups } = require('./utils/flashcardReminders');
+    // 6 PM: remind students who haven't done today's flashcards.
     cron.schedule('0 18 * * *', () => {
       runFlashcardReminders().catch(e => console.error('Flashcard reminders failed:', e.message));
+    }, { timezone: 'Africa/Lagos' });
+    // 8 AM: follow up with students who missed yesterday's flashcards.
+    cron.schedule('0 8 * * *', () => {
+      runFlashcardFollowups().catch(e => console.error('Flashcard follow-ups failed:', e.message));
     }, { timezone: 'Africa/Lagos' });
   } catch (err) {
     console.error('Startup error:', err.message);

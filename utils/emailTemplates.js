@@ -695,4 +695,50 @@ function flashcardReminderEmail({ fullName, topic, week, day, count, loginUrl, l
 </body></html>`;
 }
 
-module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail, suspensionEmail, graduationEmail, reactivationEmail, applicantPaymentReminderEmail, paymentRetryEmail, proformaInvoiceEmail, flashcardReminderEmail };
+// ── Flashcard missed (next-morning catch-up follow-up) ────────
+function flashcardMissedEmail({ fullName, topic, week, day, count, loginUrl, logoUrl }) {
+  const safeTopic = esc(topic || "yesterday's lesson");
+  const c = Number(count) || 10;
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Catch up on your flashcards</title></head>
+<body style="margin:0;padding:0;background:#0B0D10;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#0B0D10;">You missed ${safeTopic} flashcards — they're still open, catch up now.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0B0D10;"><tr><td align="center" style="padding:36px 16px;">
+    <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+
+      <tr><td align="center" style="padding:0 0 24px;">
+        <img src="${logoUrl}" alt="Goallord Creativity" width="156" style="display:block;width:156px;height:auto;border:0;outline:none;text-decoration:none;">
+      </td></tr>
+
+      <tr><td style="background:#171A21;border:1px solid #2A2F3A;border-radius:18px;overflow:hidden;">
+        <div style="height:4px;background:#ef4444;line-height:4px;font-size:0;">&nbsp;</div>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:36px 38px 34px;">
+          <div style="font-size:32px;line-height:1;margin:0 0 16px;">⏳</div>
+          <h1 style="margin:0 0 8px;color:#F4F6FA;font-size:23px;font-weight:800;letter-spacing:-0.02em;">You missed yesterday's flashcards</h1>
+          <p style="margin:0 0 24px;color:#A0A6B3;font-size:14.5px;line-height:1.65;">Hi ${esc(fullName)}, you didn't finish yesterday's quiz. Good news — it's still open. A few minutes now puts it back on track and keeps your progress green.</p>
+
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0F1115;border:1px solid #2A2F3A;border-radius:14px;">
+            <tr><td style="padding:20px 22px;">
+              <p style="margin:0 0 5px;color:#ef4444;font-size:11.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;">Missed · Week ${esc(String(week))} · ${esc(day || '')}</p>
+              <p style="margin:0 0 9px;color:#F4F6FA;font-size:18px;font-weight:700;line-height:1.3;">${safeTopic}</p>
+              <p style="margin:0;color:#A0A6B3;font-size:13px;">${c} quick questions · about 5 minutes</p>
+            </td></tr>
+          </table>
+
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:28px 0 6px;">
+            <a href="${loginUrl}" style="display:inline-block;background:#D66A1F;color:#1a0f06;text-decoration:none;padding:15px 38px;border-radius:11px;font-weight:800;font-size:15px;">Catch up now &nbsp;&rarr;</a>
+          </td></tr></table>
+          <p style="margin:16px 0 0;color:#6B7280;font-size:12px;text-align:center;">It still counts once you complete it.</p>
+        </td></tr></table>
+      </td></tr>
+
+      <tr><td align="center" style="padding:24px 16px 0;">
+        <p style="margin:0 0 5px;color:#8892A4;font-size:12px;">Goallord Creativity Academy · Onitsha, Nigeria</p>
+        <p style="margin:0;color:#6B7280;font-size:12px;">Questions? <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;text-decoration:none;">hello@goallordcreativity.com</a></p>
+      </td></tr>
+
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
+module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail, suspensionEmail, graduationEmail, reactivationEmail, applicantPaymentReminderEmail, paymentRetryEmail, proformaInvoiceEmail, flashcardReminderEmail, flashcardMissedEmail };
