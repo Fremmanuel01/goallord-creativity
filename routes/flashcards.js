@@ -2,7 +2,7 @@ const express      = require('express');
 const flashcardsDb = require('../db/flashcards');
 const studentsDb   = require('../db/students');
 const supabase     = require('../lib/supabase');
-const { generateContent } = require('../utils/claude');
+const { generateCardsForEntry } = require('../utils/flashcardGenerator');
 const { requireLecturer } = require('../middleware/lecturerAuth');
 const { requireStudentAuth } = require('../middleware/studentAuth');
 const { requireAuth } = require('../middleware/auth');
@@ -10,30 +10,8 @@ const { requireAuth } = require('../middleware/auth');
 const router = express.Router();
 
 // ── AI GENERATION ───────────────────────────────────────────
-// Generate `count` validated MCQ cards from one curriculum entry (a day).
-async function generateCardsForEntry(entry, week, count) {
-  const source =
-    `Topic: ${entry.topic}\nKey points: ${(entry.subtopics || []).join('; ')}\n` +
-    `Objectives: ${entry.objectives}\nTools: ${(entry.resources || []).join(', ')}`;
-  const prompt =
-    `You are creating revision flashcards for a practical, hands-on film and video bootcamp. ` +
-    `Using ONLY the curriculum notes below, write exactly ${count} multiple-choice questions that test real understanding of the key concepts and practical skills. ` +
-    `Each question must have exactly 4 distinct options with one clearly correct answer, plus a one-sentence explanation. ` +
-    `Keep them clear and practical for beginners; avoid trick questions.\n\n` +
-    `CURRICULUM (Week ${week}, ${entry.day} - ${entry.topic}):\n${source}\n\n` +
-    `Return ONLY a JSON array (no markdown) of this exact shape:\n` +
-    `[{"question":"...","options":["...","...","...","..."],"correctAnswer":"<exact text of the correct option>","explanation":"..."}]`;
-
-  // Generous max_tokens: adaptive thinking shares this budget with the ~15-question output.
-  const raw = await generateContent({ prompt, maxOutputTokens: 8000 });
-  let cards;
-  try { cards = JSON.parse(raw); }
-  catch { const m = raw.match(/\[[\s\S]*\]/); cards = m ? JSON.parse(m[0]) : null; }
-  return (Array.isArray(cards) ? cards : []).filter(c =>
-    c && typeof c.question === 'string' && Array.isArray(c.options) &&
-    c.options.length >= 2 && c.correctAnswer && c.options.includes(c.correctAnswer)
-  ).slice(0, count);
-}
+// `generateCardsForEntry` lives in utils/flashcardGenerator so the automatic
+// "generate the moment attendance is taken" flow can reuse the exact same logic.
 
 // POST /api/flashcards/generate { batch, week, day?, count } — build flashcard sets
 // from curriculum. With a day, one set; without (whole week), one set per class day.

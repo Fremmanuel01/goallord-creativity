@@ -115,6 +115,12 @@ router.post('/', requireLecturer, async (req, res) => {
       notes:            notes || ''
     });
 
+    // Auto-generate this class's flashcards from the curriculum topic and email
+    // the whole batch that they're waiting. Fire-and-forget (Claude takes a few
+    // seconds) so the lecturer's save returns instantly; it's idempotent, so a
+    // re-saved session won't generate twice.
+    require('../utils/flashcardAutoGen').generateForAttendance(record, req.user);
+
     res.json({
       success:      true,
       sessionId:    record.id,

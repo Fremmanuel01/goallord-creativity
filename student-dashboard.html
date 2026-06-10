@@ -751,6 +751,17 @@
     </div>
   </div>
 
+  <!-- Assignment Details Modal -->
+  <div id="assignmentDetailsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;" onclick="if(event.target===this)closeAssignmentDetails()">
+    <div style="background:#171A21;border:1px solid #2A2F3A;border-radius:14px;padding:28px;width:100%;max-width:560px;margin:16px;max-height:88vh;overflow-y:auto;">
+      <div id="assignmentDetailsBody"></div>
+      <div style="display:flex;gap:10px;margin-top:24px;justify-content:flex-end;">
+        <button onclick="closeAssignmentDetails()" style="padding:10px 20px;background:transparent;border:1px solid #2A2F3A;border-radius:8px;color:var(--muted);cursor:pointer;">Close</button>
+        <span id="assignmentDetailsActions"></span>
+      </div>
+    </div>
+  </div>
+
   <!-- ── FLASHCARDS TAB ── -->
   <div id="tab-flashcards" style="display:none;">
     <div class="section-title">Flashcard Sets</div>
@@ -1394,6 +1405,7 @@
 
   // ── Assignments ──────────────────────────────────────────────
   let currentSubmitId = null;
+  let assignmentItems = [];
   async function loadAssignments() {
     assignmentsLoaded = true;
     const cont = document.getElementById('assignmentsContent');
@@ -1402,39 +1414,105 @@
       const res = await fetch('/api/assignments/student', { headers: { 'Authorization': 'Bearer ' + token } });
       const items = await res.json();
       if (!Array.isArray(items) || !items.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">📝</div>No assignments yet.</div>'; return; }
-      cont.innerHTML = '<div class="table-wrap"><table><thead><tr><th>Title</th><th>Week</th><th>Deadline</th><th>Max Score</th><th>Status</th><th></th></tr></thead><tbody>' +
+      assignmentItems = items;
+      cont.innerHTML = '<div class="table-wrap"><table><thead><tr><th>Title</th><th>Topic</th><th>Week</th><th>Deadline</th><th>Max Score</th><th>Status</th><th></th></tr></thead><tbody>' +
         items.map(a => {
           const isPast = new Date(a.deadline) < new Date();
           const sub = a.mySubmission;
-          let statusCell, actionCell;
+          let statusCell;
           if (sub) {
             const scored = sub.score != null;
             statusCell = scored
               ? `<span style="color:var(--green);font-weight:600">${sub.score}/${a.maxScore} scored</span>`
               : `<span style="color:var(--blue);font-size:12px">Submitted${sub.isLate ? ' (late)' : ''}</span>`;
-            actionCell = scored && sub.feedback
-              ? `<span style="font-size:12px;color:var(--muted)" title="${sub.feedback}">Feedback ✓</span>`
-              : '';
           } else if (isPast) {
             statusCell = '<span style="color:var(--red);font-size:12px">Missed</span>';
-            actionCell = '';
           } else {
             statusCell = '<span style="color:var(--muted);font-size:12px">Pending</span>';
-            actionCell = `<button onclick="openSubmitModal('${a._id}','${a.title.replace(/'/g,"\\'")}','${(a.description||'').replace(/'/g,"\\'").replace(/\n/g,' ')}')" style="background:var(--orange);color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Submit</button>`;
           }
+          // Every row gets a Details button; pending rows also get Submit.
+          const detailsBtn = `<button onclick="openAssignmentDetails('${a._id}')" style="background:transparent;color:var(--orange);border:1px solid var(--orange);padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Details</button>`;
+          const submitBtn = (!sub && !isPast)
+            ? `<button onclick="openSubmitModal('${a._id}')" style="background:var(--orange);color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Submit</button>`
+            : '';
           return `<tr>
             <td data-label="Title" style="font-weight:600">${escHtml(a.title)}</td>
+            <td data-label="Topic">${escHtml(a.topic || '—')}</td>
             <td data-label="Week">Week ${a.week}</td>
             <td data-label="Deadline">${fmtDate(a.deadline)} ${isPast && !sub ? '<span style="color:var(--red);font-size:11px">(Closed)</span>' : ''}</td>
             <td data-label="Max Score">${a.maxScore}</td>
             <td data-label="Status">${statusCell}</td>
-            <td data-label="">${actionCell}</td>
+            <td data-label="" style="white-space:nowrap;display:flex;gap:8px;justify-content:flex-end">${detailsBtn}${submitBtn}</td>
           </tr>`;
         }).join('') + '</tbody></table></div>';
     } catch { cont.innerHTML = '<div class="empty">Failed to load assignments.</div>'; }
   }
 
+  // Full assignment detail (description, instructions, lecturer, your result).
+  function openAssignmentDetails(id) {
+    const a = assignmentItems.find(x => String(x._id) === String(id));
+    if (!a) return;
+    const isPast = new Date(a.deadline) < new Date();
+    const sub = a.mySubmission;
+    const lecturer = a.lecturer && (a.lecturer.fullName || a.lecturer.full_name);
+
+    let statusHtml;
+    if (sub && sub.score != null) {
+      statusHtml = `<span style="color:var(--green);font-weight:700">Scored ${sub.score}/${a.maxScore}</span>`;
+    } else if (sub) {
+      statusHtml = `<span style="color:var(--blue)">Submitted${sub.isLate ? ' (late)' : ''} — awaiting score</span>`;
+    } else if (isPast) {
+      statusHtml = `<span style="color:var(--red)">Missed — deadline passed</span>`;
+    } else {
+      statusHtml = `<span style="color:var(--muted)">Not submitted yet</span>`;
+    }
+
+    const meta = [
+      ['Topic', a.topic || '—'],
+      ['Week', 'Week ' + a.week],
+      ['Deadline', fmtDate(a.deadline)],
+      ['Max Score', String(a.maxScore)],
+      lecturer ? ['Lecturer', lecturer] : null,
+    ].filter(Boolean).map(([k, v]) =>
+      `<div style="flex:1 1 130px;min-width:120px">
+         <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:3px">${k}</div>
+         <div style="font-size:14px;color:#F4F6FA;font-weight:600">${escHtml(v)}</div>
+       </div>`).join('');
+
+    const desc = (a.description || '').trim();
+    const descHtml = desc
+      ? `<div style="white-space:pre-wrap;line-height:1.65;font-size:14px;color:#C7CDD8">${escHtml(desc)}</div>`
+      : `<div style="font-size:14px;color:var(--muted);font-style:italic">No additional details were provided for this assignment.</div>`;
+
+    const feedbackHtml = (sub && sub.feedback)
+      ? `<div style="margin-top:18px;background:#0F1115;border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+           <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--orange);margin-bottom:6px;font-weight:700">Lecturer feedback</div>
+           <div style="font-size:14px;color:#C7CDD8;line-height:1.6;white-space:pre-wrap">${escHtml(sub.feedback)}</div>
+         </div>`
+      : '';
+
+    const submitBtn = (!sub && !isPast)
+      ? `<button onclick="closeAssignmentDetails();openSubmitModal('${a._id}')" style="padding:10px 22px;background:#D66A1F;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">Submit work</button>`
+      : '';
+
+    document.getElementById('assignmentDetailsBody').innerHTML =
+      `<h3 style="margin:0 0 4px;font-size:20px;color:#F4F6FA">${escHtml(a.title)}</h3>
+       <div style="font-size:13px;margin:0 0 18px">${statusHtml}</div>
+       <div style="display:flex;flex-wrap:wrap;gap:16px;margin:0 0 20px">${meta}</div>
+       <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:8px;font-weight:700">Details &amp; instructions</div>
+       ${descHtml}
+       ${feedbackHtml}`;
+    document.getElementById('assignmentDetailsActions').innerHTML = submitBtn;
+    document.getElementById('assignmentDetailsModal').style.display = 'flex';
+  }
+
+  function closeAssignmentDetails() {
+    document.getElementById('assignmentDetailsModal').style.display = 'none';
+  }
+
   function openSubmitModal(id, title, desc) {
+    const a = assignmentItems.find(x => String(x._id) === String(id));
+    if (a) { title = a.title; desc = a.description; }
     currentSubmitId = id;
     document.getElementById('submitModalTitle').textContent = 'Submit: ' + title;
     document.getElementById('submitModalDesc').textContent = desc || '';
