@@ -4,7 +4,7 @@
 // text. Uses the official @anthropic-ai/sdk.
 const Anthropic = require('@anthropic-ai/sdk');
 
-const MODEL = 'claude-opus-4-8';
+const MODEL = 'claude-sonnet-4-6';
 
 let client;
 function getClient() {
@@ -23,6 +23,7 @@ async function generateContent({ prompt, system, maxOutputTokens = 4096 }) {
     model: MODEL,
     max_tokens: maxOutputTokens,
     thinking: { type: 'adaptive' },
+    output_config: { effort: 'medium' },
     ...(system ? { system } : {}),
     messages: [{ role: 'user', content: prompt }],
   });
