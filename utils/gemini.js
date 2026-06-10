@@ -4,8 +4,11 @@ const https = require('https');
 
 const MODEL = 'gemini-2.5-flash';
 
-// generateContent({ prompt, system?, maxOutputTokens?, temperature?, json? }) → Promise<string>
-function generateContent({ prompt, system, maxOutputTokens = 2048, temperature = 0.4, json = false }) {
+// generateContent({ prompt, system?, maxOutputTokens?, temperature?, json?, thinkingBudget? }) → Promise<string>
+// thinkingBudget: pass 0 to disable gemini-2.5 "thinking" for pure structured
+// extraction — otherwise thinking tokens can exhaust maxOutputTokens and return
+// empty text, especially in JSON mode.
+function generateContent({ prompt, system, maxOutputTokens = 2048, temperature = 0.4, json = false, thinkingBudget }) {
   return new Promise((resolve, reject) => {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return reject(new Error('GEMINI_API_KEY is not set'));
@@ -16,6 +19,7 @@ function generateContent({ prompt, system, maxOutputTokens = 2048, temperature =
     };
     if (system) payload.systemInstruction = { parts: [{ text: system }] };
     if (json) payload.generationConfig.responseMimeType = 'application/json';
+    if (thinkingBudget !== undefined) payload.generationConfig.thinkingConfig = { thinkingBudget };
 
     const body = JSON.stringify(payload);
     const options = {

@@ -24,7 +24,7 @@ async function generateCardsForEntry(entry, week, count) {
     `Return ONLY a JSON array (no markdown) of this exact shape:\n` +
     `[{"question":"...","options":["...","...","...","..."],"correctAnswer":"<exact text of the correct option>","explanation":"..."}]`;
 
-  const raw = await generateContent({ prompt, json: true, maxOutputTokens: 4096, temperature: 0.5 });
+  const raw = await generateContent({ prompt, json: true, maxOutputTokens: 4096, temperature: 0.5, thinkingBudget: 0 });
   let cards;
   try { cards = JSON.parse(raw); }
   catch { const m = raw.match(/\[[\s\S]*\]/); cards = m ? JSON.parse(m[0]) : null; }
@@ -70,12 +70,20 @@ router.post('/generate', requireLecturer, async (req, res) => {
         await flashcardsDb.createCards(rows);
         return { day: entry.day, setId: set.id, title: entry.topic, count: rows.length };
       } catch (e) {
+        console.error(`[Flashcards] generate failed for week ${week} ${entry.day} (${entry.topic}):`, e.message);
         return { day: entry.day, error: e.message };
       }
     }));
 
     const created = results.filter(r => r.setId);
-    if (!created.length) return res.status(502).json({ error: 'Could not generate flashcards. Please try again.' });
+    if (!created.length) {
+      const reason = results.find(r => r.error)?.error;
+      return res.status(502).json({
+        error: reason
+          ? `Could not generate flashcards: ${reason}`
+          : 'Could not generate flashcards. Please try again.',
+      });
+    }
     res.status(201).json({
       sets: created,
       totalCards: created.reduce((s, r) => s + r.count, 0),
