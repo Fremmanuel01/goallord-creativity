@@ -373,6 +373,15 @@ const PORT = process.env.PORT || 3000;
     cron.schedule('0 9 * * *', () => {
       runFlashcardDayAfterReminders().catch(e => console.error('Flashcard day-after reminders failed:', e.message));
     }, { timezone: 'Africa/Lagos' });
+
+    // ── Class reminders (West Africa Time) ───────────────────────
+    // 6 AM every Wednesday & Thursday: remind every active batch's students and
+    // lecturers that class holds today, naming the curriculum topic when there
+    // is one for the day (omitted otherwise).
+    const { runClassReminders } = require('./utils/classReminders');
+    cron.schedule('0 6 * * 3,4', () => {
+      runClassReminders().catch(e => console.error('Class reminders failed:', e.message));
+    }, { timezone: 'Africa/Lagos' });
   } catch (err) {
     console.error('Startup error:', err.message);
     process.exit(1);

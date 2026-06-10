@@ -741,57 +741,70 @@ function flashcardMissedEmail({ fullName, topic, week, day, count, loginUrl, log
 </body></html>`;
 }
 
-// ── Shared shell for the auto-generated flashcard emails ──────
-// One polished, mobile-first dark template so the "ready" and "day-after"
-// mails look like a matched pair. `accent` themes the bar/eyebrow/button,
-// `recap` is the short "what was taught" summary shown in its own panel.
-function flashcardShell({ accent, icon, eyebrow, heading, intro, fullName, topic, week, day, count, recap, ctaLabel, ctaUrl, footnote, logoUrl, preheader }) {
-  const safeTopic = esc(topic || 'today’s lesson');
-  const safeRecap = esc((recap || '').trim());
-  const c = Number(count) || 10;
-  const meta = [week ? `Week ${esc(String(week))}` : null, day ? esc(day) : null, `${c} questions`, '~5 min'].filter(Boolean).join(' &nbsp;·&nbsp; ');
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(heading)}</title></head>
-<body style="margin:0;padding:0;background:#0B0D10;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#0B0D10;">${esc(preheader || '')}</div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0B0D10;"><tr><td align="center" style="padding:36px 16px;">
-    <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
-
-      <tr><td align="center" style="padding:0 0 24px;">
-        <img src="${logoUrl}" alt="Goallord Creativity" width="156" style="display:block;width:156px;height:auto;border:0;outline:none;text-decoration:none;">
-      </td></tr>
-
-      <tr><td style="background:#171A21;border:1px solid #2A2F3A;border-radius:18px;overflow:hidden;">
-        <div style="height:4px;background:${accent};line-height:4px;font-size:0;">&nbsp;</div>
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:38px 38px 34px;">
-          <div style="font-size:34px;line-height:1;margin:0 0 18px;">${icon}</div>
-          <p style="margin:0 0 7px;color:${accent};font-size:11.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;">${esc(eyebrow)}</p>
-          <h1 style="margin:0 0 12px;color:#F4F6FA;font-size:24px;font-weight:800;letter-spacing:-0.02em;line-height:1.25;">${esc(heading)}</h1>
-          <p style="margin:0 0 26px;color:#A0A6B3;font-size:14.5px;line-height:1.65;">Hi ${esc(fullName || 'there')}, ${intro}</p>
-
-          <!-- Lesson recap panel -->
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0F1115;border:1px solid #2A2F3A;border-radius:14px;">
-            <tr><td style="padding:22px 24px;">
-              <p style="margin:0 0 8px;color:#6B7280;font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;">Today&rsquo;s topic</p>
-              <p style="margin:0 0 ${safeRecap ? '14px' : '0'};color:#F4F6FA;font-size:19px;font-weight:800;line-height:1.3;">${safeTopic}</p>
-              ${safeRecap ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-                <td width="3" style="background:${accent};border-radius:3px;">&nbsp;</td>
-                <td style="padding-left:14px;"><p style="margin:0;color:#C7CDD8;font-size:14px;line-height:1.6;">${safeRecap}</p></td>
-              </tr></table>` : ''}
+// ── Corporate transactional email shell ──────────────────────
+// One refined, light, table-based layout shared by the flashcard and class
+// notifications so they read as a coherent, professional set. Structure: a dark
+// brand header band (where the white logo reads), a clean white content body
+// with structured detail rows, an optional topic panel, a single solid CTA, and
+// a muted footer. No icon glyphs/emoji, no gradients — corporate and trustworthy.
+//   recap:    { topicLabel, topic, bodyLabel, body }  (body optional)
+//   infoRows: [{ label, value }]
+function corporateEmail({ eyebrow, heading, intro, recap, infoRows = [], ctaLabel, ctaUrl, footnote, logoUrl, preheader }) {
+  const rows = (infoRows || []).filter(r => r && r.value != null && String(r.value).trim() !== '');
+  const infoTable = rows.length ? `
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F8F9FB;border:1px solid #E7E9EF;border-radius:10px;margin:0 0 8px;">
+            <tr><td style="padding:6px 22px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                ${rows.map((r, i) => `<tr>
+                  <td style="padding:13px 0;${i ? 'border-top:1px solid #ECEEF3;' : ''}color:#737B8A;font-size:13px;line-height:1.4;">${esc(r.label)}</td>
+                  <td align="right" style="padding:13px 0;${i ? 'border-top:1px solid #ECEEF3;' : ''}color:#1A1D24;font-size:13.5px;font-weight:600;line-height:1.4;">${esc(String(r.value))}</td>
+                </tr>`).join('')}
+              </table>
             </td></tr>
-          </table>
+          </table>` : '';
 
-          <p style="margin:18px 0 0;color:#8892A4;font-size:12.5px;letter-spacing:.2px;">${meta}</p>
+  const recapPanel = (recap && recap.topic) ? `
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FFFFFF;border:1px solid #E7E9EF;border-left:3px solid #D66A1F;border-radius:8px;margin:0 0 22px;">
+            <tr><td style="padding:20px 22px;">
+              <p style="margin:0 0 6px;color:#9098A6;font-size:10.5px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;">${esc(recap.topicLabel || 'Topic')}</p>
+              <p style="margin:0${recap.body ? ' 0 16px' : ''};color:#14171F;font-size:18px;font-weight:700;line-height:1.35;">${esc(recap.topic)}</p>
+              ${recap.body ? `<p style="margin:0 0 5px;color:#9098A6;font-size:10.5px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;">${esc(recap.bodyLabel || 'Summary')}</p>
+              <p style="margin:0;color:#4A5160;font-size:14.5px;line-height:1.65;">${esc(recap.body)}</p>` : ''}
+            </td></tr>
+          </table>` : '';
 
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:28px 0 4px;">
-            <a href="${ctaUrl}" style="display:inline-block;background:${accent};color:#160d04;text-decoration:none;padding:15px 40px;border-radius:11px;font-weight:800;font-size:15px;">${esc(ctaLabel)} &nbsp;&rarr;</a>
-          </td></tr></table>
-          <p style="margin:16px 0 0;color:#6B7280;font-size:12px;text-align:center;">${esc(footnote)}</p>
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="x-apple-disable-message-reformatting"><title>${esc(heading)}</title></head>
+<body style="margin:0;padding:0;background:#EDEEF2;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#EDEEF2;">${esc(preheader || '')}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#EDEEF2;"><tr><td align="center" style="padding:32px 16px;">
+    <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#FFFFFF;border:1px solid #E2E5EB;border-radius:14px;overflow:hidden;">
+
+      <!-- Brand header band -->
+      <tr><td style="background:#11141A;padding:30px 40px 0;text-align:center;">
+        <img src="${logoUrl}" alt="Goallord Creativity Academy" width="150" style="display:inline-block;width:150px;height:auto;border:0;outline:none;text-decoration:none;color:#FFFFFF;font-size:17px;font-weight:700;">
+        <div style="height:30px;line-height:30px;font-size:0;">&nbsp;</div>
+      </td></tr>
+      <tr><td style="height:3px;background:#D66A1F;line-height:3px;font-size:0;">&nbsp;</td></tr>
+
+      <!-- Body -->
+      <tr><td style="padding:40px 40px 34px;">
+        <p style="margin:0 0 10px;color:#D66A1F;font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;">${esc(eyebrow)}</p>
+        <h1 style="margin:0 0 16px;color:#14171F;font-size:23px;font-weight:700;letter-spacing:-0.01em;line-height:1.3;">${esc(heading)}</h1>
+        <p style="margin:0 0 26px;color:#4A5160;font-size:15px;line-height:1.7;">${intro}</p>
+
+        ${recapPanel}${infoTable}
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:26px 0 6px;">
+          <a href="${ctaUrl}" style="display:inline-block;background:#D66A1F;color:#FFFFFF;text-decoration:none;padding:14px 34px;border-radius:8px;font-weight:600;font-size:15px;letter-spacing:.2px;">${esc(ctaLabel)}</a>
         </td></tr></table>
+        ${footnote ? `<p style="margin:18px 0 0;color:#8A93A3;font-size:12.5px;line-height:1.6;">${esc(footnote)}</p>` : ''}
       </td></tr>
 
-      <tr><td align="center" style="padding:24px 16px 0;">
-        <p style="margin:0 0 5px;color:#8892A4;font-size:12px;">Goallord Creativity Academy · Onitsha, Nigeria</p>
-        <p style="margin:0;color:#6B7280;font-size:12px;">Questions? <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;text-decoration:none;">hello@goallordcreativity.com</a></p>
+      <!-- Footer -->
+      <tr><td style="background:#F6F7F9;border-top:1px solid #E7E9EF;padding:26px 40px;">
+        <p style="margin:0 0 6px;color:#3E4452;font-size:13px;font-weight:600;">Goallord Creativity Academy</p>
+        <p style="margin:0 0 12px;color:#8A93A3;font-size:12.5px;line-height:1.6;">Onitsha, Nigeria &nbsp;&middot;&nbsp; <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;text-decoration:none;">hello@goallordcreativity.com</a></p>
+        <p style="margin:0;color:#A7AEBB;font-size:11.5px;line-height:1.6;">You are receiving this email because you are enrolled at Goallord Creativity Academy.</p>
       </td></tr>
 
     </table>
@@ -801,14 +814,20 @@ function flashcardShell({ accent, icon, eyebrow, heading, intro, fullName, topic
 
 // Sent the moment a class's flashcards are auto-generated and published.
 function flashcardReadyEmail({ fullName, topic, week, day, count, summary, flashcardsUrl, logoUrl }) {
-  return flashcardShell({
-    accent: '#D66A1F', icon: '🃏',
-    eyebrow: 'Flashcards ready',
-    heading: 'Your flashcards are waiting',
-    intro: 'your flashcards from today’s class are ready. They take about five minutes and lock in what you just learned — give them a go while it’s fresh.',
-    fullName, topic, week, day, count, recap: summary,
-    ctaLabel: 'Do my flashcards', ctaUrl: flashcardsUrl,
-    footnote: 'Complete them to keep your progress tracker green.',
+  const c = Number(count) || 10;
+  return corporateEmail({
+    eyebrow: 'Flashcards · Ready',
+    heading: 'Your flashcards are ready',
+    intro: `Dear ${esc(fullName || 'Student')}, your revision flashcards for today&rsquo;s class are now available in your portal. They take about five minutes, and completing them while the lesson is fresh will help the material stick.`,
+    recap: { topicLabel: 'Topic', topic: topic || 'Today’s lesson', bodyLabel: 'What was taught', body: (summary || '').trim() },
+    infoRows: [
+      week ? { label: 'Week', value: `Week ${week}` } : null,
+      day ? { label: 'Class day', value: day } : null,
+      { label: 'Questions', value: `${c}` },
+      { label: 'Estimated time', value: 'About 5 minutes' },
+    ].filter(Boolean),
+    ctaLabel: 'Open your flashcards', ctaUrl: flashcardsUrl,
+    footnote: 'Completing this set keeps your progress record up to date.',
     logoUrl,
     preheader: `Your ${topic || 'class'} flashcards are ready — about 5 minutes.`,
   });
@@ -816,17 +835,55 @@ function flashcardReadyEmail({ fullName, topic, week, day, count, summary, flash
 
 // Sent the next day to students who still haven’t completed the set.
 function flashcardDayAfterEmail({ fullName, topic, week, day, count, summary, flashcardsUrl, logoUrl }) {
-  return flashcardShell({
-    accent: '#F59E0B', icon: '⏳',
-    eyebrow: 'Still waiting for you',
-    heading: 'Don’t forget your flashcards',
-    intro: 'you haven’t done yesterday’s flashcards yet — and they’re still open. A few minutes now keeps your revision on track and your tracker green.',
-    fullName, topic, week, day, count, recap: summary,
-    ctaLabel: 'Catch up now', ctaUrl: flashcardsUrl,
-    footnote: 'It still counts the moment you complete it.',
+  const c = Number(count) || 10;
+  return corporateEmail({
+    eyebrow: 'Flashcards · Reminder',
+    heading: 'A reminder about your flashcards',
+    intro: `Dear ${esc(fullName || 'Student')}, our records show you have not yet completed yesterday&rsquo;s flashcards. The set is still open &mdash; a few minutes now will keep your revision on track.`,
+    recap: { topicLabel: 'Topic', topic: topic || 'Yesterday’s lesson', bodyLabel: 'What was taught', body: (summary || '').trim() },
+    infoRows: [
+      week ? { label: 'Week', value: `Week ${week}` } : null,
+      day ? { label: 'Class day', value: day } : null,
+      { label: 'Questions', value: `${c}` },
+      { label: 'Estimated time', value: 'About 5 minutes' },
+    ].filter(Boolean),
+    ctaLabel: 'Complete them now', ctaUrl: flashcardsUrl,
+    footnote: 'The set still counts towards your record the moment you complete it.',
     logoUrl,
     preheader: `Reminder: your ${topic || 'class'} flashcards are still waiting.`,
   });
 }
 
-module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail, suspensionEmail, graduationEmail, reactivationEmail, applicantPaymentReminderEmail, paymentRetryEmail, proformaInvoiceEmail, flashcardReminderEmail, flashcardMissedEmail, flashcardReadyEmail, flashcardDayAfterEmail };
+// Early-morning class reminder, sent before class on a class day. When the
+// batch has a curriculum entry for the day, the topic panel renders; otherwise
+// it is omitted and the recipient still gets a clean reminder.
+function classReminderEmail({ fullName, batchName, dayName, topic, details, loginUrl, logoUrl, audience }) {
+  const safeTopic = (topic || '').trim();
+  const safeDetails = (details || '').trim();
+  const day = dayName || 'today';
+  const isLecturer = audience === 'lecturer';
+  const name = esc(fullName || (isLecturer ? 'Lecturer' : 'Student'));
+  const intro = isLecturer
+    ? `Dear ${name}, this is a reminder that you are scheduled to teach a class today.${safeTopic ? ' The topic and outline are below.' : ''}`
+    : `Dear ${name}, this is a reminder that your class holds today.${safeTopic ? ' Here is what is planned.' : ' Please arrive on time and prepared.'}`;
+  return corporateEmail({
+    eyebrow: `${isLecturer ? 'Teaching reminder' : 'Class reminder'} · ${esc(day)}`,
+    heading: isLecturer ? 'You are teaching today' : 'You have class today',
+    intro,
+    recap: safeTopic ? {
+      topicLabel: 'Today’s topic', topic: safeTopic,
+      bodyLabel: isLecturer ? 'What you’ll cover' : 'What you’ll learn',
+      body: safeDetails,
+    } : null,
+    infoRows: [
+      batchName ? { label: 'Class', value: batchName } : null,
+      { label: 'Day', value: day },
+    ].filter(Boolean),
+    ctaLabel: isLecturer ? 'Open lecturer portal' : 'Open your portal', ctaUrl: loginUrl,
+    footnote: isLecturer ? 'Please arrive ahead of time to set up.' : 'Please arrive on time and ready to learn.',
+    logoUrl,
+    preheader: `${isLecturer ? 'You are teaching' : 'You have class'} ${day}${safeTopic ? ` — ${safeTopic}` : ''}.`,
+  });
+}
+
+module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail, suspensionEmail, graduationEmail, reactivationEmail, applicantPaymentReminderEmail, paymentRetryEmail, proformaInvoiceEmail, flashcardReminderEmail, flashcardMissedEmail, flashcardReadyEmail, flashcardDayAfterEmail, classReminderEmail };
