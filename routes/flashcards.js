@@ -2,7 +2,7 @@ const express      = require('express');
 const flashcardsDb = require('../db/flashcards');
 const studentsDb   = require('../db/students');
 const supabase     = require('../lib/supabase');
-const { generateContent } = require('../utils/gemini');
+const { generateContent } = require('../utils/claude');
 const { requireLecturer } = require('../middleware/lecturerAuth');
 const { requireStudentAuth } = require('../middleware/studentAuth');
 const { requireAuth } = require('../middleware/auth');
@@ -24,7 +24,8 @@ async function generateCardsForEntry(entry, week, count) {
     `Return ONLY a JSON array (no markdown) of this exact shape:\n` +
     `[{"question":"...","options":["...","...","...","..."],"correctAnswer":"<exact text of the correct option>","explanation":"..."}]`;
 
-  const raw = await generateContent({ prompt, json: true, maxOutputTokens: 4096, temperature: 0.5, thinkingBudget: 0 });
+  // Generous max_tokens: adaptive thinking shares this budget with the ~15-question output.
+  const raw = await generateContent({ prompt, maxOutputTokens: 8000 });
   let cards;
   try { cards = JSON.parse(raw); }
   catch { const m = raw.match(/\[[\s\S]*\]/); cards = m ? JSON.parse(m[0]) : null; }
