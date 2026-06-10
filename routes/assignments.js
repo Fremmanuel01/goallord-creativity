@@ -72,17 +72,17 @@ router.get('/:id', requireLecturer, async (req, res) => {
 // POST /api/assignments
 router.post('/', requireLecturer, async (req, res) => {
   try {
-    const { title, description, batch, week, deadline, maxScore, published, attachments } = req.body;
+    const { title, description, batch, week, topic, deadline, maxScore, published } = req.body;
     const lecturerId = req.user.role === 'lecturer' ? req.user.id : req.body.lecturer;
     const doc = await assignmentsDb.create({
       title,
       description: description || '',
       batch_id: batch,
       week: week || null,
+      topic: topic || '',
       deadline: deadline || null,
       max_score: maxScore || null,
       published: published || false,
-      attachments: attachments || [],
       lecturer_id: lecturerId
     });
     res.status(201).json(doc);
@@ -94,16 +94,16 @@ router.post('/', requireLecturer, async (req, res) => {
 // PATCH /api/assignments/:id
 router.patch('/:id', requireLecturer, async (req, res) => {
   try {
-    const { title, description, batch, week, deadline, maxScore, published, attachments } = req.body;
+    const { title, description, batch, week, topic, deadline, maxScore, published } = req.body;
     const update = {};
     if (title !== undefined) update.title = title;
     if (description !== undefined) update.description = description;
     if (batch !== undefined) update.batch_id = batch;
     if (week !== undefined) update.week = week;
+    if (topic !== undefined) update.topic = topic;
     if (deadline !== undefined) update.deadline = deadline;
     if (maxScore !== undefined) update.max_score = maxScore;
     if (published !== undefined) update.published = published;
-    if (attachments !== undefined) update.attachments = attachments;
     const doc = await assignmentsDb.update(req.params.id, update);
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
