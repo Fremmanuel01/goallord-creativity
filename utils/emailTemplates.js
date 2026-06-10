@@ -741,4 +741,92 @@ function flashcardMissedEmail({ fullName, topic, week, day, count, loginUrl, log
 </body></html>`;
 }
 
-module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail, suspensionEmail, graduationEmail, reactivationEmail, applicantPaymentReminderEmail, paymentRetryEmail, proformaInvoiceEmail, flashcardReminderEmail, flashcardMissedEmail };
+// ── Shared shell for the auto-generated flashcard emails ──────
+// One polished, mobile-first dark template so the "ready" and "day-after"
+// mails look like a matched pair. `accent` themes the bar/eyebrow/button,
+// `recap` is the short "what was taught" summary shown in its own panel.
+function flashcardShell({ accent, icon, eyebrow, heading, intro, fullName, topic, week, day, count, recap, ctaLabel, ctaUrl, footnote, logoUrl, preheader }) {
+  const safeTopic = esc(topic || 'today’s lesson');
+  const safeRecap = esc((recap || '').trim());
+  const c = Number(count) || 10;
+  const meta = [week ? `Week ${esc(String(week))}` : null, day ? esc(day) : null, `${c} questions`, '~5 min'].filter(Boolean).join(' &nbsp;·&nbsp; ');
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(heading)}</title></head>
+<body style="margin:0;padding:0;background:#0B0D10;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#0B0D10;">${esc(preheader || '')}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0B0D10;"><tr><td align="center" style="padding:36px 16px;">
+    <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+
+      <tr><td align="center" style="padding:0 0 24px;">
+        <img src="${logoUrl}" alt="Goallord Creativity" width="156" style="display:block;width:156px;height:auto;border:0;outline:none;text-decoration:none;">
+      </td></tr>
+
+      <tr><td style="background:#171A21;border:1px solid #2A2F3A;border-radius:18px;overflow:hidden;">
+        <div style="height:4px;background:${accent};line-height:4px;font-size:0;">&nbsp;</div>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:38px 38px 34px;">
+          <div style="font-size:34px;line-height:1;margin:0 0 18px;">${icon}</div>
+          <p style="margin:0 0 7px;color:${accent};font-size:11.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;">${esc(eyebrow)}</p>
+          <h1 style="margin:0 0 12px;color:#F4F6FA;font-size:24px;font-weight:800;letter-spacing:-0.02em;line-height:1.25;">${esc(heading)}</h1>
+          <p style="margin:0 0 26px;color:#A0A6B3;font-size:14.5px;line-height:1.65;">Hi ${esc(fullName || 'there')}, ${intro}</p>
+
+          <!-- Lesson recap panel -->
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0F1115;border:1px solid #2A2F3A;border-radius:14px;">
+            <tr><td style="padding:22px 24px;">
+              <p style="margin:0 0 8px;color:#6B7280;font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;">Today&rsquo;s topic</p>
+              <p style="margin:0 0 ${safeRecap ? '14px' : '0'};color:#F4F6FA;font-size:19px;font-weight:800;line-height:1.3;">${safeTopic}</p>
+              ${safeRecap ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+                <td width="3" style="background:${accent};border-radius:3px;">&nbsp;</td>
+                <td style="padding-left:14px;"><p style="margin:0;color:#C7CDD8;font-size:14px;line-height:1.6;">${safeRecap}</p></td>
+              </tr></table>` : ''}
+            </td></tr>
+          </table>
+
+          <p style="margin:18px 0 0;color:#8892A4;font-size:12.5px;letter-spacing:.2px;">${meta}</p>
+
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:28px 0 4px;">
+            <a href="${ctaUrl}" style="display:inline-block;background:${accent};color:#160d04;text-decoration:none;padding:15px 40px;border-radius:11px;font-weight:800;font-size:15px;">${esc(ctaLabel)} &nbsp;&rarr;</a>
+          </td></tr></table>
+          <p style="margin:16px 0 0;color:#6B7280;font-size:12px;text-align:center;">${esc(footnote)}</p>
+        </td></tr></table>
+      </td></tr>
+
+      <tr><td align="center" style="padding:24px 16px 0;">
+        <p style="margin:0 0 5px;color:#8892A4;font-size:12px;">Goallord Creativity Academy · Onitsha, Nigeria</p>
+        <p style="margin:0;color:#6B7280;font-size:12px;">Questions? <a href="mailto:hello@goallordcreativity.com" style="color:#D66A1F;text-decoration:none;">hello@goallordcreativity.com</a></p>
+      </td></tr>
+
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
+// Sent the moment a class's flashcards are auto-generated and published.
+function flashcardReadyEmail({ fullName, topic, week, day, count, summary, flashcardsUrl, logoUrl }) {
+  return flashcardShell({
+    accent: '#D66A1F', icon: '🃏',
+    eyebrow: 'Flashcards ready',
+    heading: 'Your flashcards are waiting',
+    intro: 'your flashcards from today’s class are ready. They take about five minutes and lock in what you just learned — give them a go while it’s fresh.',
+    fullName, topic, week, day, count, recap: summary,
+    ctaLabel: 'Do my flashcards', ctaUrl: flashcardsUrl,
+    footnote: 'Complete them to keep your progress tracker green.',
+    logoUrl,
+    preheader: `Your ${topic || 'class'} flashcards are ready — about 5 minutes.`,
+  });
+}
+
+// Sent the next day to students who still haven’t completed the set.
+function flashcardDayAfterEmail({ fullName, topic, week, day, count, summary, flashcardsUrl, logoUrl }) {
+  return flashcardShell({
+    accent: '#F59E0B', icon: '⏳',
+    eyebrow: 'Still waiting for you',
+    heading: 'Don’t forget your flashcards',
+    intro: 'you haven’t done yesterday’s flashcards yet — and they’re still open. A few minutes now keeps your revision on track and your tracker green.',
+    fullName, topic, week, day, count, recap: summary,
+    ctaLabel: 'Catch up now', ctaUrl: flashcardsUrl,
+    footnote: 'It still counts the moment you complete it.',
+    logoUrl,
+    preheader: `Reminder: your ${topic || 'class'} flashcards are still waiting.`,
+  });
+}
+
+module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail, suspensionEmail, graduationEmail, reactivationEmail, applicantPaymentReminderEmail, paymentRetryEmail, proformaInvoiceEmail, flashcardReminderEmail, flashcardMissedEmail, flashcardReadyEmail, flashcardDayAfterEmail };

@@ -363,16 +363,15 @@ const PORT = process.env.PORT || 3000;
       setInterval(runDailyChecks, 24 * 60 * 60 * 1000);
     }, 30 * 1000);
 
-    // ── Flashcard nudges (West Africa Time) ──────────────────────
+    // ── Flashcards (West Africa Time) ────────────────────────────
+    // Sets are now auto-generated the moment attendance is taken, and the
+    // "your flashcards are ready" email goes out then (see utils/flashcardAutoGen).
+    // Here we only run the next-day reminder for anyone who hasn't done them.
     const cron = require('node-cron');
-    const { runFlashcardReminders, runFlashcardFollowups } = require('./utils/flashcardReminders');
-    // 6 PM: remind students who haven't done today's flashcards.
-    cron.schedule('0 18 * * *', () => {
-      runFlashcardReminders().catch(e => console.error('Flashcard reminders failed:', e.message));
-    }, { timezone: 'Africa/Lagos' });
-    // 8 AM: follow up with students who missed yesterday's flashcards.
-    cron.schedule('0 8 * * *', () => {
-      runFlashcardFollowups().catch(e => console.error('Flashcard follow-ups failed:', e.message));
+    const { runFlashcardDayAfterReminders } = require('./utils/flashcardAutoGen');
+    // 9 AM: nudge students who still haven't done a set generated ~a day ago.
+    cron.schedule('0 9 * * *', () => {
+      runFlashcardDayAfterReminders().catch(e => console.error('Flashcard day-after reminders failed:', e.message));
     }, { timezone: 'Africa/Lagos' });
   } catch (err) {
     console.error('Startup error:', err.message);
