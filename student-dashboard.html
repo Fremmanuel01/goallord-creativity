@@ -367,6 +367,18 @@
     .tab-enter { animation: tabEnter 0.22s cubic-bezier(.22,.61,.36,1); }
     @keyframes tabEnter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
   }
+  /* Lecture slide entrance animations (mapped from slide.animation_type) */
+  .lv-anim-fade { animation: lvFade .4s ease both; }
+  .lv-anim-slide_up { animation: lvSlideUp .4s cubic-bezier(.22,.61,.36,1) both; }
+  .lv-anim-panel_reveal { animation: lvPanel .45s cubic-bezier(.22,.61,.36,1) both; }
+  .lv-anim-timeline_reveal, .lv-anim-diagram_build, .lv-anim-before_after_reveal { animation: lvSlideUp .45s cubic-bezier(.22,.61,.36,1) both; }
+  .lv-anim-code_reveal { animation: lvFade .5s ease both; }
+  @keyframes lvFade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes lvSlideUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  @keyframes lvPanel { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    [class^="lv-anim-"] { animation: none !important; }
+  }
 </style>
   <!-- pwa:head-start -->
   <meta name="theme-color" content="#D66A1F">
@@ -437,6 +449,7 @@
     <button class="tab" onclick="switchTab('materials')">Materials</button>
     <button class="tab" onclick="switchTab('assignments')">Assignments</button>
     <button class="tab" onclick="switchTab('flashcards')">Flashcards</button>
+    <button class="tab" onclick="switchTab('lectures')">Lectures</button>
     <button class="tab" onclick="switchTab('messages')">Messages<span id="msgTabBadge" style="display:none;margin-left:6px;background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;"></span></button>
     <button class="tab" onclick="switchTab('profile')">Profile</button>
   </div>
@@ -782,6 +795,38 @@
     </div>
   </div>
 
+  <!-- ── LECTURES TAB ── -->
+  <div id="tab-lectures" style="display:none;">
+    <div class="section-title">Lectures</div>
+    <div id="lecturesContent"><div class="loading">Loading lectures…</div></div>
+  </div>
+
+  <!-- Lecture viewer (slides + notes), full-screen overlay -->
+  <div id="lectureViewer" style="display:none;position:fixed;inset:0;background:#0B0D10;z-index:1200;flex-direction:column;">
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <button onclick="closeLectureViewer()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px">← Back</button>
+      <div style="min-width:0;flex:1">
+        <div id="lvTitle" style="font-weight:700;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+        <div id="lvMeta" style="font-size:12.5px;color:var(--muted)"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <button id="lvTabSlides" onclick="lvShow('slides')" style="background:var(--orange);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">Slides</button>
+        <button id="lvTabNotes" onclick="lvShow('notes')" style="background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">Lesson Notes</button>
+      </div>
+    </div>
+    <!-- Slides deck -->
+    <div id="lvSlides" style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+      <div id="lvStage" style="flex:1;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:24px"></div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:18px;padding:14px;border-top:1px solid var(--border);flex-shrink:0">
+        <button onclick="lvNav(-1)" style="background:transparent;border:1px solid var(--border);color:var(--text);width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:18px">‹</button>
+        <span id="lvCounter" style="font-size:13px;color:var(--muted);min-width:64px;text-align:center"></span>
+        <button onclick="lvNav(1)" style="background:transparent;border:1px solid var(--border);color:var(--text);width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:18px">›</button>
+      </div>
+    </div>
+    <!-- Lesson notes reader -->
+    <div id="lvNotes" style="display:none;flex:1;overflow-y:auto;padding:28px 20px;"></div>
+  </div>
+
   <!-- ── PAYMENTS TAB ── -->
   <div id="tab-payments" style="display:none;">
     <div id="overdueAlert" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.35);border-radius:10px;padding:14px 18px;margin-bottom:20px;align-items:center;gap:12px;">
@@ -853,6 +898,7 @@
   let materialsLoaded   = false;
   let assignmentsLoaded = false;
   let flashcardsLoaded  = false;
+  let lecturesLoaded    = false;
 
   // Active flashcard quiz state
   let quizCards = [], quizIdx = 0, quizResponses = [], quizSetId = null;
@@ -866,7 +912,7 @@
   }
 
   // ── Tab switching ────────────────────────────────────────────
-  const ALL_TABS = ['overview','attendance','payments','curriculum','materials','assignments','flashcards','messages','profile'];
+  const ALL_TABS = ['overview','attendance','payments','curriculum','materials','assignments','flashcards','lectures','messages','profile'];
   let curriculumLoaded = false;
 
   function switchTab(tab) {
@@ -880,6 +926,7 @@
     if (tab === 'materials'   && !materialsLoaded)   loadMaterials();
     if (tab === 'assignments' && !assignmentsLoaded) loadAssignments();
     if (tab === 'flashcards'  && !flashcardsLoaded)  loadFlashcards();
+    if (tab === 'lectures'    && !lecturesLoaded)    loadLectures();
     if (tab === 'attendance') loadOpenSession();
     if (tab === 'profile') loadProfile();
     if (tab === 'messages'  && !messagesLoaded)  initStudentChat();
@@ -1298,6 +1345,190 @@
     const when = d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
     return { when, rel, overdue: diffH < 0, soon: diffH >= 0 && diffH < 48 };
   }
+  // ── Lectures ─────────────────────────────────────────────────
+  let lvState = { slides: [], idx: 0, view: 'slides' };
+
+  async function loadLectures() {
+    lecturesLoaded = true;
+    const cont = document.getElementById('lecturesContent');
+    cont.innerHTML = '<div class="loading">Loading…</div>';
+    try {
+      const res = await fetch('/api/lectures/student', { headers: { 'Authorization': 'Bearer ' + token } });
+      const data = await res.json();
+      const today = data.today || [], upcoming = data.upcoming || [], past = data.past || [];
+      if (!today.length && !upcoming.length && !past.length) {
+        cont.innerHTML = '<div class="empty"><div class="empty-icon">🎓</div>No lectures published yet.</div>';
+        return;
+      }
+      const section = (label, items, tone) => items.length ? `
+        <div style="margin-bottom:26px">
+          <div style="font-size:12px;font-weight:700;color:${tone};text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">${label}</div>
+          <div style="display:grid;gap:12px">${items.map(lectureCard).join('')}</div>
+        </div>` : '';
+      cont.innerHTML =
+        section("Today's Lecture", today, 'var(--orange)') +
+        section('Upcoming', upcoming, 'var(--muted)') +
+        section('Past Lectures', past, 'var(--muted)');
+    } catch { cont.innerHTML = '<div class="empty">Failed to load lectures.</div>'; }
+  }
+
+  function lectureCard(l) {
+    const date = l.lectureDate ? fmtDate(l.lectureDate) : 'Date TBD';
+    const badge = l.courseType === 'Film'
+      ? 'background:rgba(214,106,31,0.15);color:var(--orange)'
+      : 'background:rgba(30,75,255,0.15);color:#6a9fff';
+    return `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+          <span style="${badge};padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700">${escHtml(l.courseType || 'Lecture')}</span>
+          <span style="font-size:13px;color:var(--muted)">${escHtml(l.courseTitle || '')}</span>
+        </div>
+        <div style="font-weight:700;font-size:17px;line-height:1.35;margin-bottom:4px">${escHtml(l.lectureTitle)}</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:14px">${escHtml(date)} &nbsp;·&nbsp; ${l.slideCount} slides</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button onclick="openLecture('${l.id}','slides')" style="background:var(--orange);color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">View Slides</button>
+          ${l.hasNotes ? `<button onclick="openLecture('${l.id}','notes')" style="background:transparent;color:var(--text);border:1px solid var(--border);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Lesson Notes</button>` : ''}
+        </div>
+      </div>`;
+  }
+
+  async function openLecture(id, view) {
+    const stage = document.getElementById('lvStage');
+    stage.innerHTML = '<div class="loading">Loading…</div>';
+    document.getElementById('lectureViewer').style.display = 'flex';
+    try {
+      const res = await fetch('/api/lectures/' + id + '/student', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (!res.ok) throw new Error('not found');
+      const lec = await res.json();
+      lvState = { slides: lec.slides || [], idx: 0, view: view || 'slides', notes: lec.lessonNotes || {} };
+      document.getElementById('lvTitle').textContent = lec.lectureTitle || 'Lecture';
+      document.getElementById('lvMeta').textContent = [lec.courseTitle, lec.lectureDate ? fmtDate(lec.lectureDate) : null].filter(Boolean).join(' · ');
+      document.getElementById('lvNotes').innerHTML = renderNotes(lvState.notes);
+      lvShow(lvState.view);
+      renderSlide();
+    } catch { stage.innerHTML = '<div class="empty">Could not load this lecture.</div>'; }
+  }
+  function closeLectureViewer() { document.getElementById('lectureViewer').style.display = 'none'; }
+
+  function lvShow(view) {
+    lvState.view = view;
+    const slidesOn = view === 'slides';
+    document.getElementById('lvSlides').style.display = slidesOn ? 'flex' : 'none';
+    document.getElementById('lvNotes').style.display  = slidesOn ? 'none' : 'block';
+    document.getElementById('lvTabSlides').style.cssText = slidesOn
+      ? 'background:var(--orange);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600'
+      : 'background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600';
+    document.getElementById('lvTabNotes').style.cssText = !slidesOn
+      ? 'background:var(--orange);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600'
+      : 'background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600';
+  }
+
+  function lvNav(d) {
+    const n = lvState.slides.length; if (!n) return;
+    lvState.idx = Math.max(0, Math.min(n - 1, lvState.idx + d));
+    renderSlide();
+  }
+
+  function renderSlide() {
+    const s = lvState.slides[lvState.idx];
+    const stage = document.getElementById('lvStage');
+    document.getElementById('lvCounter').textContent = lvState.slides.length ? (lvState.idx + 1) + ' / ' + lvState.slides.length : '';
+    if (!s) { stage.innerHTML = '<div class="empty">No slides.</div>'; return; }
+    stage.innerHTML = slideHtml(s);
+    // restart entrance animation
+    const card = stage.firstElementChild;
+    if (card) { card.style.animation = 'none'; void card.offsetWidth; card.style.animation = ''; }
+  }
+
+  // Render one slide JSON object → HTML, by layout_type. image_url is used when
+  // present; otherwise a clean placeholder keeps the layout intact.
+  function slideHtml(s) {
+    const anim = 'lv-anim-' + (s.animation_type && s.animation_type !== 'none' ? s.animation_type : 'fade');
+    const title = escHtml(s.slide_title || '');
+    const onText = (s.on_slide_text || '').split('\n').filter(Boolean);
+    const onHtml = onText.map(t => `<p style="margin:0 0 8px;font-size:16px;line-height:1.55;color:var(--text)">${escHtml(t)}</p>`).join('');
+    const expl = s.main_explanation ? `<p style="margin:14px 0 0;font-size:14px;line-height:1.65;color:var(--muted)">${escHtml(s.main_explanation)}</p>` : '';
+    const img = s.image_url
+      ? `<img src="${s.image_url}" alt="${title}" style="width:100%;height:100%;object-fit:cover;display:block">`
+      : `<div style="width:100%;height:100%;min-height:240px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#171A21,#0F1115);color:var(--muted);font-size:13px;text-align:center;padding:20px">${escHtml(s.visual_description || 'Visual')}</div>`;
+    const wrap = (inner) => `<div class="${anim}" style="width:100%;max-width:880px;background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden">${inner}</div>`;
+    const pad = 'padding:34px 38px';
+
+    switch (s.layout_type) {
+      case 'title':
+        return wrap(`<div style="padding:60px 40px;text-align:center">
+          <div style="font-size:26px;font-weight:800;line-height:1.25;margin-bottom:14px">${title}</div>
+          <div style="font-size:16px;color:var(--muted);line-height:1.6">${onHtml}</div>${expl}</div>`);
+      case 'full_image_overlay':
+        return wrap(`<div style="position:relative">
+          <div style="aspect-ratio:16/9;width:100%">${img}</div>
+          <div style="padding:24px 30px;background:var(--card)"><div style="font-size:21px;font-weight:800;margin-bottom:8px">${title}</div>${onHtml}${expl}</div></div>`);
+      case 'image_right_text_left':
+      case 'image_left_text_right': {
+        const left = `<td style="width:50%;vertical-align:top;${pad}"><div style="font-size:20px;font-weight:800;margin-bottom:12px">${title}</div>${onHtml}${expl}</td>`;
+        const right = `<td style="width:50%"><div style="aspect-ratio:1/1;width:100%;height:100%">${img}</div></td>`;
+        const order = s.layout_type === 'image_left_text_right' ? right + left : left + right;
+        return wrap(`<table style="width:100%;border-collapse:collapse"><tr>${order}</tr></table>`);
+      }
+      case 'comparison': {
+        const cols = onText.length ? onText : [s.main_explanation || ''];
+        return wrap(`<div style="${pad}"><div style="font-size:20px;font-weight:800;margin-bottom:18px">${title}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">${cols.slice(0,2).map(c=>`<div style="background:#0F1115;border:1px solid var(--border);border-radius:10px;padding:16px;font-size:15px;line-height:1.6;color:var(--text)">${escHtml(c)}</div>`).join('')}</div>${expl}</div>`);
+      }
+      case 'cards_grid': {
+        const cards = onText.length ? onText : [];
+        return wrap(`<div style="${pad}"><div style="font-size:20px;font-weight:800;margin-bottom:18px">${title}</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">${cards.map(c=>`<div style="background:#0F1115;border:1px solid var(--border);border-radius:10px;padding:16px;font-size:14.5px;line-height:1.55">${escHtml(c)}</div>`).join('') || onHtml}</div>${expl}</div>`);
+      }
+      case 'timeline': {
+        const steps = onText;
+        return wrap(`<div style="${pad}"><div style="font-size:20px;font-weight:800;margin-bottom:18px">${title}</div>
+          <div style="display:flex;flex-direction:column;gap:0">${steps.map((t,i)=>`<div style="display:flex;gap:14px"><div style="display:flex;flex-direction:column;align-items:center"><div style="width:12px;height:12px;border-radius:50%;background:var(--orange);flex-shrink:0;margin-top:5px"></div>${i<steps.length-1?'<div style="width:2px;flex:1;background:var(--border)"></div>':''}</div><div style="padding-bottom:18px;font-size:15px;line-height:1.55">${escHtml(t)}</div></div>`).join('')}</div>${expl}</div>`);
+      }
+      case 'flowchart':
+      case 'diagram': {
+        const steps = onText;
+        return wrap(`<div style="${pad}"><div style="font-size:20px;font-weight:800;margin-bottom:18px">${title}</div>
+          <div style="display:flex;flex-direction:column;gap:10px;align-items:stretch">${steps.map((t,i)=>`<div style="background:#0F1115;border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:15px;text-align:center">${escHtml(t)}</div>${i<steps.length-1?'<div style="text-align:center;color:var(--orange);font-size:16px">↓</div>':''}`).join('')}</div>${expl}</div>`);
+      }
+      case 'code_demo':
+        return wrap(`<div style="${pad}"><div style="font-size:20px;font-weight:800;margin-bottom:14px">${title}</div>
+          <pre style="background:#0B0D10;border:1px solid var(--border);border-radius:10px;padding:18px;overflow-x:auto;font-size:13.5px;line-height:1.6;color:#d6deeb;white-space:pre-wrap;margin:0">${escHtml((s.on_slide_text||'').trim())}</pre>${expl}</div>`);
+      case 'lesson_summary':
+        return wrap(`<div style="${pad}">${s.image_url?`<div style="aspect-ratio:16/9;width:100%;border-radius:12px;overflow:hidden;margin-bottom:18px">${img}</div>`:''}
+          <div style="font-size:21px;font-weight:800;margin-bottom:14px">${title}</div>
+          <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:9px">${onText.map(t=>`<li style="font-size:15px;line-height:1.6">${escHtml(t)}</li>`).join('')}</ul>${expl}</div>`);
+      default:
+        return wrap(`<div style="${pad}"><div style="font-size:20px;font-weight:800;margin-bottom:12px">${title}</div>${onHtml}${expl}</div>`);
+    }
+  }
+
+  function renderNotes(n) {
+    if (!n || !Object.keys(n).length) return '<div class="empty">No notes for this lecture.</div>';
+    const wrap = (inner) => `<div style="max-width:760px;margin:0 auto">${inner}</div>`;
+    const sections = (n.main_sections || []).map(sec => `
+      <div style="margin:0 0 24px">
+        <div style="font-size:17px;font-weight:700;margin-bottom:8px;color:var(--text)">${escHtml(sec.heading || '')}</div>
+        <p style="font-size:15px;line-height:1.7;color:var(--muted);margin:0 0 10px">${escHtml(sec.content || '')}</p>
+        ${(sec.key_points||[]).length ? `<ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">${sec.key_points.map(k=>`<li style="font-size:14.5px;line-height:1.6;color:var(--text)">${escHtml(k)}</li>`).join('')}</ul>` : ''}
+      </div>`).join('');
+    const terms = (n.important_terms||[]).length ? `
+      <div style="margin:0 0 24px">
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--orange);margin-bottom:10px">Important terms</div>
+        <div style="display:grid;gap:10px">${n.important_terms.map(t=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px"><span style="font-weight:700;color:var(--text)">${escHtml(t.term)}</span><span style="color:var(--muted)"> — ${escHtml(t.meaning)}</span></div>`).join('')}</div>
+      </div>` : '';
+    const examples = (n.practical_examples||[]).length ? `
+      <div style="margin:0 0 24px">
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:10px">Practical examples</div>
+        <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px">${n.practical_examples.map(e=>`<li style="font-size:14.5px;line-height:1.65;color:var(--text)">${escHtml(e)}</li>`).join('')}</ul>
+      </div>` : '';
+    const summary = n.summary ? `<div style="background:rgba(214,106,31,0.06);border-left:3px solid var(--orange);border-radius:8px;padding:14px 16px"><div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--orange);margin-bottom:6px">Summary</div><p style="margin:0;font-size:15px;line-height:1.7;color:var(--text)">${escHtml(n.summary)}</p></div>` : '';
+    return wrap(`
+      <h2 style="font-size:23px;font-weight:800;margin:0 0 8px;color:var(--text)">${escHtml(n.title || 'Lesson Notes')}</h2>
+      ${n.introduction ? `<p style="font-size:15.5px;line-height:1.75;color:var(--muted);margin:0 0 24px">${escHtml(n.introduction)}</p>` : ''}
+      ${sections}${terms}${examples}${summary}`);
+  }
+
   async function loadCurriculumTab() {
     curriculumLoaded = true;
     const cont = document.getElementById('curriculumContent');

@@ -327,6 +327,7 @@
     <button class="tab" onclick="switchTab('flashcards')">Flashcards</button>
     <button class="tab" onclick="switchTab('attendance')">Attendance</button>
     <button class="tab" onclick="switchTab('curriculum')">Curriculum</button>
+    <button class="tab" onclick="switchTab('lectures')">Lectures</button>
     <button class="tab" onclick="switchTab('students')">Students</button>
     <button class="tab" onclick="switchTab('messages')">Messages<span id="msgTabBadge" style="display:none;margin-left:6px;background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;"></span></button>
     <button class="tab" onclick="switchTab('security')">Security</button>
@@ -431,6 +432,16 @@
       <table><thead><tr><th>Week</th><th>Day</th><th>Topic</th><th>Objectives</th><th>Actions</th></tr></thead>
       <tbody id="curTableBody"><tr><td colspan="5" class="loading">Loading…</td></tr></tbody></table>
     </div>
+  </div>
+
+  <!-- ── LECTURES ── -->
+  <div id="tab-lectures" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div class="section-title" style="margin:0">Lectures</div>
+      <button class="btn btn-primary" onclick="openGenerateLecture()">✨ Generate Lecture</button>
+    </div>
+    <div id="lecFilters" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap"></div>
+    <div id="lecListWrap"><div class="loading">Loading lectures…</div></div>
   </div>
 
   <!-- ── STUDENTS TAB ── -->
@@ -604,6 +615,47 @@
   </div>
 </div>
 
+<!-- ── GENERATE LECTURE MODAL ── -->
+<div class="modal-overlay" id="lecGenModal">
+  <div class="modal">
+    <div class="modal-header"><h3>Generate Lecture</h3><button class="modal-close" onclick="closeModal('lecGenModal')">✕</button></div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:14px">Builds slides &amp; lesson notes from the curriculum for one class day. Generation takes a few minutes and appears as <b>Pending Review</b> when ready.</p>
+    <div class="error-msg" id="lecGenErr"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Week *</label><select id="lecgen-week"></select></div>
+      <div class="form-group"><label>Day *</label><select id="lecgen-day"></select></div>
+    </div>
+    <div class="form-group"><label style="display:flex;align-items:center;gap:8px;font-weight:normal"><input type="checkbox" id="lecgen-premium" style="width:auto"> Premium generation (Opus — for very important lectures)</label></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('lecGenModal')">Cancel</button>
+      <button class="btn btn-primary" id="lecGenBtn" onclick="submitGenerateLecture()">Generate</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── LECTURE EDITOR MODAL ── -->
+<div class="modal-overlay" id="lecEditModal">
+  <div class="modal" style="max-width:920px;width:96%">
+    <div class="modal-header">
+      <h3 id="lecEditTitle">Lecture</h3>
+      <button class="modal-close" onclick="closeModal('lecEditModal')">✕</button>
+    </div>
+    <div class="error-msg" id="lecEditErr"></div>
+    <div id="lecEditMeta" style="font-size:13px;color:var(--muted);margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn btn-ghost" id="lecViewSlidesBtn" onclick="lecEditView('slides')">Slides</button>
+      <button class="btn btn-ghost" id="lecViewNotesBtn" onclick="lecEditView('notes')">Lesson Notes</button>
+      <button class="btn btn-ghost" onclick="lecPreviewStudent()">👁 Preview as student</button>
+    </div>
+    <div id="lecEditBody" style="max-height:60vh;overflow-y:auto;padding-right:4px"></div>
+    <div class="modal-footer" style="flex-wrap:wrap;gap:8px">
+      <button class="btn btn-ghost" onclick="closeModal('lecEditModal')">Close</button>
+      <button class="btn btn-ghost" id="lecSaveBtn" onclick="lecSaveDraft()">Save draft</button>
+      <span id="lecPublishArea"></span>
+    </div>
+  </div>
+</div>
+
 <!-- ── ANNOUNCE MODAL ── -->
 <div class="modal-overlay" id="announceModal">
   <div class="modal">
@@ -719,7 +771,7 @@ document.getElementById('pageTitle').textContent = 'Welcome, ' + (lec.fullName ?
 
 function logout() { try { fetch('/api/lecturers/logout', { method: 'POST', keepalive: true }).catch(function(){}); } catch(e){} localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(LEC_KEY); window.location.href = 'lecturer-login.html'; }
 
-const ALL_TABS = ['overview','materials','assignments','flashcards','attendance','curriculum','students','messages','security'];
+const ALL_TABS = ['overview','materials','assignments','flashcards','attendance','curriculum','lectures','students','messages','security'];
 let loaded = {};
 
 function switchTab(tab) {
@@ -735,6 +787,7 @@ const LOADERS = {
   flashcards:  loadFlashcards,
   attendance:  loadAttendance,
   curriculum:  loadCurriculum,
+  lectures:    loadLecturesAdmin,
   students:    loadStudents,
   messages:    function () {
     if (!window.initChat) return;
@@ -1560,6 +1613,274 @@ async function deleteCurriculum(id) {
   if (!confirm('Delete this entry?')) return;
   await api(`/api/curriculum/${id}`, { method: 'DELETE' });
   loadCurriculum();
+}
+
+// ── LECTURES ─────────────────────────────────────────────────
+let allLectures = [];
+let lecFilter = 'all';
+let lecEditing = null;     // full lecture object being edited
+let lecEditMode = 'slides';
+
+const LEC_BUCKETS = [
+  { key: 'all',        label: 'All' },
+  { key: 'upcoming',   label: 'Upcoming' },
+  { key: 'generated',  label: 'Generated' },
+  { key: 'pending',    label: 'Pending Review' },
+  { key: 'published',  label: 'Published' },
+  { key: 'edited',     label: 'Edited After Publishing' },
+  { key: 'past',       label: 'Past' },
+];
+function lecBucketOf(l) {
+  const today = new Date(Date.now() + 3600000).toISOString().slice(0, 10);
+  if (l.status === 'pending_review') return ['generated', 'pending'];
+  if (l.status === 'edited_after_publishing') return ['published', 'edited'];
+  if (l.status === 'published' || l.status === 'republished') {
+    return (l.lectureDate && l.lectureDate < today) ? ['published', 'past'] : ['published'];
+  }
+  if (l.status === 'scheduled' || l.status === 'generating') return ['upcoming'];
+  if (l.status === 'failed') return ['generated'];
+  return [];
+}
+const LEC_STATUS = {
+  scheduled: ['Scheduled', '#6a9fff'], generating: ['Generating…', 'var(--orange)'],
+  pending_review: ['Pending Review', 'var(--orange)'], published: ['Published', 'var(--green)'],
+  edited_after_publishing: ['Edited (unpublished)', 'var(--yellow)'], republished: ['Republished', 'var(--green)'],
+  failed: ['Failed', 'var(--red)'],
+};
+
+async function loadLecturesAdmin() {
+  const wrap = document.getElementById('lecListWrap');
+  wrap.innerHTML = '<div class="loading">Loading…</div>';
+  const q = activeBatch ? ('?batch=' + activeBatch._id) : '';
+  const data = await api('/api/lectures' + q);
+  allLectures = Array.isArray(data) ? data : [];
+  renderLecFilters();
+  renderLecList();
+}
+
+function renderLecFilters() {
+  document.getElementById('lecFilters').innerHTML = LEC_BUCKETS.map(b => {
+    const n = b.key === 'all' ? allLectures.length : allLectures.filter(l => lecBucketOf(l).includes(b.key)).length;
+    const active = lecFilter === b.key;
+    return `<button onclick="setLecFilter('${b.key}')" style="padding:7px 13px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid ${active?'var(--orange)':'var(--border)'};background:${active?'var(--orange)':'transparent'};color:${active?'#fff':'var(--muted)'}">${b.label} ${n?`<span style="opacity:.8">(${n})</span>`:''}</button>`;
+  }).join('');
+}
+function setLecFilter(k) { lecFilter = k; renderLecFilters(); renderLecList(); }
+
+function renderLecList() {
+  const wrap = document.getElementById('lecListWrap');
+  const list = lecFilter === 'all' ? allLectures : allLectures.filter(l => lecBucketOf(l).includes(lecFilter));
+  if (!list.length) { wrap.innerHTML = '<div class="empty">No lectures here yet.</div>'; return; }
+  wrap.innerHTML = '<div style="display:grid;gap:12px">' + list.map(l => {
+    const st = LEC_STATUS[l.status] || [l.status, 'var(--muted)'];
+    const typeBadge = l.courseType === 'Film' ? 'background:rgba(214,106,31,0.15);color:var(--orange)' : 'background:rgba(30,75,255,0.15);color:#6a9fff';
+    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="min-width:200px;flex:1">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:5px">
+          <span style="${typeBadge};padding:2px 9px;border-radius:9px;font-size:11px;font-weight:700">${escHtml(l.courseType||'')}</span>
+          <span style="background:rgba(255,255,255,0.06);color:var(--muted);padding:2px 9px;border-radius:9px;font-size:11px;font-weight:600">Wk ${l.week} · ${escHtml(l.day||'')}</span>
+          <span style="color:${st[1]};font-size:12px;font-weight:700">${st[0]}</span>
+        </div>
+        <div style="font-weight:700;font-size:15.5px">${escHtml(l.lectureTitle)}</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-top:3px">${l.lectureDate?fmtDate(l.lectureDate):'Date TBD'} · ${l.slideCount} slides · ${l.imageCount} images</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        ${l.status==='generating' ? '<span style="font-size:13px;color:var(--muted)">Working…</span>'
+          : `<button class="btn btn-ghost" style="padding:7px 14px" onclick="openLectureEditor('${l.id}')">${l.status==='pending_review'?'Review':'Open'}</button>`}
+      </div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+// ── Generate ──
+async function openGenerateLecture() {
+  if (!activeBatch) { alert('No batch selected.'); return; }
+  document.getElementById('lecGenErr').style.display = 'none';
+  document.getElementById('lecgen-premium').checked = false;
+  const data = await api('/api/curriculum?batch=' + activeBatch._id);
+  const entries = sortByWeekDay(Array.isArray(data) ? data : []);
+  if (!entries.length) { alert('This batch has no curriculum yet.'); return; }
+  window._lecEntries = entries;
+  const weeks = [...new Set(entries.map(e => e.week))].sort((a, b) => a - b);
+  document.getElementById('lecgen-week').innerHTML = weeks.map(w => `<option value="${w}">Week ${w}</option>`).join('');
+  document.getElementById('lecgen-week').onchange = lecgenDays;
+  lecgenDays();
+  openModal('lecGenModal');
+}
+function lecgenDays() {
+  const wk = Number(document.getElementById('lecgen-week').value);
+  const days = (window._lecEntries || []).filter(e => e.week === wk);
+  document.getElementById('lecgen-day').innerHTML = days.map(e => `<option value="${e.day}">${e.day} — ${escHtml((e.topic||'').slice(0,40))}</option>`).join('');
+}
+async function submitGenerateLecture() {
+  const btn = document.getElementById('lecGenBtn');
+  const week = document.getElementById('lecgen-week').value;
+  const day = document.getElementById('lecgen-day').value;
+  if (!week || !day) return;
+  btn.disabled = true; btn.textContent = 'Starting…';
+  const res = await api('/api/lectures/generate', { method: 'POST', body: JSON.stringify({
+    batchId: activeBatch._id, week, day, premium: document.getElementById('lecgen-premium').checked,
+  }) });
+  btn.disabled = false; btn.textContent = 'Generate';
+  if (res && res.accepted) {
+    closeModal('lecGenModal');
+    alert('Generation started. It will appear under Pending Review in a few minutes — refresh the tab.');
+  } else {
+    const e = document.getElementById('lecGenErr'); e.textContent = (res && res.error) || 'Failed to start.'; e.style.display = 'block';
+  }
+}
+
+// ── Editor ──
+async function openLectureEditor(id) {
+  const l = await api('/api/lectures/' + id);
+  if (!l || l.error) { alert((l && l.error) || 'Could not load lecture.'); return; }
+  lecEditing = l; lecEditMode = 'slides';
+  document.getElementById('lecEditTitle').textContent = l.lectureTitle;
+  const st = LEC_STATUS[l.status] || [l.status];
+  document.getElementById('lecEditMeta').innerHTML = `${escHtml(l.courseTitle||'')} · ${l.courseType} · Week ${l.week} ${escHtml(l.day||'')} · <b style="color:var(--text)">${st[0]}</b>`;
+  document.getElementById('lecEditErr').style.display = 'none';
+  renderPublishArea();
+  lecEditView('slides');
+  openModal('lecEditModal');
+}
+
+function lecEditView(mode) {
+  lecEditMode = mode;
+  document.getElementById('lecViewSlidesBtn').className = 'btn ' + (mode==='slides'?'btn-primary':'btn-ghost');
+  document.getElementById('lecViewNotesBtn').className = 'btn ' + (mode==='notes'?'btn-primary':'btn-ghost');
+  document.getElementById('lecEditBody').innerHTML = mode === 'slides' ? renderSlideEditors() : renderNotesEditor();
+}
+
+function renderSlideEditors() {
+  return (lecEditing.slides || []).map(s => {
+    const img = s.image_url
+      ? `<img src="${s.image_url}" style="width:120px;height:68px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">`
+      : (s.image_required ? '<div style="width:120px;height:68px;border-radius:6px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);text-align:center">no image yet</div>' : '');
+    const regen = s.image_required ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="lecRegenImage(${s.slide_number})">↻ Regenerate image</button>` : '';
+    return `<div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        ${img ? `<div>${img}<div style="margin-top:6px">${regen}</div></div>` : ''}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Slide ${s.slide_number} · ${s.layout_type}${s.image_required?' · image':''}</div>
+          <input data-sl="${s.slide_number}" data-f="slide_title" value="${escHtml(s.slide_title||'')}" style="width:100%;margin-bottom:8px;font-weight:600" placeholder="Slide title">
+          <textarea data-sl="${s.slide_number}" data-f="on_slide_text" rows="3" style="width:100%;margin-bottom:8px" placeholder="On-slide text (one point per line)">${escHtml(s.on_slide_text||'')}</textarea>
+          <textarea data-sl="${s.slide_number}" data-f="main_explanation" rows="3" style="width:100%" placeholder="Teacher explanation / speaker notes">${escHtml(s.main_explanation||'')}</textarea>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderNotesEditor() {
+  const n = lecEditing.lessonNotes || {};
+  return `<div style="display:flex;flex-direction:column;gap:10px">
+    <label style="font-size:12px;color:var(--muted)">Title</label>
+    <input id="ln_title" value="${escHtml(n.title||'')}">
+    <label style="font-size:12px;color:var(--muted)">Introduction</label>
+    <textarea id="ln_intro" rows="3">${escHtml(n.introduction||'')}</textarea>
+    <label style="font-size:12px;color:var(--muted)">Summary</label>
+    <textarea id="ln_summary" rows="3">${escHtml(n.summary||'')}</textarea>
+    <p style="font-size:12px;color:var(--muted);margin:4px 0 0">Sections, terms and examples are kept from generation; edit the per-slide content above or the title/intro/summary here. (Full section editing can be added later.)</p>
+  </div>`;
+}
+
+function collectEdits() {
+  // Slides: read inputs back into lecEditing.slides
+  document.querySelectorAll('#lecEditBody [data-sl]').forEach(el => {
+    const n = Number(el.getAttribute('data-sl')), f = el.getAttribute('data-f');
+    const s = lecEditing.slides.find(x => x.slide_number === n);
+    if (s) s[f] = el.value;
+  });
+  // Notes (only when notes view is mounted)
+  const t = document.getElementById('ln_title');
+  if (t) {
+    lecEditing.lessonNotes = lecEditing.lessonNotes || {};
+    lecEditing.lessonNotes.title = t.value;
+    lecEditing.lessonNotes.introduction = document.getElementById('ln_intro').value;
+    lecEditing.lessonNotes.summary = document.getElementById('ln_summary').value;
+  }
+}
+
+async function lecSaveDraft() {
+  collectEdits();
+  const btn = document.getElementById('lecSaveBtn'); btn.disabled = true; btn.textContent = 'Saving…';
+  const res = await api('/api/lectures/' + lecEditing.id, { method: 'PATCH', body: JSON.stringify({
+    lectureTitle: lecEditing.lectureTitle, slides: lecEditing.slides, lessonNotes: lecEditing.lessonNotes,
+  }) });
+  btn.disabled = false; btn.textContent = 'Save draft';
+  if (res && !res.error) { lecEditing = res; renderPublishArea(); toast('Draft saved'); loadLecturesAdmin(); }
+  else { const e = document.getElementById('lecEditErr'); e.textContent = (res&&res.error)||'Save failed'; e.style.display='block'; }
+}
+
+async function lecRegenImage(n) {
+  if (!confirm('Regenerate the image for slide ' + n + '?')) return;
+  const res = await api(`/api/lectures/${lecEditing.id}/slides/${n}/regenerate-image`, { method: 'POST' });
+  if (res && res.slide) {
+    const i = lecEditing.slides.findIndex(s => s.slide_number === n);
+    if (i >= 0) lecEditing.slides[i] = res.slide;
+    lecEditView('slides'); toast('Image regenerated');
+  } else { alert((res && res.error) || 'Image generation failed.'); }
+}
+
+function renderPublishArea() {
+  const area = document.getElementById('lecPublishArea');
+  const s = lecEditing.status;
+  if (s === 'pending_review') {
+    area.innerHTML = `<button class="btn btn-primary" onclick="lecPublish()">Publish to students</button>`;
+  } else if (s === 'published' || s === 'republished') {
+    area.innerHTML = `<span style="font-size:12.5px;color:var(--muted);margin-right:6px">Published — students see this version.</span>`;
+  } else if (s === 'edited_after_publishing') {
+    area.innerHTML = `<label style="font-size:12.5px;color:var(--muted);margin-right:8px"><input type="checkbox" id="lecNotify" style="width:auto"> Notify students</label>
+      <button class="btn btn-primary" onclick="lecRepublish()">Republish update</button>`;
+  } else { area.innerHTML = ''; }
+}
+
+async function lecPublish() {
+  collectEdits();
+  await lecSaveDraftSilent();
+  const res = await api('/api/lectures/' + lecEditing.id + '/publish', { method: 'POST' });
+  if (res && res.success) { lecEditing.status = res.status; renderPublishArea(); toast('Published — students notified'); loadLecturesAdmin(); }
+  else alert((res && res.error) || 'Publish failed.');
+}
+async function lecRepublish() {
+  collectEdits();
+  await lecSaveDraftSilent();
+  const notify = !!(document.getElementById('lecNotify') && document.getElementById('lecNotify').checked);
+  const res = await api('/api/lectures/' + lecEditing.id + '/republish', { method: 'POST', body: JSON.stringify({ notify }) });
+  if (res && res.success) { lecEditing.status = res.status; renderPublishArea(); toast(notify ? `Republished — ${res.notified} students notified` : 'Republished'); loadLecturesAdmin(); }
+  else alert((res && res.error) || 'Republish failed.');
+}
+async function lecSaveDraftSilent() {
+  await api('/api/lectures/' + lecEditing.id, { method: 'PATCH', body: JSON.stringify({
+    lectureTitle: lecEditing.lectureTitle, slides: lecEditing.slides, lessonNotes: lecEditing.lessonNotes,
+  }) });
+}
+
+function lecPreviewStudent() {
+  collectEdits();
+  const w = window.open('', '_blank');
+  if (!w) { alert('Allow pop-ups to preview.'); return; }
+  w.document.write(lecPreviewHtml(lecEditing));
+  w.document.close();
+}
+function lecPreviewHtml(l) {
+  const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const slides = (l.slides||[]).map(s => {
+    const img = s.image_url ? `<img src="${s.image_url}" style="width:100%;border-radius:10px;margin-bottom:14px">` : '';
+    const txt = (s.on_slide_text||'').split('\n').filter(Boolean).map(t=>`<p style="margin:0 0 8px;font-size:16px;line-height:1.55">${esc(t)}</p>`).join('');
+    return `<div style="max-width:820px;margin:0 auto 22px;background:#171A21;border:1px solid #2A2F3A;border-radius:14px;padding:26px">
+      <div style="font-size:11px;color:#8892A4;margin-bottom:10px">Slide ${s.slide_number} · ${s.layout_type}</div>
+      ${img}<div style="font-size:21px;font-weight:800;margin-bottom:10px">${esc(s.slide_title||'')}</div>${txt}
+      ${s.main_explanation?`<p style="margin-top:12px;color:#A0A6B3;font-size:14px;line-height:1.65">${esc(s.main_explanation)}</p>`:''}</div>`;
+  }).join('');
+  return `<!doctype html><meta charset=utf8><title>Preview — ${esc(l.lectureTitle)}</title><body style="margin:0;background:#0B0D10;color:#F4F6FA;font-family:Segoe UI,Arial,sans-serif;padding:30px 16px"><h1 style="text-align:center;font-size:22px">${esc(l.lectureTitle)} <span style="font-size:13px;color:#8892A4">(student preview)</span></h1>${slides}</body>`;
+}
+
+function toast(msg) {
+  let t = document.getElementById('_lectoast');
+  if (!t) { t = document.createElement('div'); t.id='_lectoast'; t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1E2533;border:1px solid var(--border);color:var(--text);padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:3000;box-shadow:0 8px 24px rgba(0,0,0,.4)'; document.body.appendChild(t); }
+  t.textContent = msg; t.style.opacity='1';
+  clearTimeout(window._lectt); window._lectt = setTimeout(()=>{t.style.opacity='0';}, 2500);
 }
 
 // ── STUDENTS ─────────────────────────────────────────────────

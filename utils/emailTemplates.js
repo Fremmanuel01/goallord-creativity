@@ -886,4 +886,58 @@ function classReminderEmail({ fullName, batchName, dayName, topic, details, logi
   });
 }
 
-module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail, suspensionEmail, graduationEmail, reactivationEmail, applicantPaymentReminderEmail, paymentRetryEmail, proformaInvoiceEmail, flashcardReminderEmail, flashcardMissedEmail, flashcardReadyEmail, flashcardDayAfterEmail, classReminderEmail };
+// ── Lectures ──────────────────────────────────────────────────
+function _lectureRows({ courseTitle, lectureDate, slideCount }) {
+  return [
+    courseTitle ? { label: 'Course', value: courseTitle } : null,
+    lectureDate ? { label: 'Lecture date', value: lectureDate } : null,
+    slideCount ? { label: 'Slides', value: `${slideCount}` } : null,
+  ].filter(Boolean);
+}
+
+// To teacher/admin when a lecture is generated and ready to review.
+function lectureReviewEmail({ fullName, lectureTitle, courseTitle, lectureDate, slideCount, reviewUrl, logoUrl }) {
+  return corporateEmail({
+    eyebrow: 'Lecture · Ready to review',
+    heading: 'A new lecture is ready for review',
+    intro: `Dear ${esc(fullName || 'Instructor')}, the slides and lesson notes for &ldquo;${esc(lectureTitle)}&rdquo; have been generated and are awaiting your review. Please review, make any edits, and publish when you are happy with it. Students cannot see it until you publish.`,
+    recap: { topicLabel: 'Lecture', topic: lectureTitle },
+    infoRows: _lectureRows({ courseTitle, lectureDate, slideCount }),
+    ctaLabel: 'Review the lecture', ctaUrl: reviewUrl,
+    footnote: 'Nothing is sent to students until you publish.',
+    logoUrl,
+    preheader: `&ldquo;${lectureTitle}&rdquo; is ready for your review.`,
+  });
+}
+
+// To students when a lecture is published.
+function lecturePublishedEmail({ fullName, lectureTitle, courseTitle, lectureDate, slideCount, lecturesUrl, logoUrl }) {
+  return corporateEmail({
+    eyebrow: 'Lecture · Available',
+    heading: 'Your lecture is now available',
+    intro: `Dear ${esc(fullName || 'Student')}, the slides and lesson notes for &ldquo;${esc(lectureTitle)}&rdquo; are now available in your portal. Read through them before class so you arrive ready to learn.`,
+    recap: { topicLabel: 'Lecture', topic: lectureTitle },
+    infoRows: _lectureRows({ courseTitle, lectureDate, slideCount }),
+    ctaLabel: 'View the lecture', ctaUrl: lecturesUrl,
+    footnote: 'Open the Lectures tab any time to revisit slides and notes.',
+    logoUrl,
+    preheader: `&ldquo;${lectureTitle}&rdquo; slides and notes are ready to view.`,
+  });
+}
+
+// To students when a published lecture is updated and the teacher chose to notify.
+function lectureUpdatedEmail({ fullName, lectureTitle, courseTitle, lectureDate, slideCount, lecturesUrl, logoUrl }) {
+  return corporateEmail({
+    eyebrow: 'Lecture · Updated',
+    heading: 'A lecture has been updated',
+    intro: `Dear ${esc(fullName || 'Student')}, &ldquo;${esc(lectureTitle)}&rdquo; has been updated with new content. Open your portal to view the latest slides and lesson notes.`,
+    recap: { topicLabel: 'Lecture', topic: lectureTitle },
+    infoRows: _lectureRows({ courseTitle, lectureDate, slideCount }),
+    ctaLabel: 'View the update', ctaUrl: lecturesUrl,
+    footnote: 'You are seeing this because this lecture changed after publishing.',
+    logoUrl,
+    preheader: `&ldquo;${lectureTitle}&rdquo; has been updated.`,
+  });
+}
+
+module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail, suspensionEmail, graduationEmail, reactivationEmail, applicantPaymentReminderEmail, paymentRetryEmail, proformaInvoiceEmail, flashcardReminderEmail, flashcardMissedEmail, flashcardReadyEmail, flashcardDayAfterEmail, classReminderEmail, lectureReviewEmail, lecturePublishedEmail, lectureUpdatedEmail };
