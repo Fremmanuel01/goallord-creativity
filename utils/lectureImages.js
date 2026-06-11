@@ -56,8 +56,21 @@ async function replicateImage(prompt) {
   const input = { prompt, aspect_ratio: '16:9' };
   if (/ideogram/i.test(model)) input.magic_prompt_option = 'Auto';
   if (/flux/i.test(model)) { input.output_format = 'jpg'; input.output_quality = 90; }
-  let pred = await replicatePost(`/v1/models/${model}/predictions`, { input });
-  if (pred.error) throw new Error('Replicate: ' + (pred.detail || pred.error));
+  // API errors (throttling, auth, validation) come back with a numeric `status`
+  // instead of a prediction's string status. Burst limits are small, so back off
+  // and retry on 429 rather than burning a fallback provider per throttled slide.
+  let pred;
+  for (let attempt = 0; ; attempt++) {
+    pred = await replicatePost(`/v1/models/${model}/predictions`, { input });
+    if (pred && pred.status === 429 && attempt < 3) {
+      await new Promise((r) => setTimeout(r, 11000 * (attempt + 1)));
+      continue;
+    }
+    break;
+  }
+  if (pred.error || typeof pred.status === 'number') {
+    throw new Error('Replicate: ' + (pred.detail || pred.error || ('HTTP ' + pred.status)));
+  }
   // Poll if not finished within the sync window.
   for (let i = 0; i < 30 && pred.status && !['succeeded', 'failed', 'canceled'].includes(pred.status); i++) {
     await new Promise((r) => setTimeout(r, 2000));
@@ -182,6 +195,9 @@ async function generateLectureImages({ lectureId, courseType, slides }, { force 
     s.image_required = want.has(s.slide_number); // reconcile flags with the budget
     if (!s.image_required) continue;
     if (s.image_url && !force) { generated++; continue; } // cache
+    // Pace requests: Replicate burst limits are small, and 8 back-to-back
+    // creates get throttled even when the per-minute budget is fine.
+    if (generated + failed > 0) await new Promise((r) => setTimeout(r, 3000));
     try {
       const { url, b64, model } = await generateImage(buildImagePrompt(s, courseType));
       s.image_url = await uploadImage({ url, b64, publicId: `lecture_${lectureId}_s${s.slide_number}` });
