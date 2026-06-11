@@ -12,35 +12,35 @@
     --text: #F4F6FA; --muted: #A0A6B3;
     --green: #22c55e; --red: #ef4444; --yellow: #f59e0b;
   }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 16px; line-height: 1.55; }
   .topnav { position: sticky; top: 0; z-index: 100; background: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; height: 60px; }
   .topnav-brand { display: flex; align-items: center; gap: 10px; }
-  .logo-mark { width: 36px; height: 36px; background: var(--orange); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #fff; }
-  .logo-name { font-size: 15px; font-weight: 700; }
+  .logo-mark { width: 36px; height: 36px; background: var(--orange); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; color: #fff; }
+  .logo-name { font-size: 16px; font-weight: 700; }
   .logo-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; }
   .topnav-right { display: flex; align-items: center; gap: 16px; }
-  .lec-name { font-size: 13px; color: var(--muted); }
+  .lec-name { font-size: 14px; color: var(--muted); }
   .lec-name strong { color: var(--text); }
-  .btn-logout { padding: 7px 14px; border: 1px solid var(--border); border-radius: 7px; background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; }
+  .btn-logout { padding: 7px 14px; border: 1px solid var(--border); border-radius: 7px; background: transparent; color: var(--muted); font-size: 14px; cursor: pointer; }
   .btn-logout:hover { color: var(--text); border-color: var(--muted); }
   .main { max-width: 1100px; margin: 0 auto; padding: 32px 24px 60px; }
   .page-header { margin-bottom: 28px; }
   .page-header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-  .page-header p { color: var(--muted); font-size: 14px; }
+  .page-header p { color: var(--muted); font-size: 15px; }
   .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 28px; flex-wrap: wrap; }
-  .tab { padding: 10px 18px; font-size: 14px; font-weight: 600; color: var(--muted); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; margin-bottom: -1px; }
+  .tab { padding: 10px 18px; font-size: 15px; font-weight: 600; color: var(--muted); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; margin-bottom: -1px; }
   .tab:hover { color: var(--text); }
   .tab.active { color: var(--orange); border-bottom-color: var(--orange); }
-  .section-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: var(--text); }
+  .section-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; color: var(--text); }
   .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
   table { width: 100%; border-collapse: collapse; }
   th { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02); }
-  td { padding: 12px 14px; font-size: 14px; border-bottom: 1px solid var(--border); }
+  td { padding: 12px 14px; font-size: 15px; border-bottom: 1px solid var(--border); }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: rgba(255,255,255,0.02); }
-  .empty { text-align: center; padding: 40px 24px; color: var(--muted); font-size: 14px; }
+  .empty { text-align: center; padding: 40px 24px; color: var(--muted); font-size: 15px; }
   .loading { text-align: center; padding: 48px; color: var(--muted); }
-  .btn { padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+  .btn { padding: 8px 16px; border-radius: 7px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; }
   .btn-primary { background: var(--orange); color: #fff; }
   .btn-primary:hover { opacity: 0.9; }
   .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
@@ -49,7 +49,7 @@
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .form-group { margin-bottom: 14px; }
   label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.3px; }
-  input, select, textarea { width: 100%; padding: 10px 13px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; outline: none; font-family: inherit; }
+  input, select, textarea { width: 100%; padding: 10px 13px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 15px; outline: none; font-family: inherit; }
   input:focus, select:focus, textarea:focus { border-color: var(--orange); }
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
@@ -58,7 +58,7 @@
   .modal-header h3 { font-size: 17px; font-weight: 700; }
   .modal-close { background: none; border: none; font-size: 20px; color: var(--muted); cursor: pointer; }
   .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-  .error-msg { background: rgba(220,60,60,0.12); border: 1px solid rgba(220,60,60,0.3); border-radius: 8px; padding: 10px 14px; color: #ff7070; font-size: 13px; margin-bottom: 14px; display: none; }
+  .error-msg { background: rgba(220,60,60,0.12); border: 1px solid rgba(220,60,60,0.3); border-radius: 8px; padding: 10px 14px; color: #ff7070; font-size: 14px; margin-bottom: 14px; display: none; }
   .badge-pub { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; background: rgba(34,197,94,0.15); color: var(--green); }
   .badge-draft { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; background: rgba(160,166,179,0.1); color: var(--muted); }
   .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 14px; margin-bottom: 24px; }
@@ -93,7 +93,7 @@
     .table-wrap td {
       display: flex; align-items: center; justify-content: space-between; gap: 14px;
       padding: 10px 14px; border-bottom: 1px solid var(--border);
-      font-size: 14px; text-align: right; white-space: normal;
+      font-size: 15px; text-align: right; white-space: normal;
     }
     .table-wrap tr td:last-child { border-bottom: none; }
     .table-wrap td::before {
@@ -115,17 +115,17 @@
   .notif-panel { display: none; position: absolute; top: calc(100% + 10px); right: 0; width: 320px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,0.5); z-index: 300; overflow: hidden; }
   .notif-panel.open { display: block; }
   .notif-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
-  .notif-head span { font-size: 13px; font-weight: 700; }
+  .notif-head span { font-size: 14px; font-weight: 700; }
   .notif-head button { font-size: 11px; background: transparent; border: none; color: var(--orange); cursor: pointer; font-weight: 600; }
   .notif-list { max-height: 320px; overflow-y: auto; }
   .notif-item { padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
   .notif-item:hover { background: rgba(255,255,255,0.03); }
   .notif-item:last-child { border-bottom: none; }
   .notif-item.unread { background: rgba(214,106,31,0.06); }
-  .notif-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+  .notif-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
   .notif-msg { font-size: 12px; color: var(--muted); line-height: 1.4; }
   .notif-time { font-size: 11px; color: var(--muted); margin-top: 4px; opacity: 0.7; }
-  .notif-empty { padding: 32px 16px; text-align: center; color: var(--muted); font-size: 13px; }
+  .notif-empty { padding: 32px 16px; text-align: center; color: var(--muted); font-size: 14px; }
 
   /* ============================================================
      MOBILE-FIRST POLISH - standalone PWA refinements
@@ -252,7 +252,7 @@
     .more-link {
       width: 100%; appearance: none; background: none; border: 0; cursor: pointer;
       display: flex; align-items: center; gap: 14px; padding: 14px 10px;
-      color: var(--text); font-size: 15px; font-weight: 600; border-radius: 12px; text-align: left;
+      color: var(--text); font-size: 16px; font-weight: 600; border-radius: 12px; text-align: left;
       transition: background 0.15s ease; -webkit-tap-highlight-color: transparent;
     }
     .more-link:active { background: rgba(255,255,255,0.05); }
@@ -313,7 +313,7 @@
 <main class="main">
   <div class="page-header">
     <h1 id="pageTitle">My Dashboard</h1>
-    <p id="pageSubtitle" style="color:var(--muted);font-size:14px;">Loading…</p>
+    <p id="pageSubtitle" style="color:var(--muted);font-size:15px;">Loading…</p>
     <div id="batchPickerWrap" style="display:none;align-items:center;gap:10px;margin-top:12px">
       <label for="batchPicker" style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:0">Viewing batch</label>
       <select id="batchPicker" onchange="onBatchChange()" style="max-width:280px;width:auto"></select>
@@ -343,7 +343,7 @@
       <div class="section-title" style="margin:0">Active Batch</div>
       <button class="btn btn-primary" onclick="openAnnounceModal()" style="font-size:12px;padding:7px 14px">📢 Announce to Batch</button>
     </div>
-    <div id="ov-batch" class="table-wrap" style="padding:16px;font-size:14px;color:var(--muted)">Loading…</div>
+    <div id="ov-batch" class="table-wrap" style="padding:16px;font-size:15px;color:var(--muted)">Loading…</div>
   </div>
 
   <!-- ── MATERIALS ── -->
@@ -451,7 +451,7 @@
   <div id="tab-messages" style="display:none">
     <div style="margin-bottom:16px">
       <div class="section-title" style="margin:0 0 4px">Messages</div>
-      <p style="color:var(--muted);font-size:13px;margin:0">Chat with your students and batch groups.</p>
+      <p style="color:var(--muted);font-size:14px;margin:0">Chat with your students and batch groups.</p>
     </div>
     <div id="chatPanel"></div>
   </div>
@@ -549,7 +549,7 @@
   <div class="modal" style="max-width:440px">
     <div class="modal-header"><h3>Generate flashcards</h3><button class="modal-close" onclick="closeModal('flashGenModal')">✕</button></div>
     <div class="error-msg" id="fgenErr"></div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:14px">The AI writes multiple-choice questions from your curriculum. Pick a single day, or generate the whole week (a separate set for each class day) at once.</p>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:14px">The AI writes multiple-choice questions from your curriculum. Pick a single day, or generate the whole week (a separate set for each class day) at once.</p>
     <div class="form-row">
       <div class="form-group"><label>Week *</label><select id="fgen-week"></select></div>
       <div class="form-group"><label>Day</label><select id="fgen-day"><option value="">Whole week (one set per class day)</option></select></div>
@@ -609,7 +609,7 @@
   <div class="modal">
     <div class="modal-header"><h3>Announce to Batch</h3><button class="modal-close" onclick="closeModal('announceModal')">✕</button></div>
     <div class="error-msg" id="announceErr"></div>
-    <div class="success-msg" id="announceOk" style="display:none;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#22c55e;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px"></div>
+    <div class="success-msg" id="announceOk" style="display:none;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#22c55e;padding:10px 14px;border-radius:8px;font-size:14px;margin-bottom:12px"></div>
     <div class="form-group"><label>Title *</label><input id="announce-title" placeholder="e.g. Class rescheduled to Thursday"></div>
     <div class="form-group"><label>Message *</label><textarea id="announce-message" rows="4" placeholder="Write your announcement here…"></textarea></div>
     <div class="modal-footer">
@@ -658,7 +658,7 @@
   <div class="modal" style="max-width:420px">
     <div class="modal-header"><h3>Open check-in</h3><button class="modal-close" onclick="closeModal('checkinModal')">✕</button></div>
     <input type="hidden" id="checkin-session-id">
-    <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Students get a notification and can mark themselves present until you close the window.</p>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:14px">Students get a notification and can mark themselves present until you close the window.</p>
     <div class="form-row">
       <div class="form-group"><label>Check-in code <span style="color:var(--muted);font-weight:400">(optional)</span></label><input id="checkin-code" placeholder="e.g. 4821" maxlength="12"></div>
       <div class="form-group"><label>Auto-close after <span style="color:var(--muted);font-weight:400">(min)</span></label><input id="checkin-minutes" type="number" min="1" max="240" placeholder="e.g. 15"></div>
@@ -689,7 +689,7 @@
     <input type="hidden" id="score-asgn-id">
     <div class="form-group" style="margin-bottom:14px">
       <label>Student</label>
-      <div id="score-student-name" style="font-weight:600;font-size:15px;padding:8px 0;color:var(--text)">-</div>
+      <div id="score-student-name" style="font-weight:600;font-size:16px;padding:8px 0;color:var(--text)">-</div>
     </div>
     <div class="form-group">
       <label>Score (0–<span id="score-max">100</span>)</label>
@@ -1064,13 +1064,13 @@ async function viewSubmissions(id, title) {
   if (!subs) { document.getElementById('subsContent').innerHTML = '<div class="empty">Failed to load.</div>'; return; }
   if (!subs.length) { document.getElementById('subsContent').innerHTML = '<div class="empty">No submissions yet.</div>'; return; }
   document.getElementById('subsContent').innerHTML =
-    `<div style="font-size:13px;color:var(--muted);margin-bottom:12px">${subs.length} submission(s)</div>
+    `<div style="font-size:14px;color:var(--muted);margin-bottom:12px">${subs.length} submission(s)</div>
     <div class="table-wrap"><table>
       <thead><tr><th>Student</th><th>Submitted</th><th>Late?</th><th>Score</th><th>Action</th></tr></thead>
       <tbody>` +
     subs.map(s => `<tr>
       <td data-label="Student" style="font-weight:600">${escHtml(s.student?.fullName || '-')}</td>
-      <td data-label="Submitted" style="font-size:13px;color:var(--muted)">${fmtDT(s.submittedAt)}</td>
+      <td data-label="Submitted" style="font-size:14px;color:var(--muted)">${fmtDT(s.submittedAt)}</td>
       <td data-label="Late?">${s.isLate ? '<span style="color:var(--red);font-size:12px;font-weight:600">Late</span>' : '<span style="color:var(--muted)">-</span>'}</td>
       <td data-label="Score">${s.score !== undefined && s.score !== null ? `<span style="color:var(--green);font-weight:700">${s.score}</span>` : '<span style="color:var(--muted);font-size:12px">Unscored</span>'}</td>
       <td data-label=""><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px"
@@ -1138,7 +1138,7 @@ async function openGenerateFlashcards() {
   document.getElementById('fgenErr').style.display = 'none';
   document.getElementById('fgen-count').value = 10;
   const data = await api(`/api/curriculum?batch=${activeBatch._id}`);
-  _fgenEntries = Array.isArray(data) ? data : [];
+  _fgenEntries = sortByWeekDay(Array.isArray(data) ? data : []);
   if (!_fgenEntries.length) {
     alert('This batch has no curriculum yet. Add the curriculum first, then generate flashcards.');
     return;
@@ -1326,7 +1326,7 @@ async function loadAttendance() {
     <td data-label="Date">${fmtDate(s.classDate)}</td>
     <td data-label="Week">Week ${s.week}</td>
     <td data-label="Day">${s.day}</td>
-    <td data-label="Topic" style="color:var(--muted);font-size:13px">${escHtml(s.topic || '-')}</td>
+    <td data-label="Topic" style="color:var(--muted);font-size:14px">${escHtml(s.topic || '-')}</td>
     <td data-label="Present" style="color:var(--green);font-weight:600">${s.presentStudents?.length || 0}</td>
     <td data-label="Absent" style="color:var(--red);font-weight:600">${s.absentStudents?.length || 0}</td>
     <td data-label="Window">${s.isOpen ? '<span style="color:var(--green);font-weight:600;font-size:12px">Open</span>' + (s.checkInCode ? ` · code <strong>${escHtml(s.checkInCode)}</strong>` : '') : '<span style="color:var(--muted);font-size:12px">Closed</span>'}</td>
@@ -1405,7 +1405,7 @@ async function loadAttRoster(presentSet) {
     const checked = presentSet ? (presentSet.has(String(id)) ? 'checked' : '') : 'checked';
     return `
     <label style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;border-bottom:1px solid var(--border);cursor:pointer">
-      <span style="font-size:14px;font-weight:600">${escHtml(s.fullName)}</span>
+      <span style="font-size:15px;font-weight:600">${escHtml(s.fullName)}</span>
       <input type="checkbox" class="att-cb" data-id="${id}" ${checked} onchange="updateAttCount()" style="width:20px;height:20px;accent-color:var(--green)">
     </label>`;
   }).join('');
@@ -1477,6 +1477,14 @@ async function closeSession(id) {
 // ── CURRICULUM ───────────────────────────────────────────────
 let allCurriculum = [];
 
+// The API orders entries by week then day alphabetically, which puts Thursday
+// before Wednesday. Re-sort by real weekday order so a week reads in sequence.
+const _WEEKDAY_ORDER = { Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6 };
+function sortByWeekDay(entries) {
+  return (entries || []).slice().sort((a, b) =>
+    (a.week - b.week) || ((_WEEKDAY_ORDER[a.day] ?? 9) - (_WEEKDAY_ORDER[b.day] ?? 9)));
+}
+
 async function loadCurriculum() {
   populateWeekFilter('cur-week-filter');
   document.getElementById('cur-week-filter').onchange = loadCurriculum;
@@ -1488,14 +1496,14 @@ async function loadCurriculum() {
   if (week) params.push('week=' + week);
   if (params.length) url += '?' + params.join('&');
   const data = await api(url);
-  allCurriculum = Array.isArray(data) ? data : [];
+  allCurriculum = sortByWeekDay(Array.isArray(data) ? data : []);
   const tbody = document.getElementById('curTableBody');
   if (!allCurriculum.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No entries yet.</td></tr>'; return; }
   tbody.innerHTML = allCurriculum.map(c => `<tr>
     <td data-label="Week">Week ${c.week}</td>
     <td data-label="Day">${c.day}</td>
     <td data-label="Topic" style="font-weight:600">${escHtml(c.topic)}</td>
-    <td data-label="Objectives" style="color:var(--muted);font-size:13px">${escHtml(c.objectives || '-')}</td>
+    <td data-label="Objectives" style="color:var(--muted);font-size:14px">${escHtml(c.objectives || '-')}</td>
     <td data-label="" style="display:flex;gap:6px">
       <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openEditCurriculum('${c._id}')">Edit</button>
       <button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="deleteCurriculum('${c._id}')">Del</button>
@@ -1582,10 +1590,10 @@ function renderStudentTable(students) {
   }
   tbody.innerHTML = students.map(s => `<tr>
     <td data-label="Name" style="font-weight:600">${escHtml(s.fullName)}</td>
-    <td data-label="Email" style="color:var(--muted);font-size:13px">${escHtml(s.email)}</td>
+    <td data-label="Email" style="color:var(--muted);font-size:14px">${escHtml(s.email)}</td>
     <td data-label="Track">${escHtml(s.track || '-')}</td>
     <td data-label="Status"><span style="font-size:12px;padding:2px 8px;border-radius:10px;font-weight:600;background:${s.status==='Active'?'rgba(34,197,94,0.15)':'rgba(239,68,68,0.12)'};color:${s.status==='Active'?'var(--green)':'var(--red)'}">${s.status}</span></td>
-    <td data-label="Enrolled" style="color:var(--muted);font-size:13px">${fmtDate(s.createdAt)}</td>
+    <td data-label="Enrolled" style="color:var(--muted);font-size:14px">${fmtDate(s.createdAt)}</td>
   </tr>`).join('');
 }
 
