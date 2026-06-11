@@ -13,7 +13,7 @@
     --text: #F4F6FA; --muted: #A0A6B3;
     --green: #22c55e; --red: #ef4444; --yellow: #f59e0b;
   }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 16px; line-height: 1.55; }
 
   @keyframes spinPh { to { transform: rotate(360deg); } }
 
@@ -26,12 +26,12 @@
   }
   .topnav-brand { display: flex; align-items: center; gap: 10px; }
   .topnav-brand .logo-mark { width: 36px; height: 36px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: #fff; }
-  .topnav-brand .logo-name { font-size: 15px; font-weight: 700; }
+  .topnav-brand .logo-name { font-size: 16px; font-weight: 700; }
   .topnav-brand .logo-sub { font-size: 11px; color: var(--muted); font-weight: 400; letter-spacing: 0.5px; }
   .topnav-right { display: flex; align-items: center; gap: 16px; }
-  .student-name { font-size: 13px; color: var(--muted); }
+  .student-name { font-size: 14px; color: var(--muted); }
   .student-name strong { color: var(--text); }
-  .btn-logout { padding: 7px 14px; border: 1px solid var(--border); border-radius: 7px; background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; transition: color 0.2s, border-color 0.2s; }
+  .btn-logout { padding: 7px 14px; border: 1px solid var(--border); border-radius: 7px; background: transparent; color: var(--muted); font-size: 14px; cursor: pointer; transition: color 0.2s, border-color 0.2s; }
   .btn-logout:hover { color: var(--text); border-color: var(--muted); }
   /* ── NOTIFICATION BELL ── */
   .bell-wrap { position: relative; }
@@ -41,17 +41,17 @@
   .notif-panel { display: none; position: absolute; top: calc(100% + 10px); right: 0; width: 320px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,0.5); z-index: 200; overflow: hidden; }
   .notif-panel.open { display: block; }
   .notif-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
-  .notif-head span { font-size: 13px; font-weight: 700; }
+  .notif-head span { font-size: 14px; font-weight: 700; }
   .notif-head button { font-size: 11px; background: transparent; border: none; color: var(--orange); cursor: pointer; font-weight: 600; }
   .notif-list { max-height: 320px; overflow-y: auto; }
   .notif-item { padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
   .notif-item:hover { background: rgba(255,255,255,0.03); }
   .notif-item:last-child { border-bottom: none; }
   .notif-item.unread { background: rgba(214,106,31,0.06); }
-  .notif-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+  .notif-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
   .notif-msg { font-size: 12px; color: var(--muted); line-height: 1.4; }
   .notif-time { font-size: 11px; color: var(--muted); margin-top: 4px; opacity: 0.7; }
-  .notif-empty { padding: 32px 16px; text-align: center; color: var(--muted); font-size: 13px; }
+  .notif-empty { padding: 32px 16px; text-align: center; color: var(--muted); font-size: 14px; }
 
   /* ── MAIN ── */
   .main { max-width: 960px; margin: 0 auto; padding: 32px 24px 60px; }
@@ -59,11 +59,11 @@
   /* ── PAGE HEADER ── */
   .page-header { margin-bottom: 32px; }
   .page-header h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
-  .page-header p { color: var(--muted); font-size: 14px; }
+  .page-header p { color: var(--muted); font-size: 15px; }
 
   /* ── TABS ── */
   .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
-  .tab { padding: 10px 20px; font-size: 14px; font-weight: 600; color: var(--muted); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: color 0.2s; margin-bottom: -1px; }
+  .tab { padding: 10px 20px; font-size: 15px; font-weight: 600; color: var(--muted); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: color 0.2s; margin-bottom: -1px; }
   .tab:hover { color: var(--text); }
   .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
 
@@ -127,13 +127,13 @@
   }
 
   /* ── SECTION ── */
-  .section-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+  .section-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
 
   /* ── TABLE ── */
   .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
   table { width: 100%; border-collapse: collapse; }
   th { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02); }
-  td { padding: 13px 16px; font-size: 14px; border-bottom: 1px solid var(--border); }
+  td { padding: 13px 16px; font-size: 15px; border-bottom: 1px solid var(--border); }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: rgba(255,255,255,0.02); }
 
@@ -146,11 +146,11 @@
   .badge-unpaid { background: rgba(239,68,68,0.12); color: var(--red); }
 
   /* ── EMPTY STATE ── */
-  .empty { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 14px; }
+  .empty { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 15px; }
   .empty .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.5; }
 
   /* ── LOADING ── */
-  .loading { text-align: center; padding: 60px 24px; color: var(--muted); font-size: 14px; }
+  .loading { text-align: center; padding: 60px 24px; color: var(--muted); font-size: 15px; }
 
   /* ── PROGRESS BAR ── */
   .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 8px; }
@@ -197,7 +197,7 @@
     .table-wrap td {
       display: flex; align-items: center; justify-content: space-between; gap: 14px;
       padding: 10px 16px; border-bottom: 1px solid var(--border);
-      font-size: 14px; text-align: right; white-space: normal;
+      font-size: 15px; text-align: right; white-space: normal;
     }
     .table-wrap tr td:last-child { border-bottom: none; }
     .table-wrap td::before {
@@ -214,7 +214,7 @@
 
   /* ── TOAST ── */
   #sdToast { position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none; }
-  .sd-toast { background:#1E2533;border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;font-weight:600;color:var(--text);box-shadow:0 8px 24px rgba(0,0,0,0.4);transform:translateY(20px);opacity:0;transition:transform .25s,opacity .25s; }
+  .sd-toast { background:#1E2533;border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600;color:var(--text);box-shadow:0 8px 24px rgba(0,0,0,0.4);transform:translateY(20px);opacity:0;transition:transform .25s,opacity .25s; }
   .sd-toast.show { transform:translateY(0);opacity:1; }
   .sd-toast.success { border-left:3px solid var(--green);color:var(--green); }
   .sd-toast.error   { border-left:3px solid var(--red);color:#ff8080; }
@@ -355,7 +355,7 @@
     .more-link {
       width: 100%; appearance: none; background: none; border: 0; cursor: pointer;
       display: flex; align-items: center; gap: 14px;
-      padding: 14px 10px; color: var(--text); font-size: 15px; font-weight: 600;
+      padding: 14px 10px; color: var(--text); font-size: 16px; font-weight: 600;
       border-radius: 12px; text-align: left; transition: background 0.15s ease;
       -webkit-tap-highlight-color: transparent;
     }
@@ -396,7 +396,7 @@
   </div>
   <div class="topnav-right">
     <div style="display:flex;align-items:center;gap:10px">
-      <div id="navAvatar" onclick="switchTab('profile')" style="width:36px;height:36px;border-radius:50%;background:rgba(214,106,31,0.15);border:2px solid rgba(214,106,31,0.4);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#D66A1F;flex-shrink:0;transition:border-color .2s;position:relative" title="Edit profile" onmouseenter="this.style.borderColor='#D66A1F'" onmouseleave="this.style.borderColor='rgba(214,106,31,0.4)'">
+      <div id="navAvatar" onclick="switchTab('profile')" style="width:36px;height:36px;border-radius:50%;background:rgba(214,106,31,0.15);border:2px solid rgba(214,106,31,0.4);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#D66A1F;flex-shrink:0;transition:border-color .2s;position:relative" title="Edit profile" onmouseenter="this.style.borderColor='#D66A1F'" onmouseleave="this.style.borderColor='rgba(214,106,31,0.4)'">
         <img id="navAvatarImg" src="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;border-radius:50%;z-index:1">
         <span id="navAvatarInitials">-</span>
       </div>
@@ -426,7 +426,7 @@
 <main class="main">
   <div class="page-header">
     <h1 id="pageTitle">My Dashboard</h1>
-    <p id="pageSubtitle" style="color:var(--muted);font-size:14px;">Loading your data…</p>
+    <p id="pageSubtitle" style="color:var(--muted);font-size:15px;">Loading your data…</p>
   </div>
 
   <div class="tabs" style="overflow-x:auto;flex-wrap:nowrap;">
@@ -538,7 +538,7 @@
           <!-- Name/track/status info -->
           <div style="padding-top:20px;flex:1;min-width:0;">
             <div style="font-size:20px;font-weight:800;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="ovProfileName">-</div>
-            <div style="font-size:13px;color:var(--muted);margin-bottom:10px" id="ovProfileSub">-</div>
+            <div style="font-size:14px;color:var(--muted);margin-bottom:10px" id="ovProfileSub">-</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
               <span id="ovStatusBadge" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(34,197,94,0.15);color:#22c55e">Active</span>
               <span id="ovTrackBadge" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(30,75,255,0.15);color:#6a9fff">-</span>
@@ -550,19 +550,19 @@
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0;border-top:1px solid var(--border)">
           <div style="padding:14px 24px;border-right:1px solid var(--border)">
             <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Email</div>
-            <div style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="prof-email">-</div>
+            <div style="font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="prof-email">-</div>
           </div>
           <div style="padding:14px 24px;border-right:1px solid var(--border)">
             <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Full Name</div>
-            <div style="font-size:13px" id="prof-name">-</div>
+            <div style="font-size:14px" id="prof-name">-</div>
           </div>
           <div style="padding:14px 24px;border-right:1px solid var(--border)">
             <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Track</div>
-            <div style="font-size:13px" id="prof-track">-</div>
+            <div style="font-size:14px" id="prof-track">-</div>
           </div>
           <div style="padding:14px 24px;">
             <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Status</div>
-            <div style="font-size:13px" id="prof-status">-</div>
+            <div style="font-size:14px" id="prof-status">-</div>
           </div>
         </div>
       </div>
@@ -580,10 +580,10 @@
     <div id="selfMarkBanner" style="display:none;background:rgba(214,106,31,0.12);border:1px solid rgba(214,106,31,0.4);border-radius:10px;padding:16px 20px;margin-bottom:20px;align-items:center;justify-content:space-between;gap:16px;">
       <div style="flex:1;min-width:0">
         <div style="font-weight:700;color:#D66A1F;margin-bottom:4px">Attendance window is open!</div>
-        <div id="selfMarkLabel" style="font-size:13px;color:var(--muted)">Click to mark yourself present.</div>
-        <input id="selfMarkCode" inputmode="numeric" placeholder="Enter check-in code" style="display:none;margin-top:10px;width:160px;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;">
+        <div id="selfMarkLabel" style="font-size:14px;color:var(--muted)">Click to mark yourself present.</div>
+        <input id="selfMarkCode" inputmode="numeric" placeholder="Enter check-in code" style="display:none;margin-top:10px;width:160px;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;">
       </div>
-      <button id="selfMarkBtn" onclick="markSelfPresent()" style="background:#D66A1F;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap">Mark Present</button>
+      <button id="selfMarkBtn" onclick="markSelfPresent()" style="background:#D66A1F;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;white-space:nowrap">Mark Present</button>
     </div>
     <div id="attend-stats" class="stats-grid" style="margin-bottom:24px;">
       <div class="stat-card blue">
@@ -627,7 +627,7 @@
   <div id="tab-curriculum" style="display:none;">
     <div class="page-header" style="margin-bottom:20px;">
       <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">Syllabus Calendar</h2>
-      <p style="color:var(--muted);font-size:14px;">Week-by-week topics, class dates and deadlines for your batch</p>
+      <p style="color:var(--muted);font-size:15px;">Week-by-week topics, class dates and deadlines for your batch</p>
     </div>
     <div id="curriculumContent"><div class="loading">Loading curriculum…</div></div>
   </div>
@@ -653,7 +653,7 @@
   <div id="tab-messages" style="display:none;">
     <div class="page-header" style="margin-bottom:16px;">
       <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">Messages</h2>
-      <p style="color:var(--muted);font-size:14px;">Chat with your lecturers and your batch group.</p>
+      <p style="color:var(--muted);font-size:15px;">Chat with your lecturers and your batch group.</p>
     </div>
     <div id="chatPanel"></div>
   </div>
@@ -677,58 +677,58 @@
             </div>
           </div>
           <div>
-            <div style="font-size:14px;font-weight:600;margin-bottom:4px">Profile Photo</div>
+            <div style="font-size:15px;font-weight:600;margin-bottom:4px">Profile Photo</div>
             <div style="font-size:12px;color:var(--muted);margin-bottom:10px">JPG, PNG, WEBP · max 3MB</div>
             <button onclick="document.getElementById('profPhotoInput').click()" style="background:transparent;border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">Change Photo</button>
           </div>
           <input type="file" id="profPhotoInput" accept="image/jpeg,image/png,image/webp" style="display:none">
         </div>
 
-        <div id="profileErr" style="display:none;background:rgba(220,60,60,0.12);border:1px solid rgba(220,60,60,0.3);border-radius:8px;padding:10px 14px;color:#ff7070;font-size:13px;margin-bottom:16px;"></div>
-        <div id="profileOk" style="display:none;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:10px 14px;color:#22c55e;font-size:13px;margin-bottom:16px;"></div>
+        <div id="profileErr" style="display:none;background:rgba(220,60,60,0.12);border:1px solid rgba(220,60,60,0.3);border-radius:8px;padding:10px 14px;color:#ff7070;font-size:14px;margin-bottom:16px;"></div>
+        <div id="profileOk" style="display:none;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:10px 14px;color:#22c55e;font-size:14px;margin-bottom:16px;"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
           <div>
             <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Full Name</label>
-            <input id="prof-name" type="text" style="width:100%;padding:11px 14px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:14px;outline:none;" placeholder="Your full name">
+            <input id="prof-name" type="text" style="width:100%;padding:11px 14px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:15px;outline:none;" placeholder="Your full name">
           </div>
           <div>
             <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Phone</label>
-            <input id="prof-phone" type="tel" style="width:100%;padding:11px 14px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:14px;outline:none;" placeholder="e.g. 08012345678">
+            <input id="prof-phone" type="tel" style="width:100%;padding:11px 14px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:15px;outline:none;" placeholder="e.g. 08012345678">
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
           <div>
             <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Email (read-only)</label>
-            <input id="prof-email" type="email" readonly style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.02);border:1px solid #2A2F3A;border-radius:8px;color:var(--muted);font-size:14px;outline:none;">
+            <input id="prof-email" type="email" readonly style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.02);border:1px solid #2A2F3A;border-radius:8px;color:var(--muted);font-size:15px;outline:none;">
           </div>
           <div>
             <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Track (read-only)</label>
-            <input id="prof-track" type="text" readonly style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.02);border:1px solid #2A2F3A;border-radius:8px;color:var(--muted);font-size:14px;outline:none;">
+            <input id="prof-track" type="text" readonly style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.02);border:1px solid #2A2F3A;border-radius:8px;color:var(--muted);font-size:15px;outline:none;">
           </div>
         </div>
-        <button onclick="saveProfile()" id="saveProfileBtn" style="padding:11px 28px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Save Changes</button>
+        <button onclick="saveProfile()" id="saveProfileBtn" style="padding:11px 28px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;">Save Changes</button>
       </div>
 
       <!-- Change Password Card -->
       <div class="table-wrap" style="padding:24px;grid-column:1/-1;">
         <div class="section-title" style="margin-bottom:20px;">Change Password</div>
-        <div id="pwErr" style="display:none;background:rgba(220,60,60,0.12);border:1px solid rgba(220,60,60,0.3);border-radius:8px;padding:10px 14px;color:#ff7070;font-size:13px;margin-bottom:16px;"></div>
-        <div id="pwOk" style="display:none;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:10px 14px;color:#22c55e;font-size:13px;margin-bottom:16px;"></div>
+        <div id="pwErr" style="display:none;background:rgba(220,60,60,0.12);border:1px solid rgba(220,60,60,0.3);border-radius:8px;padding:10px 14px;color:#ff7070;font-size:14px;margin-bottom:16px;"></div>
+        <div id="pwOk" style="display:none;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:10px 14px;color:#22c55e;font-size:14px;margin-bottom:16px;"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px;">
           <div>
             <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Current Password</label>
-            <input id="pw-current" type="password" style="width:100%;padding:11px 14px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:14px;outline:none;" placeholder="••••••••">
+            <input id="pw-current" type="password" style="width:100%;padding:11px 14px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:15px;outline:none;" placeholder="••••••••">
           </div>
           <div>
             <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">New Password</label>
-            <input id="pw-new" type="password" style="width:100%;padding:11px 14px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:14px;outline:none;" placeholder="Min 6 characters">
+            <input id="pw-new" type="password" style="width:100%;padding:11px 14px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:15px;outline:none;" placeholder="Min 6 characters">
           </div>
           <div>
             <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Confirm New</label>
-            <input id="pw-confirm" type="password" style="width:100%;padding:11px 14px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:14px;outline:none;" placeholder="Repeat new password">
+            <input id="pw-confirm" type="password" style="width:100%;padding:11px 14px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:15px;outline:none;" placeholder="Repeat new password">
           </div>
         </div>
-        <button onclick="changePassword()" id="changePwBtn" style="padding:11px 28px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Update Password</button>
+        <button onclick="changePassword()" id="changePwBtn" style="padding:11px 28px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;">Update Password</button>
       </div>
 
       <!-- Two-Factor Authentication Card -->
@@ -741,9 +741,9 @@
   <div id="submitModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;">
     <div style="background:#171A21;border:1px solid #2A2F3A;border-radius:14px;padding:32px;width:100%;max-width:520px;margin:16px;">
       <h3 id="submitModalTitle" style="margin:0 0 6px;font-size:18px;">Submit Assignment</h3>
-      <p id="submitModalDesc" style="font-size:13px;color:var(--muted);margin:0 0 20px;"></p>
-      <label style="font-size:13px;font-weight:600;color:var(--muted);display:block;margin-bottom:8px;">Your Answer / Work</label>
-      <textarea id="submitContent" rows="6" style="width:100%;padding:12px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:14px;resize:vertical;outline:none;" placeholder="Paste your answer, link to your work, or describe your solution…"></textarea>
+      <p id="submitModalDesc" style="font-size:14px;color:var(--muted);margin:0 0 20px;"></p>
+      <label style="font-size:14px;font-weight:600;color:var(--muted);display:block;margin-bottom:8px;">Your Answer / Work</label>
+      <textarea id="submitContent" rows="6" style="width:100%;padding:12px;background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;color:#F4F6FA;font-size:15px;resize:vertical;outline:none;" placeholder="Paste your answer, link to your work, or describe your solution…"></textarea>
       <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
         <button onclick="closeSubmitModal()" style="padding:10px 20px;background:transparent;border:1px solid #2A2F3A;border-radius:8px;color:var(--muted);cursor:pointer;">Cancel</button>
         <button id="submitConfirmBtn" onclick="confirmSubmit()" style="padding:10px 22px;background:#D66A1F;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Submit</button>
@@ -771,10 +771,10 @@
     <!-- Active flashcard quiz -->
     <div id="flashcardQuiz" style="display:none;">
       <div id="quizHeader" style="display:flex;align-items:center;gap:16px;margin-bottom:24px">
-        <button onclick="closeQuiz()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:7px;cursor:pointer;font-size:13px">← Back</button>
+        <button onclick="closeQuiz()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:7px;cursor:pointer;font-size:14px">← Back</button>
         <div>
           <div id="quizTitle" style="font-weight:700;font-size:16px"></div>
-          <div id="quizProgress" style="font-size:13px;color:var(--muted)"></div>
+          <div id="quizProgress" style="font-size:14px;color:var(--muted)"></div>
         </div>
       </div>
       <div id="quizCard" class="table-wrap" style="padding:32px;text-align:center;max-width:600px;margin:0 auto"></div>
@@ -787,8 +787,8 @@
     <div id="overdueAlert" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.35);border-radius:10px;padding:14px 18px;margin-bottom:20px;align-items:center;gap:12px;">
       <span style="font-size:20px;">⚠️</span>
       <div>
-        <div style="font-weight:700;color:#ef4444;font-size:14px;">You have overdue payments</div>
-        <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:2px;">Please make your payment below to avoid suspension of your account.</div>
+        <div style="font-weight:700;color:#ef4444;font-size:15px;">You have overdue payments</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.7);margin-top:2px;">Please make your payment below to avoid suspension of your account.</div>
       </div>
     </div>
     <div class="pay-summary">
@@ -1175,7 +1175,7 @@
         '<td data-label="Batch">' + escHtml(r.batch ? (r.batch.name || '-') : '-') + '</td>' +
         '<td data-label="Week / Day">Week ' + (r.week || '?') + ' · ' + escHtml(r.day || '') + '</td>' +
         '<td data-label="Status">' + (r.present ? '<span class="badge badge-present">Present</span>' : '<span class="badge badge-absent">Absent</span>') + '</td>' +
-        '<td data-label="Notes" style="color:var(--muted);font-size:13px;">' + escHtml(r.notes || '') + '</td>' +
+        '<td data-label="Notes" style="color:var(--muted);font-size:14px;">' + escHtml(r.notes || '') + '</td>' +
         '</tr>'
       ).join('');
     }
@@ -1224,7 +1224,7 @@
           '<td data-label="Amount Paid">' + fmt(p.amountPaid) + '</td>' +
           '<td data-label="Status"><span class="badge badge-' + statusClass(p.status) + '">' + escHtml(p.status) + '</span></td>' +
           '<td data-label="Method" style="color:var(--muted)">' + escHtml(p.method || '-') + '</td>' +
-          '<td data-label="Reference" style="color:var(--muted);font-size:13px;">' + escHtml(p.reference || '-') + '</td>' +
+          '<td data-label="Reference" style="color:var(--muted);font-size:14px;">' + escHtml(p.reference || '-') + '</td>' +
           '<td data-label="Date" style="color:var(--muted)">' + (p.paidAt ? fmtDate(p.paidAt) : (p.dueDate ? 'Due ' + fmtDate(p.dueDate) : '-')) + '</td>' +
           '<td data-label="">' + actions + '</td>' +
           '</tr>';
@@ -1332,7 +1332,7 @@
             : (f.soon ? 'background:rgba(214,106,31,0.12);color:var(--orange);border-color:rgba(214,106,31,0.3)'
                       : 'background:rgba(255,255,255,0.04);color:var(--muted);border-color:var(--border)');
           return `<div style="display:flex;align-items:center;gap:8px;border:1px solid;border-radius:8px;padding:8px 12px;font-size:12px;${tone}">
-              <span style="font-size:14px">📌</span>
+              <span style="font-size:15px">📌</span>
               <span style="font-weight:600;color:var(--text)">${escHtml(d.title)}</span>
               <span style="opacity:.85">· ${escHtml(f.when)}</span>
               <span style="font-weight:700;margin-left:auto;white-space:nowrap">${escHtml(f.rel)}</span>
@@ -1341,30 +1341,44 @@
 
         return `
         <div style="margin-bottom:28px;${isPast ? 'opacity:.6' : ''}">
-          <div style="font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <span style="${weekBadge};padding:3px 10px;border-radius:12px;font-size:11px">WEEK ${w.week}</span>
             ${range ? `<span style="color:var(--muted);font-size:11px;font-weight:600;letter-spacing:normal;text-transform:none">${range.replace(/^ · /,'')}</span>` : ''}
             ${thisWeekTag}
           </div>
           <div style="display:grid;gap:10px">
-            ${(w.days || []).map(e => `
-              <div style="background:var(--card);border:1px solid ${isCurrent ? 'rgba(214,106,31,0.35)' : 'var(--border)'};border-radius:10px;padding:16px 20px">
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:${(e.subtopics?.length||e.objectives)?'10px':'0'}">
-                  <span style="background:rgba(214,106,31,0.12);color:var(--orange);padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700;flex-shrink:0">${escHtml(e.day)}${e.date ? ' · ' + escHtml(fmtCalDate(e.date)) : ''}</span>
-                  <span style="font-weight:700;font-size:14px">${escHtml(e.topic)}</span>
+            ${(w.days || []).map(e => {
+              const hasSub = e.subtopics && e.subtopics.length;
+              const hasObj = e.objectives && String(e.objectives).trim();
+              const hasRes = e.resources && e.resources.length;
+              const anyDetail = hasSub || hasObj || hasRes;
+              return `
+              <div style="background:var(--card);border:1px solid ${isCurrent ? 'rgba(214,106,31,0.35)' : 'var(--border)'};border-radius:12px;padding:18px 22px">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:${anyDetail?'15px':'0'}">
+                  <span style="background:rgba(214,106,31,0.12);color:var(--orange);padding:4px 11px;border-radius:10px;font-size:12px;font-weight:700;flex-shrink:0">${escHtml(e.day)}${e.date ? ' · ' + escHtml(fmtCalDate(e.date)) : ''}</span>
+                  <span style="font-weight:700;font-size:16.5px;line-height:1.35">${escHtml(e.topic)}</span>
                 </div>
-                ${e.subtopics && e.subtopics.length ? `
-                  <div style="margin-top:8px">
-                    <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Sub-topics</div>
-                    <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px">
-                      ${e.subtopics.map(s => `<li style="font-size:13px;color:var(--muted)">${escHtml(s)}</li>`).join('')}
+                ${hasObj ? `
+                  <div style="background:rgba(214,106,31,0.06);border-left:3px solid var(--orange);border-radius:8px;padding:12px 15px;margin-bottom:${(hasSub||hasRes)?'15px':'0'}">
+                    <div style="font-size:11.5px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px">What you'll achieve</div>
+                    <div style="font-size:15px;line-height:1.6;color:var(--text)">${escHtml(e.objectives)}</div>
+                  </div>` : ''}
+                ${hasSub ? `
+                  <div style="margin-bottom:${hasRes?'15px':'0'}">
+                    <div style="font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:9px">What you'll learn</div>
+                    <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px">
+                      ${e.subtopics.map(s => `<li style="font-size:15px;line-height:1.6;color:var(--text)">${escHtml(s)}</li>`).join('')}
                     </ul>
                   </div>` : ''}
-                ${e.objectives ? `
-                  <div style="margin-top:8px;font-size:13px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px">
-                    <span style="font-weight:600;color:var(--text)">Objectives: </span>${escHtml(e.objectives)}
+                ${hasRes ? `
+                  <div>
+                    <div style="font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:9px">What you'll use</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px">
+                      ${e.resources.map(r => `<span style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:8px;font-size:13px;font-weight:500">${escHtml(r)}</span>`).join('')}
+                    </div>
                   </div>` : ''}
-              </div>`).join('')}
+              </div>`;
+            }).join('')}
             ${deadlineChips ? `<div style="display:grid;gap:8px;margin-top:2px">${deadlineChips}</div>` : ''}
           </div>
         </div>`;
@@ -1389,14 +1403,14 @@
       items.forEach(m => { if (!byWeek[m.week]) byWeek[m.week] = []; byWeek[m.week].push(m); });
       cont.innerHTML = Object.keys(byWeek).sort((a,b)=>a-b).map(week => `
         <div style="margin-bottom:24px">
-          <div style="font-weight:700;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Week ${week}</div>
+          <div style="font-weight:700;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Week ${week}</div>
           <div class="table-wrap">
             <table><thead><tr><th>Title</th><th>Type</th><th>Topic</th><th>Link</th></tr></thead>
             <tbody>${byWeek[week].map(m => `<tr>
               <td data-label="Title" style="font-weight:600">${escHtml(m.title)}</td>
               <td data-label="Type"><span style="background:rgba(30,75,255,0.12);color:#6a9fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${escHtml(m.type.toUpperCase())}</span></td>
               <td data-label="Topic" style="color:var(--muted)">${escHtml(m.topic || '-')}</td>
-              <td data-label="Link">${(m.fileUrl || m.linkUrl) ? `<a href="${m.fileUrl || m.linkUrl}" target="_blank" style="color:var(--orange);font-size:13px">Open ↗</a>` : '-'}</td>
+              <td data-label="Link">${(m.fileUrl || m.linkUrl) ? `<a href="${m.fileUrl || m.linkUrl}" target="_blank" style="color:var(--orange);font-size:14px">Open ↗</a>` : '-'}</td>
             </tr>`).join('')}</tbody></table>
           </div>
         </div>`).join('');
@@ -1476,18 +1490,18 @@
     ].filter(Boolean).map(([k, v]) =>
       `<div style="flex:1 1 130px;min-width:120px">
          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:3px">${k}</div>
-         <div style="font-size:14px;color:#F4F6FA;font-weight:600">${escHtml(v)}</div>
+         <div style="font-size:15px;color:#F4F6FA;font-weight:600">${escHtml(v)}</div>
        </div>`).join('');
 
     const desc = (a.description || '').trim();
     const descHtml = desc
-      ? `<div style="white-space:pre-wrap;line-height:1.65;font-size:14px;color:#C7CDD8">${escHtml(desc)}</div>`
-      : `<div style="font-size:14px;color:var(--muted);font-style:italic">No additional details were provided for this assignment.</div>`;
+      ? `<div style="white-space:pre-wrap;line-height:1.65;font-size:15px;color:#C7CDD8">${escHtml(desc)}</div>`
+      : `<div style="font-size:15px;color:var(--muted);font-style:italic">No additional details were provided for this assignment.</div>`;
 
     const feedbackHtml = (sub && sub.feedback)
       ? `<div style="margin-top:18px;background:#0F1115;border:1px solid var(--border);border-radius:10px;padding:14px 16px">
            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--orange);margin-bottom:6px;font-weight:700">Lecturer feedback</div>
-           <div style="font-size:14px;color:#C7CDD8;line-height:1.6;white-space:pre-wrap">${escHtml(sub.feedback)}</div>
+           <div style="font-size:15px;color:#C7CDD8;line-height:1.6;white-space:pre-wrap">${escHtml(sub.feedback)}</div>
          </div>`
       : '';
 
@@ -1497,7 +1511,7 @@
 
     document.getElementById('assignmentDetailsBody').innerHTML =
       `<h3 style="margin:0 0 4px;font-size:20px;color:#F4F6FA">${escHtml(a.title)}</h3>
-       <div style="font-size:13px;margin:0 0 18px">${statusHtml}</div>
+       <div style="font-size:14px;margin:0 0 18px">${statusHtml}</div>
        <div style="display:flex;flex-wrap:wrap;gap:16px;margin:0 0 20px">${meta}</div>
        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:8px;font-weight:700">Details &amp; instructions</div>
        ${descHtml}
@@ -1573,7 +1587,7 @@
           const done = !!prog;
           const score = done ? Math.round(prog.correct / prog.total * 100) : null;
           const indicator = done
-            ? `<div style="width:26px;height:26px;border-radius:50%;background:#22c55e;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;flex-shrink:0">✓</div>`
+            ? `<div style="width:26px;height:26px;border-radius:50%;background:#22c55e;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;flex-shrink:0">✓</div>`
             : `<div style="width:26px;height:26px;border-radius:50%;border:2px solid #ef4444;flex-shrink:0"></div>`;
           return `
           <div class="table-wrap" style="padding:20px;cursor:pointer" onclick="startQuiz('${s._id}','${s.title.replace(/'/g,'')}')">
@@ -1581,9 +1595,9 @@
               <div style="font-weight:700">${escHtml(s.title)}</div>
               ${indicator}
             </div>
-            <div style="font-size:13px;color:var(--muted);margin-bottom:${done ? '6px' : '12px'}">Week ${s.week} · ${escHtml(s.topic || 'General')}</div>
+            <div style="font-size:14px;color:var(--muted);margin-bottom:${done ? '6px' : '12px'}">Week ${s.week} · ${escHtml(s.topic || 'General')}</div>
             ${done ? `<div style="font-size:12px;color:${score >= 70 ? '#22c55e' : '#f59e0b'};margin-bottom:10px;font-weight:600">Last score: ${score}%</div>` : ''}
-            <button style="background:${done ? 'transparent' : 'var(--blue)'};color:${done ? 'var(--muted)' : '#fff'};border:${done ? '1px solid var(--border)' : 'none'};padding:7px 16px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer">${done ? 'Retake Quiz →' : 'Start Quiz →'}</button>
+            <button style="background:${done ? 'transparent' : 'var(--blue)'};color:${done ? 'var(--muted)' : '#fff'};border:${done ? '1px solid var(--border)' : 'none'};padding:7px 16px;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer">${done ? 'Retake Quiz →' : 'Start Quiz →'}</button>
           </div>`;
         }).join('') + '</div>';
     } catch { cont.innerHTML = '<div class="empty">Failed to load flashcards.</div>'; }
@@ -1615,13 +1629,13 @@
               data-correct="${escHtml(card.correctAnswer)}"
               data-cardid="${card._id}"
               onclick="answerCard(this)"
-              style="width:100%;text-align:left;padding:12px 16px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;cursor:pointer">${escHtml(opt)}</button>`).join('')}
+              style="width:100%;text-align:left;padding:12px 16px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;cursor:pointer">${escHtml(opt)}</button>`).join('')}
           </div>`
         : `<div style="display:flex;gap:10px;max-width:400px;margin:0 auto;flex-direction:column">
             <input id="openAnswer" data-correct="${escHtml(card.correctAnswer)}" data-cardid="${card._id}"
-              style="padding:12px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;width:100%" placeholder="Type your answer…">
+              style="padding:12px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;width:100%" placeholder="Type your answer…">
             <button onclick="submitOpenAnswer()"
-              style="background:var(--blue);color:#fff;border:none;padding:11px 24px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">Submit</button>
+              style="background:var(--blue);color:#fff;border:none;padding:11px 24px;border-radius:8px;font-weight:600;cursor:pointer;font-size:15px">Submit</button>
           </div>`}
     `;
   }
@@ -1876,13 +1890,13 @@
 <div id="bankTransferModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;padding:20px;">
   <div style="background:#171A21;border:1px solid #2A2F3A;border-radius:12px;width:100%;max-width:480px;padding:32px;">
     <h3 style="color:#F4F6FA;font-size:18px;margin:0 0 8px;">Bank Transfer</h3>
-    <p style="color:#A0A6B3;font-size:13px;margin:0 0 24px;">Transfer the exact amount to the account below, then submit your reference number.</p>
+    <p style="color:#A0A6B3;font-size:14px;margin:0 0 24px;">Transfer the exact amount to the account below, then submit your reference number.</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
       <div style="background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;padding:14px 16px;">
         <div style="font-size:11px;color:#A0A6B3;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:10px;">Account 1</div>
         <table style="width:100%;">
           <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;width:100px;">Bank:</td><td id="bd-bank" style="color:#F4F6FA;font-size:12px;font-weight:600;padding:3px 0;">-</td></tr>
-          <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;">Acct No.:</td><td id="bd-number" style="color:#F4F6FA;font-size:13px;font-weight:700;font-family:monospace;padding:3px 0;letter-spacing:1px;">-</td></tr>
+          <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;">Acct No.:</td><td id="bd-number" style="color:#F4F6FA;font-size:14px;font-weight:700;font-family:monospace;padding:3px 0;letter-spacing:1px;">-</td></tr>
           <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;">Name:</td><td id="bd-name" style="color:#F4F6FA;font-size:12px;font-weight:600;padding:3px 0;">-</td></tr>
         </table>
       </div>
@@ -1890,24 +1904,24 @@
         <div style="font-size:11px;color:#A0A6B3;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:10px;">Account 2</div>
         <table style="width:100%;">
           <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;width:100px;">Bank:</td><td id="bd2-bank" style="color:#F4F6FA;font-size:12px;font-weight:600;padding:3px 0;">-</td></tr>
-          <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;">Acct No.:</td><td id="bd2-number" style="color:#F4F6FA;font-size:13px;font-weight:700;font-family:monospace;padding:3px 0;letter-spacing:1px;">-</td></tr>
+          <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;">Acct No.:</td><td id="bd2-number" style="color:#F4F6FA;font-size:14px;font-weight:700;font-family:monospace;padding:3px 0;letter-spacing:1px;">-</td></tr>
           <tr><td style="color:#A0A6B3;font-size:12px;padding:3px 0;">Name:</td><td id="bd2-name" style="color:#F4F6FA;font-size:12px;font-weight:600;padding:3px 0;">-</td></tr>
         </table>
       </div>
     </div>
     <div style="margin-bottom:16px;">
       <label style="display:block;color:#A0A6B3;font-size:12px;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Transfer Reference / Teller No. *</label>
-      <input id="bt-reference" type="text" placeholder="e.g. TRF123456789" style="width:100%;background:#0F1115;border:1px solid #2A2F3A;border-radius:6px;padding:10px 14px;color:#F4F6FA;font-size:14px;outline:none;">
+      <input id="bt-reference" type="text" placeholder="e.g. TRF123456789" style="width:100%;background:#0F1115;border:1px solid #2A2F3A;border-radius:6px;padding:10px 14px;color:#F4F6FA;font-size:15px;outline:none;">
     </div>
     <div style="margin-bottom:20px;">
       <label style="display:block;color:#A0A6B3;font-size:12px;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Additional Notes (optional)</label>
-      <textarea id="bt-notes" rows="2" placeholder="Any notes for the admin" style="width:100%;background:#0F1115;border:1px solid #2A2F3A;border-radius:6px;padding:10px 14px;color:#F4F6FA;font-size:14px;outline:none;resize:vertical;"></textarea>
+      <textarea id="bt-notes" rows="2" placeholder="Any notes for the admin" style="width:100%;background:#0F1115;border:1px solid #2A2F3A;border-radius:6px;padding:10px 14px;color:#F4F6FA;font-size:15px;outline:none;resize:vertical;"></textarea>
     </div>
-    <div id="bt-error" style="display:none;color:#ef4444;font-size:13px;margin-bottom:12px;"></div>
-    <div id="bt-success" style="display:none;background:rgba(34,197,94,0.1);border:1px solid #22c55e;border-radius:6px;padding:12px 16px;color:#22c55e;font-size:13px;margin-bottom:16px;">Submitted! Admin will confirm within 24 hours.</div>
+    <div id="bt-error" style="display:none;color:#ef4444;font-size:14px;margin-bottom:12px;"></div>
+    <div id="bt-success" style="display:none;background:rgba(34,197,94,0.1);border:1px solid #22c55e;border-radius:6px;padding:12px 16px;color:#22c55e;font-size:14px;margin-bottom:16px;">Submitted! Admin will confirm within 24 hours.</div>
     <div style="display:flex;gap:10px;justify-content:flex-end;">
-      <button onclick="closeBankTransfer()" style="padding:9px 18px;background:transparent;color:#A0A6B3;border:1px solid #2A2F3A;border-radius:6px;font-size:13px;cursor:pointer;">Cancel</button>
-      <button id="btSubmitBtn" onclick="submitBankTransfer()" style="padding:9px 18px;background:#D66A1F;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">Submit Reference</button>
+      <button onclick="closeBankTransfer()" style="padding:9px 18px;background:transparent;color:#A0A6B3;border:1px solid #2A2F3A;border-radius:6px;font-size:14px;cursor:pointer;">Cancel</button>
+      <button id="btSubmitBtn" onclick="submitBankTransfer()" style="padding:9px 18px;background:#D66A1F;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;">Submit Reference</button>
     </div>
   </div>
 </div>
@@ -1916,20 +1930,20 @@
 <div id="cashPayModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;padding:20px;">
   <div style="background:#171A21;border:1px solid #2A2F3A;border-radius:12px;width:100%;max-width:460px;padding:30px;">
     <h3 style="color:#F4F6FA;font-size:18px;margin:0 0 8px;">Pay in Cash</h3>
-    <p style="color:#A0A6B3;font-size:13px;margin:0 0 20px;line-height:1.5;">Bring the exact amount to the Goallord office at <strong style="color:#F4F6FA;">No. 1 Mission Road, Onitsha</strong>. Record the payment here so admin can confirm it.</p>
+    <p style="color:#A0A6B3;font-size:14px;margin:0 0 20px;line-height:1.5;">Bring the exact amount to the Goallord office at <strong style="color:#F4F6FA;">No. 1 Mission Road, Onitsha</strong>. Record the payment here so admin can confirm it.</p>
     <div style="margin-bottom:14px;">
       <label style="display:block;color:#A0A6B3;font-size:12px;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Collected by (optional)</label>
-      <input id="cp-collectedBy" type="text" maxlength="80" placeholder="e.g. name of Goallord staff" style="width:100%;background:#0F1115;border:1px solid #2A2F3A;border-radius:6px;padding:10px 14px;color:#F4F6FA;font-size:14px;outline:none;">
+      <input id="cp-collectedBy" type="text" maxlength="80" placeholder="e.g. name of Goallord staff" style="width:100%;background:#0F1115;border:1px solid #2A2F3A;border-radius:6px;padding:10px 14px;color:#F4F6FA;font-size:15px;outline:none;">
     </div>
     <div style="margin-bottom:18px;">
       <label style="display:block;color:#A0A6B3;font-size:12px;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Notes (optional)</label>
-      <textarea id="cp-notes" rows="2" maxlength="280" placeholder="Any extra detail for admin" style="width:100%;background:#0F1115;border:1px solid #2A2F3A;border-radius:6px;padding:10px 14px;color:#F4F6FA;font-size:14px;outline:none;resize:vertical;"></textarea>
+      <textarea id="cp-notes" rows="2" maxlength="280" placeholder="Any extra detail for admin" style="width:100%;background:#0F1115;border:1px solid #2A2F3A;border-radius:6px;padding:10px 14px;color:#F4F6FA;font-size:15px;outline:none;resize:vertical;"></textarea>
     </div>
-    <div id="cp-error" style="display:none;color:#ef4444;font-size:13px;margin-bottom:12px;"></div>
-    <div id="cp-success" style="display:none;background:rgba(34,197,94,0.1);border:1px solid #22c55e;border-radius:6px;padding:12px 16px;color:#22c55e;font-size:13px;margin-bottom:16px;">Cash payment recorded. Admin will confirm within 24 hours.</div>
+    <div id="cp-error" style="display:none;color:#ef4444;font-size:14px;margin-bottom:12px;"></div>
+    <div id="cp-success" style="display:none;background:rgba(34,197,94,0.1);border:1px solid #22c55e;border-radius:6px;padding:12px 16px;color:#22c55e;font-size:14px;margin-bottom:16px;">Cash payment recorded. Admin will confirm within 24 hours.</div>
     <div style="display:flex;gap:10px;justify-content:flex-end;">
-      <button onclick="closeCashPay()" style="padding:9px 18px;background:transparent;color:#A0A6B3;border:1px solid #2A2F3A;border-radius:6px;font-size:13px;cursor:pointer;">Cancel</button>
-      <button id="cpSubmitBtn" onclick="submitCashPay()" style="padding:9px 18px;background:#D66A1F;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">Record Cash Payment</button>
+      <button onclick="closeCashPay()" style="padding:9px 18px;background:transparent;color:#A0A6B3;border:1px solid #2A2F3A;border-radius:6px;font-size:14px;cursor:pointer;">Cancel</button>
+      <button id="cpSubmitBtn" onclick="submitCashPay()" style="padding:9px 18px;background:#D66A1F;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;">Record Cash Payment</button>
     </div>
   </div>
 </div>
@@ -1944,18 +1958,18 @@
     <div style="background:#1E4BFF;padding:12px 32px;display:flex;justify-content:space-between;">
       <div>
         <div style="color:rgba(255,255,255,0.7);font-size:11px;letter-spacing:.5px;">RECEIPT NO.</div>
-        <div id="srcp-number" style="color:#fff;font-size:15px;font-weight:700;font-family:monospace;"></div>
+        <div id="srcp-number" style="color:#fff;font-size:16px;font-weight:700;font-family:monospace;"></div>
       </div>
       <div style="text-align:right;">
         <div style="color:rgba(255,255,255,0.7);font-size:11px;letter-spacing:.5px;">DATE</div>
-        <div id="srcp-date" style="color:#fff;font-size:13px;font-weight:600;"></div>
+        <div id="srcp-date" style="color:#fff;font-size:14px;font-weight:600;"></div>
       </div>
     </div>
     <div style="padding:28px 32px;">
       <div style="margin-bottom:20px;">
         <div style="font-size:11px;color:#A0A6B3;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Bill To</div>
-        <div id="srcp-name" style="color:#F4F6FA;font-size:15px;font-weight:600;"></div>
-        <div id="srcp-email" style="color:#A0A6B3;font-size:13px;margin-top:2px;"></div>
+        <div id="srcp-name" style="color:#F4F6FA;font-size:16px;font-weight:600;"></div>
+        <div id="srcp-email" style="color:#A0A6B3;font-size:14px;margin-top:2px;"></div>
       </div>
       <table style="width:100%;border-collapse:collapse;border:1px solid #2A2F3A;border-radius:8px;overflow:hidden;margin-bottom:20px;">
         <thead>
@@ -1966,26 +1980,26 @@
         </thead>
         <tbody>
           <tr style="border-top:1px solid #2A2F3A;">
-            <td id="srcp-desc" style="padding:11px 12px;color:#F4F6FA;font-size:14px;"></td>
-            <td id="srcp-amt" style="padding:11px 12px;color:#F4F6FA;font-size:14px;font-weight:600;text-align:right;"></td>
+            <td id="srcp-desc" style="padding:11px 12px;color:#F4F6FA;font-size:15px;"></td>
+            <td id="srcp-amt" style="padding:11px 12px;color:#F4F6FA;font-size:15px;font-weight:600;text-align:right;"></td>
           </tr>
           <tr style="background:#0F1115;border-top:1px solid #2A2F3A;">
-            <td style="padding:9px 12px;color:#F4F6FA;font-size:14px;font-weight:700;text-align:right;">Total</td>
-            <td id="srcp-total" style="padding:9px 12px;color:#D66A1F;font-size:15px;font-weight:800;text-align:right;"></td>
+            <td style="padding:9px 12px;color:#F4F6FA;font-size:15px;font-weight:700;text-align:right;">Total</td>
+            <td id="srcp-total" style="padding:9px 12px;color:#D66A1F;font-size:16px;font-weight:800;text-align:right;"></td>
           </tr>
         </tbody>
       </table>
       <div style="background:#0F1115;border:1px solid #2A2F3A;border-radius:8px;padding:14px 18px;margin-bottom:20px;">
         <div style="font-size:11px;color:#A0A6B3;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Payment Details</div>
         <table style="width:100%;">
-          <tr><td style="color:#A0A6B3;font-size:13px;width:100px;padding:3px 0;">Method:</td><td id="srcp-method" style="color:#F4F6FA;font-size:13px;font-weight:600;padding:3px 0;"></td></tr>
-          <tr><td style="color:#A0A6B3;font-size:13px;padding:3px 0;">Reference:</td><td id="srcp-ref" style="color:#F4F6FA;font-size:13px;font-family:monospace;padding:3px 0;"></td></tr>
+          <tr><td style="color:#A0A6B3;font-size:14px;width:100px;padding:3px 0;">Method:</td><td id="srcp-method" style="color:#F4F6FA;font-size:14px;font-weight:600;padding:3px 0;"></td></tr>
+          <tr><td style="color:#A0A6B3;font-size:14px;padding:3px 0;">Reference:</td><td id="srcp-ref" style="color:#F4F6FA;font-size:14px;font-family:monospace;padding:3px 0;"></td></tr>
         </table>
       </div>
       <p style="color:#A0A6B3;font-size:12px;text-align:center;border-top:1px solid #2A2F3A;padding-top:16px;margin-bottom:20px;">Thank you for your payment - <strong style="color:#F4F6FA;">Goallord Creativity Academy</strong></p>
       <div class="no-print" style="display:flex;gap:10px;justify-content:flex-end;">
-        <button onclick="window.print()" style="padding:8px 16px;background:#D66A1F;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">Print / PDF</button>
-        <button onclick="closeStudentReceipt()" style="padding:8px 16px;background:transparent;color:#A0A6B3;border:1px solid #2A2F3A;border-radius:6px;font-size:13px;cursor:pointer;">Close</button>
+        <button onclick="window.print()" style="padding:8px 16px;background:#D66A1F;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;">Print / PDF</button>
+        <button onclick="closeStudentReceipt()" style="padding:8px 16px;background:transparent;color:#A0A6B3;border:1px solid #2A2F3A;border-radius:6px;font-size:14px;cursor:pointer;">Close</button>
       </div>
     </div>
   </div>
