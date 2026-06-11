@@ -387,10 +387,17 @@ const PORT = process.env.PORT || 3000;
     // ── Lecture generation (West Africa Time) ────────────────────
     // 5 AM daily: a day before each class, generate slides + lesson notes from
     // the curriculum and leave them as 'pending_review' for the teacher.
-    const { runLectureGeneration } = require('./utils/lectureGenerator');
-    cron.schedule('0 5 * * *', () => {
-      runLectureGeneration().catch(e => console.error('Lecture generation failed:', e.message));
-    }, { timezone: 'Africa/Lagos' });
+    // Gated behind LECTURES_AUTOGEN=1 so it stays off until explicitly enabled
+    // (teachers can still generate on demand from the dashboard meanwhile).
+    if (process.env.LECTURES_AUTOGEN === '1') {
+      const { runLectureGeneration } = require('./utils/lectureGenerator');
+      cron.schedule('0 5 * * *', () => {
+        runLectureGeneration().catch(e => console.error('Lecture generation failed:', e.message));
+      }, { timezone: 'Africa/Lagos' });
+      console.log('Lecture auto-generation cron enabled (05:00 Africa/Lagos)');
+    } else {
+      console.log('Lecture auto-generation cron disabled (set LECTURES_AUTOGEN=1 to enable)');
+    }
   } catch (err) {
     console.error('Startup error:', err.message);
     process.exit(1);
