@@ -4,7 +4,16 @@
 // text. Uses the official @anthropic-ai/sdk.
 const Anthropic = require('@anthropic-ai/sdk');
 
-const MODEL = 'claude-sonnet-4-6';
+// Tiered models so callers can trade cost for quality:
+//   default → everyday structured generation (flashcards, lectures)
+//   premium → very important lectures ("Premium Generation")
+//   small   → email copy, one-slide regenerations, short summaries
+const MODELS = {
+  default: 'claude-sonnet-4-6',
+  premium: 'claude-opus-4-8',
+  small:   'claude-haiku-4-5-20251001',
+};
+const MODEL = MODELS.default; // back-compat
 
 let client;
 function getClient() {
@@ -14,19 +23,31 @@ function getClient() {
   return client;
 }
 
-// generateContent({ prompt, system?, maxOutputTokens? }) → Promise<string>
+// generateContent({ prompt, system?, maxOutputTokens?, model? }) → Promise<string>
+// `model` accepts a MODELS key ('default'|'premium'|'small') or a raw model id;
+// omit it to keep the Sonnet default (so existing callers are unchanged).
 // Adaptive thinking is left on so the visible text block stays a clean final
-// answer (Opus 4.8 may otherwise leak reasoning into the response). Note:
-// thinking tokens count against max_tokens, so keep maxOutputTokens generous.
-async function generateContent({ prompt, system, maxOutputTokens = 4096 }) {
-  const message = await getClient().messages.create({
-    model: MODEL,
+// answer. Note: thinking tokens count against max_tokens, so keep it generous.
+async function generateContent({ prompt, system, maxOutputTokens = 4096, model }) {
+  const res = await generateDetailed({ prompt, system, maxOutputTokens, model });
+  return res.text;
+}
+
+// Like generateContent but also returns model id + token usage (for cost logs).
+// `thinking` defaults to 'adaptive'; pass false/'off' for large strict-JSON
+// outputs so reasoning tokens don't eat the max_tokens budget. `effort` maps to
+// output_config.effort ('low'|'medium'|'high').
+async function generateDetailed({ prompt, system, maxOutputTokens = 4096, model, thinking = 'adaptive', effort = 'medium' }) {
+  const resolved = MODELS[model] || model || MODELS.default;
+  const params = {
+    model: resolved,
     max_tokens: maxOutputTokens,
-    thinking: { type: 'adaptive' },
-    output_config: { effort: 'medium' },
-    ...(system ? { system } : {}),
+    output_config: { effort },
     messages: [{ role: 'user', content: prompt }],
-  });
+  };
+  if (thinking && thinking !== 'off') params.thinking = { type: thinking === true ? 'adaptive' : thinking };
+  if (system) params.system = system;
+  const message = await getClient().messages.create(params);
 
   if (message.stop_reason === 'refusal') {
     throw new Error('Claude declined to generate the requested content');
@@ -41,7 +62,8 @@ async function generateContent({ prompt, system, maxOutputTokens = 4096 }) {
   if (!text) {
     throw new Error(`Claude returned no text (stop_reason: ${message.stop_reason})`);
   }
-  return text;
+  const u = message.usage || {};
+  return { text, model: resolved, inputTokens: u.input_tokens || 0, outputTokens: u.output_tokens || 0 };
 }
 
-module.exports = { generateContent };
+module.exports = { generateContent, generateDetailed, MODELS, MODEL };

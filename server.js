@@ -238,6 +238,7 @@ app.use('/api/lecturers',     require('./routes/lecturers'));
 app.use('/api/materials',     require('./routes/materials'));
 app.use('/api/assignments',   require('./routes/assignments'));
 app.use('/api/flashcards',    require('./routes/flashcards'));
+app.use('/api/lectures',      require('./routes/lectures'));
 app.use('/api/curriculum',    require('./routes/curriculum'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/push',          require('./routes/push'));
@@ -381,6 +382,14 @@ const PORT = process.env.PORT || 3000;
     const { runClassReminders } = require('./utils/classReminders');
     cron.schedule('0 6 * * 3,4', () => {
       runClassReminders().catch(e => console.error('Class reminders failed:', e.message));
+    }, { timezone: 'Africa/Lagos' });
+
+    // ── Lecture generation (West Africa Time) ────────────────────
+    // 5 AM daily: a day before each class, generate slides + lesson notes from
+    // the curriculum and leave them as 'pending_review' for the teacher.
+    const { runLectureGeneration } = require('./utils/lectureGenerator');
+    cron.schedule('0 5 * * *', () => {
+      runLectureGeneration().catch(e => console.error('Lecture generation failed:', e.message));
     }, { timezone: 'Africa/Lagos' });
   } catch (err) {
     console.error('Startup error:', err.message);
