@@ -36,6 +36,11 @@ services:
         sync: false
       - key: ANTHROPIC_API_KEY
         sync: false
+      # Lectures - image generation (Replicate/Ideogram) + nightly auto-gen flag
+      - key: REPLICATE_API_TOKEN
+        sync: false
+      - key: LECTURES_AUTOGEN
+        value: "1"
       # Web Push (VAPID) - portal PWA notifications
       - key: VAPID_PUBLIC_KEY
         sync: false
