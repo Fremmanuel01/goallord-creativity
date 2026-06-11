@@ -1871,7 +1871,7 @@ function lecPreviewHtml(l) {
     return `<div style="max-width:820px;margin:0 auto 22px;background:#171A21;border:1px solid #2A2F3A;border-radius:14px;padding:26px">
       <div style="font-size:11px;color:#8892A4;margin-bottom:10px">Slide ${s.slide_number} · ${s.layout_type}</div>
       ${img}<div style="font-size:21px;font-weight:800;margin-bottom:10px">${esc(s.slide_title||'')}</div>${txt}
-      ${s.main_explanation?`<p style="margin-top:12px;color:#A0A6B3;font-size:14px;line-height:1.65">${esc(s.main_explanation)}</p>`:''}</div>`;
+      ${s.main_explanation?`<div style="margin-top:14px;border-top:1px solid #2A2F3A;padding-top:10px"><div style="font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8892A4;margin-bottom:6px">Speaker notes — students see this behind "Explain more"</div><p style="margin:0;color:#A0A6B3;font-size:14px;line-height:1.65">${esc(s.main_explanation)}</p></div>`:''}</div>`;
   }).join('');
   return `<!doctype html><meta charset=utf8><title>Preview — ${esc(l.lectureTitle)}</title><body style="margin:0;background:#0B0D10;color:#F4F6FA;font-family:Segoe UI,Arial,sans-serif;padding:30px 16px"><h1 style="text-align:center;font-size:22px">${esc(l.lectureTitle)} <span style="font-size:13px;color:#8892A4">(student preview)</span></h1>${slides}</body>`;
 }

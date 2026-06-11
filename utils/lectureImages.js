@@ -1,10 +1,10 @@
 // Lecture image generation.
-// Generates the few AI images a lecture needs (4–5 for Film, 2–3 for Programming),
+// Generates the AI images a lecture needs (≈8 for Film, ≈5 for Programming),
 // hosts them on Cloudinary, and writes image_url back into the slide JSON.
-// Provider order: Replicate (Ideogram v3 Quality) when REPLICATE_API_TOKEN is set,
-// then OpenAI GPT Image, then Gemini "Nano Banana". Per-slide failures are
-// non-fatal — the slide just renders without a photo. Cost-conscious: only
-// image_required slides, capped.
+// Provider order: Replicate (Flux Schnell, ~$0.003/image) when REPLICATE_API_TOKEN
+// is set, then OpenAI GPT Image, then Gemini "Nano Banana". Per-slide failures are
+// non-fatal — the slide just renders without a photo. Only image_required slides,
+// capped per course.
 const https = require('https');
 const cloudinary = require('../lib/cloudinary');
 const { IMAGE_LIMITS } = require('./lectureGenerator');
@@ -47,10 +47,16 @@ function replicateGet(url) {
 }
 
 async function replicateImage(prompt) {
-  const model = process.env.REPLICATE_IMAGE_MODEL || 'ideogram-ai/ideogram-v3-quality';
-  let pred = await replicatePost(`/v1/models/${model}/predictions`, {
-    input: { prompt, aspect_ratio: '16:9', magic_prompt_option: 'Auto' },
-  });
+  // Flux Schnell (~$0.003/image) is ~30x cheaper than Ideogram v3 Quality and
+  // plenty for educational illustrations — text-in-image is banned anyway, which
+  // was Ideogram's only edge. Override with REPLICATE_IMAGE_MODEL if needed
+  // (e.g. black-forest-labs/flux-dev for a higher-end look).
+  const model = process.env.REPLICATE_IMAGE_MODEL || 'black-forest-labs/flux-schnell';
+  // Model-family-specific inputs: unknown keys fail Replicate's input validation.
+  const input = { prompt, aspect_ratio: '16:9' };
+  if (/ideogram/i.test(model)) input.magic_prompt_option = 'Auto';
+  if (/flux/i.test(model)) { input.output_format = 'jpg'; input.output_quality = 90; }
+  let pred = await replicatePost(`/v1/models/${model}/predictions`, { input });
   if (pred.error) throw new Error('Replicate: ' + (pred.detail || pred.error));
   // Poll if not finished within the sync window.
   for (let i = 0; i < 30 && pred.status && !['succeeded', 'failed', 'canceled'].includes(pred.status); i++) {

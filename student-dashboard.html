@@ -379,6 +379,54 @@
   @media (prefers-reduced-motion: reduce) {
     [class^="lv-anim-"] { animation: none !important; }
   }
+  /* Lecture slide deck — slides read like slides: big type, short copy, visuals.
+     The deep teaching lives in main_explanation ("Explain more") + lesson notes. */
+  .lv-slide {
+    position: relative; width: 100%; max-width: 960px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    overflow: hidden; display: flex; flex-direction: column;
+    box-shadow: 0 18px 50px rgba(0,0,0,.35);
+  }
+  @media (min-width: 900px) { .lv-slide { min-height: 480px; } }
+  .lv-body { display: flex; flex-direction: column; flex: 1; min-width: 0; padding: 36px 42px; }
+  .lv-kicker {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--orange); margin-bottom: 12px;
+  }
+  .lv-kicker::before { content: ''; width: 22px; height: 2px; background: var(--orange); border-radius: 2px; }
+  .lv-h { font-size: clamp(22px, 3.4vw, 32px); font-weight: 800; line-height: 1.18; letter-spacing: -.01em; margin: 0 0 18px; }
+  .lv-lede { font-size: clamp(16px, 2.2vw, 20px); line-height: 1.55; color: var(--muted); margin: 0; }
+  .lv-bullets { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+  .lv-bullets li { position: relative; padding-left: 20px; font-size: clamp(15px, 1.9vw, 18px); line-height: 1.5; }
+  .lv-bullets li::before { content: ''; position: absolute; left: 0; top: .52em; width: 8px; height: 8px; border-radius: 2px; background: var(--orange); }
+  .lv-cols { display: flex; flex: 1; min-height: 0; }
+  .lv-cols .lv-body { width: 54%; }
+  .lv-media { width: 46%; flex-shrink: 0; position: relative; min-height: 320px; }
+  .lv-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .lv-ph {
+    position: absolute; inset: 0; display: flex; flex-direction: column; gap: 8px;
+    align-items: center; justify-content: center; padding: 20px; text-align: center;
+    background: linear-gradient(135deg, #171A21, #0F1115); color: var(--muted); font-size: 12.5px;
+  }
+  @media (max-width: 740px) {
+    .lv-body { padding: 24px 22px; }
+    .lv-cols { flex-direction: column; }
+    .lv-cols .lv-body { width: 100%; }
+    .lv-media { width: 100%; min-height: 200px; order: -1; }
+  }
+  .lv-expl { margin-top: auto; padding-top: 18px; }
+  .lv-expl summary {
+    display: inline-flex; align-items: center; gap: 7px; cursor: pointer; list-style: none;
+    font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 7px 14px;
+    transition: color .15s ease, border-color .15s ease; -webkit-tap-highlight-color: transparent;
+  }
+  .lv-expl summary::-webkit-details-marker { display: none; }
+  .lv-expl summary::before { content: '+'; color: var(--orange); font-size: 14px; font-weight: 800; line-height: 1; }
+  .lv-expl[open] summary::before { content: '\2013'; }
+  .lv-expl summary:hover { color: var(--text); border-color: var(--orange); }
+  .lv-expl p { margin: 12px 0 0; font-size: 14.5px; line-height: 1.7; color: var(--muted); max-width: 680px; }
 </style>
   <!-- pwa:head-start -->
   <meta name="theme-color" content="#D66A1F">
@@ -817,6 +865,7 @@
     <!-- Slides deck -->
     <div id="lvSlides" style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
       <div id="lvStage" style="flex:1;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:24px"></div>
+      <div style="height:3px;background:rgba(255,255,255,0.06);flex-shrink:0"><div id="lvProgress" style="height:100%;width:0%;background:var(--orange);transition:width .25s ease"></div></div>
       <div style="display:flex;align-items:center;justify-content:center;gap:18px;padding:14px;border-top:1px solid var(--border);flex-shrink:0">
         <button onclick="lvNav(-1)" style="background:transparent;border:1px solid var(--border);color:var(--text);width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:18px">‹</button>
         <span id="lvCounter" style="font-size:13px;color:var(--muted);min-width:64px;text-align:center"></span>
@@ -1432,7 +1481,9 @@
   function renderSlide() {
     const s = lvState.slides[lvState.idx];
     const stage = document.getElementById('lvStage');
-    document.getElementById('lvCounter').textContent = lvState.slides.length ? (lvState.idx + 1) + ' / ' + lvState.slides.length : '';
+    const n = lvState.slides.length;
+    document.getElementById('lvCounter').textContent = n ? (lvState.idx + 1) + ' / ' + n : '';
+    document.getElementById('lvProgress').style.width = n ? (((lvState.idx + 1) / n) * 100) + '%' : '0%';
     if (!s) { stage.innerHTML = '<div class="empty">No slides.</div>'; return; }
     stage.innerHTML = slideHtml(s);
     // restart entrance animation
@@ -1440,66 +1491,98 @@
     if (card) { card.style.animation = 'none'; void card.offsetWidth; card.style.animation = ''; }
   }
 
-  // Render one slide JSON object → HTML, by layout_type. image_url is used when
-  // present; otherwise a clean placeholder keeps the layout intact.
+  // Render one slide JSON object → HTML, by layout_type. The slide face carries
+  // only slide copy (kicker + title + short on_slide_text + visual); the fuller
+  // main_explanation sits behind the "Explain more" toggle so decks never read
+  // like lesson notes. image_url is used when present; otherwise a clean
+  // placeholder keeps the layout intact.
   function slideHtml(s) {
     const anim = 'lv-anim-' + (s.animation_type && s.animation_type !== 'none' ? s.animation_type : 'fade');
     const title = escHtml(s.slide_title || '');
-    const onText = (s.on_slide_text || '').split('\n').filter(Boolean);
-    const onHtml = onText.map(t => `<p style="margin:0 0 8px;font-size:16px;line-height:1.55;color:var(--text)">${escHtml(t)}</p>`).join('');
-    const expl = s.main_explanation ? `<p style="margin:14px 0 0;font-size:14px;line-height:1.65;color:var(--muted)">${escHtml(s.main_explanation)}</p>` : '';
-    const img = s.image_url
-      ? `<img src="${s.image_url}" alt="${title}" style="width:100%;height:100%;object-fit:cover;display:block">`
-      : `<div style="width:100%;height:100%;min-height:240px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#171A21,#0F1115);color:var(--muted);font-size:13px;text-align:center;padding:20px">${escHtml(s.visual_description || 'Visual')}</div>`;
-    const wrap = (inner) => `<div class="${anim}" style="width:100%;max-width:880px;background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden">${inner}</div>`;
-    const pad = 'padding:34px 38px';
+    const onText = (s.on_slide_text || '').split('\n').map(t => t.trim()).filter(Boolean);
+    const kickerText = s.slide_type && !['content', 'title'].includes(String(s.slide_type).toLowerCase())
+      ? String(s.slide_type).replace(/[_-]+/g, ' ')
+      : 'Slide ' + (s.slide_number || (lvState.idx + 1));
+    const kicker = `<div class="lv-kicker">${escHtml(kickerText)}</div>`;
+    const expl = s.main_explanation
+      ? `<details class="lv-expl"><summary>Explain more</summary><p>${escHtml(s.main_explanation)}</p></details>` : '';
+    const bullets = onText.length > 1
+      ? `<ul class="lv-bullets">${onText.map(t => `<li>${escHtml(t)}</li>`).join('')}</ul>`
+      : (onText[0] ? `<p class="lv-lede">${escHtml(onText[0])}</p>` : '');
+    const imgAbs = s.image_url
+      ? `<img src="${s.image_url}" alt="${title}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`
+      : `<div class="lv-ph"><span style="font-size:24px">🖼</span>${escHtml(s.visual_description || 'Visual')}</div>`;
+    const media = `<div class="lv-media">${imgAbs}</div>`;
+    const wrap = (inner) => `<div class="${anim} lv-slide">${inner}</div>`;
 
     switch (s.layout_type) {
       case 'title':
-        return wrap(`<div style="padding:60px 40px;text-align:center">
-          <div style="font-size:26px;font-weight:800;line-height:1.25;margin-bottom:14px">${title}</div>
-          <div style="font-size:16px;color:var(--muted);line-height:1.6">${onHtml}</div>${expl}</div>`);
+        return wrap(`<div class="lv-body" style="align-items:center;justify-content:center;text-align:center;padding:64px 36px">
+          <div class="lv-kicker" style="margin-bottom:16px">Lecture</div>
+          <div class="lv-h" style="font-size:clamp(26px,4.6vw,40px);max-width:760px;margin-bottom:14px">${title}</div>
+          ${onText.length ? `<p class="lv-lede" style="max-width:620px">${escHtml(onText.join(' · '))}</p>` : ''}${expl}</div>`);
       case 'full_image_overlay':
-        return wrap(`<div style="position:relative">
-          <div style="aspect-ratio:16/9;width:100%">${img}</div>
-          <div style="padding:24px 30px;background:var(--card)"><div style="font-size:21px;font-weight:800;margin-bottom:8px">${title}</div>${onHtml}${expl}</div></div>`);
+        return wrap(`<div style="position:relative;flex:1;min-height:340px">${imgAbs}
+          <div style="position:absolute;left:0;right:0;bottom:0;padding:90px 34px 26px;background:linear-gradient(180deg,rgba(11,13,16,0) 0%,rgba(11,13,16,0.94) 78%)">
+            ${kicker}<div class="lv-h" style="margin-bottom:6px">${title}</div>
+            ${onText.length ? `<p class="lv-lede" style="color:#C7CCD6;max-width:640px">${escHtml(onText.join(' '))}</p>` : ''}
+          </div></div>
+          ${expl ? `<div style="padding:4px 34px 20px">${expl}</div>` : ''}`);
       case 'image_right_text_left':
       case 'image_left_text_right': {
-        const left = `<td style="width:50%;vertical-align:top;${pad}"><div style="font-size:20px;font-weight:800;margin-bottom:12px">${title}</div>${onHtml}${expl}</td>`;
-        const right = `<td style="width:50%"><div style="aspect-ratio:1/1;width:100%;height:100%">${img}</div></td>`;
-        const order = s.layout_type === 'image_left_text_right' ? right + left : left + right;
-        return wrap(`<table style="width:100%;border-collapse:collapse"><tr>${order}</tr></table>`);
+        const body = `<div class="lv-body">${kicker}<div class="lv-h">${title}</div>${bullets}${expl}</div>`;
+        return wrap(`<div class="lv-cols">${s.layout_type === 'image_left_text_right' ? media + body : body + media}</div>`);
       }
       case 'comparison': {
-        const cols = onText.length ? onText : [s.main_explanation || ''];
-        return wrap(`<div style="${pad}"><div style="font-size:20px;font-weight:800;margin-bottom:18px">${title}</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">${cols.slice(0,2).map(c=>`<div style="background:#0F1115;border:1px solid var(--border);border-radius:10px;padding:16px;font-size:15px;line-height:1.6;color:var(--text)">${escHtml(c)}</div>`).join('')}</div>${expl}</div>`);
+        const cols = (onText.length ? onText : [s.main_explanation || '']).slice(0, 2).map((c) => {
+          const m = c.match(/^([^:]{2,30}):\s*(.+)$/);
+          return m ? { h: m[1], b: m[2] } : { h: '', b: c };
+        });
+        const tones = ['var(--orange)', '#6a9fff'];
+        return wrap(`<div class="lv-body">${kicker}<div class="lv-h">${title}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">${cols.map((c, i) => `
+            <div style="background:#0F1115;border:1px solid var(--border);border-top:3px solid ${tones[i] || tones[0]};border-radius:12px;padding:18px">
+              ${c.h ? `<div style="font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:${tones[i] || tones[0]};margin-bottom:8px">${escHtml(c.h)}</div>` : ''}
+              <div style="font-size:15px;line-height:1.6">${escHtml(c.b)}</div></div>`).join('')}</div>${expl}</div>`);
       }
-      case 'cards_grid': {
-        const cards = onText.length ? onText : [];
-        return wrap(`<div style="${pad}"><div style="font-size:20px;font-weight:800;margin-bottom:18px">${title}</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">${cards.map(c=>`<div style="background:#0F1115;border:1px solid var(--border);border-radius:10px;padding:16px;font-size:14.5px;line-height:1.55">${escHtml(c)}</div>`).join('') || onHtml}</div>${expl}</div>`);
-      }
-      case 'timeline': {
-        const steps = onText;
-        return wrap(`<div style="${pad}"><div style="font-size:20px;font-weight:800;margin-bottom:18px">${title}</div>
-          <div style="display:flex;flex-direction:column;gap:0">${steps.map((t,i)=>`<div style="display:flex;gap:14px"><div style="display:flex;flex-direction:column;align-items:center"><div style="width:12px;height:12px;border-radius:50%;background:var(--orange);flex-shrink:0;margin-top:5px"></div>${i<steps.length-1?'<div style="width:2px;flex:1;background:var(--border)"></div>':''}</div><div style="padding-bottom:18px;font-size:15px;line-height:1.55">${escHtml(t)}</div></div>`).join('')}</div>${expl}</div>`);
-      }
+      case 'cards_grid':
+        return wrap(`<div class="lv-body">${kicker}<div class="lv-h">${title}</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">${onText.map((c, i) => `
+            <div style="background:#0F1115;border:1px solid var(--border);border-radius:12px;padding:16px">
+              <div style="font-size:12px;font-weight:800;color:var(--orange);margin-bottom:8px">${String(i + 1).padStart(2, '0')}</div>
+              <div style="font-size:14.5px;line-height:1.55">${escHtml(c)}</div></div>`).join('')}</div>${expl}</div>`);
+      case 'timeline':
+        return wrap(`<div class="lv-body">${kicker}<div class="lv-h">${title}</div>
+          <div style="display:flex;flex-direction:column">${onText.map((t, i) => `
+            <div style="display:flex;gap:16px">
+              <div style="display:flex;flex-direction:column;align-items:center">
+                <div style="width:26px;height:26px;border-radius:50%;background:rgba(214,106,31,0.15);border:1px solid var(--orange);color:var(--orange);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i + 1}</div>
+                ${i < onText.length - 1 ? '<div style="width:2px;flex:1;background:var(--border);margin:4px 0"></div>' : ''}
+              </div>
+              <div style="padding:3px 0 20px;font-size:15.5px;line-height:1.55">${escHtml(t)}</div>
+            </div>`).join('')}</div>${expl}</div>`);
       case 'flowchart':
-      case 'diagram': {
-        const steps = onText;
-        return wrap(`<div style="${pad}"><div style="font-size:20px;font-weight:800;margin-bottom:18px">${title}</div>
-          <div style="display:flex;flex-direction:column;gap:10px;align-items:stretch">${steps.map((t,i)=>`<div style="background:#0F1115;border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:15px;text-align:center">${escHtml(t)}</div>${i<steps.length-1?'<div style="text-align:center;color:var(--orange);font-size:16px">↓</div>':''}`).join('')}</div>${expl}</div>`);
-      }
+      case 'diagram':
+        return wrap(`<div class="lv-body">${kicker}<div class="lv-h">${title}</div>
+          <div style="display:flex;flex-direction:column;align-items:stretch;max-width:560px;width:100%;align-self:center">${onText.map((t, i) => `
+            <div style="background:#0F1115;border:1px solid var(--border);border-left:3px solid var(--orange);border-radius:10px;padding:14px 18px;font-size:15px;font-weight:600;text-align:center">${escHtml(t)}</div>
+            ${i < onText.length - 1 ? '<div style="text-align:center;color:var(--orange);font-size:17px;line-height:1.5">↓</div>' : ''}`).join('')}</div>${expl}</div>`);
       case 'code_demo':
-        return wrap(`<div style="${pad}"><div style="font-size:20px;font-weight:800;margin-bottom:14px">${title}</div>
-          <pre style="background:#0B0D10;border:1px solid var(--border);border-radius:10px;padding:18px;overflow-x:auto;font-size:13.5px;line-height:1.6;color:#d6deeb;white-space:pre-wrap;margin:0">${escHtml((s.on_slide_text||'').trim())}</pre>${expl}</div>`);
+        return wrap(`<div class="lv-body">${kicker}<div class="lv-h">${title}</div>
+          <div style="background:#0B0D10;border:1px solid var(--border);border-radius:12px;overflow:hidden">
+            <div style="display:flex;gap:6px;padding:11px 14px;border-bottom:1px solid var(--border)">
+              <span style="width:11px;height:11px;border-radius:50%;background:#ff5f57"></span><span style="width:11px;height:11px;border-radius:50%;background:#febc2e"></span><span style="width:11px;height:11px;border-radius:50%;background:#28c840"></span>
+            </div>
+            <pre style="margin:0;padding:18px;overflow-x:auto;font-size:13.5px;line-height:1.65;color:#d6deeb;white-space:pre-wrap">${escHtml((s.on_slide_text || '').trim())}</pre>
+          </div>${expl}</div>`);
       case 'lesson_summary':
-        return wrap(`<div style="${pad}">${s.image_url?`<div style="aspect-ratio:16/9;width:100%;border-radius:12px;overflow:hidden;margin-bottom:18px">${img}</div>`:''}
-          <div style="font-size:21px;font-weight:800;margin-bottom:14px">${title}</div>
-          <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:9px">${onText.map(t=>`<li style="font-size:15px;line-height:1.6">${escHtml(t)}</li>`).join('')}</ul>${expl}</div>`);
+        return wrap(`<div class="lv-body">
+          ${s.image_url ? `<div style="position:relative;aspect-ratio:21/9;border-radius:12px;overflow:hidden;margin-bottom:20px">${imgAbs}</div>` : ''}
+          ${kicker}<div class="lv-h">${title}</div>
+          <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px">${onText.map(t => `
+            <li style="display:flex;gap:11px;font-size:15.5px;line-height:1.55"><span style="color:var(--orange);font-weight:800">✓</span><span>${escHtml(t)}</span></li>`).join('')}</ul>${expl}</div>`);
       default:
-        return wrap(`<div style="${pad}"><div style="font-size:20px;font-weight:800;margin-bottom:12px">${title}</div>${onHtml}${expl}</div>`);
+        return wrap(`<div class="lv-body">${kicker}<div class="lv-h">${title}</div>${bullets}${expl}</div>`);
     }
   }
 

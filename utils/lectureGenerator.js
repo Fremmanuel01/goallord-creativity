@@ -11,9 +11,11 @@ const { generateDetailed } = require('./claude');
 const { dateForWeekDay, todayWAT, courseTypeFor } = require('./schedule');
 
 // Per-course image budget (enforced server-side regardless of model output).
+// Flux Schnell costs ~$0.003/image, so even a 10-image Film deck is ~3 cents —
+// budgets are sized so slides look like slides, not to pinch pennies.
 const IMAGE_LIMITS = {
-  Film:        { min: 4, max: 5, default: 4 },
-  Programming: { min: 2, max: 3, default: 2 },
+  Film:        { min: 6, max: 10, default: 8 },
+  Programming: { min: 4, max: 6,  default: 5 },
 };
 const ANIMATIONS = ['fade', 'slide_up', 'panel_reveal', 'timeline_reveal', 'code_reveal', 'diagram_build', 'before_after_reveal', 'none'];
 const LAYOUTS = ['title', 'image_left_text_right', 'image_right_text_left', 'full_image_overlay', 'cards_grid', 'comparison', 'timeline', 'flowchart', 'code_demo', 'diagram', 'lesson_summary'];
@@ -27,11 +29,11 @@ function buildPrompt(ctx) {
   const filmStyle =
     `This is a FILM SCHOOL / VIDEOGRAPHY class. Slides must be pictorial, cinematic, clean, practical and visual — suited to camera, lighting, sound, editing, storytelling, directing and production. ` +
     `Use real filmmaking examples (camera moves, shot composition, lighting setups, sound capture, continuity, editing timelines, storyboards, production workflow). ` +
-    `Mark as image_required only the most important VISUAL teaching moments: camera angles, shot composition, lighting setups, sound setup, continuity editing, production workflow, visual storytelling, editing timeline examples, storyboard examples.`;
+    `This course is image-led: mark image_required on the slides a photo teaches best — camera angles, shot composition, lighting setups, sound setup, sets and crew at work, editing suites, storyboards.`;
   const progStyle =
     `This is a PROGRAMMING class. Slides must be clean, structured, practical, code-friendly and beginner-friendly. ` +
     `Include short code examples where useful and use diagrams/flowcharts/tables for concepts. Use real coding, software-development, debugging and project examples. ` +
-    `Mark as image_required only high-level concept visuals: software architecture, frontend/backend flow, database relationships, API request flow, debugging process, project workflow, app structure.`;
+    `Mark image_required on concept slides where an illustration teaches best: software architecture, frontend/backend flow, database relationships, API request flow, debugging process, project workflow, app structure. Code, flowcharts and diagrams stay as HTML layouts, never images.`;
 
   return (
 `You are an expert ${courseType === 'Film' ? 'film-school' : 'programming'} bootcamp instructor and slide designer.
@@ -41,12 +43,13 @@ ${courseType === 'Film' ? filmStyle : progStyle}
 
 RULES
 - Produce between ${SLIDE_MIN} and ${SLIDE_MAX} slides.
-- Mark EXACTLY ${lim.default} slides as "image_required": true (the most important visual moments). All other slides MUST be "image_required": false and rely on HTML/CSS layouts (cards, comparison, timeline, flowchart, code_demo, diagram, tables).
-- For image slides: write a vivid "image_prompt" and a "negative_prompt" of "text, words, captions, letters, logos, watermark, UI". Keep on_slide_text SHORT — the portal overlays real text, so do NOT bake long text into images.
+- SLIDES ARE NOT LESSON NOTES. A slide carries at most ~30 words of visible text. Write "on_slide_text" as 3-5 punchy fragments of max 8 words each, ONE PER LINE (separate with \\n) — never sentences stacked into paragraphs. For 'title' and 'full_image_overlay' layouts use ONE short line.
+- "main_explanation" is what the teacher SAYS while this slide is up (2-4 sentences). Students only see it behind an "Explain more" toggle — never rely on it being visible, and never repeat on_slide_text inside it.
+- Mark EXACTLY ${lim.default} slides as "image_required": true — the moments best taught visually. All other slides MUST be "image_required": false and use a structured layout (cards_grid, comparison, timeline, flowchart, diagram, code_demo, lesson_summary) — avoid plain text-only slides.
+- For image slides: write a vivid "image_prompt" describing ONE clear subject with setting, lighting and mood, and a "negative_prompt" of "text, words, captions, letters, logos, watermark, UI". Never bake text into images — the portal overlays real text.
 - "animation_type" must be one of: ${ANIMATIONS.join(', ')}.
 - "layout_type" must be one of: ${LAYOUTS.join(', ')}.
-- Keep on_slide_text concise (the slide is read on screen); put the fuller teaching in main_explanation.
-- Lesson notes must be readable BEFORE class and include intro, main sections (with key_points), important terms, practical examples and a summary.
+- Lesson notes are the DEEP reading material, read before class: intro, main sections (with key_points), important terms, practical examples and a summary. Full-detail teaching lives in the notes; the summarized visual version lives on the slides.
 
 CURRICULUM
 - Course: ${courseTitle} (${courseType})
