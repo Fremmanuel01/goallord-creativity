@@ -13,7 +13,7 @@ const { requireStudentAuth } = require('../middleware/studentAuth');
 const router = express.Router();
 
 const ANIMATIONS = ['fade', 'slide_up', 'panel_reveal', 'timeline_reveal', 'code_reveal', 'diagram_build', 'before_after_reveal', 'none'];
-const LAYOUTS = ['title', 'image_left_text_right', 'image_right_text_left', 'full_image_overlay', 'cards_grid', 'comparison', 'timeline', 'flowchart', 'code_demo', 'diagram', 'lesson_summary'];
+const LAYOUTS = ['title', 'image_left_text_right', 'image_right_text_left', 'full_image_overlay', 'cards_grid', 'comparison', 'timeline', 'flowchart', 'code_demo', 'diagram', 'table', 'bar_chart', 'lesson_summary'];
 
 function urls() {
   const host = process.env.HOST || '';

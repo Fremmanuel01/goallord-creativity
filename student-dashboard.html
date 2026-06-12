@@ -380,29 +380,32 @@
     [class^="lv-anim-"] { animation: none !important; }
   }
   /* ── Lecture deck ────────────────────────────────────────────
-     A real presentation canvas: 16:9 on desktop, content-height on phones.
-     Display face is Bricolage Grotesque; type scales with the slide via cqw.
-     Color steps up to Committed on this surface only: the canvas carries
-     warm light while the rest of the portal stays restrained. The spoken
-     teaching sits behind the "Explain more" notes panel. */
+     A real presentation canvas: warm paper inside the dark portal chrome
+     (the Le Wagon contrast), 16:9 on desktop, content-height on phones.
+     Display face is Bricolage Grotesque; type scales with the slide via
+     cqw. Title and summary slides drench in brand orange; photo slides
+     keep white-on-image. The spoken teaching sits behind "Explain more". */
   .lv-slide {
     --deck-font: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+    --pp-bg: #FBF8F3; --pp-ink: #23262D; --pp-mut: #6E7077; --pp-line: #E3DDD1; --pp-tile: #F2EEE5;
     position: relative; container-type: inline-size;
     width: min(1080px, 100%, calc((100vh - 185px) * 1.7778));
     width: min(1080px, 100%, calc((100dvh - 185px) * 1.7778));
     background:
-      radial-gradient(120% 95% at 88% -12%, rgba(214,106,31,0.16), transparent 56%),
-      radial-gradient(85% 75% at -8% 112%, rgba(30,75,255,0.09), transparent 52%),
-      #14161C;
-    border: 1px solid #2E3340; border-radius: 20px; overflow: hidden;
+      radial-gradient(110% 85% at 92% -14%, rgba(214,106,31,0.09), transparent 52%),
+      var(--pp-bg);
+    color: var(--pp-ink);
+    border: 1px solid #2E3340; border-radius: 18px; overflow: hidden;
     box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 4px 18px rgba(0,0,0,0.4);
     display: flex; flex-direction: column;
   }
+  /* Drenched moments: title (no photo) and the summary close the deck in brand orange */
   .lv-slide.lv-warm {
+    --pp-ink: #FFF7EF; --pp-mut: #F4D9C3; --pp-line: rgba(255,247,239,0.32); --pp-tile: rgba(255,255,255,0.10);
     background:
-      radial-gradient(130% 110% at 12% -15%, rgba(214,106,31,0.30), transparent 58%),
-      radial-gradient(90% 80% at 105% 115%, rgba(214,106,31,0.12), transparent 50%),
-      #16151A;
+      radial-gradient(120% 100% at 88% -15%, rgba(255,205,160,0.32), transparent 55%),
+      radial-gradient(100% 90% at -10% 115%, rgba(98,34,0,0.35), transparent 55%),
+      #C95F14;
   }
   @media (min-width: 741px) { .lv-slide { aspect-ratio: 16/9; } }
   @media (max-width: 740px) { .lv-slide { width: 100%; min-height: 70vh; min-height: 70dvh; } }
@@ -412,6 +415,7 @@
     padding: clamp(22px, 5cqw, 54px) clamp(20px, 5.6cqw, 60px) 74px;
     overflow-y: auto;
   }
+  .lv-onimg { color: #FFFFFF; }
   .lv-kicker {
     display: flex; align-items: center; gap: 10px;
     font-family: var(--deck-font);
@@ -420,14 +424,16 @@
     margin-bottom: clamp(14px, 2.6cqw, 28px);
   }
   .lv-kicker::after { content: ''; flex: 0 0 30px; height: 1px; background: rgba(214,106,31,0.55); }
+  .lv-warm .lv-kicker, .lv-onimg .lv-kicker { color: #FFD9B8; }
+  .lv-warm .lv-kicker::after, .lv-onimg .lv-kicker::after { background: rgba(255,217,184,0.6); }
   .lv-h {
     font-family: var(--deck-font);
     font-size: clamp(23px, 4.6cqw, 50px); font-weight: 800;
     line-height: 1.06; letter-spacing: -0.022em;
     margin: 0 0 clamp(16px, 3cqw, 34px);
-    text-wrap: balance; max-width: 22ch;
+    text-wrap: balance; max-width: 22ch; color: inherit;
   }
-  .lv-lede { font-size: clamp(15px, 1.9cqw, 21px); line-height: 1.65; color: var(--muted); margin: 0; max-width: 56ch; }
+  .lv-lede { font-size: clamp(15px, 1.9cqw, 21px); line-height: 1.65; color: var(--pp-mut); margin: 0; max-width: 56ch; }
   .lv-bullets { display: flex; flex-direction: column; gap: clamp(11px, 1.9cqw, 21px); margin: 0; padding: 0; list-style: none; counter-reset: lvb; }
   .lv-bullets li {
     counter-increment: lvb; display: flex; gap: 14px; align-items: baseline;
@@ -442,8 +448,8 @@
   .lv-cols { display: flex; flex: 1; min-height: 0; }
   .lv-cols .lv-canvas { width: 55%; }
   .lv-media { width: 45%; flex-shrink: 0; position: relative; }
-  .lv-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(0.95) contrast(1.04); }
-  .lv-grade { position: absolute; inset: 0; background: linear-gradient(160deg, rgba(20,22,28,0) 55%, rgba(20,22,28,0.42)); }
+  .lv-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(0.95) contrast(1.03); }
+  .lv-grade { position: absolute; inset: 0; background: linear-gradient(160deg, rgba(25,20,12,0) 62%, rgba(25,20,12,0.28)); }
   @container (max-width: 700px) {
     .lv-cols { flex-direction: column; }
     .lv-cols .lv-canvas { width: 100%; }
@@ -451,38 +457,38 @@
   }
   /* Full-bleed layouts (title, image overlay) */
   .lv-bleed { position: absolute; inset: 0; z-index: 0; }
-  .lv-bleed img { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.95) contrast(1.04); }
-  .lv-scrim { position: absolute; inset: 0; background: linear-gradient(202deg, rgba(15,17,22,0.04) 32%, rgba(15,17,22,0.9) 84%); }
+  .lv-bleed img { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.95) contrast(1.03); }
+  .lv-scrim { position: absolute; inset: 0; background: linear-gradient(202deg, rgba(18,14,9,0.04) 32%, rgba(18,14,9,0.88) 84%); }
   .lv-ph {
     position: absolute; inset: 0; display: flex; flex-direction: column; gap: 8px;
     align-items: center; justify-content: center; padding: 20px; text-align: center;
-    background: linear-gradient(150deg, #1A1D25, #11141A); color: var(--muted); font-size: 12.5px;
+    background: linear-gradient(150deg, #EFEAE0, #E6E0D3); color: #8A8C92; font-size: 12.5px;
   }
   /* Editorial tiles (cards_grid): hairline rules + numerals, not boxes */
   .lv-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(215px, 100%), 1fr)); gap: clamp(16px, 2.8cqw, 32px) clamp(20px, 3.2cqw, 38px); align-content: start; }
-  .lv-tile { border-top: 1px solid #353B49; padding-top: clamp(10px, 1.7cqw, 17px); }
+  .lv-tile { border-top: 1px solid var(--pp-line); padding-top: clamp(10px, 1.7cqw, 17px); }
   .lv-tile b { display: block; font-family: var(--deck-font); font-size: clamp(14px, 1.7cqw, 18px); font-weight: 800; color: var(--orange); margin-bottom: 7px; letter-spacing: 0.02em; }
-  .lv-tile span { font-size: clamp(13.5px, 1.6cqw, 16px); line-height: 1.6; color: var(--text); display: block; max-width: 38ch; }
+  .lv-tile span { font-size: clamp(13.5px, 1.6cqw, 16px); line-height: 1.6; color: var(--pp-ink); display: block; max-width: 38ch; }
   /* Comparison: split halves with a center rule */
   .lv-vs { display: grid; grid-template-columns: 1fr 1fr; flex: 1; align-content: start; }
   .lv-vs > div { padding: clamp(4px, 1cqw, 10px) clamp(16px, 2.6cqw, 30px) clamp(12px, 2cqw, 22px) 0; }
-  .lv-vs > div + div { border-left: 1px solid #353B49; padding-left: clamp(16px, 2.6cqw, 30px); padding-right: 0; }
+  .lv-vs > div + div { border-left: 1px solid var(--pp-line); padding-left: clamp(16px, 2.6cqw, 30px); padding-right: 0; }
   .lv-vs b { display: block; font-family: var(--deck-font); font-size: clamp(11px, 1.3cqw, 14px); font-weight: 800; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: clamp(8px, 1.4cqw, 14px); }
   .lv-vs span { font-size: clamp(14px, 1.8cqw, 18px); line-height: 1.6; display: block; max-width: 34ch; }
   @container (max-width: 560px) {
     .lv-vs { grid-template-columns: 1fr; }
-    .lv-vs > div + div { border-left: 0; border-top: 1px solid #353B49; padding-left: 0; padding-top: 16px; margin-top: 4px; }
+    .lv-vs > div + div { border-left: 0; border-top: 1px solid var(--pp-line); padding-left: 0; padding-top: 16px; margin-top: 4px; }
   }
   /* Timeline: numerals on a hairline; horizontal when the slide is wide */
   .lv-steps { display: grid; gap: clamp(16px, 2.4cqw, 26px); align-content: start; }
-  .lv-step { position: relative; border-top: 1px solid #353B49; padding-top: clamp(12px, 1.8cqw, 18px); }
+  .lv-step { position: relative; border-top: 1px solid var(--pp-line); padding-top: clamp(12px, 1.8cqw, 18px); }
   .lv-step::before { content: ''; position: absolute; top: -4px; left: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--orange); }
   .lv-step b { display: block; font-family: var(--deck-font); font-weight: 800; color: var(--orange); font-size: clamp(12px, 1.4cqw, 14px); letter-spacing: 0.1em; margin-bottom: 6px; }
   .lv-step span { font-size: clamp(13.5px, 1.6cqw, 16px); line-height: 1.6; display: block; max-width: 30ch; }
   @container (min-width: 700px) { .lv-steps { grid-auto-flow: column; grid-auto-columns: 1fr; gap: clamp(18px, 2.6cqw, 30px); } }
   /* Flow: chips chained by arrows; row on wide slides */
   .lv-flow { display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
-  .lv-flow .f { background: rgba(244,246,250,0.04); border: 1px solid #353B49; border-radius: 12px; padding: clamp(11px, 1.7cqw, 17px) clamp(13px, 2cqw, 20px); font-size: clamp(13.5px, 1.6cqw, 16px); font-weight: 600; text-align: center; }
+  .lv-flow .f { background: var(--pp-tile); border: 1px solid var(--pp-line); border-radius: 12px; padding: clamp(11px, 1.7cqw, 17px) clamp(13px, 2cqw, 20px); font-size: clamp(13.5px, 1.6cqw, 16px); font-weight: 600; text-align: center; }
   .lv-flow .a { color: var(--orange); text-align: center; font-weight: 800; align-self: center; }
   .lv-flow .a::before { content: '↓'; }
   @container (min-width: 720px) {
@@ -490,31 +496,60 @@
     .lv-flow .f { flex: 1; }
     .lv-flow .a::before { content: '→'; }
   }
+  /* Table: header rule + zebra rows (Gamma-style data block) */
+  .lv-table { width: 100%; border-collapse: collapse; font-size: clamp(13px, 1.6cqw, 16px); }
+  .lv-table th { font-family: var(--deck-font); text-align: left; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; font-size: clamp(10.5px, 1.2cqw, 13px); color: var(--orange); padding: clamp(8px, 1.2cqw, 12px) 14px; border-bottom: 2px solid var(--pp-ink); }
+  .lv-table td { padding: clamp(9px, 1.4cqw, 13px) 14px; border-bottom: 1px solid var(--pp-line); line-height: 1.5; vertical-align: top; }
+  .lv-table tr:nth-child(even) td { background: var(--pp-tile); }
+  .lv-table td:first-child { font-weight: 700; }
+  /* Bar chart: labelled horizontal bars scaled to the largest value */
+  .lv-bars { display: grid; gap: clamp(14px, 2.2cqw, 22px); align-content: start; max-width: 680px; }
+  .lv-bar label { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; font-size: clamp(13px, 1.6cqw, 16px); font-weight: 600; margin-bottom: 7px; }
+  .lv-bar label b { font-family: var(--deck-font); font-weight: 800; color: var(--orange); font-size: clamp(13px, 1.7cqw, 17px); }
+  .lv-bar .tr { height: clamp(9px, 1.2cqw, 13px); background: var(--pp-tile); border-radius: 99px; overflow: hidden; }
+  .lv-bar .fl { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #C25612, var(--orange)); }
+  .lv-warm .lv-bar .fl { background: #FFF7EF; }
+  /* Diagram: diamond shape nodes with captions (not the flowchart chips) */
+  .lv-dia { display: flex; gap: clamp(22px, 3.6cqw, 44px); justify-content: center; align-items: flex-start; flex-wrap: wrap; padding-top: clamp(8px, 1.6cqw, 18px); }
+  .lv-dia .d { display: flex; flex-direction: column; align-items: center; gap: clamp(14px, 2cqw, 20px); flex: 1 1 0; min-width: 120px; max-width: 190px; text-align: center; }
+  .lv-dia .shape { width: clamp(54px, 7.4cqw, 88px); aspect-ratio: 1; transform: rotate(45deg); border-radius: 16%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 22px rgba(120, 60, 10, 0.22); }
+  .lv-dia .shape b { transform: rotate(-45deg); color: #fff; font-family: var(--deck-font); font-weight: 800; font-size: clamp(13px, 1.7cqw, 18px); }
+  .lv-dia .d > b { font-family: var(--deck-font); font-weight: 800; font-size: clamp(13px, 1.6cqw, 16px); }
+  .lv-dia .d span { font-size: clamp(12px, 1.4cqw, 14.5px); line-height: 1.5; color: var(--pp-mut); }
   /* Summary checklist: two columns when wide */
   .lv-checks { display: grid; gap: clamp(11px, 1.9cqw, 18px) clamp(20px, 3cqw, 36px); margin: 0; padding: 0; list-style: none; align-content: start; }
   @container (min-width: 720px) { .lv-checks { grid-template-columns: 1fr 1fr; } }
   .lv-checks li { display: flex; gap: 12px; align-items: baseline; font-size: clamp(14px, 1.7cqw, 17px); line-height: 1.55; max-width: 38ch; }
   .lv-checks li::before { content: '✓'; color: var(--orange); font-weight: 800; flex-shrink: 0; }
+  .lv-warm .lv-checks li::before, .lv-warm .lv-bullets li::before, .lv-warm .lv-tile b, .lv-warm .lv-step b, .lv-warm .lv-step::before, .lv-warm .lv-flow .a { color: #FFD9B8; }
+  .lv-warm .lv-step::before { background: #FFD9B8; }
   /* Slide furniture */
-  .lv-num { position: absolute; right: 22px; bottom: 15px; z-index: 4; font-family: var(--deck-font); font-size: 13px; font-weight: 800; color: var(--text); }
-  .lv-num span { color: var(--muted); font-weight: 600; }
+  .lv-num { position: absolute; right: 22px; bottom: 15px; z-index: 4; font-family: var(--deck-font); font-size: 13px; font-weight: 800; color: var(--pp-ink); }
+  .lv-num span { color: var(--pp-mut); font-weight: 600; }
+  .lv-photo .lv-num, .lv-photo .lv-num span { color: rgba(255,255,255,0.92); }
   /* "Explain more": the spoken notes, an overlay panel from the slide foot */
   .lv-expl { position: absolute; left: 0; right: 0; bottom: 0; z-index: 5; pointer-events: none; }
   .lv-expl summary {
     pointer-events: auto; display: inline-flex; align-items: center; gap: 7px;
     cursor: pointer; list-style: none; margin: 0 0 13px 20px;
     font-size: 11.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
-    color: var(--muted); background: rgba(15,17,21,0.78); border: 1px solid var(--border);
+    color: var(--pp-mut); background: rgba(255,255,255,0.78); border: 1px solid var(--pp-line);
     border-radius: 999px; padding: 8px 15px; -webkit-tap-highlight-color: transparent;
     transition: color .18s cubic-bezier(.22,.61,.36,1), border-color .18s cubic-bezier(.22,.61,.36,1);
   }
+  .lv-photo .lv-expl summary { color: #D9DCE2; background: rgba(18,16,12,0.62); border-color: rgba(255,255,255,0.25); }
+  .lv-warm .lv-expl summary { color: #FFF7EF; background: rgba(120,50,5,0.45); border-color: rgba(255,247,239,0.35); }
   .lv-expl summary::-webkit-details-marker { display: none; }
   .lv-expl summary::before { content: '+'; color: var(--orange); font-size: 14px; font-weight: 800; line-height: 1; }
+  .lv-photo .lv-expl summary::before, .lv-warm .lv-expl summary::before { color: #FFD9B8; }
   .lv-expl[open] summary::before { content: '\2013'; }
-  .lv-expl summary:hover { color: var(--text); border-color: var(--orange); }
-  .lv-expl[open] { pointer-events: auto; background: rgba(17,19,25,0.97); border-top: 1px solid var(--border); max-height: 64%; overflow-y: auto; }
+  .lv-expl summary:hover { color: var(--pp-ink); border-color: var(--orange); }
+  .lv-expl[open] { pointer-events: auto; background: rgba(251,248,243,0.97); border-top: 1px solid var(--pp-line); max-height: 64%; overflow-y: auto; }
+  .lv-photo .lv-expl[open], .lv-warm .lv-expl[open] { background: rgba(22,20,17,0.95); border-top-color: rgba(255,255,255,0.18); }
   .lv-expl[open] summary { margin: 15px 0 0 20px; }
-  .lv-expl p { margin: 12px 20px 18px; font-size: 14.5px; line-height: 1.75; color: var(--text); opacity: 0.88; max-width: 64ch; }
+  .lv-expl p { margin: 12px 20px 18px; font-size: 14.5px; line-height: 1.75; color: #2B2E35; max-width: 64ch; }
+  .lv-photo .lv-expl[open] p, .lv-warm .lv-expl[open] p { color: #E8EAEE; }
+  .lv-photo .lv-expl[open] summary, .lv-warm .lv-expl[open] summary { background: transparent; border-color: transparent; }
 </style>
   <!-- Lecture deck display face (slides only; portal body stays system) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -949,9 +984,10 @@
         <div id="lvTitle" style="font-weight:700;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
         <div id="lvMeta" style="font-size:12.5px;color:var(--muted)"></div>
       </div>
-      <div style="display:flex;gap:8px;flex-shrink:0">
+      <div style="display:flex;gap:8px;flex-shrink:0;align-items:center">
         <button id="lvTabSlides" onclick="lvShow('slides')" style="background:var(--orange);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">Slides</button>
         <button id="lvTabNotes" onclick="lvShow('notes')" style="background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">Lesson Notes</button>
+        <button id="lvFsBtn" onclick="lvFullscreen()" title="Fullscreen" aria-label="Toggle fullscreen" style="background:transparent;color:var(--muted);border:1px solid var(--border);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center">⛶</button>
       </div>
     </div>
     <!-- Slides deck -->
@@ -1549,7 +1585,53 @@
       renderSlide();
     } catch { stage.innerHTML = '<div class="empty">Could not load this lecture.</div>'; }
   }
-  function closeLectureViewer() { document.getElementById('lectureViewer').style.display = 'none'; }
+  function closeLectureViewer() {
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    document.getElementById('lectureViewer').style.display = 'none';
+  }
+
+  // Fullscreen toggle (Le Wagon-style). On iOS Safari element fullscreen is
+  // unavailable; the viewer is already a fixed overlay there, so hide the button.
+  function lvFullscreen() {
+    const v = document.getElementById('lectureViewer');
+    if (document.fullscreenElement) { document.exitFullscreen().catch(() => {}); return; }
+    const req = v.requestFullscreen || v.webkitRequestFullscreen;
+    if (req) { const p = req.call(v); if (p && p.catch) p.catch(() => {}); }
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    const v = document.getElementById('lectureViewer');
+    if (!(v.requestFullscreen || v.webkitRequestFullscreen)) {
+      const b = document.getElementById('lvFsBtn'); if (b) b.style.display = 'none';
+    }
+  });
+  document.addEventListener('fullscreenchange', () => {
+    const b = document.getElementById('lvFsBtn');
+    if (b) b.textContent = document.fullscreenElement ? '✕' : '⛶';
+  });
+
+  // Deck navigation: arrow keys while the viewer is open, swipe on touch.
+  document.addEventListener('keydown', (e) => {
+    const v = document.getElementById('lectureViewer');
+    if (!v || v.style.display === 'none' || !v.style.display) return;
+    if (lvState.view !== 'slides') return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); lvNav(1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); lvNav(-1); }
+    else if (e.key === 'Escape' && !document.fullscreenElement) closeLectureViewer();
+  });
+  (() => {
+    let x0 = null, y0 = null;
+    const stage = () => document.getElementById('lvStage');
+    document.addEventListener('touchstart', (e) => {
+      if (!stage() || !stage().contains(e.target)) { x0 = null; return; }
+      x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+    }, { passive: true });
+    document.addEventListener('touchend', (e) => {
+      if (x0 == null) return;
+      const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+      if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.6) lvNav(dx < 0 ? 1 : -1);
+      x0 = null;
+    }, { passive: true });
+  })();
 
   function lvShow(view) {
     lvState.view = view;
@@ -1614,7 +1696,7 @@
     const media = `<div class="lv-media">${img || ph}<div class="lv-grade"></div></div>`;
     const bleed = `<div class="lv-bleed">${img || ph}</div><div class="lv-bleed lv-scrim"></div>`;
     const wrap = (inner, cls) => `<div class="${anim} lv-slide${cls ? ' ' + cls : ''}">${inner}${furniture}</div>`;
-    const canvas = (inner, style) => `<div class="lv-canvas"${style ? ` style="${style}"` : ''}>${inner}</div>`;
+    const canvas = (inner, cls) => `<div class="lv-canvas${cls ? ' ' + cls : ''}">${inner}</div>`;
     const mid = (inner) => `<div style="margin:auto 0;min-width:0">${inner}</div>`;
 
     switch (s.layout_type) {
@@ -1624,22 +1706,25 @@
           canvas(`<div style="margin-top:auto">
             ${kicker}
             <div class="lv-h" style="font-size:clamp(28px,6.2cqw,62px);max-width:17ch;margin-bottom:${onText.length ? 'clamp(12px,2cqw,20px)' : '0'}">${title}</div>
-            ${onText.length ? `<p class="lv-lede" style="color:#CBD0DA">${escHtml(onText.join(' · '))}</p>` : ''}
-          </div>`),
-          s.image_url ? '' : 'lv-warm');
+            ${onText.length ? `<p class="lv-lede" style="${s.image_url ? 'color:#CBD0DA' : ''}">${escHtml(onText.join(' · '))}</p>` : ''}
+          </div>`, s.image_url ? 'lv-onimg' : ''),
+          s.image_url ? 'lv-photo' : 'lv-warm');
       case 'full_image_overlay':
-        return wrap(bleed + canvas(`<div style="margin-top:auto">
+        return wrap(
+          (s.image_url ? bleed : '') +
+          canvas(`<div style="margin-top:auto">
             ${kicker}
             <div class="lv-h" style="font-size:clamp(24px,4.8cqw,50px);margin-bottom:${onText.length ? 'clamp(10px,1.8cqw,18px)' : '0'}">${title}</div>
-            ${onText.length ? `<p class="lv-lede" style="color:#CBD0DA">${escHtml(onText.join(' '))}</p>` : ''}
-          </div>`));
+            ${onText.length ? `<p class="lv-lede" style="${s.image_url ? 'color:#CBD0DA' : ''}">${escHtml(onText.join(' '))}</p>` : ''}
+          </div>`, s.image_url ? 'lv-onimg' : ''),
+          s.image_url ? 'lv-photo' : 'lv-warm');
       case 'image_right_text_left':
       case 'image_left_text_right': {
         const text = canvas(mid(`${kicker}<div class="lv-h" style="font-size:clamp(22px,3.8cqw,42px)">${title}</div>${bullets}`));
         return wrap(`<div class="lv-cols">${s.layout_type === 'image_left_text_right' ? media + text : text + media}</div>`);
       }
       case 'comparison': {
-        const tones = ['var(--orange)', '#6A9FFF'];
+        const tones = ['var(--orange)', '#1E4BFF'];
         const cols = (onText.length ? onText : ['']).slice(0, 2).map(split);
         return wrap(canvas(mid(`${kicker}<div class="lv-h">${title}</div>
           <div class="lv-vs">${cols.map((c, i) => `<div>
@@ -1655,13 +1740,39 @@
           <div class="lv-steps">${onText.map((c, i) => { const t = split(c, i);
             return `<div class="lv-step"><b>${escHtml(/^\d+$/.test(t.h) ? 'Step ' + (i + 1) : t.h)}</b><span>${escHtml(t.b)}</span></div>`; }).join('')}</div>`)));
       case 'flowchart':
-      case 'diagram':
         return wrap(canvas(mid(`${kicker}<div class="lv-h">${title}</div>
           <div class="lv-flow">${onText.map((t, i) =>
             `<div class="f">${escHtml(t)}</div>${i < onText.length - 1 ? '<div class="a"></div>' : ''}`).join('')}</div>`)));
+      case 'diagram': {
+        // Shape nodes: "Label: caption" lines become diamond + caption pairs.
+        const fills = ['linear-gradient(135deg,#C25612,#E0823E)', 'linear-gradient(135deg,#1E4BFF,#5E76E8)', 'linear-gradient(135deg,#2E333D,#4A5160)', 'linear-gradient(135deg,#9C420C,#C2631F)'];
+        const nodes = onText.slice(0, 5).map((c, i) => { const t = split(c, i);
+          const tag = /^\d+$/.test(t.h) ? String(i + 1) : t.h;
+          return `<div class="d"><div class="shape" style="background:${fills[i % fills.length]}"><b>${escHtml(tag.length > 3 ? tag.slice(0, 1).toUpperCase() : tag)}</b></div>${/^\d+$/.test(t.h) ? '' : `<b>${escHtml(t.h)}</b>`}<span>${escHtml(t.b)}</span></div>`; }).join('');
+        return wrap(canvas(mid(`${kicker}<div class="lv-h">${title}</div><div class="lv-dia">${nodes}</div>`)));
+      }
+      case 'table': {
+        // First on_slide_text line = header row; cells split on "|".
+        const rows = onText.map(r => r.split('|').map(c => c.trim()).filter(Boolean));
+        const head = rows.shift() || [];
+        return wrap(canvas(mid(`${kicker}<div class="lv-h">${title}</div>
+          <table class="lv-table"><thead><tr>${head.map(h => `<th>${escHtml(h)}</th>`).join('')}</tr></thead>
+          <tbody>${rows.map(r => `<tr>${r.map(c => `<td>${escHtml(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`)));
+      }
+      case 'bar_chart': {
+        // "Label: 70" lines; bars scale relative to the largest value.
+        const data = onText.map((c, i) => { const t = split(c, i);
+          const num = parseFloat((String(t.b).match(/-?\d+(\.\d+)?/) || [0])[0]);
+          return { label: /^\d+$/.test(t.h) ? t.b : t.h, raw: t.b, num: isNaN(num) ? 0 : num }; });
+        const top = Math.max(1, ...data.map(d => d.num));
+        return wrap(canvas(mid(`${kicker}<div class="lv-h">${title}</div>
+          <div class="lv-bars">${data.map(d => `<div class="lv-bar">
+            <label><span>${escHtml(d.label)}</span><b>${escHtml(String(d.raw).replace(d.label, '').replace(/^[:\s]+/, '') || d.num)}</b></label>
+            <div class="tr"><div class="fl" style="width:${Math.round((d.num / top) * 100)}%"></div></div></div>`).join('')}</div>`)));
+      }
       case 'code_demo':
         return wrap(canvas(mid(`${kicker}<div class="lv-h" style="font-size:clamp(20px,3.4cqw,36px)">${title}</div>
-          <div style="background:#0B0D10;border:1px solid #353B49;border-radius:14px;overflow:hidden;max-width:760px">
+          <div style="background:#101216;border:1px solid var(--pp-line);border-radius:14px;overflow:hidden;max-width:760px;box-shadow:0 10px 28px rgba(35,30,20,0.12)">
             <div style="display:flex;gap:6px;padding:11px 14px;border-bottom:1px solid #232834">
               <span style="width:10px;height:10px;border-radius:50%;background:#FF5F57"></span><span style="width:10px;height:10px;border-radius:50%;background:#FEBC2E"></span><span style="width:10px;height:10px;border-radius:50%;background:#28C840"></span>
             </div>

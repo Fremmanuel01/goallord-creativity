@@ -18,7 +18,7 @@ const IMAGE_LIMITS = {
   Programming: { min: 4, max: 6,  default: 5 },
 };
 const ANIMATIONS = ['fade', 'slide_up', 'panel_reveal', 'timeline_reveal', 'code_reveal', 'diagram_build', 'before_after_reveal', 'none'];
-const LAYOUTS = ['title', 'image_left_text_right', 'image_right_text_left', 'full_image_overlay', 'cards_grid', 'comparison', 'timeline', 'flowchart', 'code_demo', 'diagram', 'lesson_summary'];
+const LAYOUTS = ['title', 'image_left_text_right', 'image_right_text_left', 'full_image_overlay', 'cards_grid', 'comparison', 'timeline', 'flowchart', 'code_demo', 'diagram', 'table', 'bar_chart', 'lesson_summary'];
 const SLIDE_MIN = 10, SLIDE_MAX = 15;
 
 // ── Prompt ───────────────────────────────────────────────────
@@ -45,7 +45,13 @@ RULES
 - Produce between ${SLIDE_MIN} and ${SLIDE_MAX} slides.
 - SLIDES ARE NOT LESSON NOTES. A slide carries at most ~30 words of visible text. Write "on_slide_text" as 3-5 punchy fragments of max 8 words each, ONE PER LINE (separate with \\n) — never sentences stacked into paragraphs. For 'title' and 'full_image_overlay' layouts use ONE short line.
 - "main_explanation" is what the teacher SAYS while this slide is up (2-4 sentences). Students only see it behind an "Explain more" toggle — never rely on it being visible, and never repeat on_slide_text inside it.
-- Mark EXACTLY ${lim.default} slides as "image_required": true — the moments best taught visually. All other slides MUST be "image_required": false and use a structured layout (cards_grid, comparison, timeline, flowchart, diagram, code_demo, lesson_summary) — avoid plain text-only slides.
+- Mark EXACTLY ${lim.default} slides as "image_required": true — the moments best taught visually. All other slides MUST be "image_required": false and use a structured layout (cards_grid, comparison, timeline, flowchart, diagram, table, bar_chart, code_demo, lesson_summary) — plain text-only slides are forbidden.
+- Use rich figures whenever content is data, steps, anatomy or relationships — a table beats a list, a chart beats numbers in prose, a diagram beats a paragraph. Per-layout on_slide_text formats:
+  * table — first line is the header row, then 3-6 data rows; cells separated by " | " (2-4 short columns).
+  * bar_chart — 3-6 lines of "Label: number" (relative values, e.g. shutter speeds, percentages, durations).
+  * diagram — 3-5 lines of "Label: short caption", one per node (rendered as labelled shapes).
+  * timeline / flowchart — one step per line, "Label: caption" allowed.
+  * comparison — exactly 2 lines of "Side name: description".
 - For image slides: write a vivid "image_prompt" describing ONE clear subject with setting, lighting and mood, and a "negative_prompt" of "text, words, captions, letters, logos, watermark, UI". Never bake text into images — the portal overlays real text.
 - "animation_type" must be one of: ${ANIMATIONS.join(', ')}.
 - "layout_type" must be one of: ${LAYOUTS.join(', ')}.
