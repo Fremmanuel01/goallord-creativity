@@ -165,19 +165,19 @@ function buildImagePrompt(slide, courseType) {
   return `${slide.image_prompt}\n\nStyle: ${style}\nDo NOT render any text, letters, words, captions, labels, logos or UI. Leave clean empty space for text overlay. Avoid: ${neg}.`;
 }
 
-// Choose which slides get images: the model's image_required ones, capped at max,
-// topped up to the course default only from genuinely image-friendly layouts.
+// Choose which slides get images: the model's image_required ones, capped at max.
+// Photos are used only where they genuinely teach best (Gamma-style decks teach
+// through charts/diagrams/shapes); we only top up to the course MINIMUM, and only
+// from photo-suitable layouts (never force a diagram/code slide to become a photo).
 function selectImageSlides(slides, courseType) {
   const lim = IMAGE_LIMITS[courseType] || IMAGE_LIMITS.Programming;
   const chosen = new Set();
   for (const s of slides) {
     if (s.image_required && chosen.size < lim.max) chosen.add(s.slide_number);
   }
-  // Floor: top up to default using photo-suitable layouts only (never force a
-  // diagram/code slide to become a photo).
-  if (chosen.size < lim.default) {
+  if (chosen.size < lim.min) {
     for (const s of slides) {
-      if (chosen.size >= lim.default) break;
+      if (chosen.size >= lim.min) break;
       if (!chosen.has(s.slide_number) && IMAGE_LAYOUTS.includes(s.layout_type)) chosen.add(s.slide_number);
     }
   }

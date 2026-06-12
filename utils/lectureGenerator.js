@@ -14,11 +14,11 @@ const { dateForWeekDay, todayWAT, courseTypeFor } = require('./schedule');
 // Flux Schnell costs ~$0.003/image, so even a 10-image Film deck is ~3 cents —
 // budgets are sized so slides look like slides, not to pinch pennies.
 const IMAGE_LIMITS = {
-  Film:        { min: 6, max: 10, default: 8 },
-  Programming: { min: 4, max: 6,  default: 5 },
+  Film:        { min: 5, max: 10, default: 7 },
+  Programming: { min: 2, max: 6,  default: 4 },
 };
 const ANIMATIONS = ['fade', 'slide_up', 'panel_reveal', 'timeline_reveal', 'code_reveal', 'diagram_build', 'before_after_reveal', 'none'];
-const LAYOUTS = ['title', 'image_left_text_right', 'image_right_text_left', 'full_image_overlay', 'cards_grid', 'comparison', 'timeline', 'flowchart', 'code_demo', 'diagram', 'table', 'bar_chart', 'lesson_summary'];
+const LAYOUTS = ['title', 'image_left_text_right', 'image_right_text_left', 'full_image_overlay', 'cards_grid', 'comparison', 'timeline', 'flowchart', 'code_demo', 'diagram', 'table', 'bar_chart', 'pie_chart', 'stat_blocks', 'pyramid', 'quote', 'lesson_summary'];
 const SLIDE_MIN = 10, SLIDE_MAX = 15;
 
 // ── Prompt ───────────────────────────────────────────────────
@@ -42,16 +42,26 @@ Create ONE complete lecture (web slides + readable lesson notes) for beginner st
 ${courseType === 'Film' ? filmStyle : progStyle}
 
 RULES
-- Produce between ${SLIDE_MIN} and ${SLIDE_MAX} slides.
+- Produce between ${SLIDE_MIN} and ${SLIDE_MAX} slides. Slide 1 MUST be layout_type "title"; the final slide MUST be "lesson_summary".
 - SLIDES ARE NOT LESSON NOTES. A slide carries at most ~30 words of visible text. Write "on_slide_text" as 3-5 punchy fragments of max 8 words each, ONE PER LINE (separate with \\n) — never sentences stacked into paragraphs. For 'title' and 'full_image_overlay' layouts use ONE short line.
 - "main_explanation" is what the teacher SAYS while this slide is up (2-4 sentences). Students only see it behind an "Explain more" toggle — never rely on it being visible, and never repeat on_slide_text inside it.
-- Mark EXACTLY ${lim.default} slides as "image_required": true — the moments best taught visually. All other slides MUST be "image_required": false and use a structured layout (cards_grid, comparison, timeline, flowchart, diagram, table, bar_chart, code_demo, lesson_summary) — plain text-only slides are forbidden.
-- Use rich figures whenever content is data, steps, anatomy or relationships — a table beats a list, a chart beats numbers in prose, a diagram beats a paragraph. Per-layout on_slide_text formats:
+- DESIGN LIKE A TOP-TIER CORPORATE DECK (Gamma / keynote standard). Every slide is a designed FIGURE — a chart, diagram, table, comparison, timeline or stat board — never a page of text. Plain text-only slides are forbidden.
+- LAYOUT VARIETY IS MANDATORY: never use the same layout_type on two consecutive slides, and use at least 6 different layout_type values across the deck. Hard mix requirements:
+  * at least 2 DATA slides from: table, bar_chart, pie_chart, stat_blocks — real numbers from the topic (rates, sizes, percentages, durations, prices), never invented filler.
+  * at least 2 STRUCTURE slides from: diagram, flowchart, timeline, pyramid — for processes, hierarchies, relationships and anatomy.
+  * cards_grid for grouped concepts; comparison whenever two things contrast; quote at most ONCE (a famous, relevant line worth pausing on).
+- A table beats a list, a chart beats numbers in prose, a diagram beats a paragraph — whenever content is data, steps, anatomy or relationships, pick the figure layout.
+- Per-layout on_slide_text formats (follow EXACTLY — the renderer parses these):
   * table — first line is the header row, then 3-6 data rows; cells separated by " | " (2-4 short columns).
   * bar_chart — 3-6 lines of "Label: number" (relative values, e.g. shutter speeds, percentages, durations).
+  * pie_chart — 3-6 lines of "Label: number" (shares of one whole; rendered as a donut chart).
+  * stat_blocks — 2-4 lines of "BigNumber: caption" (e.g. "24 fps: standard cinema frame rate"); the number renders huge.
   * diagram — 3-5 lines of "Label: short caption", one per node (rendered as labelled shapes).
+  * pyramid — 3-5 lines of "Label: caption", top level FIRST (rendered as a stacked pyramid).
   * timeline / flowchart — one step per line, "Label: caption" allowed.
   * comparison — exactly 2 lines of "Side name: description".
+  * quote — line 1 the quotation only, line 2 who said it.
+- PHOTOS ONLY WHERE NECESSARY: mark "image_required": true ONLY where a real photograph teaches better than any chart, diagram or illustration (at most ${lim.max}, typically ${lim.default}). Every other slide MUST be "image_required": false and teach through a structured layout.
 - For image slides: write a vivid "image_prompt" describing ONE clear subject with setting, lighting and mood, and a "negative_prompt" of "text, words, captions, letters, logos, watermark, UI". Never bake text into images — the portal overlays real text.
 - "animation_type" must be one of: ${ANIMATIONS.join(', ')}.
 - "layout_type" must be one of: ${LAYOUTS.join(', ')}.

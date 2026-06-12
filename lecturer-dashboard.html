@@ -263,6 +263,12 @@
     @keyframes tabEnter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
   }
 </style>
+  <!-- Lecture deck display face + styles + renderer (shared with the student dashboard) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/lecture-deck.css">
+  <script src="assets/js/lecture-deck.js"></script>
   <!-- pwa:head-start -->
   <meta name="theme-color" content="#D66A1F">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -645,7 +651,8 @@
     <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
       <button class="btn btn-ghost" id="lecViewSlidesBtn" onclick="lecEditView('slides')">Slides</button>
       <button class="btn btn-ghost" id="lecViewNotesBtn" onclick="lecEditView('notes')">Lesson Notes</button>
-      <button class="btn btn-ghost" onclick="lecPreviewStudent()">👁 Preview as student</button>
+      <button class="btn btn-ghost" onclick="lecTeach(false)">👁 Preview deck</button>
+      <button class="btn btn-primary" onclick="lecTeach(true)" style="margin-left:auto">🎓 Teach</button>
     </div>
     <div id="lecEditBody" style="max-height:60vh;overflow-y:auto;padding-right:4px"></div>
     <div class="modal-footer" style="flex-wrap:wrap;gap:8px">
@@ -653,6 +660,25 @@
       <button class="btn btn-ghost" id="lecSaveBtn" onclick="lecSaveDraft()">Save draft</button>
       <span id="lecPublishArea"></span>
     </div>
+  </div>
+</div>
+
+<!-- ── TEACH MODE: full-screen deck, same renderer as the student portal ── -->
+<div id="teachViewer" style="display:none;position:fixed;inset:0;background:#0B0D10;z-index:2500;flex-direction:column;">
+  <div style="display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;">
+    <button onclick="closeTeach()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px">← Exit</button>
+    <div style="min-width:0;flex:1">
+      <div id="tvTitle" style="font-weight:700;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+      <div id="tvMeta" style="font-size:12.5px;color:var(--muted)"></div>
+    </div>
+    <button id="tvFsBtn" onclick="teachFullscreen()" title="Fullscreen" aria-label="Toggle fullscreen" style="background:transparent;color:var(--muted);border:1px solid var(--border);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0">⛶</button>
+  </div>
+  <div id="tvStage" style="flex:1;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:clamp(10px,2.5vh,26px) clamp(10px,2.5vw,26px)"></div>
+  <div style="height:3px;background:rgba(255,255,255,0.06);flex-shrink:0"><div id="tvProgress" style="height:100%;width:0%;background:var(--orange);transition:width .25s ease"></div></div>
+  <div style="display:flex;align-items:center;justify-content:center;gap:18px;padding:12px;border-top:1px solid var(--border);flex-shrink:0">
+    <button onclick="tvNav(-1)" style="background:transparent;border:1px solid var(--border);color:var(--text);width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:18px">‹</button>
+    <span id="tvCounter" style="font-size:13px;color:var(--muted);min-width:64px;text-align:center"></span>
+    <button onclick="tvNav(1)" style="background:transparent;border:1px solid var(--border);color:var(--text);width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:18px">›</button>
   </div>
 </div>
 
@@ -1686,7 +1712,8 @@ function renderLecList() {
       </div>
       <div style="display:flex;gap:8px">
         ${l.status==='generating' ? '<span style="font-size:13px;color:var(--muted)">Working…</span>'
-          : `<button class="btn btn-ghost" style="padding:7px 14px" onclick="openLectureEditor('${l.id}')">${l.status==='pending_review'?'Review':'Open'}</button>`}
+          : `${l.slideCount ? `<button class="btn btn-primary" style="padding:7px 14px" onclick="lecTeachById('${l.id}')">🎓 Teach</button>` : ''}
+             <button class="btn btn-ghost" style="padding:7px 14px" onclick="openLectureEditor('${l.id}')">${l.status==='pending_review'?'Review':'Open'}</button>`}
       </div>
     </div>`;
   }).join('') + '</div>';
@@ -1856,25 +1883,98 @@ async function lecSaveDraftSilent() {
   }) });
 }
 
-function lecPreviewStudent() {
+// ── Teach mode ───────────────────────────────────────────────
+// Full-screen presentation of the current deck using the same renderer the
+// students see (assets/js/lecture-deck.js). lecTeach(true) = teaching: jump
+// straight to real fullscreen; lecTeach(false) = quick preview overlay.
+const tvState = { slides: [], idx: 0, course: '', open: false };
+
+function openTeach(l, fullscreen) {
+  tvState.slides = l.slides || [];
+  tvState.idx = 0;
+  tvState.course = l.courseType || '';
+  tvState.open = true;
+  document.getElementById('tvTitle').textContent = l.lectureTitle || 'Lecture';
+  document.getElementById('tvMeta').textContent = [l.courseTitle, l.week ? 'Week ' + l.week + (l.day ? ' ' + l.day : '') : null].filter(Boolean).join(' · ');
+  document.getElementById('teachViewer').style.display = 'flex';
+  renderTeachSlide();
+  if (fullscreen) teachFullscreen(true);
+}
+
+// From the editor modal: present what's currently in the inputs (unsaved edits included).
+function lecTeach(fullscreen) {
   collectEdits();
-  const w = window.open('', '_blank');
-  if (!w) { alert('Allow pop-ups to preview.'); return; }
-  w.document.write(lecPreviewHtml(lecEditing));
-  w.document.close();
+  openTeach(lecEditing, fullscreen);
 }
-function lecPreviewHtml(l) {
-  const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const slides = (l.slides||[]).map(s => {
-    const img = s.image_url ? `<img src="${s.image_url}" style="width:100%;border-radius:10px;margin-bottom:14px">` : '';
-    const txt = (s.on_slide_text||'').split('\n').filter(Boolean).map(t=>`<p style="margin:0 0 8px;font-size:16px;line-height:1.55">${esc(t)}</p>`).join('');
-    return `<div style="max-width:820px;margin:0 auto 22px;background:#171A21;border:1px solid #2A2F3A;border-radius:14px;padding:26px">
-      <div style="font-size:11px;color:#8892A4;margin-bottom:10px">Slide ${s.slide_number} · ${s.layout_type}</div>
-      ${img}<div style="font-size:21px;font-weight:800;margin-bottom:10px">${esc(s.slide_title||'')}</div>${txt}
-      ${s.main_explanation?`<div style="margin-top:14px;border-top:1px solid #2A2F3A;padding-top:10px"><div style="font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8892A4;margin-bottom:6px">Speaker notes — students see this behind "Explain more"</div><p style="margin:0;color:#A0A6B3;font-size:14px;line-height:1.65">${esc(s.main_explanation)}</p></div>`:''}</div>`;
-  }).join('');
-  return `<!doctype html><meta charset=utf8><title>Preview — ${esc(l.lectureTitle)}</title><body style="margin:0;background:#0B0D10;color:#F4F6FA;font-family:Segoe UI,Arial,sans-serif;padding:30px 16px"><h1 style="text-align:center;font-size:22px">${esc(l.lectureTitle)} <span style="font-size:13px;color:#8892A4">(student preview)</span></h1>${slides}</body>`;
+
+// From a lecture card: fetch the lecture and go straight into fullscreen teaching.
+async function lecTeachById(id) {
+  const l = await api('/api/lectures/' + id);
+  if (!l || l.error) { alert((l && l.error) || 'Could not load lecture.'); return; }
+  openTeach(l, true);
 }
+
+function closeTeach() {
+  tvState.open = false;
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  document.getElementById('teachViewer').style.display = 'none';
+}
+
+// force=true always enters fullscreen (used when the Teach button opens the deck).
+// On iOS Safari element fullscreen is unavailable; the overlay already covers
+// the screen there, so failing silently is fine.
+function teachFullscreen(force) {
+  const v = document.getElementById('teachViewer');
+  if (document.fullscreenElement && !force) { document.exitFullscreen().catch(() => {}); return; }
+  if (document.fullscreenElement) return;
+  const req = v.requestFullscreen || v.webkitRequestFullscreen;
+  if (req) { const p = req.call(v); if (p && p.catch) p.catch(() => {}); }
+}
+document.addEventListener('fullscreenchange', () => {
+  const b = document.getElementById('tvFsBtn');
+  if (b) b.textContent = document.fullscreenElement ? '✕' : '⛶';
+});
+
+function tvNav(d) {
+  const n = tvState.slides.length; if (!n) return;
+  tvState.idx = Math.max(0, Math.min(n - 1, tvState.idx + d));
+  renderTeachSlide();
+}
+
+function renderTeachSlide() {
+  const stage = document.getElementById('tvStage');
+  const n = tvState.slides.length;
+  const s = tvState.slides[tvState.idx];
+  document.getElementById('tvCounter').textContent = n ? (tvState.idx + 1) + ' / ' + n : '';
+  document.getElementById('tvProgress').style.width = n ? (((tvState.idx + 1) / n) * 100) + '%' : '0%';
+  if (!s) { stage.innerHTML = '<div class="empty">No slides.</div>'; return; }
+  stage.innerHTML = LectureDeck.slideHtml(s, { idx: tvState.idx, total: n, course: tvState.course });
+  const card = stage.firstElementChild;
+  if (card) { card.style.animation = 'none'; void card.offsetWidth; card.style.animation = ''; }
+}
+
+// Presenter navigation: arrows / space / PageUp-PageDown while teaching.
+document.addEventListener('keydown', (e) => {
+  if (!tvState.open) return;
+  if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); tvNav(1); }
+  else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); tvNav(-1); }
+  else if (e.key === 'Escape' && !document.fullscreenElement) closeTeach();
+});
+// Swipe navigation on touch devices.
+(() => {
+  let x0 = null, y0 = null;
+  const stage = () => document.getElementById('tvStage');
+  document.addEventListener('touchstart', (e) => {
+    if (!tvState.open || !stage() || !stage().contains(e.target)) { x0 = null; return; }
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (x0 == null) return;
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.6) tvNav(dx < 0 ? 1 : -1);
+    x0 = null;
+  }, { passive: true });
+})();
 
 function toast(msg) {
   let t = document.getElementById('_lectoast');
