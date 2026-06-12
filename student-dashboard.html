@@ -379,55 +379,147 @@
   @media (prefers-reduced-motion: reduce) {
     [class^="lv-anim-"] { animation: none !important; }
   }
-  /* Lecture slide deck — slides read like slides: big type, short copy, visuals.
-     The deep teaching lives in main_explanation ("Explain more") + lesson notes. */
+  /* ── Lecture deck ────────────────────────────────────────────
+     A real presentation canvas: 16:9 on desktop, content-height on phones.
+     Display face is Bricolage Grotesque; type scales with the slide via cqw.
+     Color steps up to Committed on this surface only: the canvas carries
+     warm light while the rest of the portal stays restrained. The spoken
+     teaching sits behind the "Explain more" notes panel. */
   .lv-slide {
-    position: relative; width: 100%; max-width: 960px;
-    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
-    overflow: hidden; display: flex; flex-direction: column;
-    box-shadow: 0 18px 50px rgba(0,0,0,.35);
+    --deck-font: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+    position: relative; container-type: inline-size;
+    width: min(1080px, 100%, calc((100vh - 185px) * 1.7778));
+    width: min(1080px, 100%, calc((100dvh - 185px) * 1.7778));
+    background:
+      radial-gradient(120% 95% at 88% -12%, rgba(214,106,31,0.16), transparent 56%),
+      radial-gradient(85% 75% at -8% 112%, rgba(30,75,255,0.09), transparent 52%),
+      #14161C;
+    border: 1px solid #2E3340; border-radius: 20px; overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 4px 18px rgba(0,0,0,0.4);
+    display: flex; flex-direction: column;
   }
-  @media (min-width: 900px) { .lv-slide { min-height: 480px; } }
-  .lv-body { display: flex; flex-direction: column; flex: 1; min-width: 0; padding: 36px 42px; }
+  .lv-slide.lv-warm {
+    background:
+      radial-gradient(130% 110% at 12% -15%, rgba(214,106,31,0.30), transparent 58%),
+      radial-gradient(90% 80% at 105% 115%, rgba(214,106,31,0.12), transparent 50%),
+      #16151A;
+  }
+  @media (min-width: 741px) { .lv-slide { aspect-ratio: 16/9; } }
+  @media (max-width: 740px) { .lv-slide { width: 100%; min-height: 70vh; min-height: 70dvh; } }
+  .lv-canvas {
+    position: relative; z-index: 2; flex: 1; min-height: 0; min-width: 0;
+    display: flex; flex-direction: column;
+    padding: clamp(22px, 5cqw, 54px) clamp(20px, 5.6cqw, 60px) 74px;
+    overflow-y: auto;
+  }
   .lv-kicker {
-    display: flex; align-items: center; gap: 9px;
-    font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--orange); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--deck-font);
+    font-size: clamp(10.5px, 1.3cqw, 14px); font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--orange);
+    margin-bottom: clamp(14px, 2.6cqw, 28px);
   }
-  .lv-kicker::before { content: ''; width: 22px; height: 2px; background: var(--orange); border-radius: 2px; }
-  .lv-h { font-size: clamp(22px, 3.4vw, 32px); font-weight: 800; line-height: 1.18; letter-spacing: -.01em; margin: 0 0 18px; }
-  .lv-lede { font-size: clamp(16px, 2.2vw, 20px); line-height: 1.55; color: var(--muted); margin: 0; }
-  .lv-bullets { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
-  .lv-bullets li { position: relative; padding-left: 20px; font-size: clamp(15px, 1.9vw, 18px); line-height: 1.5; }
-  .lv-bullets li::before { content: ''; position: absolute; left: 0; top: .52em; width: 8px; height: 8px; border-radius: 2px; background: var(--orange); }
+  .lv-kicker::after { content: ''; flex: 0 0 30px; height: 1px; background: rgba(214,106,31,0.55); }
+  .lv-h {
+    font-family: var(--deck-font);
+    font-size: clamp(23px, 4.6cqw, 50px); font-weight: 800;
+    line-height: 1.06; letter-spacing: -0.022em;
+    margin: 0 0 clamp(16px, 3cqw, 34px);
+    text-wrap: balance; max-width: 22ch;
+  }
+  .lv-lede { font-size: clamp(15px, 1.9cqw, 21px); line-height: 1.65; color: var(--muted); margin: 0; max-width: 56ch; }
+  .lv-bullets { display: flex; flex-direction: column; gap: clamp(11px, 1.9cqw, 21px); margin: 0; padding: 0; list-style: none; counter-reset: lvb; }
+  .lv-bullets li {
+    counter-increment: lvb; display: flex; gap: 14px; align-items: baseline;
+    font-size: clamp(14.5px, 1.85cqw, 19px); line-height: 1.6; max-width: 46ch;
+  }
+  .lv-bullets li::before {
+    content: counter(lvb, decimal-leading-zero);
+    font-family: var(--deck-font); font-size: 0.72em; font-weight: 700;
+    color: var(--orange); letter-spacing: 0.06em; flex-shrink: 0;
+  }
+  /* Split layouts: image bleeds to the slide edge */
   .lv-cols { display: flex; flex: 1; min-height: 0; }
-  .lv-cols .lv-body { width: 54%; }
-  .lv-media { width: 46%; flex-shrink: 0; position: relative; min-height: 320px; }
-  .lv-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .lv-cols .lv-canvas { width: 55%; }
+  .lv-media { width: 45%; flex-shrink: 0; position: relative; }
+  .lv-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(0.95) contrast(1.04); }
+  .lv-grade { position: absolute; inset: 0; background: linear-gradient(160deg, rgba(20,22,28,0) 55%, rgba(20,22,28,0.42)); }
+  @container (max-width: 700px) {
+    .lv-cols { flex-direction: column; }
+    .lv-cols .lv-canvas { width: 100%; }
+    .lv-media { width: 100%; order: -1; flex: 0 0 200px; min-height: 200px; }
+  }
+  /* Full-bleed layouts (title, image overlay) */
+  .lv-bleed { position: absolute; inset: 0; z-index: 0; }
+  .lv-bleed img { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.95) contrast(1.04); }
+  .lv-scrim { position: absolute; inset: 0; background: linear-gradient(202deg, rgba(15,17,22,0.04) 32%, rgba(15,17,22,0.9) 84%); }
   .lv-ph {
     position: absolute; inset: 0; display: flex; flex-direction: column; gap: 8px;
     align-items: center; justify-content: center; padding: 20px; text-align: center;
-    background: linear-gradient(135deg, #171A21, #0F1115); color: var(--muted); font-size: 12.5px;
+    background: linear-gradient(150deg, #1A1D25, #11141A); color: var(--muted); font-size: 12.5px;
   }
-  @media (max-width: 740px) {
-    .lv-body { padding: 24px 22px; }
-    .lv-cols { flex-direction: column; }
-    .lv-cols .lv-body { width: 100%; }
-    .lv-media { width: 100%; min-height: 200px; order: -1; }
+  /* Editorial tiles (cards_grid): hairline rules + numerals, not boxes */
+  .lv-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(215px, 100%), 1fr)); gap: clamp(16px, 2.8cqw, 32px) clamp(20px, 3.2cqw, 38px); align-content: start; }
+  .lv-tile { border-top: 1px solid #353B49; padding-top: clamp(10px, 1.7cqw, 17px); }
+  .lv-tile b { display: block; font-family: var(--deck-font); font-size: clamp(14px, 1.7cqw, 18px); font-weight: 800; color: var(--orange); margin-bottom: 7px; letter-spacing: 0.02em; }
+  .lv-tile span { font-size: clamp(13.5px, 1.6cqw, 16px); line-height: 1.6; color: var(--text); display: block; max-width: 38ch; }
+  /* Comparison: split halves with a center rule */
+  .lv-vs { display: grid; grid-template-columns: 1fr 1fr; flex: 1; align-content: start; }
+  .lv-vs > div { padding: clamp(4px, 1cqw, 10px) clamp(16px, 2.6cqw, 30px) clamp(12px, 2cqw, 22px) 0; }
+  .lv-vs > div + div { border-left: 1px solid #353B49; padding-left: clamp(16px, 2.6cqw, 30px); padding-right: 0; }
+  .lv-vs b { display: block; font-family: var(--deck-font); font-size: clamp(11px, 1.3cqw, 14px); font-weight: 800; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: clamp(8px, 1.4cqw, 14px); }
+  .lv-vs span { font-size: clamp(14px, 1.8cqw, 18px); line-height: 1.6; display: block; max-width: 34ch; }
+  @container (max-width: 560px) {
+    .lv-vs { grid-template-columns: 1fr; }
+    .lv-vs > div + div { border-left: 0; border-top: 1px solid #353B49; padding-left: 0; padding-top: 16px; margin-top: 4px; }
   }
-  .lv-expl { margin-top: auto; padding-top: 18px; }
+  /* Timeline: numerals on a hairline; horizontal when the slide is wide */
+  .lv-steps { display: grid; gap: clamp(16px, 2.4cqw, 26px); align-content: start; }
+  .lv-step { position: relative; border-top: 1px solid #353B49; padding-top: clamp(12px, 1.8cqw, 18px); }
+  .lv-step::before { content: ''; position: absolute; top: -4px; left: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--orange); }
+  .lv-step b { display: block; font-family: var(--deck-font); font-weight: 800; color: var(--orange); font-size: clamp(12px, 1.4cqw, 14px); letter-spacing: 0.1em; margin-bottom: 6px; }
+  .lv-step span { font-size: clamp(13.5px, 1.6cqw, 16px); line-height: 1.6; display: block; max-width: 30ch; }
+  @container (min-width: 700px) { .lv-steps { grid-auto-flow: column; grid-auto-columns: 1fr; gap: clamp(18px, 2.6cqw, 30px); } }
+  /* Flow: chips chained by arrows; row on wide slides */
+  .lv-flow { display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+  .lv-flow .f { background: rgba(244,246,250,0.04); border: 1px solid #353B49; border-radius: 12px; padding: clamp(11px, 1.7cqw, 17px) clamp(13px, 2cqw, 20px); font-size: clamp(13.5px, 1.6cqw, 16px); font-weight: 600; text-align: center; }
+  .lv-flow .a { color: var(--orange); text-align: center; font-weight: 800; align-self: center; }
+  .lv-flow .a::before { content: '↓'; }
+  @container (min-width: 720px) {
+    .lv-flow { flex-direction: row; align-items: center; }
+    .lv-flow .f { flex: 1; }
+    .lv-flow .a::before { content: '→'; }
+  }
+  /* Summary checklist: two columns when wide */
+  .lv-checks { display: grid; gap: clamp(11px, 1.9cqw, 18px) clamp(20px, 3cqw, 36px); margin: 0; padding: 0; list-style: none; align-content: start; }
+  @container (min-width: 720px) { .lv-checks { grid-template-columns: 1fr 1fr; } }
+  .lv-checks li { display: flex; gap: 12px; align-items: baseline; font-size: clamp(14px, 1.7cqw, 17px); line-height: 1.55; max-width: 38ch; }
+  .lv-checks li::before { content: '✓'; color: var(--orange); font-weight: 800; flex-shrink: 0; }
+  /* Slide furniture */
+  .lv-num { position: absolute; right: 22px; bottom: 15px; z-index: 4; font-family: var(--deck-font); font-size: 13px; font-weight: 800; color: var(--text); }
+  .lv-num span { color: var(--muted); font-weight: 600; }
+  /* "Explain more": the spoken notes, an overlay panel from the slide foot */
+  .lv-expl { position: absolute; left: 0; right: 0; bottom: 0; z-index: 5; pointer-events: none; }
   .lv-expl summary {
-    display: inline-flex; align-items: center; gap: 7px; cursor: pointer; list-style: none;
-    font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-    color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 7px 14px;
-    transition: color .15s ease, border-color .15s ease; -webkit-tap-highlight-color: transparent;
+    pointer-events: auto; display: inline-flex; align-items: center; gap: 7px;
+    cursor: pointer; list-style: none; margin: 0 0 13px 20px;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--muted); background: rgba(15,17,21,0.78); border: 1px solid var(--border);
+    border-radius: 999px; padding: 8px 15px; -webkit-tap-highlight-color: transparent;
+    transition: color .18s cubic-bezier(.22,.61,.36,1), border-color .18s cubic-bezier(.22,.61,.36,1);
   }
   .lv-expl summary::-webkit-details-marker { display: none; }
   .lv-expl summary::before { content: '+'; color: var(--orange); font-size: 14px; font-weight: 800; line-height: 1; }
   .lv-expl[open] summary::before { content: '\2013'; }
   .lv-expl summary:hover { color: var(--text); border-color: var(--orange); }
-  .lv-expl p { margin: 12px 0 0; font-size: 14.5px; line-height: 1.7; color: var(--muted); max-width: 680px; }
+  .lv-expl[open] { pointer-events: auto; background: rgba(17,19,25,0.97); border-top: 1px solid var(--border); max-height: 64%; overflow-y: auto; }
+  .lv-expl[open] summary { margin: 15px 0 0 20px; }
+  .lv-expl p { margin: 12px 20px 18px; font-size: 14.5px; line-height: 1.75; color: var(--text); opacity: 0.88; max-width: 64ch; }
 </style>
+  <!-- Lecture deck display face (slides only; portal body stays system) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
   <!-- pwa:head-start -->
   <meta name="theme-color" content="#D66A1F">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -864,7 +956,7 @@
     </div>
     <!-- Slides deck -->
     <div id="lvSlides" style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
-      <div id="lvStage" style="flex:1;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:24px"></div>
+      <div id="lvStage" style="flex:1;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:clamp(10px,2.5vh,26px) clamp(10px,2.5vw,26px)"></div>
       <div style="height:3px;background:rgba(255,255,255,0.06);flex-shrink:0"><div id="lvProgress" style="height:100%;width:0%;background:var(--orange);transition:width .25s ease"></div></div>
       <div style="display:flex;align-items:center;justify-content:center;gap:18px;padding:14px;border-top:1px solid var(--border);flex-shrink:0">
         <button onclick="lvNav(-1)" style="background:transparent;border:1px solid var(--border);color:var(--text);width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:18px">‹</button>
@@ -1449,7 +1541,7 @@
       const res = await fetch('/api/lectures/' + id + '/student', { headers: { 'Authorization': 'Bearer ' + token } });
       if (!res.ok) throw new Error('not found');
       const lec = await res.json();
-      lvState = { slides: lec.slides || [], idx: 0, view: view || 'slides', notes: lec.lessonNotes || {} };
+      lvState = { slides: lec.slides || [], idx: 0, view: view || 'slides', notes: lec.lessonNotes || {}, course: lec.courseType || '' };
       document.getElementById('lvTitle').textContent = lec.lectureTitle || 'Lecture';
       document.getElementById('lvMeta').textContent = [lec.courseTitle, lec.lectureDate ? fmtDate(lec.lectureDate) : null].filter(Boolean).join(' · ');
       document.getElementById('lvNotes').innerHTML = renderNotes(lvState.notes);
@@ -1491,98 +1583,95 @@
     if (card) { card.style.animation = 'none'; void card.offsetWidth; card.style.animation = ''; }
   }
 
-  // Render one slide JSON object → HTML, by layout_type. The slide face carries
-  // only slide copy (kicker + title + short on_slide_text + visual); the fuller
-  // main_explanation sits behind the "Explain more" toggle so decks never read
-  // like lesson notes. image_url is used when present; otherwise a clean
-  // placeholder keeps the layout intact.
+  // Render one slide JSON object → HTML, by layout_type. Each slide is a real
+  // presentation canvas: kicker + display title + short copy + visual, with
+  // page-number furniture. The spoken teaching (main_explanation) sits behind
+  // the "Explain more" panel that rises from the slide foot. image_url is used
+  // when present; otherwise a clean placeholder keeps the layout intact.
   function slideHtml(s) {
     const anim = 'lv-anim-' + (s.animation_type && s.animation_type !== 'none' ? s.animation_type : 'fade');
+    const total = lvState.slides.length || 1;
+    const pad2 = (n) => String(n).padStart(2, '0');
     const title = escHtml(s.slide_title || '');
     const onText = (s.on_slide_text || '').split('\n').map(t => t.trim()).filter(Boolean);
+    // "Heading: body" lines become labelled items; bare lines get numerals.
+    const split = (c, i) => {
+      const m = c.match(/^([^:]{2,40}):\s*(.+)$/);
+      return m ? { h: m[1], b: m[2] } : { h: pad2(i + 1), b: c };
+    };
     const kickerText = s.slide_type && !['content', 'title'].includes(String(s.slide_type).toLowerCase())
       ? String(s.slide_type).replace(/[_-]+/g, ' ')
-      : 'Slide ' + (s.slide_number || (lvState.idx + 1));
+      : (lvState.course || 'Lecture');
     const kicker = `<div class="lv-kicker">${escHtml(kickerText)}</div>`;
-    const expl = s.main_explanation
-      ? `<details class="lv-expl"><summary>Explain more</summary><p>${escHtml(s.main_explanation)}</p></details>` : '';
+    const furniture =
+      (s.main_explanation ? `<details class="lv-expl"><summary>Explain more</summary><p>${escHtml(s.main_explanation)}</p></details>` : '') +
+      `<div class="lv-num">${pad2(s.slide_number || lvState.idx + 1)}<span> / ${pad2(total)}</span></div>`;
     const bullets = onText.length > 1
-      ? `<ul class="lv-bullets">${onText.map(t => `<li>${escHtml(t)}</li>`).join('')}</ul>`
+      ? `<ul class="lv-bullets">${onText.map(t => `<li><span>${escHtml(t)}</span></li>`).join('')}</ul>`
       : (onText[0] ? `<p class="lv-lede">${escHtml(onText[0])}</p>` : '');
-    const imgAbs = s.image_url
-      ? `<img src="${s.image_url}" alt="${title}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`
-      : `<div class="lv-ph"><span style="font-size:24px">🖼</span>${escHtml(s.visual_description || 'Visual')}</div>`;
-    const media = `<div class="lv-media">${imgAbs}</div>`;
-    const wrap = (inner) => `<div class="${anim} lv-slide">${inner}</div>`;
+    const img = s.image_url ? `<img src="${s.image_url}" alt="${title}" loading="lazy">` : '';
+    const ph = `<div class="lv-ph"><span style="font-size:22px">◍</span>${escHtml(s.visual_description || 'Visual')}</div>`;
+    const media = `<div class="lv-media">${img || ph}<div class="lv-grade"></div></div>`;
+    const bleed = `<div class="lv-bleed">${img || ph}</div><div class="lv-bleed lv-scrim"></div>`;
+    const wrap = (inner, cls) => `<div class="${anim} lv-slide${cls ? ' ' + cls : ''}">${inner}${furniture}</div>`;
+    const canvas = (inner, style) => `<div class="lv-canvas"${style ? ` style="${style}"` : ''}>${inner}</div>`;
+    const mid = (inner) => `<div style="margin:auto 0;min-width:0">${inner}</div>`;
 
     switch (s.layout_type) {
       case 'title':
-        return wrap(`<div class="lv-body" style="align-items:center;justify-content:center;text-align:center;padding:64px 36px">
-          <div class="lv-kicker" style="margin-bottom:16px">Lecture</div>
-          <div class="lv-h" style="font-size:clamp(26px,4.6vw,40px);max-width:760px;margin-bottom:14px">${title}</div>
-          ${onText.length ? `<p class="lv-lede" style="max-width:620px">${escHtml(onText.join(' · '))}</p>` : ''}${expl}</div>`);
+        return wrap(
+          (s.image_url ? bleed : '') +
+          canvas(`<div style="margin-top:auto">
+            ${kicker}
+            <div class="lv-h" style="font-size:clamp(28px,6.2cqw,62px);max-width:17ch;margin-bottom:${onText.length ? 'clamp(12px,2cqw,20px)' : '0'}">${title}</div>
+            ${onText.length ? `<p class="lv-lede" style="color:#CBD0DA">${escHtml(onText.join(' · '))}</p>` : ''}
+          </div>`),
+          s.image_url ? '' : 'lv-warm');
       case 'full_image_overlay':
-        return wrap(`<div style="position:relative;flex:1;min-height:340px">${imgAbs}
-          <div style="position:absolute;left:0;right:0;bottom:0;padding:90px 34px 26px;background:linear-gradient(180deg,rgba(11,13,16,0) 0%,rgba(11,13,16,0.94) 78%)">
-            ${kicker}<div class="lv-h" style="margin-bottom:6px">${title}</div>
-            ${onText.length ? `<p class="lv-lede" style="color:#C7CCD6;max-width:640px">${escHtml(onText.join(' '))}</p>` : ''}
-          </div></div>
-          ${expl ? `<div style="padding:4px 34px 20px">${expl}</div>` : ''}`);
+        return wrap(bleed + canvas(`<div style="margin-top:auto">
+            ${kicker}
+            <div class="lv-h" style="font-size:clamp(24px,4.8cqw,50px);margin-bottom:${onText.length ? 'clamp(10px,1.8cqw,18px)' : '0'}">${title}</div>
+            ${onText.length ? `<p class="lv-lede" style="color:#CBD0DA">${escHtml(onText.join(' '))}</p>` : ''}
+          </div>`));
       case 'image_right_text_left':
       case 'image_left_text_right': {
-        const body = `<div class="lv-body">${kicker}<div class="lv-h">${title}</div>${bullets}${expl}</div>`;
-        return wrap(`<div class="lv-cols">${s.layout_type === 'image_left_text_right' ? media + body : body + media}</div>`);
+        const text = canvas(mid(`${kicker}<div class="lv-h" style="font-size:clamp(22px,3.8cqw,42px)">${title}</div>${bullets}`));
+        return wrap(`<div class="lv-cols">${s.layout_type === 'image_left_text_right' ? media + text : text + media}</div>`);
       }
       case 'comparison': {
-        const cols = (onText.length ? onText : [s.main_explanation || '']).slice(0, 2).map((c) => {
-          const m = c.match(/^([^:]{2,30}):\s*(.+)$/);
-          return m ? { h: m[1], b: m[2] } : { h: '', b: c };
-        });
-        const tones = ['var(--orange)', '#6a9fff'];
-        return wrap(`<div class="lv-body">${kicker}<div class="lv-h">${title}</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">${cols.map((c, i) => `
-            <div style="background:#0F1115;border:1px solid var(--border);border-top:3px solid ${tones[i] || tones[0]};border-radius:12px;padding:18px">
-              ${c.h ? `<div style="font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:${tones[i] || tones[0]};margin-bottom:8px">${escHtml(c.h)}</div>` : ''}
-              <div style="font-size:15px;line-height:1.6">${escHtml(c.b)}</div></div>`).join('')}</div>${expl}</div>`);
+        const tones = ['var(--orange)', '#6A9FFF'];
+        const cols = (onText.length ? onText : ['']).slice(0, 2).map(split);
+        return wrap(canvas(mid(`${kicker}<div class="lv-h">${title}</div>
+          <div class="lv-vs">${cols.map((c, i) => `<div>
+            <b style="color:${tones[i] || tones[0]}">${escHtml(/^\d+$/.test(c.h) ? (i ? 'And' : 'Versus') : c.h)}</b>
+            <span>${escHtml(c.b)}</span></div>`).join('')}</div>`)));
       }
       case 'cards_grid':
-        return wrap(`<div class="lv-body">${kicker}<div class="lv-h">${title}</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">${onText.map((c, i) => `
-            <div style="background:#0F1115;border:1px solid var(--border);border-radius:12px;padding:16px">
-              <div style="font-size:12px;font-weight:800;color:var(--orange);margin-bottom:8px">${String(i + 1).padStart(2, '0')}</div>
-              <div style="font-size:14.5px;line-height:1.55">${escHtml(c)}</div></div>`).join('')}</div>${expl}</div>`);
+        return wrap(canvas(mid(`${kicker}<div class="lv-h">${title}</div>
+          <div class="lv-tiles">${onText.map((c, i) => { const t = split(c, i);
+            return `<div class="lv-tile"><b>${escHtml(t.h)}</b><span>${escHtml(t.b)}</span></div>`; }).join('')}</div>`)));
       case 'timeline':
-        return wrap(`<div class="lv-body">${kicker}<div class="lv-h">${title}</div>
-          <div style="display:flex;flex-direction:column">${onText.map((t, i) => `
-            <div style="display:flex;gap:16px">
-              <div style="display:flex;flex-direction:column;align-items:center">
-                <div style="width:26px;height:26px;border-radius:50%;background:rgba(214,106,31,0.15);border:1px solid var(--orange);color:var(--orange);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i + 1}</div>
-                ${i < onText.length - 1 ? '<div style="width:2px;flex:1;background:var(--border);margin:4px 0"></div>' : ''}
-              </div>
-              <div style="padding:3px 0 20px;font-size:15.5px;line-height:1.55">${escHtml(t)}</div>
-            </div>`).join('')}</div>${expl}</div>`);
+        return wrap(canvas(mid(`${kicker}<div class="lv-h">${title}</div>
+          <div class="lv-steps">${onText.map((c, i) => { const t = split(c, i);
+            return `<div class="lv-step"><b>${escHtml(/^\d+$/.test(t.h) ? 'Step ' + (i + 1) : t.h)}</b><span>${escHtml(t.b)}</span></div>`; }).join('')}</div>`)));
       case 'flowchart':
       case 'diagram':
-        return wrap(`<div class="lv-body">${kicker}<div class="lv-h">${title}</div>
-          <div style="display:flex;flex-direction:column;align-items:stretch;max-width:560px;width:100%;align-self:center">${onText.map((t, i) => `
-            <div style="background:#0F1115;border:1px solid var(--border);border-left:3px solid var(--orange);border-radius:10px;padding:14px 18px;font-size:15px;font-weight:600;text-align:center">${escHtml(t)}</div>
-            ${i < onText.length - 1 ? '<div style="text-align:center;color:var(--orange);font-size:17px;line-height:1.5">↓</div>' : ''}`).join('')}</div>${expl}</div>`);
+        return wrap(canvas(mid(`${kicker}<div class="lv-h">${title}</div>
+          <div class="lv-flow">${onText.map((t, i) =>
+            `<div class="f">${escHtml(t)}</div>${i < onText.length - 1 ? '<div class="a"></div>' : ''}`).join('')}</div>`)));
       case 'code_demo':
-        return wrap(`<div class="lv-body">${kicker}<div class="lv-h">${title}</div>
-          <div style="background:#0B0D10;border:1px solid var(--border);border-radius:12px;overflow:hidden">
-            <div style="display:flex;gap:6px;padding:11px 14px;border-bottom:1px solid var(--border)">
-              <span style="width:11px;height:11px;border-radius:50%;background:#ff5f57"></span><span style="width:11px;height:11px;border-radius:50%;background:#febc2e"></span><span style="width:11px;height:11px;border-radius:50%;background:#28c840"></span>
+        return wrap(canvas(mid(`${kicker}<div class="lv-h" style="font-size:clamp(20px,3.4cqw,36px)">${title}</div>
+          <div style="background:#0B0D10;border:1px solid #353B49;border-radius:14px;overflow:hidden;max-width:760px">
+            <div style="display:flex;gap:6px;padding:11px 14px;border-bottom:1px solid #232834">
+              <span style="width:10px;height:10px;border-radius:50%;background:#FF5F57"></span><span style="width:10px;height:10px;border-radius:50%;background:#FEBC2E"></span><span style="width:10px;height:10px;border-radius:50%;background:#28C840"></span>
             </div>
-            <pre style="margin:0;padding:18px;overflow-x:auto;font-size:13.5px;line-height:1.65;color:#d6deeb;white-space:pre-wrap">${escHtml((s.on_slide_text || '').trim())}</pre>
-          </div>${expl}</div>`);
+            <pre style="margin:0;padding:clamp(14px,2.2cqw,22px);overflow-x:auto;font-size:clamp(12.5px,1.5cqw,14.5px);line-height:1.7;color:#D6DEEB;white-space:pre-wrap">${escHtml((s.on_slide_text || '').trim())}</pre>
+          </div>`)));
       case 'lesson_summary':
-        return wrap(`<div class="lv-body">
-          ${s.image_url ? `<div style="position:relative;aspect-ratio:21/9;border-radius:12px;overflow:hidden;margin-bottom:20px">${imgAbs}</div>` : ''}
-          ${kicker}<div class="lv-h">${title}</div>
-          <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px">${onText.map(t => `
-            <li style="display:flex;gap:11px;font-size:15.5px;line-height:1.55"><span style="color:var(--orange);font-weight:800">✓</span><span>${escHtml(t)}</span></li>`).join('')}</ul>${expl}</div>`);
+        return wrap(canvas(mid(`${kicker}<div class="lv-h">${title}</div>
+          <ul class="lv-checks">${onText.map(t => `<li><span>${escHtml(t)}</span></li>`).join('')}</ul>`)), 'lv-warm');
       default:
-        return wrap(`<div class="lv-body">${kicker}<div class="lv-h">${title}</div>${bullets}${expl}</div>`);
+        return wrap(canvas(mid(`${kicker}<div class="lv-h">${title}</div>${bullets}`)));
     }
   }
 
