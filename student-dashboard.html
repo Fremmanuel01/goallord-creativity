@@ -373,8 +373,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
   <!-- Lecture deck styles + renderer (shared with the lecturer dashboard) -->
-  <link rel="stylesheet" href="assets/css/lecture-deck.css?v=9">
-  <script src="assets/js/lecture-deck.js?v=9"></script>
+  <link rel="stylesheet" href="assets/css/lecture-deck.css?v=10">
+  <script src="assets/js/lecture-deck.js?v=10"></script>
   <!-- pwa:head-start -->
   <meta name="theme-color" content="#D66A1F">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1345,6 +1345,7 @@
   // ── Lectures ─────────────────────────────────────────────────
   let lvState = { slides: [], idx: 0, view: 'slides' };
 
+  let lecData = { today: [], upcoming: [], past: [] };
   async function loadLectures() {
     lecturesLoaded = true;
     const cont = document.getElementById('lecturesContent');
@@ -1352,21 +1353,30 @@
     try {
       const res = await fetch('/api/lectures/student', { headers: { 'Authorization': 'Bearer ' + token } });
       const data = await res.json();
-      const today = data.today || [], upcoming = data.upcoming || [], past = data.past || [];
-      if (!today.length && !upcoming.length && !past.length) {
+      lecData = { today: data.today || [], upcoming: data.upcoming || [], past: data.past || [] };
+      if (!lecData.today.length && !lecData.upcoming.length && !lecData.past.length) {
         cont.innerHTML = '<div class="empty"><div class="empty-icon">🎓</div>No lectures published yet.</div>';
         return;
       }
-      const section = (label, items, tone) => items.length ? `
-        <div style="margin-bottom:26px">
-          <div style="font-size:12px;font-weight:700;color:${tone};text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">${label}</div>
-          <div style="display:grid;gap:12px">${items.map(lectureCard).join('')}</div>
-        </div>` : '';
-      cont.innerHTML =
-        section("Today's Lecture", today, 'var(--orange)') +
-        section('Upcoming', upcoming, 'var(--muted)') +
-        section('Past Lectures', past, 'var(--muted)');
+      cont.innerHTML = `<input id="lecSearch" type="search" placeholder="Search lectures…" oninput="renderLectures(this.value)"
+        style="width:100%;max-width:420px;margin-bottom:20px;padding:10px 14px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px">
+        <div id="lecList"></div>`;
+      renderLectures('');
     } catch { cont.innerHTML = '<div class="empty">Failed to load lectures.</div>'; }
+  }
+  function renderLectures(query) {
+    const q = (query || '').trim().toLowerCase();
+    const match = l => !q || (l.lectureTitle || '').toLowerCase().includes(q) || (l.courseTitle || '').toLowerCase().includes(q);
+    const section = (label, items, tone) => { items = items.filter(match); return items.length ? `
+      <div style="margin-bottom:26px">
+        <div style="font-size:12px;font-weight:700;color:${tone};text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">${label}</div>
+        <div style="display:grid;gap:12px">${items.map(lectureCard).join('')}</div>
+      </div>` : ''; };
+    const html =
+      section("Today's Lecture", lecData.today, 'var(--orange)') +
+      section('Upcoming', lecData.upcoming, 'var(--muted)') +
+      section('Past Lectures', lecData.past, 'var(--muted)');
+    document.getElementById('lecList').innerHTML = html || '<div class="empty">No lectures match your search.</div>';
   }
 
   function lectureCard(l) {
@@ -1397,7 +1407,10 @@
       const res = await fetch('/api/lectures/' + id + '/student', { headers: { 'Authorization': 'Bearer ' + token } });
       if (!res.ok) throw new Error('not found');
       const lec = await res.json();
-      lvState = { slides: lec.slides || [], idx: 0, view: view || 'slides', notes: lec.lessonNotes || {}, course: lec.courseType || '' };
+      lvState = { id: id, slides: lec.slides || [], idx: 0, view: view || 'slides', notes: lec.lessonNotes || {}, course: lec.courseType || '' };
+      // Resume where the student left off (last viewed slide for this lecture).
+      const saved = parseInt(localStorage.getItem('gl_lec_pos_' + id) || '0', 10);
+      if (saved > 0 && saved < lvState.slides.length) lvState.idx = saved;
       document.getElementById('lvTitle').textContent = lec.lectureTitle || 'Lecture';
       document.getElementById('lvMeta').textContent = [lec.courseTitle, lec.lectureDate ? fmtDate(lec.lectureDate) : null].filter(Boolean).join(' · ');
       document.getElementById('lvNotes').innerHTML = renderNotes(lvState.notes);
@@ -1478,6 +1491,8 @@
     const n = lvState.slides.length;
     document.getElementById('lvCounter').textContent = n ? (lvState.idx + 1) + ' / ' + n : '';
     document.getElementById('lvProgress').style.width = n ? (((lvState.idx + 1) / n) * 100) + '%' : '0%';
+    // Remember where the student is, to resume next time they open this lecture.
+    if (lvState.id) { try { localStorage.setItem('gl_lec_pos_' + lvState.id, String(lvState.idx)); } catch (e) {} }
     if (!s) { stage.innerHTML = '<div class="empty">No slides.</div>'; return; }
     stage.innerHTML = slideHtml(s);
     // restart entrance animation

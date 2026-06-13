@@ -292,6 +292,19 @@
   .tv-foot { display: flex; align-items: center; justify-content: center; gap: 18px; padding: 12px; border-top: 1px solid var(--border); flex-shrink: 0; }
   .tv-nav-btn { background: transparent; border: 1px solid var(--border); color: var(--text); width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 18px; }
   .tv-nav-btn:hover { border-color: var(--orange); color: var(--orange); }
+  /* Blank-screen + slide-grid overlays */
+  .tv-blank { display: none; position: absolute; inset: 0; background: #000; z-index: 30; cursor: pointer; }
+  .tv-blank.on { display: block; }
+  .tv-grid-overlay { display: none; position: absolute; inset: 0; background: #0B0D10; z-index: 28; flex-direction: column; }
+  .tv-grid-overlay.on { display: flex; }
+  .tv-grid-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--muted); flex-shrink: 0; }
+  .tv-grid-inner { flex: 1; overflow-y: auto; padding: 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; align-content: start; }
+  .tv-grid-cell { cursor: pointer; border: 2px solid transparent; border-radius: 10px; overflow: hidden; background: #161a22; position: relative; transition: border-color .15s; }
+  .tv-grid-cell:hover { border-color: var(--orange); }
+  .tv-grid-cell.current { border-color: var(--orange); }
+  .tv-grid-thumb { width: 100%; aspect-ratio: 16/9; display: flex; pointer-events: none; }
+  .tv-grid-thumb .lv-slide { width: 100%; height: 100%; box-shadow: none; border-radius: 0; }
+  .tv-grid-num { position: absolute; top: 6px; left: 8px; z-index: 4; background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; }
   /* Narrow screens: rail drops below the slide so the deck still fills the width */
   @media (max-width: 860px) {
     .tv-body { flex-direction: column; }
@@ -303,8 +316,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/lecture-deck.css?v=9">
-  <script src="assets/js/lecture-deck.js?v=9"></script>
+  <link rel="stylesheet" href="assets/css/lecture-deck.css?v=10">
+  <script src="assets/js/lecture-deck.js?v=10"></script>
   <!-- pwa:head-start -->
   <meta name="theme-color" content="#D66A1F">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -480,8 +493,12 @@
   <div id="tab-lectures" style="display:none">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div class="section-title" style="margin:0">Lectures</div>
-      <button class="btn btn-primary" onclick="openGenerateLecture()">✨ Generate Lecture</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost" onclick="toggleLecCoverage()" id="lecCoverageBtn">📋 Coverage</button>
+        <button class="btn btn-primary" onclick="openGenerateLecture()">✨ Generate Lecture</button>
+      </div>
     </div>
+    <div id="lecCoverage" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:16px"></div>
     <div id="lecFilters" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap"></div>
     <div id="lecListWrap"><div class="loading">Loading lectures…</div></div>
   </div>
@@ -708,9 +725,13 @@
       <div id="tvMeta" style="font-size:12.5px;color:var(--muted)"></div>
     </div>
     <div id="tvTimer" class="tv-timer" title="Elapsed">00:00</div>
+    <button onclick="teachBlank()" class="tv-btn" title="Blank the screen (B)">Blank</button>
+    <button onclick="teachGrid(true)" class="tv-btn" title="All slides (G)">Grid</button>
     <button id="tvNotesBtn" onclick="teachToggleNotes()" class="tv-btn" title="Toggle presenter notes">Notes</button>
     <button id="tvFsBtn" onclick="teachFullscreen()" title="Fullscreen" aria-label="Toggle fullscreen" class="tv-icon-btn">⛶</button>
   </div>
+  <div id="tvBlank" class="tv-blank" onclick="teachBlank()"></div>
+  <div id="tvGrid" class="tv-grid-overlay"><div class="tv-grid-head"><span>All slides — click to jump</span><button class="tv-btn" onclick="teachGrid(false)">✕ Close</button></div><div id="tvGridInner" class="tv-grid-inner"></div></div>
   <div class="tv-body" id="tvBody">
     <div id="tvStage" class="lv-fit"></div>
     <aside class="tv-rail" id="tvRail">
@@ -1760,6 +1781,62 @@ async function loadLecturesAdmin() {
   renderLecList();
 }
 
+// ── Curriculum coverage: which class days still lack a lecture, with one-click
+// (and bulk) generation. Cross-references curriculum entries against allLectures.
+async function toggleLecCoverage() {
+  const box = document.getElementById('lecCoverage');
+  if (box.style.display !== 'none') { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  await renderLecCoverage();
+}
+async function renderLecCoverage() {
+  const box = document.getElementById('lecCoverage');
+  if (!activeBatch) { box.innerHTML = '<div class="empty">No batch selected.</div>'; return; }
+  box.innerHTML = '<div class="loading">Loading coverage…</div>';
+  const data = await api('/api/curriculum?batch=' + activeBatch._id);
+  const entries = sortByWeekDay(Array.isArray(data) ? data : []);
+  if (!entries.length) { box.innerHTML = '<div class="empty">This batch has no curriculum yet.</div>'; return; }
+  const STAT = { generating: 'Working…', pending_review: 'Pending review', published: 'Published', republished: 'Published', edited_after_publishing: 'Edited', failed: 'Failed' };
+  const byKey = {}; (allLectures || []).forEach(l => { byKey[l.week + '|' + l.day] = l; });
+  let missing = 0;
+  const rows = entries.map(e => {
+    const l = byKey[e.week + '|' + e.day];
+    const has = l && l.status !== 'failed';
+    if (!has) missing++;
+    const status = l ? (STAT[l.status] || l.status) : '<span style="color:var(--muted)">Not generated</span>';
+    const action = has
+      ? `<button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="openLectureEditor('${l.id}')">Open</button>`
+      : `<button class="btn btn-primary" style="padding:4px 10px;font-size:12px" onclick="lecCoverageGen(${e.week},'${(e.day||'').replace(/'/g,'')}',this)">Generate</button>`;
+    return `<tr><td style="white-space:nowrap">Wk ${e.week}</td><td>${escHtml(e.day||'')}</td><td style="color:var(--muted)">${escHtml((e.topic||'').slice(0,46))}</td><td>${status}</td><td style="text-align:right">${action}</td></tr>`;
+  }).join('');
+  box.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <div style="font-weight:700">Coverage — ${missing} of ${entries.length} not generated</div>
+      ${missing ? `<button class="btn btn-primary" style="padding:6px 12px;font-size:13px" onclick="lecGenAllMissing()">✨ Generate all ${missing} missing</button>` : '<span style="color:var(--green);font-size:13px;font-weight:600">All generated ✓</span>'}
+    </div>
+    <div style="max-height:340px;overflow:auto"><table style="width:100%;font-size:13px"><tbody>${rows}</tbody></table></div>`;
+}
+async function lecCoverageGen(week, day, btn) {
+  if (btn) { btn.disabled = true; btn.textContent = 'Starting…'; }
+  const res = await api('/api/lectures/generate', { method: 'POST', body: JSON.stringify({ batchId: activeBatch._id, week, day }) });
+  if (res && res.accepted) { if (btn) btn.textContent = 'Started ✓'; toast('Generating Wk ' + week + ' ' + day + ' — refresh in a few minutes'); }
+  else { if (btn) { btn.disabled = false; btn.textContent = 'Generate'; } alert((res && res.error) || 'Failed to start.'); }
+}
+async function lecGenAllMissing() {
+  const data = await api('/api/curriculum?batch=' + activeBatch._id);
+  const entries = sortByWeekDay(Array.isArray(data) ? data : []);
+  const byKey = {}; (allLectures || []).forEach(l => { byKey[l.week + '|' + l.day] = l; });
+  const missing = entries.filter(e => { const l = byKey[e.week + '|' + e.day]; return !l || l.status === 'failed'; });
+  if (!missing.length) return;
+  if (!confirm(`Generate ${missing.length} lecture(s)? They run in the background (a few minutes each) and appear as Pending Review when ready.`)) return;
+  for (const e of missing) {
+    await api('/api/lectures/generate', { method: 'POST', body: JSON.stringify({ batchId: activeBatch._id, week: e.week, day: e.day }) });
+    await new Promise(r => setTimeout(r, 1200)); // stagger so we don't burst the AI API
+  }
+  toast(`Started ${missing.length} generations — refresh the list in a few minutes`);
+  await loadLecturesAdmin();
+  await renderLecCoverage();
+}
+
 function renderLecFilters() {
   document.getElementById('lecFilters').innerHTML = LEC_BUCKETS.map(b => {
     const n = b.key === 'all' ? allLectures.length : allLectures.filter(l => lecBucketOf(l).includes(b.key)).length;
@@ -2127,6 +2204,8 @@ async function lecTeachById(id) {
 function closeTeach() {
   tvState.open = false;
   stopTeachTimer();
+  document.getElementById('tvBlank').classList.remove('on');
+  document.getElementById('tvGrid').classList.remove('on');
   if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   document.getElementById('teachViewer').classList.remove('open');
 }
@@ -2185,6 +2264,24 @@ function renderTeachSlide() {
   updateTeachRail();
 }
 
+// Blank the screen (pull attention back to the teacher) — toggled by the
+// Blank button or the "B" key.
+function teachBlank() { document.getElementById('tvBlank').classList.toggle('on'); }
+
+// Slide-grid overview: thumbnails of every slide; click one to jump there.
+function teachGrid(show) {
+  const g = document.getElementById('tvGrid');
+  if (show === false) { g.classList.remove('on'); return; }
+  const inner = document.getElementById('tvGridInner');
+  inner.innerHTML = tvState.slides.map((s, i) =>
+    `<div class="tv-grid-cell${i === tvState.idx ? ' current' : ''}" onclick="teachGoto(${i})">
+      <span class="tv-grid-num">${i + 1}</span>
+      <div class="tv-grid-thumb">${LectureDeck.slideHtml(s, { idx: i, total: tvState.slides.length, course: tvState.course, noExplain: true })}</div>
+    </div>`).join('');
+  g.classList.add('on');
+}
+function teachGoto(i) { tvState.idx = Math.max(0, Math.min(tvState.slides.length - 1, i)); teachGrid(false); renderTeachSlide(); }
+
 // Presenter rail: speaker notes for the current slide + a live mini-render of
 // the next slide (the deck's cqw-based type scales down to a real thumbnail).
 function updateTeachRail() {
@@ -2210,9 +2307,17 @@ function updateTeachRail() {
 // Presenter navigation: arrows / space / PageUp-PageDown while teaching.
 document.addEventListener('keydown', (e) => {
   if (!tvState.open) return;
+  const gridOpen = document.getElementById('tvGrid').classList.contains('on');
+  if (e.key === 'Escape') {
+    if (gridOpen) { teachGrid(false); return; }
+    if (document.getElementById('tvBlank').classList.contains('on')) { teachBlank(); return; }
+    if (!document.fullscreenElement) closeTeach();
+    return;
+  }
+  if (e.key === 'b' || e.key === 'B') { e.preventDefault(); teachBlank(); return; }
+  if (e.key === 'g' || e.key === 'G') { e.preventDefault(); teachGrid(!gridOpen); return; }
   if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); tvNav(1); }
   else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); tvNav(-1); }
-  else if (e.key === 'Escape' && !document.fullscreenElement) closeTeach();
 });
 // Swipe navigation on touch devices.
 (() => {

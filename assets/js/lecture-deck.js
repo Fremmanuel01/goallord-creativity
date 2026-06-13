@@ -91,7 +91,8 @@
     const bullets = onText.length > 1
       ? `<ul class="lv-bullets">${onText.map(t => `<li><span>${escHtml(t)}</span></li>`).join('')}</ul>`
       : (onText[0] ? `<p class="lv-lede">${escHtml(onText[0])}</p>` : '');
-    const img = s.image_url ? `<img src="${s.image_url}" alt="${title}" loading="lazy">` : '';
+    const altText = escHtml(s.visual_description || s.slide_title || 'Lecture illustration');
+    const img = s.image_url ? `<img src="${s.image_url}" alt="${altText}" loading="lazy">` : '';
     const svgClean = s.svg ? sanitizeSvg(s.svg) : '';
     const ph = `<div class="lv-ph"><span style="font-size:22px">◍</span>${escHtml(s.visual_description || 'Visual')}</div>`;
     const media = `<div class="lv-media">${img || ph}<div class="lv-grade"></div></div>`;
@@ -130,7 +131,7 @@
         // with the teaching takeaways beside it. Falls back to a plain figure
         // if the drawing didn't survive sanitisation.
         const drawing = svgClean
-          ? `<div class="lv-illus"><div class="lv-illus-inner">${svgClean}</div></div>`
+          ? `<div class="lv-illus"><div class="lv-illus-inner" role="img" aria-label="${escHtml((s.slide_title || 'Concept') + ' — diagram')}">${svgClean}</div></div>`
           : `<div class="lv-illus"><div class="lv-illus-inner">${ph}</div></div>`;
         const text = canvas(mid(`${kicker}<div class="lv-h" style="font-size:clamp(22px,3.8cqw,42px)">${title}</div>${bullets}`));
         return wrap(`<div class="lv-cols lv-illus-cols">${text}${drawing}</div>`);
