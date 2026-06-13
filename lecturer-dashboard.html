@@ -1477,6 +1477,24 @@ function currentWeek() {
   return Math.min(Math.max(wk, 1), b.totalWeeks || 12);
 }
 
+// Curriculum cache + topic auto-fill for the attendance modal. The topic
+// defaults to the curriculum entry for the chosen week/day, but we never
+// overwrite text the lecturer typed themselves.
+let attCurriculum = [];
+let attTopicAuto = '';
+function curriculumTopicFor(week, day) {
+  const w = Number(week);
+  const e = (attCurriculum || []).find(x => Number(x.week) === w && String(x.day) === String(day));
+  return e && e.topic ? String(e.topic) : '';
+}
+function autofillAttTopic() {
+  const t = document.getElementById('att-topic');
+  if (t.value && t.value !== attTopicAuto) return; // keep manual edits
+  const topic = curriculumTopicFor(document.getElementById('att-week').value, document.getElementById('att-day').value);
+  t.value = topic;
+  attTopicAuto = topic;
+}
+
 // Populate the Day select from the batch's class_days (any weekday).
 function fillDayOptions() {
   const days = (activeBatch && Array.isArray(activeBatch.classDays) && activeBatch.classDays.length)
@@ -1492,6 +1510,12 @@ async function openTakeAttendance(sessionId) {
   if (!activeBatch) { alert('No batch selected.'); return; }
   document.getElementById('attErr').style.display = 'none';
   const days = fillDayOptions();
+  // Load curriculum for topic auto-fill, and refresh the topic when week/day change.
+  try { const cur = await api('/api/curriculum?batch=' + activeBatch._id); attCurriculum = Array.isArray(cur) ? cur : []; }
+  catch { attCurriculum = []; }
+  attTopicAuto = '';
+  document.getElementById('att-week').onchange = autofillAttTopic;
+  document.getElementById('att-day').onchange = autofillAttTopic;
   if (sessionId) {
     document.getElementById('attModalTitle').textContent = 'Edit Attendance';
     const s = await api(`/api/attendance/${sessionId}`);
@@ -1501,6 +1525,7 @@ async function openTakeAttendance(sessionId) {
     document.getElementById('att-day').value   = s.day || '';
     document.getElementById('att-date').value  = (s.classDate || '').slice(0, 10);
     document.getElementById('att-topic').value = s.topic || '';
+    autofillAttTopic(); // fills only if this session had no topic saved
     await loadAttRoster(new Set((s.presentStudents || []).map(String)));
   } else {
     document.getElementById('attModalTitle').textContent = 'Take Attendance';
@@ -1511,6 +1536,7 @@ async function openTakeAttendance(sessionId) {
     const todayName = today.toLocaleDateString('en-US', { weekday: 'long' });
     document.getElementById('att-day').value   = days.includes(todayName) ? todayName : (days[0] || '');
     document.getElementById('att-topic').value = '';
+    autofillAttTopic(); // default the topic from the curriculum for this week/day
     await loadAttRoster();
   }
   openModal('attModal');
