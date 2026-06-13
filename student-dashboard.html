@@ -2451,6 +2451,7 @@ function closeStudentReceipt() {
     <div class="more-title">More</div>
     <button class="more-link" onclick="navTo('attendance')"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg> Attendance <span class="chev">›</span></button>
     <button class="more-link" onclick="navTo('payments')"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg> Payments <span class="chev">›</span></button>
+    <button class="more-link" onclick="navTo('lectures')"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/></svg> Lectures <span class="chev">›</span></button>
     <button class="more-link" onclick="navTo('curriculum')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M19 17H6a2 2 0 0 0-2 2"/></svg> Curriculum <span class="chev">›</span></button>
     <button class="more-link" onclick="navTo('materials')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> Materials <span class="chev">›</span></button>
     <button class="more-link" onclick="navTo('flashcards')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></svg> Flashcards <span class="chev">›</span></button>
@@ -2459,7 +2460,7 @@ function closeStudentReceipt() {
 
   <script>
   (function () {
-    var SHEET_TABS = { attendance: 1, payments: 1, curriculum: 1, materials: 1, flashcards: 1, profile: 1 };
+    var SHEET_TABS = { attendance: 1, payments: 1, lectures: 1, curriculum: 1, materials: 1, flashcards: 1, profile: 1 };
     function setActive(tab) {
       var items = document.querySelectorAll('.bn-item');
       for (var i = 0; i < items.length; i++) {
