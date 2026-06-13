@@ -700,10 +700,12 @@
       <button class="modal-close" onclick="closeModal('lecEditModal')">✕</button>
     </div>
     <div class="error-msg" id="lecEditErr"></div>
-    <div id="lecEditMeta" style="font-size:13px;color:var(--muted);margin-bottom:14px"></div>
+    <div id="lecEditMeta" style="font-size:13px;color:var(--muted);margin-bottom:6px"></div>
+    <div id="lecViewStats" style="font-size:12.5px;color:var(--muted);margin-bottom:14px"></div>
     <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
       <button class="btn btn-ghost" id="lecViewSlidesBtn" onclick="lecEditView('slides')">Slides</button>
       <button class="btn btn-ghost" id="lecViewNotesBtn" onclick="lecEditView('notes')">Lesson Notes</button>
+      <button class="btn btn-ghost" onclick="lecHistory()">↩ History</button>
       <button class="btn btn-ghost" onclick="lecTeach(false)">👁 Preview deck</button>
       <button class="btn btn-primary" onclick="lecTeach(true)" style="margin-left:auto">🎓 Teach</button>
     </div>
@@ -1919,9 +1921,35 @@ async function openLectureEditor(id) {
   const st = LEC_STATUS[l.status] || [l.status];
   document.getElementById('lecEditMeta').innerHTML = `${escHtml(l.courseTitle||'')} · ${l.courseType} · Week ${l.week} ${escHtml(l.day||'')} · <b style="color:var(--text)">${st[0]}</b>`;
   document.getElementById('lecEditErr').style.display = 'none';
+  document.getElementById('lecViewStats').textContent = '';
   renderPublishArea();
   lecEditView('slides');
   openModal('lecEditModal');
+  lecLoadViews(id);
+}
+
+// Show how many students opened/finished this lecture (if tracking is available).
+async function lecLoadViews(id) {
+  const v = await api('/api/lectures/' + id + '/views').catch(() => null);
+  const el = document.getElementById('lecViewStats');
+  if (!el || !v || v.error) return;
+  el.textContent = v.available === false
+    ? ''
+    : `👁 ${v.viewed} of ${v.total} students opened · ✓ ${v.completed} finished`;
+}
+
+// Version history: restore a previous published snapshot into the working copy.
+async function lecHistory() {
+  const hist = await api('/api/lectures/' + lecEditing.id + '/history').catch(() => []);
+  if (!Array.isArray(hist) || !hist.length) { alert('No previous published versions yet. A snapshot is saved each time you (re)publish.'); return; }
+  const lines = hist.map(h => `${h.index + 1}. ${new Date(h.at).toLocaleString()} — ${h.slideCount} slides`).join('\n');
+  const pick = prompt('Restore which published version into the editor for review?\n(Enter its number; you can re-publish after checking.)\n\n' + lines, String(hist.length));
+  if (pick === null) return;
+  const index = parseInt(pick, 10) - 1;
+  if (isNaN(index) || !hist[index]) { alert('Invalid choice.'); return; }
+  const res = await api('/api/lectures/' + lecEditing.id + '/rollback', { method: 'POST', body: JSON.stringify({ index }) });
+  if (res && !res.error) { lecEditing = res; renderPublishArea(); lecEditView('slides'); toast('Restored — review then republish'); loadLecturesAdmin(); }
+  else alert((res && res.error) || 'Restore failed.');
 }
 
 function lecEditView(mode) {

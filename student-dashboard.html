@@ -1416,6 +1416,7 @@
       document.getElementById('lvNotes').innerHTML = renderNotes(lvState.notes);
       lvShow(lvState.view);
       renderSlide();
+      pingLectureView(lvState.idx >= lvState.slides.length - 1); // opened (mark complete if at end)
     } catch { stage.innerHTML = '<div class="empty">Could not load this lecture.</div>'; }
   }
   function closeLectureViewer() {
@@ -1479,10 +1480,23 @@
       : 'background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600';
   }
 
+  // Best-effort progress ping so lecturers can see who studied (no-op if the
+  // server's lecture_views table isn't there yet).
+  function pingLectureView(completed) {
+    if (!lvState.id) return;
+    try {
+      fetch('/api/lectures/' + lvState.id + '/view', {
+        method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lastSlide: lvState.idx, completed: !!completed }), keepalive: true,
+      }).catch(() => {});
+    } catch (e) {}
+  }
+
   function lvNav(d) {
     const n = lvState.slides.length; if (!n) return;
     lvState.idx = Math.max(0, Math.min(n - 1, lvState.idx + d));
     renderSlide();
+    if (lvState.idx === n - 1) pingLectureView(true); // reached the end
   }
 
   function renderSlide() {

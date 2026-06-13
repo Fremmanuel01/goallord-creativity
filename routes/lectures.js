@@ -97,6 +97,35 @@ router.get('/:id/student', requireStudentAuth, async (req, res) => {
   }
 });
 
+// POST /api/lectures/:id/view — student progress ping (best-effort; degrades to a
+// no-op if the lecture_views table isn't there yet). { lastSlide, completed }
+router.post('/:id/view', requireStudentAuth, async (req, res) => {
+  try {
+    const student = await studentsDb.findById(req.user.id, { fields: 'id, batch_id' });
+    if (!student) return res.json({ ok: false });
+    const lastSlide = Math.max(0, parseInt(req.body && req.body.lastSlide, 10) || 0);
+    const completed = !!(req.body && req.body.completed);
+    await supabase.from('lecture_views').upsert({
+      lecture_id: req.params.id, student_id: student.id, batch_id: student.batch_id,
+      last_slide: lastSlide, completed, updated_at: new Date().toISOString(),
+    }, { onConflict: 'lecture_id,student_id' });
+    res.json({ ok: true });
+  } catch (err) { res.json({ ok: false }); } // never block the viewer
+});
+
+// GET /api/lectures/:id/views — lecturer: how many students opened/finished it.
+router.get('/:id/views', requireLecturer, async (req, res) => {
+  try {
+    const l = await lecturesDb.findById(req.params.id).catch(() => null);
+    if (!l) return res.status(404).json({ error: 'Not found' });
+    if (!(await canManage(req.user, l))) return res.status(403).json({ error: 'Access denied' });
+    const total = (await studentsDb.findByBatch(l.batch_id)).length;
+    const { data, error } = await supabase.from('lecture_views').select('completed').eq('lecture_id', l.id);
+    if (error) return res.json({ total, viewed: 0, completed: 0, available: false });
+    res.json({ total, viewed: (data || []).length, completed: (data || []).filter(v => v.completed).length, available: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // ── TEACHER / ADMIN ──────────────────────────────────────────
 // GET /api/lectures — all manageable lectures (scoped), for the buckets.
 router.get('/', requireLecturer, async (req, res) => {
@@ -277,6 +306,47 @@ router.post('/:id/slides/:n/redraw', requireLecturer, async (req, res) => {
   }
 });
 
+// Before overwriting a published copy, push the current one onto published_history
+// (keep the last 5). Best-effort: silently skips if the column isn't there yet.
+async function snapshotPublished(l) {
+  if (!l || !l.published_slides) return;
+  try {
+    const hist = Array.isArray(l.published_history) ? l.published_history.slice(-4) : [];
+    hist.push({ at: new Date().toISOString(), slides: l.published_slides, notes: l.published_notes || {} });
+    await supabase.from('lectures').update({ published_history: hist }).eq('id', l.id);
+  } catch (e) { /* migration 015 not applied yet — skip history */ }
+}
+
+// GET /api/lectures/:id/history — list previous published snapshots.
+router.get('/:id/history', requireLecturer, async (req, res) => {
+  try {
+    const l = await lecturesDb.findById(req.params.id).catch(() => null);
+    if (!l) return res.status(404).json({ error: 'Not found' });
+    if (!(await canManage(req.user, l))) return res.status(403).json({ error: 'Access denied' });
+    const hist = Array.isArray(l.published_history) ? l.published_history : [];
+    res.json(hist.map((h, i) => ({ index: i, at: h.at, slideCount: Array.isArray(h.slides) ? h.slides.length : 0 })));
+  } catch (err) { res.json([]); }
+});
+
+// POST /api/lectures/:id/rollback { index } — restore a snapshot into the working
+// copy (slides + notes) for review; lecturer then re-publishes.
+router.post('/:id/rollback', requireLecturer, async (req, res) => {
+  try {
+    const l = await lecturesDb.findById(req.params.id).catch(() => null);
+    if (!l) return res.status(404).json({ error: 'Not found' });
+    if (!(await canManage(req.user, l))) return res.status(403).json({ error: 'Access denied' });
+    const hist = Array.isArray(l.published_history) ? l.published_history : [];
+    const snap = hist[Number(req.body && req.body.index)];
+    if (!snap) return res.status(404).json({ error: 'Snapshot not found' });
+    const wasPub = ['published', 'republished', 'edited_after_publishing'].includes(l.status);
+    const saved = await lecturesDb.update(req.params.id, {
+      slides: snap.slides, lesson_notes: snap.notes || {},
+      ...(wasPub ? { status: 'edited_after_publishing' } : {}),
+    });
+    res.json(lectureDTO(saved));
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // POST /api/lectures/:id/publish — freeze working → published, notify students.
 router.post('/:id/publish', requireLecturer, async (req, res) => {
   try {
@@ -284,6 +354,7 @@ router.post('/:id/publish', requireLecturer, async (req, res) => {
     if (!l) return res.status(404).json({ error: 'Not found' });
     if (!(await canManage(req.user, l))) return res.status(403).json({ error: 'Access denied' });
 
+    await snapshotPublished(l);
     const saved = await lecturesDb.update(req.params.id, {
       published_slides: l.slides, published_notes: l.lesson_notes,
       status: 'published', published_at: new Date().toISOString(),
@@ -302,6 +373,7 @@ router.post('/:id/republish', requireLecturer, async (req, res) => {
     if (!l) return res.status(404).json({ error: 'Not found' });
     if (!(await canManage(req.user, l))) return res.status(403).json({ error: 'Access denied' });
 
+    await snapshotPublished(l);
     const saved = await lecturesDb.update(req.params.id, {
       published_slides: l.slides, published_notes: l.lesson_notes,
       status: 'republished', republished_at: new Date().toISOString(),
