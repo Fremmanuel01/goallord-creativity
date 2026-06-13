@@ -13,7 +13,8 @@ const { requireStudentAuth } = require('../middleware/studentAuth');
 const router = express.Router();
 
 const ANIMATIONS = ['fade', 'slide_up', 'panel_reveal', 'timeline_reveal', 'code_reveal', 'diagram_build', 'before_after_reveal', 'none'];
-const LAYOUTS = ['title', 'image_left_text_right', 'image_right_text_left', 'full_image_overlay', 'cards_grid', 'comparison', 'timeline', 'flowchart', 'code_demo', 'diagram', 'table', 'bar_chart', 'pie_chart', 'stat_blocks', 'pyramid', 'quote', 'lesson_summary'];
+const LAYOUTS = ['title', 'image_left_text_right', 'image_right_text_left', 'full_image_overlay', 'illustration', 'cards_grid', 'comparison', 'timeline', 'flowchart', 'code_demo', 'diagram', 'table', 'bar_chart', 'pie_chart', 'stat_blocks', 'pyramid', 'quote', 'lesson_summary'];
+const { sanitizeSvg } = require('../utils/svgSanitize');
 
 function urls() {
   const host = process.env.HOST || '';
@@ -191,6 +192,7 @@ router.patch('/:id/slides/:n', requireLecturer, async (req, res) => {
     if (patch.slide_title !== undefined) s.slide_title = String(patch.slide_title);
     if (patch.on_slide_text !== undefined) s.on_slide_text = String(patch.on_slide_text);
     if (patch.main_explanation !== undefined) s.main_explanation = String(patch.main_explanation);
+    if (patch.svg !== undefined) s.svg = sanitizeSvg(patch.svg);
     if (Array.isArray(patch.editable_blocks)) s.editable_blocks = patch.editable_blocks;
     if (ANIMATIONS.includes(patch.animation_type)) s.animation_type = patch.animation_type;
     if (LAYOUTS.includes(patch.layout_type)) s.layout_type = patch.layout_type;
@@ -271,6 +273,7 @@ function sanitizeSlides(slides) {
   return slides.map((s, i) => ({
     ...s,
     slide_number: i + 1,
+    svg: s.svg === undefined ? s.svg : sanitizeSvg(s.svg),
     animation_type: ANIMATIONS.includes(s.animation_type) ? s.animation_type : 'fade',
     layout_type: LAYOUTS.includes(s.layout_type) ? s.layout_type : 'cards_grid',
   }));

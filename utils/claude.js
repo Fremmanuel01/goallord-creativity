@@ -47,7 +47,11 @@ async function generateDetailed({ prompt, system, maxOutputTokens = 4096, model,
   };
   if (thinking && thinking !== 'off') params.thinking = { type: thinking === true ? 'adaptive' : thinking };
   if (system) params.system = system;
-  const message = await getClient().messages.create(params);
+  // Large outputs can exceed the SDK's 10-minute non-streaming limit, so stream
+  // and assemble the final message. finalMessage() returns the same shape.
+  const message = maxOutputTokens >= 16000
+    ? await getClient().messages.stream(params).finalMessage()
+    : await getClient().messages.create(params);
 
   if (message.stop_reason === 'refusal') {
     throw new Error('Claude declined to generate the requested content');

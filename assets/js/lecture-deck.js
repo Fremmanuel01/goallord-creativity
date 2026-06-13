@@ -14,6 +14,58 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+  // Strict allowlist SVG sanitizer — the real XSS gate at the injection point.
+  // Parses the SVG, drops any element/attribute not on the lists, kills event
+  // handlers and non-fragment hrefs, and forces responsive sizing via viewBox.
+  // Returns '' if the input isn't a clean parseable <svg>.
+  var SVG_TAGS = { svg:1, g:1, path:1, rect:1, circle:1, ellipse:1, line:1, polyline:1, polygon:1, text:1, tspan:1, defs:1, lineargradient:1, radialgradient:1, stop:1, marker:1, use:1, title:1, desc:1, symbol:1, clippath:1, mask:1, pattern:1 };
+  var SVG_ATTRS = { id:1, 'class':1, viewbox:1, preserveaspectratio:1, xmlns:1, xlink:1, space:1,
+    x:1, y:1, x1:1, y1:1, x2:1, y2:1, cx:1, cy:1, r:1, rx:1, ry:1, width:1, height:1, d:1, points:1, transform:1,
+    fill:1, 'fill-opacity':1, 'fill-rule':1, stroke:1, 'stroke-width':1, 'stroke-linecap':1, 'stroke-linejoin':1, 'stroke-dasharray':1, 'stroke-dashoffset':1, 'stroke-opacity':1, 'stroke-miterlimit':1, opacity:1, color:1,
+    offset:1, 'stop-color':1, 'stop-opacity':1, gradientunits:1, gradienttransform:1, spreadmethod:1,
+    'font-family':1, 'font-size':1, 'font-weight':1, 'font-style':1, 'text-anchor':1, 'dominant-baseline':1, 'alignment-baseline':1, dx:1, dy:1, 'letter-spacing':1,
+    'marker-end':1, 'marker-start':1, 'marker-mid':1, markerwidth:1, markerheight:1, markerunits:1, refx:1, refy:1, orient:1,
+    'clip-path':1, clippathunits:1, mask:1, maskunits:1, patternunits:1, patterntransform:1, href:1 };
+
+  function scrubSvgNode(node) {
+    var kids = Array.prototype.slice.call(node.childNodes);
+    for (var i = 0; i < kids.length; i++) {
+      var c = kids[i];
+      if (c.nodeType === 1) {
+        if (!SVG_TAGS[c.tagName.toLowerCase()]) { node.removeChild(c); continue; }
+        var attrs = Array.prototype.slice.call(c.attributes);
+        for (var j = 0; j < attrs.length; j++) {
+          var nm = attrs[j].name.toLowerCase();
+          var val = attrs[j].value || '';
+          var base = nm.indexOf(':') >= 0 ? nm.split(':').pop() : nm;
+          if (nm.slice(0, 2) === 'on' || !SVG_ATTRS[base]) { c.removeAttribute(attrs[j].name); continue; }
+          if (base === 'href' && val.trim().charAt(0) !== '#') { c.removeAttribute(attrs[j].name); continue; }
+          if (/url\s*\(|javascript:|expression\(|<\/?\w/i.test(val)) { c.removeAttribute(attrs[j].name); }
+        }
+        scrubSvgNode(c);
+      } else if (c.nodeType === 8) { node.removeChild(c); }
+    }
+  }
+
+  function sanitizeSvg(raw) {
+    if (!raw || typeof raw !== 'string') return '';
+    if (typeof DOMParser === 'undefined') return ''; // no DOM (e.g. SSR) → don't trust it
+    try {
+      var doc = new DOMParser().parseFromString(raw, 'image/svg+xml');
+      if (doc.querySelector('parsererror')) return '';
+      var root = doc.documentElement;
+      if (!root || root.tagName.toLowerCase() !== 'svg') return '';
+      scrubSvgNode(root);
+      if (!root.getAttribute('viewBox')) {
+        var w = parseFloat(root.getAttribute('width')) || 480, h = parseFloat(root.getAttribute('height')) || 300;
+        root.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+      }
+      root.removeAttribute('width'); root.removeAttribute('height'); // size via CSS
+      root.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      return root.outerHTML;
+    } catch (e) { return ''; }
+  }
+
   // ctx: { idx (0-based current index), total, course (kicker fallback) }
   function slideHtml(s, ctx) {
     ctx = ctx || {};
@@ -40,6 +92,7 @@
       ? `<ul class="lv-bullets">${onText.map(t => `<li><span>${escHtml(t)}</span></li>`).join('')}</ul>`
       : (onText[0] ? `<p class="lv-lede">${escHtml(onText[0])}</p>` : '');
     const img = s.image_url ? `<img src="${s.image_url}" alt="${title}" loading="lazy">` : '';
+    const svgClean = s.svg ? sanitizeSvg(s.svg) : '';
     const ph = `<div class="lv-ph"><span style="font-size:22px">◍</span>${escHtml(s.visual_description || 'Visual')}</div>`;
     const media = `<div class="lv-media">${img || ph}<div class="lv-grade"></div></div>`;
     const bleed = `<div class="lv-bleed">${img || ph}</div><div class="lv-bleed lv-scrim"></div>`;
@@ -71,6 +124,16 @@
       case 'image_left_text_right': {
         const text = canvas(mid(`${kicker}<div class="lv-h" style="font-size:clamp(22px,3.8cqw,42px)">${title}</div>${bullets}`));
         return wrap(`<div class="lv-cols">${s.layout_type === 'image_left_text_right' ? media + text : text + media}</div>`);
+      }
+      case 'illustration': {
+        // A hand-drawn instructional diagram (model-authored SVG) is the hero,
+        // with the teaching takeaways beside it. Falls back to a plain figure
+        // if the drawing didn't survive sanitisation.
+        const drawing = svgClean
+          ? `<div class="lv-illus"><div class="lv-illus-inner">${svgClean}</div></div>`
+          : `<div class="lv-illus"><div class="lv-illus-inner">${ph}</div></div>`;
+        const text = canvas(mid(`${kicker}<div class="lv-h" style="font-size:clamp(22px,3.8cqw,42px)">${title}</div>${bullets}`));
+        return wrap(`<div class="lv-cols lv-illus-cols">${text}${drawing}</div>`);
       }
       case 'comparison': {
         const tones = ['var(--orange)', '#1E4BFF'];
@@ -175,5 +238,5 @@
     }
   }
 
-  window.LectureDeck = { slideHtml, escHtml };
+  window.LectureDeck = { slideHtml, escHtml, sanitizeSvg };
 })();

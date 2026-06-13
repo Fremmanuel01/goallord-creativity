@@ -97,6 +97,17 @@
   .lv-cols .lv-canvas { width: 100%; }
   .lv-media { width: 100%; order: -1; flex: 0 0 200px; min-height: 200px; }
 }
+/* Illustration: a model-drawn instructional SVG as the hero, takeaways beside it */
+.lv-illus-cols .lv-canvas { width: 46%; }
+.lv-cols .lv-illus { width: 54%; flex-shrink: 0; display: flex; padding: clamp(16px, 3cqw, 36px) clamp(16px, 3cqw, 40px); min-width: 0; }
+.lv-illus-inner { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; background: #FFFFFF; border: 1px solid var(--pp-line); border-radius: 16px; padding: clamp(12px, 2cqw, 24px); box-shadow: 0 10px 30px rgba(60, 40, 15, 0.08); }
+.lv-illus-inner svg { width: 100%; height: 100%; max-height: 100%; display: block; }
+.lv-illus-inner .lv-ph { position: static; border-radius: 12px; min-height: 180px; width: 100%; }
+@container (max-width: 700px) {
+  .lv-illus-cols { flex-direction: column; }
+  .lv-illus-cols .lv-canvas { width: 100%; }
+  .lv-cols .lv-illus { width: 100%; order: -1; flex: 0 0 46%; min-height: 200px; padding-bottom: 0; }
+}
 /* Full-bleed layouts (title, image overlay) */
 .lv-bleed { position: absolute; inset: 0; z-index: 0; }
 .lv-bleed img { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.95) contrast(1.03); }

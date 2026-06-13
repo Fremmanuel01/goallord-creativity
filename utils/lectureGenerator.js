@@ -9,6 +9,7 @@ const lecturesDb      = require('../db/lectures');
 const notificationsDb = require('../db/notifications');
 const { generateDetailed } = require('./claude');
 const { dateForWeekDay, todayWAT, courseTypeFor } = require('./schedule');
+const { sanitizeSvg } = require('./svgSanitize');
 
 // Per-course image budget (enforced server-side regardless of model output).
 // Flux Schnell costs ~$0.003/image, so even a 10-image Film deck is ~3 cents —
@@ -18,7 +19,7 @@ const IMAGE_LIMITS = {
   Programming: { min: 2, max: 6,  default: 4 },
 };
 const ANIMATIONS = ['fade', 'slide_up', 'panel_reveal', 'timeline_reveal', 'code_reveal', 'diagram_build', 'before_after_reveal', 'none'];
-const LAYOUTS = ['title', 'image_left_text_right', 'image_right_text_left', 'full_image_overlay', 'cards_grid', 'comparison', 'timeline', 'flowchart', 'code_demo', 'diagram', 'table', 'bar_chart', 'pie_chart', 'stat_blocks', 'pyramid', 'quote', 'lesson_summary'];
+const LAYOUTS = ['title', 'image_left_text_right', 'image_right_text_left', 'full_image_overlay', 'illustration', 'cards_grid', 'comparison', 'timeline', 'flowchart', 'code_demo', 'diagram', 'table', 'bar_chart', 'pie_chart', 'stat_blocks', 'pyramid', 'quote', 'lesson_summary'];
 const SLIDE_MIN = 10, SLIDE_MAX = 15;
 
 // ── Prompt ───────────────────────────────────────────────────
@@ -47,6 +48,7 @@ RULES
 - "main_explanation" is what the teacher SAYS while this slide is up (2-4 sentences). Students only see it behind an "Explain more" toggle — never rely on it being visible, and never repeat on_slide_text inside it.
 - DESIGN LIKE A TOP-TIER CORPORATE DECK (Gamma / keynote standard). Every slide is a designed FIGURE — a chart, diagram, table, comparison, timeline or stat board — never a page of text. Plain text-only slides are forbidden.
 - LAYOUT VARIETY IS MANDATORY: never use the same layout_type on two consecutive slides, and use at least 6 different layout_type values across the deck. Hard mix requirements:
+  * at least 4 ILLUSTRATION slides — hand-drawn instructional diagrams you draw in SVG (see DRAWINGS below). These are the heart of the lesson; favour them over plain text or comparison slides.
   * at least 2 DATA slides from: table, bar_chart, pie_chart, stat_blocks — real numbers from the topic (rates, sizes, percentages, durations, prices), never invented filler.
   * at least 2 STRUCTURE slides from: diagram, flowchart, timeline, pyramid — for processes, hierarchies, relationships and anatomy.
   * cards_grid for grouped concepts; comparison whenever two things contrast; quote at most ONCE (a famous, relevant line worth pausing on).
@@ -61,6 +63,17 @@ RULES
   * timeline / flowchart — one step per line, "Label: caption" allowed.
   * comparison — exactly 2 lines of "Side name: description".
   * quote — line 1 the quotation only, line 2 who said it.
+  * illustration — on_slide_text holds 2-4 short labelled takeaways ("Label: caption", one per line) that sit BESIDE the drawing; the teaching happens in the drawing itself.
+- DRAWINGS (the most important rule): illustration slides MUST include an "svg" field — a clean, labelled instructional diagram YOU draw that makes the concept obvious at a glance. Think of the sketch a great teacher draws on a whiteboard: ${courseType === 'Film'
+    ? 'top-down lighting setups (subject, key/fill/back lights with their angles and the camera), the exposure triangle as three linked dials, shot-size framing (wide/medium/close-up rectangles around a figure), camera moves (pan/tilt/dolly arrows), the 180-degree rule, rule-of-thirds framing, a 3-point interview setup, mic placement, a depth-of-field diagram'
+    : 'data/control flow between boxes, client-server request/response, how a function takes input and returns output, an array or object drawn as labelled cells, the call stack, a database table with rows and a relationship arrow, the request lifecycle, component tree, a loop drawn as a cycle'}.
+  SVG RULES — follow EXACTLY or the drawing is dropped:
+  * Use viewBox="0 0 480 300", no width/height attributes. Draw to fill that frame with comfortable margins.
+  * Allowed elements only: g, path, rect, circle, ellipse, line, polyline, polygon, text, tspan, defs, linearGradient, radialGradient, stop, marker, use, title. NO script, style, image, foreignObject, animation, or external/href links.
+  * Style with presentation ATTRIBUTES (fill, stroke, stroke-width, stroke-linecap, etc.) — never a "style" attribute or CSS.
+  * Palette: ink #23262D for main strokes/labels, accent #D66A1F (orange) and #1E4BFF (blue) for highlights, soft fills #F2EEE5 / #E3DDD1, white #FFFFFF. Stroke-width 2-3, rounded caps/joins. Assume a light paper background.
+  * LABEL everything with <text> (font-family="Segoe UI, sans-serif", font-size 13-17, fill #23262D, font-weight 700 for key labels). Use arrows (a line + small polygon head, or a marker) to show direction/flow. Keep it to 4-9 labelled parts — clear, not cluttered.
+  * It must be genuinely instructional and specific to THIS slide's concept, not decorative.
 - PHOTOS ONLY WHERE NECESSARY: mark "image_required": true ONLY where a real photograph teaches better than any chart, diagram or illustration (at most ${lim.max}, typically ${lim.default}). Every other slide MUST be "image_required": false and teach through a structured layout.
 - For image slides: write a vivid "image_prompt" describing ONE clear subject with setting, lighting and mood, and a "negative_prompt" of "text, words, captions, letters, logos, watermark, UI". Never bake text into images — the portal overlays real text.
 - "animation_type" must be one of: ${ANIMATIONS.join(', ')}.
@@ -75,7 +88,8 @@ CURRICULUM
 - Tools/Resources: ${(resources || []).join(', ') || '(none provided)'}
 
 Return ONLY valid JSON (no markdown fences). Do NOT include editable_blocks (the portal adds those). Use EXACTLY this shape:
-{"lecture_package":{"course_type":"${courseType}","course_title":"${courseTitle}","lecture_title":"${lectureTitle}","lecture_date":"${lectureDate || ''}","student_level":"Beginner","slides":[{"slide_number":1,"slide_title":"","slide_type":"","on_slide_text":"","main_explanation":"","visual_type":"","visual_description":"","image_required":false,"image_prompt":"","negative_prompt":"","animation_type":"fade","layout_type":"title"}],"lesson_notes":{"title":"","introduction":"","main_sections":[{"heading":"","content":"","key_points":[]}],"important_terms":[{"term":"","meaning":""}],"practical_examples":[],"summary":""}}}`
+{"lecture_package":{"course_type":"${courseType}","course_title":"${courseTitle}","lecture_title":"${lectureTitle}","lecture_date":"${lectureDate || ''}","student_level":"Beginner","slides":[{"slide_number":1,"slide_title":"","slide_type":"","on_slide_text":"","main_explanation":"","visual_type":"","visual_description":"","image_required":false,"image_prompt":"","negative_prompt":"","svg":"","animation_type":"fade","layout_type":"title"}],"lesson_notes":{"title":"","introduction":"","main_sections":[{"heading":"","content":"","key_points":[]}],"important_terms":[{"term":"","meaning":""}],"practical_examples":[],"summary":""}}}
+("svg" is required on illustration slides and "" on every other slide.)`
   );
 }
 
@@ -116,10 +130,16 @@ function validatePackage(pkg, courseType) {
     image_prompt: String(s.image_prompt || '').trim(),
     negative_prompt: String(s.negative_prompt || '').trim(),
     image_url: typeof s.image_url === 'string' ? s.image_url : null,
+    svg: sanitizeSvg(s.svg),
     animation_type: ANIMATIONS.includes(s.animation_type) ? s.animation_type : 'fade',
     layout_type: LAYOUTS.includes(s.layout_type) ? s.layout_type : 'cards_grid',
     editable_blocks: blocksFrom(s),
   }));
+
+  // An illustration slide with no usable drawing falls back to a clean text layout.
+  for (const s of slides) {
+    if (s.layout_type === 'illustration' && !s.svg) s.layout_type = 'cards_grid';
+  }
 
   // Enforce the per-course image cap: keep the first `max` image_required slides.
   let kept = 0;
@@ -207,7 +227,8 @@ async function _generate(batch, entry, { force = false, premium = false } = {}) 
       subtopics: entry.subtopics, objectives: entry.objectives, resources: entry.resources,
     });
     // Strict JSON: disable thinking so the whole budget goes to the output.
-    const res = await generateDetailed({ prompt, maxOutputTokens: 20000, model: premium ? 'premium' : 'default', thinking: 'off' });
+    // Higher token ceiling: SVG illustrations are verbose, and a deck now carries several.
+    const res = await generateDetailed({ prompt, maxOutputTokens: 40000, model: premium ? 'premium' : 'default', thinking: 'off' });
     const pkg = parseJson(res.text);
     const v = validatePackage(pkg, courseType);
 
