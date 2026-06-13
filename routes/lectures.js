@@ -60,7 +60,7 @@ router.get('/student', requireStudentAuth, async (req, res) => {
     const today = new Date(Date.now() + 3600000).toISOString().slice(0, 10); // WAT
     const card = (l) => ({
       id: l.id, lectureTitle: l.lecture_title, courseTitle: l.course_title,
-      courseType: l.course_type, lectureDate: l.lecture_date, status: l.status,
+      courseType: l.course_type, lectureDate: l.lecture_date, status: l.status, week: l.week,
       slideCount: Array.isArray(l.published_slides) ? l.published_slides.length : 0,
       hasNotes: !!(l.published_notes && Object.keys(l.published_notes).length),
     });
@@ -89,7 +89,7 @@ router.get('/:id/student', requireStudentAuth, async (req, res) => {
     }
     res.json({
       id: l.id, lectureTitle: l.lecture_title, courseTitle: l.course_title,
-      courseType: l.course_type, lectureDate: l.lecture_date,
+      courseType: l.course_type, lectureDate: l.lecture_date, week: l.week,
       slides: l.published_slides, lessonNotes: l.published_notes || {},
     });
   } catch (err) {

@@ -807,6 +807,7 @@
       <div style="display:flex;gap:8px;flex-shrink:0;align-items:center">
         <button id="lvTabSlides" onclick="lvShow('slides')" style="background:var(--orange);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">Slides</button>
         <button id="lvTabNotes" onclick="lvShow('notes')" style="background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">Lesson Notes</button>
+        <button id="lvFlashBtn" onclick="lectureFlashcards(lvState.week)" title="Study as flashcards" style="display:none;background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">🃏 Flashcards</button>
         <button id="lvFsBtn" onclick="lvFullscreen()" title="Fullscreen" aria-label="Toggle fullscreen" style="background:transparent;color:var(--muted);border:1px solid var(--border);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center">⛶</button>
       </div>
     </div>
@@ -1354,15 +1355,27 @@
       const res = await fetch('/api/lectures/student', { headers: { 'Authorization': 'Bearer ' + token } });
       const data = await res.json();
       lecData = { today: data.today || [], upcoming: data.upcoming || [], past: data.past || [] };
+      try { localStorage.setItem('gl_lec_list', JSON.stringify(lecData)); } catch (e) {} // save for offline
       if (!lecData.today.length && !lecData.upcoming.length && !lecData.past.length) {
         cont.innerHTML = '<div class="empty"><div class="empty-icon">🎓</div>No lectures published yet.</div>';
         return;
       }
-      cont.innerHTML = `<input id="lecSearch" type="search" placeholder="Search lectures…" oninput="renderLectures(this.value)"
+      renderLectureShell(false);
+    } catch {
+      // Offline / failed: show the saved list (lectures opened online still play).
+      let cached = null;
+      try { cached = JSON.parse(localStorage.getItem('gl_lec_list') || 'null'); } catch (e) {}
+      if (cached) { lecData = cached; renderLectureShell(true); }
+      else cont.innerHTML = '<div class="empty">Failed to load lectures. Connect once to load them.</div>';
+    }
+  }
+  function renderLectureShell(offline) {
+    document.getElementById('lecturesContent').innerHTML =
+      (offline ? '<div style="background:rgba(214,106,31,0.1);border:1px solid rgba(214,106,31,0.3);color:var(--orange);border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:14px">📥 Offline — showing saved lectures. Ones you opened online will play.</div>' : '') +
+      `<input id="lecSearch" type="search" placeholder="Search lectures…" oninput="renderLectures(this.value)"
         style="width:100%;max-width:420px;margin-bottom:20px;padding:10px 14px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px">
-        <div id="lecList"></div>`;
-      renderLectures('');
-    } catch { cont.innerHTML = '<div class="empty">Failed to load lectures.</div>'; }
+       <div id="lecList"></div>`;
+    renderLectures('');
   }
   function renderLectures(query) {
     const q = (query || '').trim().toLowerCase();
@@ -1395,8 +1408,42 @@
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button onclick="openLecture('${l.id}','slides')" style="background:var(--orange);color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">View Slides</button>
           ${l.hasNotes ? `<button onclick="openLecture('${l.id}','notes')" style="background:transparent;color:var(--text);border:1px solid var(--border);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Lesson Notes</button>` : ''}
+          ${l.week ? `<button onclick="lectureFlashcards(${l.week})" style="background:transparent;color:var(--text);border:1px solid var(--border);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">🃏 Flashcards</button>` : ''}
         </div>
       </div>`;
+  }
+
+  // Close the learn→test loop: jump to the flashcard set for this lecture's week
+  // (start it directly if there's a match, else just open the Flashcards tab).
+  async function lectureFlashcards(week) {
+    if (document.getElementById('lectureViewer').style.display !== 'none') closeLectureViewer();
+    let match = null;
+    try {
+      const res = await fetch('/api/flashcards/sets/student', { headers: { 'Authorization': 'Bearer ' + token } });
+      const data = await res.json();
+      const sets = Array.isArray(data) ? data : (data.data || []);
+      match = sets.find(s => Number(s.week) === Number(week));
+    } catch (e) {}
+    switchTab('flashcards');
+    if (match) startQuiz(match._id, String(match.title || 'Flashcards'));
+  }
+
+  // Warm the service-worker image cache so the whole deck (not just viewed
+  // slides) is available offline once a lecture has been opened online.
+  function prefetchLectureImages(lec) {
+    (lec.slides || []).forEach(s => { if (s.image_url) { try { fetch(s.image_url, { mode: 'no-cors' }).catch(() => {}); } catch (e) {} } });
+  }
+
+  function renderLectureViewer(id, lec, view, offline) {
+    lvState = { id: id, week: lec.week, slides: lec.slides || [], idx: 0, view: view || 'slides', notes: lec.lessonNotes || {}, course: lec.courseType || '' };
+    document.getElementById('lvFlashBtn').style.display = lec.week ? 'inline-block' : 'none';
+    const saved = parseInt(localStorage.getItem('gl_lec_pos_' + id) || '0', 10);
+    if (saved > 0 && saved < lvState.slides.length) lvState.idx = saved;
+    document.getElementById('lvTitle').textContent = lec.lectureTitle || 'Lecture';
+    document.getElementById('lvMeta').textContent = [offline ? '📥 Offline copy' : null, lec.courseTitle, lec.lectureDate ? fmtDate(lec.lectureDate) : null].filter(Boolean).join(' · ');
+    document.getElementById('lvNotes').innerHTML = renderNotes(lvState.notes);
+    lvShow(lvState.view);
+    renderSlide();
   }
 
   async function openLecture(id, view) {
@@ -1407,17 +1454,17 @@
       const res = await fetch('/api/lectures/' + id + '/student', { headers: { 'Authorization': 'Bearer ' + token } });
       if (!res.ok) throw new Error('not found');
       const lec = await res.json();
-      lvState = { id: id, slides: lec.slides || [], idx: 0, view: view || 'slides', notes: lec.lessonNotes || {}, course: lec.courseType || '' };
-      // Resume where the student left off (last viewed slide for this lecture).
-      const saved = parseInt(localStorage.getItem('gl_lec_pos_' + id) || '0', 10);
-      if (saved > 0 && saved < lvState.slides.length) lvState.idx = saved;
-      document.getElementById('lvTitle').textContent = lec.lectureTitle || 'Lecture';
-      document.getElementById('lvMeta').textContent = [lec.courseTitle, lec.lectureDate ? fmtDate(lec.lectureDate) : null].filter(Boolean).join(' · ');
-      document.getElementById('lvNotes').innerHTML = renderNotes(lvState.notes);
-      lvShow(lvState.view);
-      renderSlide();
+      try { localStorage.setItem('gl_lec_' + id, JSON.stringify(lec)); } catch (e) {} // save for offline
+      prefetchLectureImages(lec);
+      renderLectureViewer(id, lec, view, false);
       pingLectureView(lvState.idx >= lvState.slides.length - 1); // opened (mark complete if at end)
-    } catch { stage.innerHTML = '<div class="empty">Could not load this lecture.</div>'; }
+    } catch {
+      // Offline / failed: fall back to the saved copy if we have one.
+      let lec = null;
+      try { lec = JSON.parse(localStorage.getItem('gl_lec_' + id) || 'null'); } catch (e) {}
+      if (lec) renderLectureViewer(id, lec, view, true);
+      else stage.innerHTML = '<div class="empty">Could not load this lecture. Open it once while online to make it available offline.</div>';
+    }
   }
   function closeLectureViewer() {
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
