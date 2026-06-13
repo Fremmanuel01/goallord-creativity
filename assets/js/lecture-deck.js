@@ -31,8 +31,10 @@
       ? String(s.slide_type).replace(/[_-]+/g, ' ')
       : (ctx.course || 'Lecture');
     const kicker = `<div class="lv-kicker">${escHtml(kickerText)}</div>`;
+    // noExplain: drop the on-slide "Explain more" panel (teach mode shows the
+    // speaker notes in the presenter rail instead, so they never cover content).
     const furniture =
-      (s.main_explanation ? `<details class="lv-expl"><summary>Explain more</summary><p>${escHtml(s.main_explanation)}</p></details>` : '') +
+      (!ctx.noExplain && s.main_explanation ? `<details class="lv-expl"><summary>Explain more</summary><p>${escHtml(s.main_explanation)}</p></details>` : '') +
       `<div class="lv-num">${pad2(s.slide_number || (ctx.idx || 0) + 1)}<span> / ${pad2(total)}</span></div>`;
     const bullets = onText.length > 1
       ? `<ul class="lv-bullets">${onText.map(t => `<li><span>${escHtml(t)}</span></li>`).join('')}</ul>`
@@ -41,7 +43,8 @@
     const ph = `<div class="lv-ph"><span style="font-size:22px">◍</span>${escHtml(s.visual_description || 'Visual')}</div>`;
     const media = `<div class="lv-media">${img || ph}<div class="lv-grade"></div></div>`;
     const bleed = `<div class="lv-bleed">${img || ph}</div><div class="lv-bleed lv-scrim"></div>`;
-    const wrap = (inner, cls) => `<div class="${anim} lv-slide${cls ? ' ' + cls : ''}">${inner}${furniture}</div>`;
+    const foot = ctx.noExplain ? ' lv-nofoot' : '';
+    const wrap = (inner, cls) => `<div class="${anim} lv-slide${foot}${cls ? ' ' + cls : ''}">${inner}${furniture}</div>`;
     const canvas = (inner, cls) => `<div class="lv-canvas${cls ? ' ' + cls : ''}">${inner}</div>`;
     const mid = (inner) => `<div style="margin:auto 0;min-width:0">${inner}</div>`;
 

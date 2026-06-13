@@ -6,7 +6,7 @@
  *  - Cross-origin GETs: best-effort cache-first
  */
 
-const VERSION = 'goallord-v7-2026-06-12';
+const VERSION = 'goallord-v8-2026-06-13';
 const SHELL_CACHE   = `${VERSION}-shell`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const IMAGE_CACHE   = `${VERSION}-images`;

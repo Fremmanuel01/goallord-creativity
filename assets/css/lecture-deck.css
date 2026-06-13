@@ -43,19 +43,27 @@
 }
 @media (min-width: 741px) { .lv-slide { aspect-ratio: 16/9; } }
 @media (max-width: 740px) { .lv-slide { width: 100%; min-height: 70vh; min-height: 70dvh; } }
+/* Fill the available stage: the largest 16:9 box that fits its container.
+   Add .lv-fit to a flex-centered stage (Teach mode, student fullscreen). */
+.lv-fit { display: flex; align-items: center; justify-content: center; }
+@media (min-width: 741px) {
+  .lv-fit .lv-slide { width: auto; height: 100%; max-width: 100%; max-height: 100%; }
+}
 .lv-canvas {
   position: relative; z-index: 2; flex: 1; min-height: 0; min-width: 0;
   display: flex; flex-direction: column;
   padding: clamp(22px, 5cqw, 54px) clamp(20px, 5.6cqw, 60px) 74px;
   overflow-y: auto;
 }
+/* No on-slide notes pill → reclaim the reserved footer space (less clipping) */
+.lv-nofoot .lv-canvas { padding-bottom: clamp(22px, 5cqw, 54px); }
 .lv-onimg { color: #FFFFFF; }
 .lv-kicker {
   display: flex; align-items: center; gap: 10px;
   font-family: var(--deck-font);
   font-size: clamp(10.5px, 1.3cqw, 14px); font-weight: 700;
   letter-spacing: 0.16em; text-transform: uppercase; color: var(--orange);
-  margin-bottom: clamp(14px, 2.6cqw, 28px);
+  margin-bottom: clamp(10px, 2cqw, 20px);
 }
 .lv-kicker::after { content: ''; flex: 0 0 30px; height: 1px; background: rgba(214,106,31,0.55); }
 .lv-warm .lv-kicker, .lv-onimg .lv-kicker { color: #FFD9B8; }
@@ -64,7 +72,7 @@
   font-family: var(--deck-font);
   font-size: clamp(23px, 4.6cqw, 50px); font-weight: 800;
   line-height: 1.06; letter-spacing: -0.022em;
-  margin: 0 0 clamp(16px, 3cqw, 34px);
+  margin: 0 0 clamp(12px, 2.4cqw, 26px);
   text-wrap: balance; max-width: 22ch; color: inherit;
 }
 .lv-lede { font-size: clamp(15px, 1.9cqw, 21px); line-height: 1.65; color: var(--pp-mut); margin: 0; max-width: 56ch; }
@@ -151,9 +159,9 @@
 .lv-dia .d > b { font-family: var(--deck-font); font-weight: 800; font-size: clamp(13px, 1.6cqw, 16px); }
 .lv-dia .d span { font-size: clamp(12px, 1.4cqw, 14.5px); line-height: 1.5; color: var(--pp-mut); }
 /* Stat blocks: Gamma-style big-number callouts on hairline rules */
-.lv-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: clamp(18px, 3cqw, 36px); align-content: start; }
-.lv-stat { border-top: 1px solid var(--pp-line); padding-top: clamp(12px, 2cqw, 20px); }
-.lv-stat b { display: block; font-family: var(--deck-font); font-size: clamp(32px, 5.4cqw, 62px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.02; color: var(--orange); margin-bottom: clamp(8px, 1.2cqw, 12px); }
+.lv-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr)); gap: clamp(14px, 2.4cqw, 28px); align-content: start; }
+.lv-stat { border-top: 1px solid var(--pp-line); padding-top: clamp(10px, 1.7cqw, 18px); }
+.lv-stat b { display: block; font-family: var(--deck-font); font-size: clamp(28px, 4.8cqw, 54px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.02; color: var(--orange); margin-bottom: clamp(6px, 1cqw, 10px); }
 .lv-stat span { font-size: clamp(13px, 1.6cqw, 16px); line-height: 1.55; color: var(--pp-mut); display: block; max-width: 26ch; }
 .lv-warm .lv-stat b { color: #FFD9B8; }
 /* Pie/donut chart: conic-gradient ring + legend with computed shares */

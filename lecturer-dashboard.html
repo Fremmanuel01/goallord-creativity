@@ -262,6 +262,42 @@
     .tab-enter { animation: tabEnter 0.22s cubic-bezier(.22,.61,.36,1); }
     @keyframes tabEnter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
   }
+  /* ── Teach mode: presenter view (current slide + speaker notes + next preview) ── */
+  #teachViewer { display: none; position: fixed; inset: 0; background: #0B0D10; z-index: 2500; flex-direction: column; }
+  #teachViewer.open { display: flex; }
+  .tv-bar { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .tv-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 14px; white-space: nowrap; }
+  .tv-btn:hover { color: var(--text); border-color: var(--muted); }
+  .tv-btn.on { color: #fff; background: var(--orange); border-color: var(--orange); }
+  .tv-icon-btn { background: transparent; color: var(--muted); border: 1px solid var(--border); width: 38px; height: 38px; border-radius: 8px; cursor: pointer; font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .tv-icon-btn:hover { color: var(--text); border-color: var(--muted); }
+  .tv-timer { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 14px; color: var(--muted); padding: 0 4px; min-width: 52px; text-align: center; }
+  .tv-body { flex: 1; min-height: 0; display: flex; }
+  #tvStage { flex: 1; min-width: 0; overflow-y: auto; padding: clamp(10px, 2.5vh, 26px) clamp(10px, 2.5vw, 26px); }
+  .tv-rail { width: clamp(280px, 26vw, 380px); flex-shrink: 0; border-left: 1px solid var(--border); background: #121620; display: flex; flex-direction: column; min-height: 0; }
+  .tv-body.notes-hidden .tv-rail { display: none; }
+  .tv-rail-block { padding: 16px 18px; display: flex; flex-direction: column; min-height: 0; }
+  .tv-next-block { border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .tv-notes-block { flex: 1; min-height: 0; }
+  .tv-rail-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; flex-shrink: 0; }
+  .tv-rail-label span { color: var(--orange); }
+  /* Next-slide preview: a small container so the deck's cqw type scales down into a real thumbnail */
+  .tv-thumb { width: 100%; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; background: #1b212d; display: flex; }
+  .tv-thumb .lv-slide { width: 100%; height: 100%; box-shadow: none; border-radius: 10px; }
+  .tv-thumb-end { margin: auto; color: var(--muted); font-size: 13px; font-weight: 600; }
+  .tv-notes-body { overflow-y: auto; font-size: 15.5px; line-height: 1.7; color: #DBE0EA; white-space: pre-wrap; padding-right: 4px; }
+  .tv-notes-body.empty { color: var(--muted); font-style: italic; }
+  .tv-progress-track { height: 3px; background: rgba(255,255,255,0.06); flex-shrink: 0; }
+  .tv-progress-fill { height: 100%; width: 0%; background: var(--orange); transition: width .25s ease; }
+  .tv-foot { display: flex; align-items: center; justify-content: center; gap: 18px; padding: 12px; border-top: 1px solid var(--border); flex-shrink: 0; }
+  .tv-nav-btn { background: transparent; border: 1px solid var(--border); color: var(--text); width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 18px; }
+  .tv-nav-btn:hover { border-color: var(--orange); color: var(--orange); }
+  /* Narrow screens: rail drops below the slide so the deck still fills the width */
+  @media (max-width: 860px) {
+    .tv-body { flex-direction: column; }
+    .tv-rail { width: auto; border-left: none; border-top: 1px solid var(--border); max-height: 42%; }
+    .tv-next-block { display: none; }
+  }
 </style>
   <!-- Lecture deck display face + styles + renderer (shared with the student dashboard) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -664,21 +700,35 @@
 </div>
 
 <!-- ── TEACH MODE: full-screen deck, same renderer as the student portal ── -->
-<div id="teachViewer" style="display:none;position:fixed;inset:0;background:#0B0D10;z-index:2500;flex-direction:column;">
-  <div style="display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;">
-    <button onclick="closeTeach()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px">← Exit</button>
+<div id="teachViewer">
+  <div class="tv-bar">
+    <button onclick="closeTeach()" class="tv-btn">← Exit</button>
     <div style="min-width:0;flex:1">
       <div id="tvTitle" style="font-weight:700;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
       <div id="tvMeta" style="font-size:12.5px;color:var(--muted)"></div>
     </div>
-    <button id="tvFsBtn" onclick="teachFullscreen()" title="Fullscreen" aria-label="Toggle fullscreen" style="background:transparent;color:var(--muted);border:1px solid var(--border);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0">⛶</button>
+    <div id="tvTimer" class="tv-timer" title="Elapsed">00:00</div>
+    <button id="tvNotesBtn" onclick="teachToggleNotes()" class="tv-btn" title="Toggle presenter notes">Notes</button>
+    <button id="tvFsBtn" onclick="teachFullscreen()" title="Fullscreen" aria-label="Toggle fullscreen" class="tv-icon-btn">⛶</button>
   </div>
-  <div id="tvStage" style="flex:1;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:clamp(10px,2.5vh,26px) clamp(10px,2.5vw,26px)"></div>
-  <div style="height:3px;background:rgba(255,255,255,0.06);flex-shrink:0"><div id="tvProgress" style="height:100%;width:0%;background:var(--orange);transition:width .25s ease"></div></div>
-  <div style="display:flex;align-items:center;justify-content:center;gap:18px;padding:12px;border-top:1px solid var(--border);flex-shrink:0">
-    <button onclick="tvNav(-1)" style="background:transparent;border:1px solid var(--border);color:var(--text);width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:18px">‹</button>
+  <div class="tv-body" id="tvBody">
+    <div id="tvStage" class="lv-fit"></div>
+    <aside class="tv-rail" id="tvRail">
+      <div class="tv-rail-block tv-next-block">
+        <div class="tv-rail-label">Next <span id="tvNextNum"></span></div>
+        <div class="tv-thumb" id="tvNextThumb"></div>
+      </div>
+      <div class="tv-rail-block tv-notes-block">
+        <div class="tv-rail-label">Speaker notes</div>
+        <div class="tv-notes-body" id="tvNotes"></div>
+      </div>
+    </aside>
+  </div>
+  <div class="tv-progress-track"><div id="tvProgress" class="tv-progress-fill"></div></div>
+  <div class="tv-foot">
+    <button onclick="tvNav(-1)" class="tv-nav-btn" aria-label="Previous slide">‹</button>
     <span id="tvCounter" style="font-size:13px;color:var(--muted);min-width:64px;text-align:center"></span>
-    <button onclick="tvNav(1)" style="background:transparent;border:1px solid var(--border);color:var(--text);width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:18px">›</button>
+    <button onclick="tvNav(1)" class="tv-nav-btn" aria-label="Next slide">›</button>
   </div>
 </div>
 
@@ -1883,11 +1933,14 @@ async function lecSaveDraftSilent() {
   }) });
 }
 
-// ── Teach mode ───────────────────────────────────────────────
-// Full-screen presentation of the current deck using the same renderer the
-// students see (assets/js/lecture-deck.js). lecTeach(true) = teaching: jump
-// straight to real fullscreen; lecTeach(false) = quick preview overlay.
-const tvState = { slides: [], idx: 0, course: '', open: false };
+// ── Teach mode: presenter view ───────────────────────────────
+// Full-screen presentation using the same renderer the students see
+// (assets/js/lecture-deck.js), plus a presenter rail with the speaker notes
+// and a live preview of the next slide. The slide itself is rendered with
+// noExplain so notes live in the rail and never cover the content.
+// lecTeach(true) = teaching (jump straight to real fullscreen);
+// lecTeach(false) = windowed preview.
+const tvState = { slides: [], idx: 0, course: '', open: false, timer: null, startMs: 0 };
 
 function openTeach(l, fullscreen) {
   tvState.slides = l.slides || [];
@@ -1896,7 +1949,10 @@ function openTeach(l, fullscreen) {
   tvState.open = true;
   document.getElementById('tvTitle').textContent = l.lectureTitle || 'Lecture';
   document.getElementById('tvMeta').textContent = [l.courseTitle, l.week ? 'Week ' + l.week + (l.day ? ' ' + l.day : '') : null].filter(Boolean).join(' · ');
-  document.getElementById('teachViewer').style.display = 'flex';
+  document.getElementById('teachViewer').classList.add('open');
+  document.getElementById('tvBody').classList.remove('notes-hidden');
+  const nb = document.getElementById('tvNotesBtn'); if (nb) nb.classList.add('on');
+  startTeachTimer();
   renderTeachSlide();
   if (fullscreen) teachFullscreen(true);
 }
@@ -1916,9 +1972,30 @@ async function lecTeachById(id) {
 
 function closeTeach() {
   tvState.open = false;
+  stopTeachTimer();
   if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-  document.getElementById('teachViewer').style.display = 'none';
+  document.getElementById('teachViewer').classList.remove('open');
 }
+
+// Show/hide the presenter rail (so you can project a clean, notes-free slide).
+function teachToggleNotes() {
+  const hidden = document.getElementById('tvBody').classList.toggle('notes-hidden');
+  const nb = document.getElementById('tvNotesBtn'); if (nb) nb.classList.toggle('on', !hidden);
+}
+
+// Elapsed lesson timer in the bar.
+function startTeachTimer() {
+  tvState.startMs = Date.now();
+  const tick = () => {
+    const s = Math.floor((Date.now() - tvState.startMs) / 1000);
+    const el = document.getElementById('tvTimer');
+    if (el) el.textContent = String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+  };
+  tick();
+  stopTeachTimer();
+  tvState.timer = setInterval(tick, 1000);
+}
+function stopTeachTimer() { if (tvState.timer) { clearInterval(tvState.timer); tvState.timer = null; } }
 
 // force=true always enters fullscreen (used when the Teach button opens the deck).
 // On iOS Safari element fullscreen is unavailable; the overlay already covers
@@ -1947,10 +2024,33 @@ function renderTeachSlide() {
   const s = tvState.slides[tvState.idx];
   document.getElementById('tvCounter').textContent = n ? (tvState.idx + 1) + ' / ' + n : '';
   document.getElementById('tvProgress').style.width = n ? (((tvState.idx + 1) / n) * 100) + '%' : '0%';
-  if (!s) { stage.innerHTML = '<div class="empty">No slides.</div>'; return; }
-  stage.innerHTML = LectureDeck.slideHtml(s, { idx: tvState.idx, total: n, course: tvState.course });
+  if (!s) { stage.innerHTML = '<div class="empty">No slides.</div>'; updateTeachRail(); return; }
+  stage.innerHTML = LectureDeck.slideHtml(s, { idx: tvState.idx, total: n, course: tvState.course, noExplain: true });
   const card = stage.firstElementChild;
   if (card) { card.style.animation = 'none'; void card.offsetWidth; card.style.animation = ''; }
+  updateTeachRail();
+}
+
+// Presenter rail: speaker notes for the current slide + a live mini-render of
+// the next slide (the deck's cqw-based type scales down to a real thumbnail).
+function updateTeachRail() {
+  const n = tvState.slides.length;
+  const cur = tvState.slides[tvState.idx];
+  const notes = document.getElementById('tvNotes');
+  if (notes) {
+    const txt = (cur && cur.main_explanation || '').trim();
+    notes.textContent = txt || 'No speaker notes for this slide.';
+    notes.classList.toggle('empty', !txt);
+  }
+  const next = tvState.slides[tvState.idx + 1];
+  const thumb = document.getElementById('tvNextThumb');
+  const numEl = document.getElementById('tvNextNum');
+  if (numEl) numEl.textContent = next ? (tvState.idx + 2) + ' / ' + n : '';
+  if (thumb) {
+    thumb.innerHTML = next
+      ? LectureDeck.slideHtml(next, { idx: tvState.idx + 1, total: n, course: tvState.course, noExplain: true })
+      : '<div class="tv-thumb-end">End of deck</div>';
+  }
 }
 
 // Presenter navigation: arrows / space / PageUp-PageDown while teaching.
