@@ -5,7 +5,7 @@ const studentsDb      = require('../db/students');
 const notificationsDb = require('../db/notifications');
 const { sendMail } = require('../utils/mailer');
 const { lecturePublishedEmail, lectureUpdatedEmail } = require('../utils/emailTemplates');
-const { generateForBatchDay } = require('../utils/lectureGenerator');
+const { generateForBatchDay, regenerateSlideText, redrawSlideSvg } = require('../utils/lectureGenerator');
 const { regenerateSlideImage } = require('../utils/lectureImages');
 const { requireLecturer } = require('../middleware/lecturerAuth');
 const { requireStudentAuth } = require('../middleware/studentAuth');
@@ -193,6 +193,9 @@ router.patch('/:id/slides/:n', requireLecturer, async (req, res) => {
     if (patch.on_slide_text !== undefined) s.on_slide_text = String(patch.on_slide_text);
     if (patch.main_explanation !== undefined) s.main_explanation = String(patch.main_explanation);
     if (patch.svg !== undefined) s.svg = sanitizeSvg(patch.svg);
+    if (patch.image_prompt !== undefined) s.image_prompt = String(patch.image_prompt);
+    if (patch.negative_prompt !== undefined) s.negative_prompt = String(patch.negative_prompt);
+    if (patch.visual_description !== undefined) s.visual_description = String(patch.visual_description);
     if (Array.isArray(patch.editable_blocks)) s.editable_blocks = patch.editable_blocks;
     if (ANIMATIONS.includes(patch.animation_type)) s.animation_type = patch.animation_type;
     if (LAYOUTS.includes(patch.layout_type)) s.layout_type = patch.layout_type;
@@ -221,8 +224,53 @@ router.post('/:id/slides/:n/regenerate-image', requireLecturer, async (req, res)
 
     const { image_url, model } = await regenerateSlideImage({ lectureId: l.id, courseType: l.course_type, slide: slides[idx] });
     slides[idx] = { ...slides[idx], image_url, image_required: true };
-    const saved = await lecturesDb.update(req.params.id, { slides });
+    const wasPub = ['published', 'republished', 'edited_after_publishing'].includes(l.status);
+    const saved = await lecturesDb.update(req.params.id, { slides, ...(wasPub ? { status: 'edited_after_publishing' } : {}) });
     await lecturesDb.logAi({ lecture_id: l.id, kind: 'image', model, images: 1, ok: true, detail: `regenerated slide ${n}` });
+    res.json({ slide: saved.slides[idx] });
+  } catch (err) {
+    res.status(502).json({ error: err.message });
+  }
+});
+
+// POST /api/lectures/:id/slides/:n/regenerate-text — AI: rewrite ONE slide's text.
+router.post('/:id/slides/:n/regenerate-text', requireLecturer, async (req, res) => {
+  try {
+    const l = await lecturesDb.findById(req.params.id).catch(() => null);
+    if (!l) return res.status(404).json({ error: 'Not found' });
+    if (!(await canManage(req.user, l))) return res.status(403).json({ error: 'Access denied' });
+    const n = Number(req.params.n);
+    const slides = Array.isArray(l.slides) ? l.slides.slice() : [];
+    const idx = slides.findIndex(s => s.slide_number === n);
+    if (idx < 0) return res.status(404).json({ error: 'Slide not found' });
+
+    const out = await regenerateSlideText({ lecture: l, slide: slides[idx], instruction: String((req.body && req.body.instruction) || '') });
+    slides[idx] = { ...slides[idx], slide_title: out.slide_title, on_slide_text: out.on_slide_text, main_explanation: out.main_explanation };
+    const wasPub = ['published', 'republished', 'edited_after_publishing'].includes(l.status);
+    const saved = await lecturesDb.update(req.params.id, { slides, ...(wasPub ? { status: 'edited_after_publishing' } : {}) });
+    await lecturesDb.logAi({ lecture_id: l.id, kind: 'lecture_text', model: out.model, ok: true, detail: `regenerated text slide ${n}` });
+    res.json({ slide: saved.slides[idx] });
+  } catch (err) {
+    res.status(502).json({ error: err.message });
+  }
+});
+
+// POST /api/lectures/:id/slides/:n/redraw — AI: redraw ONE illustration's SVG.
+router.post('/:id/slides/:n/redraw', requireLecturer, async (req, res) => {
+  try {
+    const l = await lecturesDb.findById(req.params.id).catch(() => null);
+    if (!l) return res.status(404).json({ error: 'Not found' });
+    if (!(await canManage(req.user, l))) return res.status(403).json({ error: 'Access denied' });
+    const n = Number(req.params.n);
+    const slides = Array.isArray(l.slides) ? l.slides.slice() : [];
+    const idx = slides.findIndex(s => s.slide_number === n);
+    if (idx < 0) return res.status(404).json({ error: 'Slide not found' });
+
+    const { svg, model } = await redrawSlideSvg({ lecture: l, slide: slides[idx], instruction: String((req.body && req.body.instruction) || '') });
+    slides[idx] = { ...slides[idx], svg, layout_type: 'illustration' };
+    const wasPub = ['published', 'republished', 'edited_after_publishing'].includes(l.status);
+    const saved = await lecturesDb.update(req.params.id, { slides, ...(wasPub ? { status: 'edited_after_publishing' } : {}) });
+    await lecturesDb.logAi({ lecture_id: l.id, kind: 'lecture_text', model, ok: true, detail: `redrew svg slide ${n}` });
     res.json({ slide: saved.slides[idx] });
   } catch (err) {
     res.status(502).json({ error: err.message });

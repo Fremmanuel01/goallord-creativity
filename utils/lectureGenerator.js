@@ -329,4 +329,59 @@ async function generateForBatchDay({ batchId, week, day, force = false, premium 
   return _generate(batch, entry, { force, premium });
 }
 
-module.exports = { runLectureGeneration, generateForBatchDay, validatePackage, buildPrompt, IMAGE_LIMITS };
+// ── Public: granular AI refinement of ONE slide (lecturer editor) ────
+// Rewrites just this slide's text (and optionally re-targets the layout),
+// honouring an optional plain-English instruction ("make it simpler", "add an
+// example"). Returns { slide_title, on_slide_text, main_explanation }.
+async function regenerateSlideText({ lecture, slide, instruction = '' }) {
+  const courseType = lecture.course_type || lecture.courseType || 'Programming';
+  const lt = String(slide.layout_type || 'cards_grid');
+  const prompt =
+`You are an expert ${courseType === 'Film' ? 'film-school' : 'programming'} instructor refining ONE slide of an existing lecture.
+Lecture: "${lecture.lecture_title || lecture.lectureTitle || ''}" (${courseType}, beginner students).
+This slide's layout_type is "${lt}". Keep that layout.
+
+Current slide:
+- title: ${slide.slide_title || ''}
+- on_slide_text: ${JSON.stringify(slide.on_slide_text || '')}
+- speaker notes: ${slide.main_explanation || ''}
+
+${instruction ? 'Apply this instruction: ' + instruction + '\n' : ''}Rules:
+- A slide shows at most ~30 words: 3-5 punchy fragments of <=8 words, ONE PER LINE (\\n). For title/full_image_overlay use ONE short line.
+- Follow the layout's on_slide_text format: table = header row then rows, cells " | "; bar_chart/pie_chart = "Label: number" lines; stat_blocks = "BigNumber: caption"; diagram/timeline/flowchart/pyramid = "Label: caption" lines; comparison = exactly 2 "Side: description" lines; quote = quotation then attribution.
+- "main_explanation" is what the teacher says aloud (2-4 sentences); never repeat on_slide_text.
+Return ONLY JSON: {"slide_title":"","on_slide_text":"","main_explanation":""}`;
+  const res = await generateDetailed({ prompt, maxOutputTokens: 2000, model: 'default', thinking: 'off' });
+  const j = parseJson(res.text) || {};
+  return {
+    slide_title: String(j.slide_title || slide.slide_title || '').trim(),
+    on_slide_text: String(j.on_slide_text || slide.on_slide_text || '').trim(),
+    main_explanation: String(j.main_explanation || slide.main_explanation || '').trim(),
+    model: res.model,
+  };
+}
+
+// Redraw the instructional SVG for one slide (optionally with an instruction).
+// Returns { svg } already sanitised, or throws if the model returned nothing usable.
+async function redrawSlideSvg({ lecture, slide, instruction = '' }) {
+  const courseType = lecture.course_type || lecture.courseType || 'Programming';
+  const prompt =
+`You are drawing ONE clean, labelled instructional SVG diagram for a ${courseType === 'Film' ? 'film-school' : 'programming'} lecture slide.
+Slide title: "${slide.slide_title || ''}". Lecture: "${lecture.lecture_title || lecture.lectureTitle || ''}".
+On-slide takeaways: ${JSON.stringify(slide.on_slide_text || '')}.
+${instruction ? 'Apply this instruction: ' + instruction + '\n' : ''}
+Draw the diagram that makes this concept obvious at a glance (like a great teacher's whiteboard sketch).
+SVG RULES — follow EXACTLY:
+- viewBox="0 0 480 300", NO width/height attributes; fill the frame with comfortable margins.
+- Allowed elements only: g, path, rect, circle, ellipse, line, polyline, polygon, text, tspan, defs, linearGradient, radialGradient, stop, marker, use, title. NO script, style, image, foreignObject, animation, external/href links.
+- Style with presentation ATTRIBUTES only (fill, stroke, stroke-width, ...). Never a "style" attribute or CSS.
+- Palette: ink #23262D strokes/labels, accent #D66A1F and #1E4BFF, soft fills #F2EEE5/#E3DDD1, white #FFFFFF. Stroke-width 2-3, rounded caps. Light paper background.
+- LABEL parts with <text> (font-family="Segoe UI, sans-serif", font-size 13-17). Use arrows for direction/flow. 4-9 labelled parts, clear not cluttered.
+Return ONLY the <svg>...</svg> markup, nothing else.`;
+  const res = await generateDetailed({ prompt, maxOutputTokens: 4000, model: 'default', thinking: 'off' });
+  const svg = sanitizeSvg(res.text);
+  if (!svg) throw new Error('Model did not return a usable SVG');
+  return { svg, model: res.model };
+}
+
+module.exports = { runLectureGeneration, generateForBatchDay, validatePackage, buildPrompt, IMAGE_LIMITS, regenerateSlideText, redrawSlideSvg };

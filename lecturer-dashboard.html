@@ -1854,55 +1854,180 @@ function lecEditView(mode) {
   document.getElementById('lecEditBody').innerHTML = mode === 'slides' ? renderSlideEditors() : renderNotesEditor();
 }
 
+const LEC_LAYOUTS = ['title','image_left_text_right','image_right_text_left','full_image_overlay','illustration','cards_grid','comparison','timeline','flowchart','code_demo','diagram','table','bar_chart','pie_chart','stat_blocks','pyramid','quote','lesson_summary'];
+const LEC_IMG_LAYOUTS = ['image_left_text_right','image_right_text_left','full_image_overlay','title'];
+
 function renderSlideEditors() {
-  return (lecEditing.slides || []).map(s => {
-    const img = s.image_url
-      ? `<img src="${s.image_url}" style="width:120px;height:68px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">`
-      : (s.image_required ? '<div style="width:120px;height:68px;border-radius:6px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);text-align:center">no image yet</div>' : '');
-    const regen = s.image_required ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="lecRegenImage(${s.slide_number})">↻ Regenerate image</button>` : '';
+  const slides = lecEditing.slides || [];
+  const cards = slides.map((s, i) => {
+    const n = s.slide_number;
+    const isImg = s.image_required || LEC_IMG_LAYOUTS.includes(s.layout_type);
+    const isIllus = s.layout_type === 'illustration';
+    const thumb = s.image_url
+      ? `<img src="${s.image_url}" alt="" style="width:130px;height:74px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">`
+      : (isImg ? '<div style="width:130px;height:74px;border-radius:6px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);text-align:center">no image yet</div>' : '');
+    const layoutOpts = LEC_LAYOUTS.map(o => `<option value="${o}"${o===s.layout_type?' selected':''}>${o}</option>`).join('');
+    const aiRow = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+      <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="lecRegenText(${n})">✨ Rewrite text (AI)</button>
+      ${isIllus ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="lecRedraw(${n})">✨ Redraw diagram (AI)</button>` : ''}
+      ${isImg ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="lecRegenImage(${n})">↻ Regenerate photo</button>` : ''}
+    </div>`;
+    const illusBox = isIllus ? `
+      <details style="margin-top:8px"><summary style="font-size:12px;color:var(--muted);cursor:pointer">Diagram SVG (advanced)</summary>
+        <textarea data-sl="${n}" data-f="svg" rows="4" style="width:100%;margin-top:6px;font-family:monospace;font-size:11px" placeholder="<svg viewBox='0 0 480 300'>…">${escHtml(s.svg||'')}</textarea>
+      </details>` : '';
+    const imgBox = isImg ? `
+      <details style="margin-top:8px"${s.image_url?'':' open'}><summary style="font-size:12px;color:var(--muted);cursor:pointer">Photo prompt</summary>
+        <textarea data-sl="${n}" data-f="image_prompt" rows="2" style="width:100%;margin-top:6px;font-size:12px" placeholder="Describe a clear example of the principle…">${escHtml(s.image_prompt||'')}</textarea>
+      </details>` : '';
     return `<div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px">
+      <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap">
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:12px;font-weight:700;color:var(--muted)">Slide ${n}</span>
+          <select data-sl="${n}" data-f="layout_type" onchange="lecSetLayout(${n}, this.value)" style="font-size:12px;padding:4px 6px">${layoutOpts}</select>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-ghost" style="padding:4px 9px;font-size:13px" title="Move up" ${i===0?'disabled':''} onclick="lecMoveSlide(${n},-1)">↑</button>
+          <button class="btn btn-ghost" style="padding:4px 9px;font-size:13px" title="Move down" ${i===slides.length-1?'disabled':''} onclick="lecMoveSlide(${n},1)">↓</button>
+          <button class="btn btn-ghost" style="padding:4px 9px;font-size:13px" title="Add slide after" onclick="lecAddSlide(${n})">＋</button>
+          <button class="btn btn-ghost" style="padding:4px 9px;font-size:13px;color:var(--red)" title="Delete slide" onclick="lecDeleteSlide(${n})">🗑</button>
+        </div>
+      </div>
       <div style="display:flex;gap:12px;align-items:flex-start">
-        ${img ? `<div>${img}<div style="margin-top:6px">${regen}</div></div>` : ''}
+        ${thumb ? `<div>${thumb}</div>` : ''}
         <div style="flex:1;min-width:0">
-          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Slide ${s.slide_number} · ${s.layout_type}${s.image_required?' · image':''}</div>
-          <input data-sl="${s.slide_number}" data-f="slide_title" value="${escHtml(s.slide_title||'')}" style="width:100%;margin-bottom:8px;font-weight:600" placeholder="Slide title">
-          <textarea data-sl="${s.slide_number}" data-f="on_slide_text" rows="3" style="width:100%;margin-bottom:8px" placeholder="On-slide text (one point per line)">${escHtml(s.on_slide_text||'')}</textarea>
-          <textarea data-sl="${s.slide_number}" data-f="main_explanation" rows="3" style="width:100%" placeholder="Teacher explanation / speaker notes">${escHtml(s.main_explanation||'')}</textarea>
+          <input data-sl="${n}" data-f="slide_title" value="${escHtml(s.slide_title||'')}" style="width:100%;margin-bottom:8px;font-weight:600" placeholder="Slide title">
+          <textarea data-sl="${n}" data-f="on_slide_text" rows="3" style="width:100%;margin-bottom:8px" placeholder="On-slide text (one point per line)">${escHtml(s.on_slide_text||'')}</textarea>
+          <textarea data-sl="${n}" data-f="main_explanation" rows="2" style="width:100%" placeholder="Speaker notes (what you say aloud)">${escHtml(s.main_explanation||'')}</textarea>
+          ${illusBox}${imgBox}${aiRow}
         </div>
       </div>
     </div>`;
   }).join('');
+  return cards + `<button class="btn btn-ghost" style="width:100%;padding:10px;border-style:dashed" onclick="lecAddSlide(0)">＋ Add slide</button>`;
+}
+
+function blankSlide() {
+  return { slide_number: 0, slide_title: 'New slide', slide_type: 'content', on_slide_text: '', main_explanation: '',
+    visual_type: '', visual_description: '', image_required: false, image_prompt: '', negative_prompt: '',
+    image_url: null, svg: '', animation_type: 'fade', layout_type: 'cards_grid', editable_blocks: [] };
+}
+function lecRenumber() { (lecEditing.slides || []).forEach((s, i) => { s.slide_number = i + 1; }); }
+
+function lecAddSlide(afterN) {
+  collectEdits();
+  const slides = lecEditing.slides || (lecEditing.slides = []);
+  const idx = afterN ? slides.findIndex(s => s.slide_number === afterN) : -1;
+  slides.splice(idx < 0 ? slides.length : idx + 1, 0, blankSlide());
+  lecRenumber(); lecEditView('slides');
+}
+function lecDeleteSlide(n) {
+  if ((lecEditing.slides || []).length <= 1) { alert('A lecture needs at least one slide.'); return; }
+  if (!confirm('Delete slide ' + n + '?')) return;
+  collectEdits();
+  lecEditing.slides = lecEditing.slides.filter(s => s.slide_number !== n);
+  lecRenumber(); lecEditView('slides');
+}
+function lecMoveSlide(n, dir) {
+  collectEdits();
+  const slides = lecEditing.slides, i = slides.findIndex(s => s.slide_number === n), j = i + dir;
+  if (i < 0 || j < 0 || j >= slides.length) return;
+  [slides[i], slides[j]] = [slides[j], slides[i]];
+  lecRenumber(); lecEditView('slides');
+}
+function lecSetLayout(n, value) {
+  collectEdits();
+  const s = lecEditing.slides.find(x => x.slide_number === n);
+  if (s) s.layout_type = value;
+  lecEditView('slides');
 }
 
 function renderNotesEditor() {
-  const n = lecEditing.lessonNotes || {};
-  return `<div style="display:flex;flex-direction:column;gap:10px">
-    <label style="font-size:12px;color:var(--muted)">Title</label>
-    <input id="ln_title" value="${escHtml(n.title||'')}">
-    <label style="font-size:12px;color:var(--muted)">Introduction</label>
-    <textarea id="ln_intro" rows="3">${escHtml(n.introduction||'')}</textarea>
-    <label style="font-size:12px;color:var(--muted)">Summary</label>
-    <textarea id="ln_summary" rows="3">${escHtml(n.summary||'')}</textarea>
-    <p style="font-size:12px;color:var(--muted);margin:4px 0 0">Sections, terms and examples are kept from generation; edit the per-slide content above or the title/intro/summary here. (Full section editing can be added later.)</p>
+  const n = lecEditing.lessonNotes || (lecEditing.lessonNotes = {});
+  const lbl = t => `<label style="font-size:12px;color:var(--muted);font-weight:600">${t}</label>`;
+  const sections = (n.main_sections || []).map((sec, i) => `
+    <div style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:11px;color:var(--muted)">Section ${i+1}</span>
+        <button class="btn btn-ghost" style="padding:3px 8px;font-size:12px;color:var(--red)" onclick="lecDelSection(${i})">Remove</button>
+      </div>
+      <input data-sec="${i}" data-f="heading" value="${escHtml(sec.heading||'')}" placeholder="Heading" style="width:100%;margin-bottom:6px;font-weight:600">
+      <textarea data-sec="${i}" data-f="content" rows="2" placeholder="Content" style="width:100%;margin-bottom:6px">${escHtml(sec.content||'')}</textarea>
+      <textarea data-sec="${i}" data-f="key_points" rows="2" placeholder="Key points (one per line)" style="width:100%">${escHtml((sec.key_points||[]).join('\n'))}</textarea>
+    </div>`).join('');
+  const terms = (n.important_terms || []).map((t, i) => `
+    <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center">
+      <input data-term="${i}" data-f="term" value="${escHtml(t.term||'')}" placeholder="Term" style="flex:0 0 32%">
+      <input data-term="${i}" data-f="meaning" value="${escHtml(t.meaning||'')}" placeholder="Meaning" style="flex:1">
+      <button class="btn btn-ghost" style="padding:4px 8px;font-size:12px;color:var(--red)" onclick="lecDelTerm(${i})">✕</button>
+    </div>`).join('');
+  return `<div style="display:flex;flex-direction:column;gap:8px">
+    ${lbl('Title')}<input id="ln_title" value="${escHtml(n.title||'')}">
+    ${lbl('Introduction')}<textarea id="ln_intro" rows="3">${escHtml(n.introduction||'')}</textarea>
+    ${lbl('Sections')}<div id="ln_sections">${sections || '<p style="font-size:12px;color:var(--muted)">No sections.</p>'}</div>
+    <button class="btn btn-ghost" style="padding:6px;font-size:13px;border-style:dashed" onclick="lecAddSection()">＋ Add section</button>
+    ${lbl('Important terms')}<div id="ln_terms">${terms || ''}</div>
+    <button class="btn btn-ghost" style="padding:6px;font-size:13px;border-style:dashed" onclick="lecAddTerm()">＋ Add term</button>
+    ${lbl('Practical examples (one per line)')}<textarea id="ln_examples" rows="3">${escHtml((n.practical_examples||[]).join('\n'))}</textarea>
+    ${lbl('Summary')}<textarea id="ln_summary" rows="3">${escHtml(n.summary||'')}</textarea>
   </div>`;
 }
 
+function collectNotes() {
+  const t = document.getElementById('ln_title');
+  if (!t) return; // notes view not mounted
+  const n = lecEditing.lessonNotes = lecEditing.lessonNotes || {};
+  n.title = t.value;
+  n.introduction = document.getElementById('ln_intro').value;
+  n.summary = document.getElementById('ln_summary').value;
+  n.practical_examples = document.getElementById('ln_examples').value.split('\n').map(x => x.trim()).filter(Boolean);
+  const secs = [];
+  document.querySelectorAll('#ln_sections [data-sec][data-f="heading"]').forEach(el => {
+    const i = el.getAttribute('data-sec');
+    const get = f => { const e = document.querySelector(`#ln_sections [data-sec="${i}"][data-f="${f}"]`); return e ? e.value : ''; };
+    secs.push({ heading: get('heading'), content: get('content'), key_points: get('key_points').split('\n').map(x => x.trim()).filter(Boolean) });
+  });
+  n.main_sections = secs;
+  const terms = [];
+  document.querySelectorAll('#ln_terms [data-term][data-f="term"]').forEach(el => {
+    const i = el.getAttribute('data-term');
+    const meaning = document.querySelector(`#ln_terms [data-term="${i}"][data-f="meaning"]`);
+    terms.push({ term: el.value, meaning: meaning ? meaning.value : '' });
+  });
+  n.important_terms = terms;
+}
+function lecAddSection() { collectNotes(); (lecEditing.lessonNotes.main_sections = lecEditing.lessonNotes.main_sections || []).push({ heading: '', content: '', key_points: [] }); lecEditView('notes'); }
+function lecDelSection(i) { collectNotes(); lecEditing.lessonNotes.main_sections.splice(i, 1); lecEditView('notes'); }
+function lecAddTerm() { collectNotes(); (lecEditing.lessonNotes.important_terms = lecEditing.lessonNotes.important_terms || []).push({ term: '', meaning: '' }); lecEditView('notes'); }
+function lecDelTerm(i) { collectNotes(); lecEditing.lessonNotes.important_terms.splice(i, 1); lecEditView('notes'); }
+
 function collectEdits() {
-  // Slides: read inputs back into lecEditing.slides
+  // Slides: read inputs back into lecEditing.slides (title/text/svg/layout/image_prompt)
   document.querySelectorAll('#lecEditBody [data-sl]').forEach(el => {
     const n = Number(el.getAttribute('data-sl')), f = el.getAttribute('data-f');
-    const s = lecEditing.slides.find(x => x.slide_number === n);
+    const s = (lecEditing.slides || []).find(x => x.slide_number === n);
     if (s) s[f] = el.value;
   });
-  // Notes (only when notes view is mounted)
-  const t = document.getElementById('ln_title');
-  if (t) {
-    lecEditing.lessonNotes = lecEditing.lessonNotes || {};
-    lecEditing.lessonNotes.title = t.value;
-    lecEditing.lessonNotes.introduction = document.getElementById('ln_intro').value;
-    lecEditing.lessonNotes.summary = document.getElementById('ln_summary').value;
-  }
+  collectNotes();
 }
+
+// Save current edits, then run an AI action on one slide, then refresh that slide.
+async function lecSlideAI(n, path, label, askInstruction) {
+  let instruction = '';
+  if (askInstruction) { instruction = prompt('Optional instruction (leave blank for a straight ' + label.toLowerCase() + '):', '') || ''; if (instruction === null) return; }
+  collectEdits();
+  await lecSaveDraftSilent();
+  toast(label + '…');
+  const res = await api(`/api/lectures/${lecEditing.id}/slides/${n}/${path}`, { method: 'POST', body: JSON.stringify({ instruction }) });
+  if (res && res.slide) {
+    const i = lecEditing.slides.findIndex(s => s.slide_number === n);
+    if (i >= 0) lecEditing.slides[i] = res.slide;
+    if (['published', 'republished'].includes(lecEditing.status)) lecEditing.status = 'edited_after_publishing';
+    lecEditView('slides'); renderPublishArea(); toast(label + ' done');
+  } else { alert((res && res.error) || (label + ' failed.')); }
+}
+function lecRegenText(n) { lecSlideAI(n, 'regenerate-text', 'Rewrite text', true); }
+function lecRedraw(n)    { lecSlideAI(n, 'redraw', 'Redraw diagram', true); }
 
 async function lecSaveDraft() {
   collectEdits();
@@ -1916,12 +2041,15 @@ async function lecSaveDraft() {
 }
 
 async function lecRegenImage(n) {
-  if (!confirm('Regenerate the image for slide ' + n + '?')) return;
+  if (!confirm('Regenerate the photo for slide ' + n + ' from its current prompt?')) return;
+  collectEdits();
+  await lecSaveDraftSilent(); // persist any edited photo prompt so the new image uses it
+  toast('Regenerating photo…');
   const res = await api(`/api/lectures/${lecEditing.id}/slides/${n}/regenerate-image`, { method: 'POST' });
   if (res && res.slide) {
     const i = lecEditing.slides.findIndex(s => s.slide_number === n);
     if (i >= 0) lecEditing.slides[i] = res.slide;
-    lecEditView('slides'); toast('Image regenerated');
+    lecEditView('slides'); renderPublishArea(); toast('Photo regenerated');
   } else { alert((res && res.error) || 'Image generation failed.'); }
 }
 
