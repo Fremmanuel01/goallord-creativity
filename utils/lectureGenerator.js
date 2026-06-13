@@ -18,14 +18,24 @@ const IMAGE_LIMITS = {
   Film:        { min: 5, max: 10, default: 7 },
   Programming: { min: 2, max: 6,  default: 4 },
 };
+// Slide count is per-course: Film is photo-led and runs longer to fit both the
+// instructional photos and the diagrams; Programming is tighter.
+const SLIDE_LIMITS = {
+  Film:        { min: 13, max: 18 },
+  Programming: { min: 10, max: 15 },
+};
+// Minimum hand-drawn SVG diagrams per deck (Programming leans on them harder).
+const ILLUS_MIN = { Film: 3, Programming: 4 };
 const ANIMATIONS = ['fade', 'slide_up', 'panel_reveal', 'timeline_reveal', 'code_reveal', 'diagram_build', 'before_after_reveal', 'none'];
 const LAYOUTS = ['title', 'image_left_text_right', 'image_right_text_left', 'full_image_overlay', 'illustration', 'cards_grid', 'comparison', 'timeline', 'flowchart', 'code_demo', 'diagram', 'table', 'bar_chart', 'pie_chart', 'stat_blocks', 'pyramid', 'quote', 'lesson_summary'];
-const SLIDE_MIN = 10, SLIDE_MAX = 15;
+const SLIDE_MIN = 10, SLIDE_MAX = 18; // widest bounds; per-course limits clamp within
 
 // ── Prompt ───────────────────────────────────────────────────
 function buildPrompt(ctx) {
   const { courseType, courseTitle, lectureTitle, lectureDate, week, day, subtopics, objectives, resources } = ctx;
   const lim = IMAGE_LIMITS[courseType] || IMAGE_LIMITS.Programming;
+  const sl = SLIDE_LIMITS[courseType] || SLIDE_LIMITS.Programming;
+  const illusMin = ILLUS_MIN[courseType] || ILLUS_MIN.Programming;
 
   const filmStyle =
     `This is a FILM SCHOOL / VIDEOGRAPHY class. Slides must be pictorial, cinematic, clean, practical and visual — suited to camera, lighting, sound, editing, storytelling, directing and production. ` +
@@ -43,15 +53,17 @@ Create ONE complete lecture (web slides + readable lesson notes) for beginner st
 ${courseType === 'Film' ? filmStyle : progStyle}
 
 RULES
-- Produce between ${SLIDE_MIN} and ${SLIDE_MAX} slides. Slide 1 MUST be layout_type "title"; the final slide MUST be "lesson_summary".
+- Produce between ${sl.min} and ${sl.max} slides. Slide 1 MUST be layout_type "title"; the final slide MUST be "lesson_summary".
 - SLIDES ARE NOT LESSON NOTES. A slide carries at most ~30 words of visible text. Write "on_slide_text" as 3-5 punchy fragments of max 8 words each, ONE PER LINE (separate with \\n) — never sentences stacked into paragraphs. For 'title' and 'full_image_overlay' layouts use ONE short line.
 - "main_explanation" is what the teacher SAYS while this slide is up (2-4 sentences). Students only see it behind an "Explain more" toggle — never rely on it being visible, and never repeat on_slide_text inside it.
 - DESIGN LIKE A TOP-TIER CORPORATE DECK (Gamma / keynote standard). Every slide is a designed FIGURE — a chart, diagram, table, comparison, timeline or stat board — never a page of text. Plain text-only slides are forbidden.
 - LAYOUT VARIETY IS MANDATORY: never use the same layout_type on two consecutive slides, and use at least 6 different layout_type values across the deck. Hard mix requirements:
-  * at least 4 ILLUSTRATION slides — hand-drawn instructional diagrams you draw in SVG (see DRAWINGS below). These are the heart of the lesson; favour them over plain text or comparison slides.
+  * ${lim.default}-${lim.max} PHOTO slides (image_left_text_right / image_right_text_left / full_image_overlay) with "image_required": true — see PHOTOS below. These show the real thing.
+  * at least ${illusMin} ILLUSTRATION slides — hand-drawn instructional diagrams you draw in SVG (see DRAWINGS below). These explain the underlying idea.
   * at least 2 DATA slides from: table, bar_chart, pie_chart, stat_blocks — real numbers from the topic (rates, sizes, percentages, durations, prices), never invented filler.
-  * at least 2 STRUCTURE slides from: diagram, flowchart, timeline, pyramid — for processes, hierarchies, relationships and anatomy.
+  * at least 1 STRUCTURE slide from: diagram, flowchart, timeline, pyramid — for processes, hierarchies, relationships and anatomy.
   * cards_grid for grouped concepts; comparison whenever two things contrast; quote at most ONCE (a famous, relevant line worth pausing on).
+  * Pair them up where it helps: a PHOTO showing the real thing next to (or before) an ILLUSTRATION explaining why — that combination is how this subject is best taught.
 - A table beats a list, a chart beats numbers in prose, a diagram beats a paragraph — whenever content is data, steps, anatomy or relationships, pick the figure layout.
 - Per-layout on_slide_text formats (follow EXACTLY — the renderer parses these):
   * table — first line is the header row, then 3-6 data rows; cells separated by " | " (2-4 short columns).
@@ -74,8 +86,12 @@ RULES
   * Palette: ink #23262D for main strokes/labels, accent #D66A1F (orange) and #1E4BFF (blue) for highlights, soft fills #F2EEE5 / #E3DDD1, white #FFFFFF. Stroke-width 2-3, rounded caps/joins. Assume a light paper background.
   * LABEL everything with <text> (font-family="Segoe UI, sans-serif", font-size 13-17, fill #23262D, font-weight 700 for key labels). Use arrows (a line + small polygon head, or a marker) to show direction/flow. Keep it to 4-9 labelled parts — clear, not cluttered.
   * It must be genuinely instructional and specific to THIS slide's concept, not decorative.
-- PHOTOS ONLY WHERE NECESSARY: mark "image_required": true ONLY where a real photograph teaches better than any chart, diagram or illustration (at most ${lim.max}, typically ${lim.default}). Every other slide MUST be "image_required": false and teach through a structured layout.
-- For image slides: write a vivid "image_prompt" describing ONE clear subject with setting, lighting and mood, and a "negative_prompt" of "text, words, captions, letters, logos, watermark, UI". Never bake text into images — the portal overlays real text.
+- PHOTOS — CLEAR TEACHING EXAMPLES: include ${lim.default}-${lim.max} photo slides marked "image_required": true. Every photo must be an UNMISTAKABLE, textbook-clear example of THIS slide's principle, OR a real ${courseType === 'Film' ? 'film-school set with students/crew applying it (operating the camera, setting up lights, recording sound, reviewing footage)' : 'workspace where the concept is visibly in use'} — never a vague or decorative stock shot. The viewer should grasp the principle from the photo alone.
+  * Write a precise, photographic "image_prompt": name the ONE clear subject, the camera/framing, the lighting, and exactly what visibly demonstrates the principle. ${courseType === 'Film'
+    ? 'e.g. shallow depth of field → "a portrait subject tack-sharp in the foreground with the background melted into soft creamy bokeh, 85mm lens look, eye-level"; three-point lighting → "a film-school studio: a student adjusting a softbox key light at 45°, a fill light opposite and a rim light behind the subject, light stands and a camera on a tripod visible"; rule of thirds → "a cinematographer framing a subject placed on the left third line, viewfinder grid implied".'
+    : 'e.g. "a clean close-up of a laptop screen scene that clearly stages the concept", "two students pair-programming at a desk, pointing at the screen".'}
+  * Add a "negative_prompt": "text, words, captions, letters, logos, watermark, UI, blurry, cluttered". Never bake text into images — the portal overlays real text.
+  * Every NON-photo slide MUST be "image_required": false and teach through a structured layout (illustration/diagram/chart/etc.).
 - "animation_type" must be one of: ${ANIMATIONS.join(', ')}.
 - "layout_type" must be one of: ${LAYOUTS.join(', ')}.
 - Lesson notes are the DEEP reading material, read before class: intro, main sections (with key_points), important terms, practical examples and a summary. Full-detail teaching lives in the notes; the summarized visual version lives on the slides.
@@ -117,8 +133,9 @@ function validatePackage(pkg, courseType) {
     throw new Error('model did not return a usable lecture_package.slides array');
   }
   const lim = IMAGE_LIMITS[courseType] || IMAGE_LIMITS.Programming;
+  const sl = SLIDE_LIMITS[courseType] || SLIDE_LIMITS.Programming;
 
-  let slides = lp.slides.slice(0, SLIDE_MAX).map((s, i) => ({
+  let slides = lp.slides.slice(0, sl.max).map((s, i) => ({
     slide_number: i + 1,
     slide_title: String(s.slide_title || '').trim(),
     slide_type: String(s.slide_type || 'content').trim(),
@@ -171,7 +188,7 @@ function validatePackage(pkg, courseType) {
     slides,
     lesson_notes: lessonNotes,
     image_count: slides.filter(s => s.image_required).length,
-    short: slides.length < SLIDE_MIN,
+    short: slides.length < sl.min,
   };
 }
 

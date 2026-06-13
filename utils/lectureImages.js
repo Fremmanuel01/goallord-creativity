@@ -159,25 +159,25 @@ async function uploadImage({ url, b64, publicId }) {
 // instruction (text is overlaid by the portal, never baked into the image).
 function buildImagePrompt(slide, courseType) {
   const style = courseType === 'Film'
-    ? 'Cinematic, photorealistic, professional film still, dramatic lighting, high detail, 16:9.'
+    ? 'Photorealistic, sharp, well-lit documentary photograph that CLEARLY demonstrates the concept; a believable film-school set or shoot with students/crew and real gear where relevant; crisp focus on the subject, uncluttered, textbook-clear, natural detail, 16:9.'
     : 'Clean modern tech concept illustration, flat vector style, soft palette, lots of negative space, 16:9.';
   const neg = slide.negative_prompt || 'text, words, captions, letters, logos, watermark, UI';
   return `${slide.image_prompt}\n\nStyle: ${style}\nDo NOT render any text, letters, words, captions, labels, logos or UI. Leave clean empty space for text overlay. Avoid: ${neg}.`;
 }
 
-// Choose which slides get images: the model's image_required ones, capped at max.
-// Photos are used only where they genuinely teach best (Gamma-style decks teach
-// through charts/diagrams/shapes); we only top up to the course MINIMUM, and only
-// from photo-suitable layouts (never force a diagram/code slide to become a photo).
+// Choose which slides get images: the model's image_required ones, capped at max,
+// then topped up to the course DEFAULT so every deck carries a solid set of clear
+// instructional photos — only from photo-suitable layouts (never force a
+// diagram/code slide to become a photo).
 function selectImageSlides(slides, courseType) {
   const lim = IMAGE_LIMITS[courseType] || IMAGE_LIMITS.Programming;
   const chosen = new Set();
   for (const s of slides) {
     if (s.image_required && chosen.size < lim.max) chosen.add(s.slide_number);
   }
-  if (chosen.size < lim.min) {
+  if (chosen.size < lim.default) {
     for (const s of slides) {
-      if (chosen.size >= lim.min) break;
+      if (chosen.size >= lim.default) break;
       if (!chosen.has(s.slide_number) && IMAGE_LAYOUTS.includes(s.layout_type)) chosen.add(s.slide_number);
     }
   }
