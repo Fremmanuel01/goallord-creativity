@@ -445,6 +445,7 @@
     <button class="tab" onclick="switchTab('assignments')">Assignments</button>
     <button class="tab" onclick="switchTab('flashcards')">Flashcards</button>
     <button class="tab" onclick="switchTab('lectures')">Lectures</button>
+    <button class="tab" onclick="switchTab('notifications')">Notifications</button>
     <button class="tab" onclick="switchTab('messages')">Messages<span id="msgTabBadge" style="display:none;margin-left:6px;background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;"></span></button>
     <button class="tab" onclick="switchTab('profile')">Profile</button>
   </div>
@@ -825,6 +826,21 @@
     <div id="lvNotes" style="display:none;flex:1;overflow-y:auto;padding:28px 20px;"></div>
   </div>
 
+  <!-- ── NOTIFICATIONS TAB (what's been sent to me) ── -->
+  <div id="tab-notifications" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:6px;">
+      <div class="section-title" style="margin:0">Notifications</div>
+      <button onclick="markAllReadFull()" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600">Mark all read</button>
+    </div>
+    <p style="color:var(--muted);font-size:14px;margin:0 0 20px">Everything sent to you — class reminders, lecture alerts and flashcard alerts.</p>
+    <div class="stats-grid">
+      <div class="stat-card blue"><div class="stat-label">Class reminders</div><div class="stat-value" id="snl-class">-</div></div>
+      <div class="stat-card orange"><div class="stat-label">Lecture alerts</div><div class="stat-value" id="snl-lecture">-</div></div>
+      <div class="stat-card green"><div class="stat-label">Flashcard alerts</div><div class="stat-value" id="snl-flash">-</div></div>
+    </div>
+    <div id="snlList"><div class="loading">Loading…</div></div>
+  </div>
+
   <!-- ── PAYMENTS TAB ── -->
   <div id="tab-payments" style="display:none;">
     <div id="overdueAlert" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.35);border-radius:10px;padding:14px 18px;margin-bottom:20px;align-items:center;gap:12px;">
@@ -910,7 +926,7 @@
   }
 
   // ── Tab switching ────────────────────────────────────────────
-  const ALL_TABS = ['overview','attendance','payments','curriculum','materials','assignments','flashcards','lectures','messages','profile'];
+  const ALL_TABS = ['overview','attendance','payments','curriculum','materials','assignments','flashcards','lectures','notifications','messages','profile'];
   let curriculumLoaded = false;
 
   function switchTab(tab) {
@@ -925,6 +941,7 @@
     if (tab === 'assignments' && !assignmentsLoaded) loadAssignments();
     if (tab === 'flashcards'  && !flashcardsLoaded)  loadFlashcards();
     if (tab === 'lectures'    && !lecturesLoaded)    loadLectures();
+    if (tab === 'notifications') loadNotificationsTab();
     if (tab === 'attendance') loadOpenSession();
     if (tab === 'profile') loadProfile();
     if (tab === 'messages'  && !messagesLoaded)  initStudentChat();
@@ -2050,6 +2067,67 @@
     loadNotifications();
   }
 
+  // ── Notifications tab (full-page "what's been sent to me") ──────
+  const SNL_CAT = {
+    class_reminder:      { cat: 'class',     label: 'Class reminder',  bg: 'rgba(30,75,255,0.12)',  fg: '#6a9fff' },
+    lecture_published:   { cat: 'lecture',   label: 'Lecture alert',   bg: 'rgba(214,106,31,0.14)', fg: '#f0a35e' },
+    lecture_updated:     { cat: 'lecture',   label: 'Lecture alert',   bg: 'rgba(214,106,31,0.14)', fg: '#f0a35e' },
+    flashcard_ready:     { cat: 'flashcard', label: 'Flashcard alert', bg: 'rgba(34,197,94,0.14)',  fg: '#5fd089' },
+    flashcard_day_after: { cat: 'flashcard', label: 'Flashcard alert', bg: 'rgba(34,197,94,0.14)',  fg: '#5fd089' },
+  };
+  function snlMeta(type) {
+    return SNL_CAT[type] || { cat: 'other', label: 'Notification', bg: 'rgba(255,255,255,0.08)', fg: 'var(--muted)' };
+  }
+  function fmtNotifDT(d) {
+    if (!d) return '';
+    return new Date(d).toLocaleString('en-NG', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  async function loadNotificationsTab() {
+    const list = document.getElementById('snlList');
+    list.innerHTML = '<div class="loading">Loading…</div>';
+    let items = [];
+    try {
+      const res = await fetch('/api/notifications', { headers: { 'Authorization': 'Bearer ' + token } });
+      const data = await res.json();
+      items = data.notifications || [];
+    } catch { list.innerHTML = '<div class="empty">Could not load notifications.</div>'; return; }
+
+    const counts = { class: 0, lecture: 0, flashcard: 0 };
+    items.forEach(n => { const c = snlMeta(n.type).cat; if (counts[c] !== undefined) counts[c]++; });
+    document.getElementById('snl-class').textContent   = counts.class;
+    document.getElementById('snl-lecture').textContent = counts.lecture;
+    document.getElementById('snl-flash').textContent   = counts.flashcard;
+
+    if (!items.length) { list.innerHTML = '<div class="empty" style="color:var(--muted);padding:24px 4px">No notifications yet.</div>'; return; }
+    list.innerHTML = items.map(n => {
+      const m = snlMeta(n.type);
+      return `<div onclick="readNotifFull('${n._id}',this)" style="display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--border);border-left:3px solid ${n.read ? 'var(--border)' : m.fg};border-radius:10px;padding:14px 16px;margin-bottom:10px;cursor:pointer">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
+            <span style="background:${m.bg};color:${m.fg};padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700">${m.label}</span>
+            ${n.read ? '' : '<span style="width:7px;height:7px;border-radius:50%;background:#ef4444;display:inline-block"></span>'}
+            <span style="font-weight:700;font-size:15px">${escHtml(n.title || 'Notification')}</span>
+          </div>
+          <div style="color:var(--muted);font-size:14px;line-height:1.5">${escHtml(n.message || '')}</div>
+          <div style="color:var(--muted);font-size:12px;margin-top:6px">${fmtNotifDT(n.createdAt)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function readNotifFull(id, el) {
+    if (el) el.style.borderLeftColor = 'var(--border)';
+    await fetch('/api/notifications/' + id + '/read', { method: 'PATCH', headers: { 'Authorization': 'Bearer ' + token } }).catch(() => {});
+    loadNotifications();
+  }
+
+  async function markAllReadFull() {
+    await fetch('/api/notifications/read-all', { method: 'PATCH', headers: { 'Authorization': 'Bearer ' + token } }).catch(() => {});
+    loadNotificationsTab();
+    loadNotifications();
+  }
+
   // Load bell badge count on init
   loadNotifications();
 
@@ -2528,6 +2606,7 @@ function closeStudentReceipt() {
     <button class="more-link" onclick="navTo('attendance')"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg> Attendance <span class="chev">›</span></button>
     <button class="more-link" onclick="navTo('payments')"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg> Payments <span class="chev">›</span></button>
     <button class="more-link" onclick="navTo('lectures')"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/></svg> Lectures <span class="chev">›</span></button>
+    <button class="more-link" onclick="navTo('notifications')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg> Notifications <span class="chev">›</span></button>
     <button class="more-link" onclick="navTo('curriculum')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M19 17H6a2 2 0 0 0-2 2"/></svg> Curriculum <span class="chev">›</span></button>
     <button class="more-link" onclick="navTo('materials')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> Materials <span class="chev">›</span></button>
     <button class="more-link" onclick="navTo('flashcards')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></svg> Flashcards <span class="chev">›</span></button>
@@ -2536,7 +2615,7 @@ function closeStudentReceipt() {
 
   <script>
   (function () {
-    var SHEET_TABS = { attendance: 1, payments: 1, lectures: 1, curriculum: 1, materials: 1, flashcards: 1, profile: 1 };
+    var SHEET_TABS = { attendance: 1, payments: 1, lectures: 1, curriculum: 1, materials: 1, flashcards: 1, notifications: 1, profile: 1 };
     function setActive(tab) {
       var items = document.querySelectorAll('.bn-item');
       for (var i = 0; i < items.length; i++) {

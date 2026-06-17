@@ -67,6 +67,20 @@ module.exports = {
     return data;
   },
 
+  // Delivery log: notifications sent to a set of recipients, optionally limited
+  // to certain types and to those created since a cutoff. Powers the dashboard
+  // "what's been sent" panels for lecturers/admins.
+  async sentLog({ recipientIds = [], types = [], since = null, limit = 300 } = {}) {
+    if (!recipientIds.length) return [];
+    let q = supabase.from(TABLE).select('*').in('recipient_id', recipientIds);
+    if (types.length) q = q.in('type', types);
+    if (since) q = q.gte('created_at', since);
+    q = q.order('created_at', { ascending: false }).limit(limit);
+    const { data, error } = await q;
+    if (error) throw error;
+    return data || [];
+  },
+
   async exists(filter = {}) {
     let q = supabase.from(TABLE).select('id', { count: 'exact', head: true });
     for (const [key, val] of Object.entries(filter)) {
