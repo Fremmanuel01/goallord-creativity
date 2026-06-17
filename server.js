@@ -115,6 +115,7 @@ function csrfCheck(req, res, next) {
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
   if (req.path.includes('/upload')) return next();
   if (req.path.startsWith('/webhooks/') || req.path === '/webhooks') return next();
+  if (req.path.startsWith('/cron/')) return next(); // secret-key protected machine endpoint
   const cookie = req.cookies && req.cookies._csrf;
   const header = req.headers['x-csrf-token'];
   if (!cookie || !header || cookie !== header) {
@@ -241,6 +242,7 @@ app.use('/api/flashcards',    require('./routes/flashcards'));
 app.use('/api/lectures',      require('./routes/lectures'));
 app.use('/api/curriculum',    require('./routes/curriculum'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/cron',          require('./routes/cron'));
 app.use('/api/push',          require('./routes/push'));
 app.use('/api/chat',          require('./routes/chat'));
 app.use('/api/conversations', require('./routes/conversations'));

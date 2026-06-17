@@ -1,0 +1,69 @@
+name: Scheduled reminders
+
+# Fires the time-based jobs from an external scheduler so they run even when the
+# Render free-tier web service has spun down (in-process node-cron misses its
+# window while the process is asleep). Each job is idempotent server-side, so an
+# occasional double-run never double-sends. Times are UTC; the academy runs on
+# West Africa Time (WAT = UTC+1), so subtract 1 hour from the WAT target.
+on:
+  schedule:
+    - cron: '0 5 * * 3,4'   # 06:00 WAT Wed & Thu  -> class reminders
+    - cron: '0 8 * * *'     # 09:00 WAT daily      -> flashcard day-after nudges
+    - cron: '0 4 * * *'     # 05:00 WAT daily      -> lecture generation
+    - cron: '30 4 * * *'    # 05:30 WAT daily      -> daily checks (payments/deadlines/applicants)
+  workflow_dispatch:
+    inputs:
+      job:
+        description: Job to run now
+        required: true
+        default: class-reminders
+        type: choice
+        options:
+          - class-reminders
+          - flashcard-day-after
+          - lecture-generation
+          - daily-checks
+
+concurrency:
+  group: scheduled-reminders
+  cancel-in-progress: false
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pick job from schedule
+        id: pick
+        run: |
+          case "${{ github.event.schedule }}" in
+            "0 5 * * 3,4") job=class-reminders ;;
+            "0 8 * * *")   job=flashcard-day-after ;;
+            "0 4 * * *")   job=lecture-generation ;;
+            "30 4 * * *")  job=daily-checks ;;
+            *)             job="${{ github.event.inputs.job }}" ;;
+          esac
+          echo "job=$job" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger ${{ steps.pick.outputs.job }}
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          HOST: ${{ vars.CRON_HOST || 'https://goallordcreativity.com' }}
+        run: |
+          job="${{ steps.pick.outputs.job }}"
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET secret is not set in the repository. Add it under Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+          echo "Triggering '$job' on $HOST"
+          # Render free tier can take ~30-60s to wake; allow generous timeouts and one retry.
+          code=$(curl -sS --max-time 180 --retry 2 --retry-delay 30 --retry-all-errors \
+            -o /tmp/cron_out.json -w '%{http_code}' \
+            -X POST -H "X-Cron-Key: $CRON_SECRET" \
+            "$HOST/api/cron/$job") || true
+          echo "HTTP $code"
+          cat /tmp/cron_out.json 2>/dev/null || true
+          echo
+          if [ "$code" != "200" ]; then
+            echo "::error::Trigger for '$job' returned HTTP $code"
+            exit 1
+          fi

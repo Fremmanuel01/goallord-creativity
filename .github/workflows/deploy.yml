@@ -1,0 +1,33 @@
+name: Deploy to Render
+
+# Reliable auto-deploy: Render's native GitHub auto-deploy has not been firing,
+# leaving production several commits behind. This pings a Render Deploy Hook on
+# every push to master so deploys happen regardless of the GitHub integration.
+#
+# One-time setup: in the Render dashboard open the service -> Settings ->
+# "Deploy Hook", copy the URL, then add it as a repo secret named
+# RENDER_DEPLOY_HOOK (Settings -> Secrets and variables -> Actions). Until that
+# secret exists this workflow safely no-ops.
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: render-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy hook
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "RENDER_DEPLOY_HOOK is not set — skipping. Add it in Settings -> Secrets to enable auto-deploy."
+            exit 0
+          fi
+          echo "Triggering Render deploy..."
+          curl -fsSL -X POST "$HOOK" && echo "Render deploy triggered."

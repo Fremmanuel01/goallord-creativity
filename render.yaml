@@ -56,6 +56,10 @@ services:
         sync: false
       - key: HOST
         sync: false
+      # Shared secret for the external scheduler that triggers /api/cron/* jobs.
+      # Must match the CRON_SECRET repo secret used by .github/workflows/reminders.yml
+      - key: CRON_SECRET
+        sync: false
       # Fees & bank details - non-secret config
       - key: APPLICATION_FEE
         value: "20000"
