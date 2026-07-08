@@ -662,6 +662,17 @@ router.post('/:id/reset-password', requireAuth, async (req, res) => {
 // ── DELETE /api/students/:id - admin ───────────────────────────
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
+    // Mark the linked applicant Rejected so (a) the paid-but-no-account
+    // recovery sweep never resurrects a deliberately deleted student, and
+    // (b) the person can re-apply cleanly if needed.
+    try {
+      const student = await studentsDb.findById(req.params.id);
+      if (student && student.applicant_ref) {
+        await applicantsDb.update(student.applicant_ref, { status: 'Rejected' });
+      }
+    } catch (e) {
+      console.error('Could not update linked applicant on student delete:', e.message);
+    }
     await studentsDb.remove(req.params.id);
     res.json({ success: true });
   } catch (err) {

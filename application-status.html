@@ -183,7 +183,31 @@ async function checkStatus(e) {
     } else if (data.paymentUrl) {
       actions.innerHTML = '<a href="' + data.paymentUrl + '" class="action-link action-primary">Complete Payment</a>';
     } else if (!data.emailVerified) {
-      actions.innerHTML = '<span style="font-size:13px;color:var(--muted);">Check your inbox for the verification email, or <a href="apply.html" style="color:var(--orange);font-weight:600;">reapply</a> if the link has expired.</span>';
+      actions.innerHTML =
+        '<span style="font-size:13px;color:var(--muted);display:block;margin-bottom:10px;">Check your inbox (and spam) for the verification email. Nothing there?</span>' +
+        '<button id="resendVerifyBtn" class="action-link action-primary" style="border:none;cursor:pointer;font:inherit;">Resend Verification Email</button>' +
+        '<div id="resendVerifyStatus" style="font-size:12px;margin-top:8px;"></div>';
+      document.getElementById('resendVerifyBtn').onclick = async function() {
+        var b = this, s = document.getElementById('resendVerifyStatus');
+        b.disabled = true; b.textContent = 'Sending…'; s.textContent = '';
+        try {
+          var rr = await fetch('/api/applicants/' + data.applicantId + '/resend-verification', { method: 'POST' });
+          var rd = await rr.json().catch(function() { return {}; });
+          if (rr.ok) {
+            s.style.color = '#22c55e';
+            s.textContent = '✓ Sent - check your inbox and spam folder.';
+            b.textContent = 'Email Sent';
+          } else {
+            s.style.color = '#fca5a5';
+            s.textContent = rd.error || 'Could not resend. Please try again later.';
+            b.disabled = false; b.textContent = 'Resend Verification Email';
+          }
+        } catch (e2) {
+          s.style.color = '#fca5a5';
+          s.textContent = 'Network error. Please try again.';
+          b.disabled = false; b.textContent = 'Resend Verification Email';
+        }
+      };
     }
 
     res.style.display = 'block';

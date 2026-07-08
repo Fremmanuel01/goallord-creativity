@@ -46,14 +46,11 @@ async function syncStudentPaymentStatus(studentId) {
   }
 }
 
-// Generate receipt number
+// Generate receipt number. Random suffix instead of a row count: the count
+// approach hands two concurrent payments the same number.
 async function generateReceiptNumber() {
-  const { count, error } = await supabase
-    .from(TABLE)
-    .select('id', { count: 'exact', head: true })
-    .neq('receipt_number', '');
-  if (error) throw error;
-  return 'RCP-' + new Date().getFullYear() + '-' + String((count || 0) + 1).padStart(4, '0');
+  const rand = require('crypto').randomBytes(3).toString('hex').toUpperCase();
+  return 'RCP-' + new Date().getFullYear() + '-' + rand;
 }
 
 module.exports = {

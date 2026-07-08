@@ -3,6 +3,7 @@ const supabase     = require('../lib/supabase');
 const applicantsDb = require('../db/applicants');
 const studentsDb   = require('../db/students');
 const { createStudentFromApplicant } = require('./enrolStudent');
+const { notifyAdmin } = require('./mailer');
 
 // Verify a Paystack transaction by reference
 function verifyPaystack(reference) {
@@ -72,6 +73,35 @@ async function runPaymentRecovery() {
 
     if (!match) continue;
 
+    // The reference and metadata are constructed CLIENT-SIDE with the public
+    // key, so a success flag alone proves nothing about the amount. Require
+    // the full expected total in NGN before auto-enrolling.
+    const plan = match.metadata.plan || app.pending_payment_plan || 'monthly';
+    const appFee     = Number(process.env.APPLICATION_FEE)     || 20000;
+    const fullFee    = Number(process.env.FULL_TUITION_FEE)    || 300000;
+    const monthlyFee = Number(process.env.MONTHLY_TUITION_FEE) || 100000;
+    const expected   = appFee + (plan === 'full' ? fullFee : monthlyFee);
+    if (match.currency && match.currency !== 'NGN') {
+      console.warn(`Payment recovery: skipping ${app.email} - currency ${match.currency}`);
+      continue;
+    }
+    if ((match.amount / 100) < expected) {
+      console.warn(`Payment recovery: skipping ${app.email} - paid ${match.amount / 100}, expected ${expected}`);
+      await notifyAdmin({
+        subject: `Underpaid enrolment transaction: ${app.full_name}`,
+        heading: 'Successful charge below the expected total',
+        intro:   `A successful Paystack charge exists for <strong>${app.full_name}</strong> but the amount is below the expected enrolment total, so they were NOT auto-enrolled. Please review.`,
+        infoRows: [
+          { label: 'Applicant', value: app.full_name },
+          { label: 'Email', value: app.email },
+          { label: 'Reference', value: match.reference },
+          { label: 'Paid', value: '₦' + (match.amount / 100).toLocaleString() },
+          { label: 'Expected', value: '₦' + expected.toLocaleString() }
+        ]
+      });
+      continue;
+    }
+
     // Check if this reference was already processed
     const { data: dupRefs } = await supabase
       .from('payments').select('id').eq('reference', match.reference).limit(1);
@@ -82,12 +112,11 @@ async function runPaymentRecovery() {
     if (existingStudent) continue;
 
     // Recover: mark paid and create student
-    const plan = match.metadata.plan || app.pending_payment_plan || 'monthly';
-
     try {
       await applicantsDb.update(app.id, {
         application_fee_paid: true,
         application_fee_ref:  match.reference,
+        pending_payment_plan: plan,
         status:               'Accepted'
       });
 
@@ -101,10 +130,80 @@ async function runPaymentRecovery() {
       console.log(`Payment recovery: enrolled ${app.email} (ref: ${match.reference})`);
     } catch (e) {
       console.error(`Payment recovery: failed to enrol ${app.email}:`, e.message);
+      await notifyAdmin({
+        subject: `URGENT: paid applicant has no student account - ${app.full_name}`,
+        heading: 'Recovery enrolment failed',
+        intro:   `<strong>${app.full_name}</strong> has a verified Paystack payment but their student account could not be created (${e.message}). The orphan sweep will retry on the next run.`,
+        infoRows: [
+          { label: 'Applicant', value: app.full_name },
+          { label: 'Email', value: app.email },
+          { label: 'Reference', value: match.reference }
+        ]
+      });
     }
   }
 
   if (recovered > 0) console.log(`Payment recovery: recovered ${recovered} payment(s)`);
+
+  // Second sweep: applicants flagged paid whose student account was never
+  // created (a previous pay-application / confirm-fee / recovery run failed
+  // between the flag update and student creation). Without this, that state
+  // is permanent - the applicant is locked out of the payment page and the
+  // main sweep above skips them (it only scans application_fee_paid=false).
+  await runOrphanedEnrolments();
+}
+
+// Enrol applicants who are marked paid but have no student account.
+// Only status='Accepted' is considered: deleting a student sets the linked
+// applicant to 'Rejected', which keeps deliberate deletions out of this sweep.
+async function runOrphanedEnrolments() {
+  const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const { data: paid, error } = await supabase
+    .from('applicants')
+    .select('*')
+    .eq('application_fee_paid', true)
+    .eq('status', 'Accepted')
+    .gt('created_at', cutoff)
+    .limit(50);
+  if (error) throw error;
+
+  for (const app of (paid || [])) {
+    const existing = await studentsDb.findByEmail(app.email);
+    if (existing) continue; // normal case - account exists
+
+    const plan   = app.pending_payment_plan || 'monthly';
+    const isCash = String(app.application_fee_ref || '').startsWith('CASH-');
+    try {
+      const student = await createStudentFromApplicant(app, plan, {
+        tuitionPaid: true,
+        reference:   app.application_fee_ref || '',
+        method:      isCash ? 'Cash' : (String(app.application_fee_ref || '').startsWith('ENROL-') ? 'Paystack' : 'Bank Transfer')
+      });
+      console.log(`Orphan sweep: enrolled ${app.email}`);
+      await notifyAdmin({
+        subject: `Recovered: student account created for ${app.full_name}`,
+        heading: 'Orphaned paid applicant enrolled',
+        intro:   `<strong>${app.full_name}</strong> had paid but had no student account. The sweep has now created it${student._acceptanceEmailSent === false ? ', but the login-details email FAILED - please resend their credentials' : ' and emailed their login details'}.`,
+        infoRows: [
+          { label: 'Applicant', value: app.full_name },
+          { label: 'Email', value: app.email },
+          { label: 'Reference', value: app.application_fee_ref || '' }
+        ]
+      });
+    } catch (e) {
+      console.error(`Orphan sweep: failed to enrol ${app.email}:`, e.message);
+      await notifyAdmin({
+        subject: `URGENT: paid applicant has no student account - ${app.full_name}`,
+        heading: 'Orphan sweep enrolment failed',
+        intro:   `<strong>${app.full_name}</strong> is marked as paid but their student account could not be created (${e.message}). Manual intervention needed.`,
+        infoRows: [
+          { label: 'Applicant', value: app.full_name },
+          { label: 'Email', value: app.email },
+          { label: 'Reference', value: app.application_fee_ref || '' }
+        ]
+      });
+    }
+  }
 }
 
 // Search Paystack transactions by customer email
@@ -132,4 +231,4 @@ function searchPaystackTransactions(email) {
   });
 }
 
-module.exports = { runPaymentRecovery };
+module.exports = { runPaymentRecovery, runOrphanedEnrolments };

@@ -27,7 +27,7 @@
 
 const express = require('express');
 const crypto  = require('crypto');
-const { sendMail } = require('../utils/mailer');
+const { sendMail, notifyAdmin } = require('../utils/mailer');
 const { paymentRetryEmail } = require('../utils/emailTemplates');
 
 const router = express.Router();
@@ -113,6 +113,14 @@ async function handlePaystackEvent(event) {
   // that are safer to handle through their dedicated endpoints. Track this
   // as a follow-up backlog item.
   const meta = data.metadata || {};
+  // Grace window: the webhook usually lands seconds after the charge, while
+  // the client-side verify call is still mid-flight. Re-check before alerting
+  // so every normal enrolment doesn't false-alarm the admin inbox.
+  await new Promise(r => setTimeout(r, 3 * 60 * 1000));
+  if (await isReferenceKnown(reference)) {
+    console.log('[webhook] reference settled within grace window', { reference });
+    return;
+  }
   console.warn(
     '[webhook] unrecognised charge.success - possible failed client-side verify',
     {
@@ -124,6 +132,21 @@ async function handlePaystackEvent(event) {
       metadata: meta
     }
   );
+  // Console logs on the free tier are ephemeral - money with no record must
+  // reach a human. The daily recovery job auto-fixes ENROL refs; everything
+  // else needs manual reconciliation.
+  await notifyAdmin({
+    subject: `Unmatched Paystack payment: ${reference}`,
+    heading: 'Successful charge with no matching record',
+    intro:   'Paystack reports a successful charge that does not match any payment, order, or applicant in the system. The payer\'s money was taken but nothing was recorded - please reconcile.',
+    infoRows: [
+      { label: 'Reference', value: reference },
+      { label: 'Amount', value: (data.currency || 'NGN') + ' ' + (Number(data.amount || 0) / 100).toLocaleString() },
+      { label: 'Payer email', value: (data.customer && data.customer.email) || 'unknown' },
+      { label: 'Paid at', value: data.paid_at || '' },
+      { label: 'Metadata', value: JSON.stringify(meta).slice(0, 200) }
+    ]
+  });
 }
 
 // Best-effort retry nudge for a failed charge. Matches the payer to a student

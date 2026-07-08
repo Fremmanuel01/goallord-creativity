@@ -595,6 +595,13 @@
                 document.getElementById('successEmail').textContent = payload.email;
                 $form.addClass('d-none');
                 $('#applySuccess').removeClass('d-none');
+                if (data.emailSent === false) {
+                    var rs = document.getElementById('resendStatus');
+                    if (rs) {
+                        rs.style.color = '#fca5a5';
+                        rs.textContent = 'We could not send the verification email. Please use the resend button below in a few minutes.';
+                    }
+                }
             } catch (err) {
                 document.getElementById('submitOverlay').classList.remove('show');
                 banner.textContent = err.message;

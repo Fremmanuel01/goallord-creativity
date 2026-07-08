@@ -2412,6 +2412,7 @@ function payWithPaystack(paymentId, amountDue, email) {
     amount: Math.round(amountDue) * 100,
     currency: 'NGN',
     ref: 'GL-' + paymentId + '-' + Date.now(),
+    metadata: { paymentId: paymentId },
     onSuccess: async function(transaction) {
       try {
         const res = await fetch('/api/payments/' + paymentId + '/paystack', {

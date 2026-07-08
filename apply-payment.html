@@ -502,6 +502,10 @@ const fmtD = d => d.toLocaleDateString('en-GB', { day:'numeric', month:'short', 
     setText('applicantInitial', app.fullName.charAt(0).toUpperCase());
     show('applicantStrip', 'flex');
 
+    if (app.enrolled) {
+      crash('Your student account is already active - paying again here would charge you twice. Please log in at the student portal (use Forgot Password if you never received login details).');
+      return;
+    }
     if (app.applicationFeePaid) {
       crash('Your application fee has already been paid. Please check your email for login details, or contact admin for help.');
     }
@@ -681,7 +685,7 @@ function payWithPaystack() {
   try { handler.openIframe(); }
   catch (e) {
     clearTimeout(psTimer);
-    resetBtn(btn, 'Pay ₦' + fmt(appFee) + ' - Card or Bank (Paystack)');
+    resetBtn(btn, 'Pay ₦' + fmt(totalCharge) + ' Now - Card or Bank (Paystack)');
     errEl.textContent   = 'Could not open payment. Please use bank transfer.';
     errEl.style.display = 'block';
   }

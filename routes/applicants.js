@@ -5,7 +5,7 @@ const applicantsDb = require('../db/applicants');
 const studentsDb   = require('../db/students');
 const paymentsDb   = require('../db/payments');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
-const { sendMail }    = require('../utils/mailer');
+const { sendMail, notifyAdmin } = require('../utils/mailer');
 const { verificationEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail } = require('../utils/emailTemplates');
 const rateLimit = require('express-rate-limit');
 const xss = require('xss');
@@ -145,6 +145,7 @@ router.post('/', applyLimiter, async (req, res) => {
     const host      = process.env.HOST || `${req.protocol}://${req.get('host')}`;
     const verifyUrl = `${host}/api/applicants/verify/${token}`;
 
+    let verifyEmailSent = true;
     try {
       await sendMail({
         to:      applicant.email,
@@ -152,6 +153,7 @@ router.post('/', applyLimiter, async (req, res) => {
         html:    verificationEmail({ fullName: applicant.full_name, verifyUrl })
       });
     } catch (mailErr) {
+      verifyEmailSent = false;
       console.error('Verification email failed:', mailErr.message);
     }
 
@@ -172,7 +174,7 @@ router.post('/', applyLimiter, async (req, res) => {
       console.error('Admin notification failed:', mailErr.message);
     }
 
-    res.status(201).json({ success: true, id: applicant.id, emailSent: true });
+    res.status(201).json({ success: true, id: applicant.id, emailSent: verifyEmailSent });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -227,11 +229,15 @@ router.get('/:id/payment-info', async (req, res) => {
     const applicant = await applicantsDb.findById(req.params.id);
     if (!applicant) return res.status(404).json({ error: 'Application not found' });
     if (!applicant.email_verified) return res.status(403).json({ error: 'Email not verified. Please click the link we sent to your inbox first.' });
+    // If a student account already exists (e.g. admin accepted manually),
+    // block the page so the applicant can't be charged a second time.
+    const enrolled = !!(await studentsDb.findByEmail(applicant.email));
     res.json({
       fullName:           applicant.full_name,
       email:              applicant.email,
       track:              applicant.track,
-      applicationFeePaid: applicant.application_fee_paid
+      applicationFeePaid: applicant.application_fee_paid,
+      enrolled
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -358,10 +364,12 @@ router.post('/:id/pay-application', async (req, res) => {
     if (amountPaid < totalExpected)
       return res.status(400).json({ error: `Amount paid (₦${amountPaid.toLocaleString()}) is less than required total (₦${totalExpected.toLocaleString()})` });
 
-    // Mark fee paid
+    // Mark fee paid. pending_payment_plan is persisted so that if student
+    // creation fails below, the recovery sweep knows which plan to enrol with.
     await applicantsDb.update(applicant.id, {
       application_fee_paid: true,
       application_fee_ref:  reference,
+      pending_payment_plan: paymentPlan,
       status:               'Accepted'
     });
 
@@ -407,6 +415,35 @@ router.post('/:id/pay-application', async (req, res) => {
             message: 'Your payment was processed successfully. If you did not receive login details, use the Forgot Password link on the student login page.'
           });
         }
+        // Fee marked paid but student creation failed - retry once right here
+        // so the user leaves this request with a working account if possible.
+        try {
+          const student = await createStudentFromApplicant(refreshed, req.body.paymentPlan || refreshed.pending_payment_plan || 'monthly', {
+            tuitionPaid: true, reference: refreshed.application_fee_ref, method: 'Paystack'
+          });
+          return res.json({
+            success: true,
+            recovered: true,
+            studentId: student.id,
+            emailSent: student._acceptanceEmailSent !== false,
+            message: 'Your payment was processed and your account is now active. Check your email for login details.'
+          });
+        } catch (retryErr) {
+          console.error('pay-application enrolment retry failed:', retryErr.message);
+          // Paid, no account, retry failed: tell admin NOW. The daily
+          // recovery sweep will also keep retrying.
+          notifyAdmin({
+            subject: `URGENT: paid applicant has no student account - ${refreshed.full_name}`,
+            heading: 'Enrolment failed after payment',
+            intro:   `<strong>${refreshed.full_name}</strong> paid successfully but their student account could not be created (${retryErr.message}). The daily recovery job will retry, but please check the dashboard.`,
+            infoRows: [
+              { label: 'Applicant', value: refreshed.full_name },
+              { label: 'Email', value: refreshed.email },
+              { label: 'Reference', value: refreshed.application_fee_ref || '' },
+              { label: 'Error', value: retryErr.message }
+            ]
+          });
+        }
       }
     } catch {}
     // Otherwise give a friendly, non-leaky error
@@ -436,6 +473,20 @@ router.post('/:id/bank-transfer-fee', async (req, res) => {
     await applicantsDb.update(applicant.id, {
       application_fee_ref:  reference,
       pending_payment_plan: paymentPlan
+    });
+
+    // The pending overlay promises 24h confirmation - make sure admin hears
+    // about it without having to open the dashboard.
+    notifyAdmin({
+      subject: `Bank transfer to confirm: ${applicant.full_name}`,
+      heading: 'Bank transfer awaiting confirmation',
+      intro:   `<strong>${applicant.full_name}</strong> submitted a bank transfer reference for their enrolment. Confirm it from the dashboard to activate their account.`,
+      infoRows: [
+        { label: 'Applicant', value: applicant.full_name },
+        { label: 'Email', value: applicant.email },
+        { label: 'Reference', value: reference },
+        { label: 'Plan', value: paymentPlan }
+      ]
     });
 
     res.json({ success: true, message: 'Transfer reference submitted. Admin will confirm within 24 hours and you\'ll receive login details by email.' });
@@ -472,6 +523,19 @@ router.post('/:id/cash-application', async (req, res) => {
       notes:                newNotes
     });
 
+    notifyAdmin({
+      subject: `Cash payment to confirm: ${applicant.full_name}`,
+      heading: 'Cash payment awaiting confirmation',
+      intro:   `<strong>${applicant.full_name}</strong> recorded a cash payment at the office. Confirm it from the dashboard to activate their account.`,
+      infoRows: [
+        { label: 'Applicant', value: applicant.full_name },
+        { label: 'Email', value: applicant.email },
+        { label: 'Reference', value: cashRef },
+        { label: 'Plan', value: paymentPlan },
+        { label: 'Collected by', value: collected || 'not stated' }
+      ]
+    });
+
     res.json({
       success: true,
       reference: cashRef,
@@ -488,9 +552,21 @@ router.post('/:id/confirm-fee', requireAuth, async (req, res) => {
   try {
     const applicant = await applicantsDb.findById(req.params.id);
     if (!applicant) return res.status(404).json({ error: 'Application not found' });
-    if (applicant.application_fee_paid) return res.status(400).json({ error: 'Fee already confirmed' });
     if (!applicant.application_fee_ref) return res.status(400).json({ error: 'No payment reference on record' });
 
+    // Check for an existing account BEFORE mutating anything.
+    const existing = await studentsDb.findByEmail(applicant.email);
+    if (existing) {
+      // Make sure the applicant record reflects reality, then report.
+      if (!applicant.application_fee_paid) {
+        await applicantsDb.update(applicant.id, { application_fee_paid: true, status: 'Accepted' });
+      }
+      return res.status(400).json({ error: 'Student account already exists for this email' });
+    }
+
+    // If the fee was already confirmed but the student was never created
+    // (a previous attempt failed), fall through and create it now - this
+    // makes re-clicking the Confirm button the retry path.
     const paymentPlan = req.body.paymentPlan || applicant.pending_payment_plan || 'monthly';
 
     // Detect payment method from reference prefix
@@ -501,9 +577,6 @@ router.post('/:id/confirm-fee', requireAuth, async (req, res) => {
       application_fee_paid: true,
       status:               'Accepted'
     });
-
-    const existing = await studentsDb.findByEmail(applicant.email);
-    if (existing) return res.status(400).json({ error: 'Student account already exists for this email' });
 
     // Manual payment (bank or cash) covers full amount (app fee + tuition) - mark both as paid
     const student = await createStudentFromApplicant(applicant, paymentPlan, {
@@ -544,6 +617,12 @@ router.get('/check-status', async (req, res) => {
     // Include payment page link if verified but not paid
     if (applicant.email_verified && !applicant.application_fee_paid) {
       response.paymentUrl = '/apply-payment.html?id=' + applicant.id;
+    }
+
+    // Unverified: expose the id so the status page can offer a self-service
+    // resend (the id is not sensitive - it already appears in payment URLs).
+    if (!applicant.email_verified) {
+      response.applicantId = applicant.id;
     }
 
     res.json(response);
@@ -614,9 +693,12 @@ router.patch('/:id', requireAuth, async (req, res) => {
       const existing = await studentsDb.findByEmail(doc.email);
       if (!existing) {
         const paymentPlan = doc.pending_payment_plan || 'monthly';
+        // feePaid: false - a manual status flip means no money has been
+        // received; the fee and tuition rows are created as DUE, not paid.
         const student = await createStudentFromApplicant(doc, paymentPlan, {
           method: 'Admin',
-          reference: `admin-accept-${doc.id}`
+          reference: `admin-accept-${doc.id}`,
+          feePaid: false
         });
 
         const host = process.env.HOST || 'https://goallordcreativity.com';

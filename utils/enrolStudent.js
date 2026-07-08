@@ -2,7 +2,7 @@ const bcrypt       = require('bcryptjs');
 const studentsDb   = require('../db/students');
 const batchesDb    = require('../db/batches');
 const paymentsDb   = require('../db/payments');
-const { sendMail } = require('./mailer');
+const { sendMail, notifyAdmin } = require('./mailer');
 const { acceptanceEmail, adminAcceptanceNotificationEmail } = require('./emailTemplates');
 
 const TRACK_DURATION = {
@@ -26,7 +26,10 @@ function generatePassword() {
 // opts.reference    – payment reference string
 // opts.method       – 'Paystack' | 'Bank Transfer' | 'Admin'
 // opts.tuitionPaid  – true = mark tuition as paid in same transaction
+// opts.feePaid      – false = no money received yet (admin manual accept);
+//                     app fee row is created as DUE, not paid
 async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
+  const feePaid       = opts.feePaid !== false;
   const plainPassword = generatePassword();
   const hashed        = await bcrypt.hash(plainPassword, 12);
   // Place new student into the active batch for THEIR track. Fall back to
@@ -45,7 +48,7 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
     batch_id:            activeBatch ? activeBatch.id : null,
     status:              'Active',
     applicant_ref:       applicant.id,
-    application_fee_paid: true,
+    application_fee_paid: feePaid,
     payment_plan:        paymentPlan === 'full' ? 'full_upfront' : 'monthly',
     profile_picture:     applicant.profile_photo || ''
   });
@@ -79,11 +82,13 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
   const monthlyFee = Number(process.env.MONTHLY_TUITION_FEE) || 100000;
   const now = new Date();
 
+  const failedRows = [];
   const safeInsert = async (row, label) => {
     try {
       await paymentsDb.create(row);
     } catch (e) {
       console.error(`Payment row insert failed (${label}):`, e.message);
+      failedRows.push(`${label}: ${e.message}`);
     }
   };
 
@@ -92,10 +97,12 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
     batch_id:    activeBatch ? activeBatch.id : null,
     category:    'application_fee',
     amount_due:  appFee,
-    amount_paid: appFee,
-    method, reference,
+    amount_paid: feePaid ? appFee : 0,
+    method:      feePaid ? method : '',
+    reference:   feePaid ? reference : '',
     recorded_by: 'System',
-    paid_at:     new Date().toISOString()
+    paid_at:     feePaid ? new Date().toISOString() : null,
+    due_date:    feePaid ? null : new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7).toISOString()
   }, 'application_fee');
 
   if (paymentPlan === 'full') {
@@ -123,6 +130,19 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
         recorded_by: 'System'
       }, `tuition_month_${i}`);
     }
+  }
+
+  if (failedRows.length) {
+    await notifyAdmin({
+      subject: `Payment records incomplete for ${applicant.full_name}`,
+      heading: 'Payment rows failed to insert',
+      intro:   `The student account for <strong>${applicant.full_name}</strong> was created, but some payment records could not be saved. Their payment schedule is incomplete - reminders will not fire for the missing rows. Please recreate them from the dashboard.`,
+      infoRows: [
+        { label: 'Student', value: applicant.full_name },
+        { label: 'Email', value: applicant.email },
+        { label: 'Failed rows', value: failedRows.join(' | ') }
+      ]
+    });
   }
 
   await sendMail({

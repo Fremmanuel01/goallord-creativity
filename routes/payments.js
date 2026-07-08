@@ -5,7 +5,7 @@ const studentsDb = require('../db/students');
 const notificationsDb = require('../db/notifications');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { requireStudent } = require('../middleware/studentAuth');
-const { sendMail } = require('../utils/mailer');
+const { sendMail, notifyAdmin } = require('../utils/mailer');
 const { sendSms } = require('../utils/sms');
 const { receiptEmail, paymentReminderEmail, suspensionEmail, reactivationEmail, paymentRetryEmail, proformaInvoiceEmail } = require('../utils/emailTemplates');
 const supabase = require('../lib/supabase');
@@ -168,10 +168,16 @@ router.post('/:id/paystack', requireStudent, async (req, res) => {
     }
 
     // Idempotency #2: a Paystack reference may only ever settle ONE payment
-    // row. Reject replay of a reference already attached to another payment.
+    // row. Reject replay of a reference already attached to another payment
+    // - or to a shop order (cross-flow replay).
     const { data: dupRows } = await supabase
       .from('payments').select('id').eq('reference', reference).neq('id', req.params.id).limit(1);
     if (dupRows && dupRows.length) {
+      return res.status(409).json({ error: 'This payment reference has already been used.' });
+    }
+    const { data: dupOrders } = await supabase
+      .from('orders').select('id').eq('paystack_reference', reference).limit(1);
+    if (dupOrders && dupOrders.length) {
       return res.status(409).json({ error: 'This payment reference has already been used.' });
     }
 
@@ -195,6 +201,19 @@ router.post('/:id/paystack', requireStudent, async (req, res) => {
 
     const verifyOk = psData.data && psData.data.status === 'success';
     const amountOk = verifyOk && (psData.data.amount / 100 >= payment.amount_due);
+
+    // Currency must be NGN, and the charge's metadata must name THIS payment
+    // - a random successful reference from another flow proves nothing.
+    if (verifyOk && psData.data.currency && psData.data.currency !== 'NGN') {
+      return res.status(400).json({ error: `Unexpected currency: ${psData.data.currency}` });
+    }
+    if (verifyOk) {
+      const meta = psData.data.metadata || {};
+      const metaPaymentId = meta.paymentId || meta.payment_id;
+      if (!metaPaymentId || String(metaPaymentId) !== String(req.params.id)) {
+        return res.status(400).json({ error: 'Payment reference does not belong to this payment. Please retry from your dashboard.' });
+      }
+    }
 
     if (!verifyOk || !amountOk) {
       // Payment didn't complete - nudge the student to retry (best effort, once).
@@ -254,6 +273,19 @@ router.post('/:id/bank-transfer', requireStudent, async (req, res) => {
       reference,
       notes: 'Awaiting confirmation - ref: ' + reference + (notes ? (' | ' + notes) : ''),
       recorded_by: 'Student (Bank Transfer)'
+    });
+
+    notifyAdmin({
+      subject: `Student bank transfer to confirm: ${req.student.name || req.student.email}`,
+      heading: 'Tuition bank transfer awaiting confirmation',
+      intro:   `<strong>${req.student.name || req.student.email}</strong> submitted a bank transfer reference for a tuition payment. Confirm it from the dashboard.`,
+      infoRows: [
+        { label: 'Student', value: req.student.name || '' },
+        { label: 'Email', value: req.student.email || '' },
+        { label: 'Payment', value: CAT_LABELS[payment.category] || payment.category },
+        { label: 'Amount due', value: '₦' + Number(payment.amount_due || 0).toLocaleString() },
+        { label: 'Reference', value: reference }
+      ]
     });
 
     res.json({ payment: updated });

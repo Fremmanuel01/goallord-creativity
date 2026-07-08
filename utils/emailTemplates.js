@@ -940,4 +940,4 @@ function lectureUpdatedEmail({ fullName, lectureTitle, courseTitle, lectureDate,
   });
 }
 
-module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail, suspensionEmail, graduationEmail, reactivationEmail, applicantPaymentReminderEmail, paymentRetryEmail, proformaInvoiceEmail, flashcardReminderEmail, flashcardMissedEmail, flashcardReadyEmail, flashcardDayAfterEmail, classReminderEmail, lectureReviewEmail, lecturePublishedEmail, lectureUpdatedEmail };
+module.exports = { verificationEmail, acceptanceEmail, adminNewApplicationEmail, adminAcceptanceNotificationEmail, passwordResetEmail, receiptEmail, adminContactEmail, contactAutoReplyEmail, contactReplyEmail, paymentReminderEmail, suspensionEmail, graduationEmail, reactivationEmail, applicantPaymentReminderEmail, paymentRetryEmail, proformaInvoiceEmail, flashcardReminderEmail, flashcardMissedEmail, flashcardReadyEmail, flashcardDayAfterEmail, classReminderEmail, lectureReviewEmail, lecturePublishedEmail, lectureUpdatedEmail, corporateEmail };

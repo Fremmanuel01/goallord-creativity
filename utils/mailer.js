@@ -47,4 +47,29 @@ async function sendMail({ to, subject, html }) {
   });
 }
 
-module.exports = { sendMail };
+// Ops alert to the admin inbox (EMAIL_FROM). Never throws - alerting must not
+// break the flow it is reporting on; failures are logged instead.
+async function notifyAdmin({ subject, heading, intro, infoRows = [] }) {
+  try {
+    const { corporateEmail } = require('./emailTemplates');
+    const host = process.env.HOST || 'https://goallordcreativity.com';
+    await sendMail({
+      to: process.env.EMAIL_FROM,
+      subject,
+      html: corporateEmail({
+        eyebrow: 'Admin Alert',
+        heading, intro, infoRows,
+        ctaLabel: 'Open Dashboard',
+        ctaUrl:  host + '/dashboard.html',
+        logoUrl: host + '/assets/images/logo/goallord-logo.png',
+        preheader: heading
+      })
+    });
+    return true;
+  } catch (e) {
+    console.error('notifyAdmin failed:', subject, '-', e.message);
+    return false;
+  }
+}
+
+module.exports = { sendMail, notifyAdmin };
