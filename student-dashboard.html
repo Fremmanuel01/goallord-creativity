@@ -78,6 +78,25 @@
   .stat-card.orange .stat-value { color: var(--orange); }
   .stat-card.red .stat-value { color: var(--red); }
 
+  /* ── NEXT CLASS HERO (answers "when is my next class / what do I do") ── */
+  .nextclass-hero {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    background: linear-gradient(135deg, rgba(214,106,31,0.18), rgba(214,106,31,0.05));
+    border: 1px solid rgba(214,106,31,0.35); border-radius: 16px;
+    padding: 18px 20px; margin-bottom: 16px;
+  }
+  .nextclass-hero .nc-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--orange); font-weight: 700; margin-bottom: 4px; }
+  .nextclass-hero .nc-when { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+  .nextclass-hero .nc-sub { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  .nextclass-hero .nc-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .nextclass-hero .nc-btn { padding: 9px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); color: var(--text); }
+  .nextclass-hero .nc-btn.primary { background: var(--orange); border-color: var(--orange); color: #1a1206; }
+  @media (max-width: 640px) {
+    .nextclass-hero { flex-direction: column; align-items: flex-start; }
+    .nextclass-hero .nc-actions { width: 100%; }
+    .nextclass-hero .nc-btn { flex: 1; text-align: center; }
+  }
+
   /* ── PROGRESS HERO ── */
   .progress-hero {
     background: var(--card); border: 1px solid var(--border); border-radius: 14px;
@@ -454,6 +473,19 @@
   <div id="tab-overview">
     <div id="loadingState" class="loading">Loading your data…</div>
     <div id="overviewContent" style="display:none;">
+
+      <!-- ── Next Class Hero (surfaces the #1 student question first) ── -->
+      <section class="nextclass-hero" id="nextClassHero" style="display:none" aria-label="Your next class">
+        <div class="nc-info">
+          <div class="nc-label">Next class</div>
+          <div class="nc-when" id="nc-when">-</div>
+          <div class="nc-sub" id="nc-sub"></div>
+        </div>
+        <div class="nc-actions">
+          <button type="button" class="nc-btn primary" onclick="switchTab('curriculum')">View curriculum</button>
+          <button type="button" class="nc-btn" onclick="switchTab('lectures')">Lectures</button>
+        </div>
+      </section>
 
       <!-- ── Progress Hero ── -->
       <section class="progress-hero" id="progressHero" aria-label="Your bootcamp progress">
@@ -1007,6 +1039,35 @@
     const time = fmt12hTime(b.classTime);
     return [days, time].filter(Boolean).join(' · ');
   }
+  // Next upcoming class occurrence from batch.classDays + classTime.
+  // ponytail: computed in the browser's local time; Academy students are in WAT
+  // (Africa/Lagos), the same zone the class time is stored in, so no TZ conversion.
+  function nextClassInfo(b) {
+    if (!b || !Array.isArray(b.classDays) || !b.classDays.length || !b.classTime) return null;
+    const dayMap = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
+    const m = /^(\d{1,2}):(\d{2})/.exec(String(b.classTime).trim());
+    if (!m) return null;
+    const ch = +m[1], cm = +m[2];
+    const now = new Date();
+    let best = null;
+    b.classDays.forEach(function (d) {
+      const target = dayMap[String(d).toLowerCase()];
+      if (target === undefined) return;
+      for (let add = 0; add <= 7; add++) {
+        const cand = new Date(now.getFullYear(), now.getMonth(), now.getDate() + add, ch, cm, 0, 0);
+        if (cand.getDay() === target && cand > now) { if (!best || cand < best) best = cand; break; }
+      }
+    });
+    if (!best) return null;
+    const midnight = new Date(); midnight.setHours(0, 0, 0, 0);
+    const candDay = new Date(best); candDay.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((candDay - midnight) / 86400000);
+    const rel = diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : best.toLocaleDateString(undefined, { weekday: 'long' });
+    return {
+      when: rel + ' · ' + fmt12hTime(b.classTime),
+      dateStr: best.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+    };
+  }
   function fmtMonth(m) {
     if (!m) return '-';
     const [y, mo] = m.split('-');
@@ -1186,6 +1247,16 @@
     const schedEl = document.getElementById('ovScheduleBadge');
     if (schedTxt) { schedEl.textContent = schedTxt; schedEl.style.display = ''; }
     else { schedEl.style.display = 'none'; }
+    // Next-class hero: the first thing a student should see — when is my next class.
+    const nc = nextClassInfo(s.batch);
+    const ncHero = document.getElementById('nextClassHero');
+    if (nc) {
+      document.getElementById('nc-when').textContent = nc.when;
+      document.getElementById('nc-sub').textContent = [nc.dateStr, s.batch?.name].filter(Boolean).join(' · ');
+      ncHero.style.display = '';
+    } else {
+      ncHero.style.display = 'none';
+    }
     if (s.profilePicture) {
       document.getElementById('ovAvatarImg').src = s.profilePicture;
       document.getElementById('ovAvatarImg').style.display = 'block';

@@ -335,8 +335,14 @@
                 });
             }
 
-            // Safety fallback: if window.load never fires (blocked resources in Firefox
-            // private browsing, tracking protection, etc.) force-remove after 5s
+            // Absolute safety cap: always remove the preloader by 6s no matter what.
+            // Do NOT clear this on window.load — the load handler hands off to
+            // animateBars(), a GSAP rAF-driven animation that stalls when the tab is
+            // backgrounded/unfocused during load (rAF throttled) or on a janky device.
+            // If we disarmed the cap on load, a stalled animation would strand the user
+            // on the splash forever. Keeping the cap running guarantees dismissal; on a
+            // normal load the animation completes in ~1-3s and forceRemovePreloader's
+            // idempotent guard makes the timer a harmless no-op.
             var preloaderDone = false;
             function forceRemovePreloader() {
                 if (preloaderDone) return;
@@ -344,10 +350,9 @@
                 $(".preloader").remove();
                 runAnimations();
             }
-            var safetyTimer = setTimeout(forceRemovePreloader, 5000);
+            setTimeout(forceRemovePreloader, 6000);
 
             $(window).on("load", function () {
-                clearTimeout(safetyTimer);
                 if (preloaderDone) return;
                 animateBars();
             });
