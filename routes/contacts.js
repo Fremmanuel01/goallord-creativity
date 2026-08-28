@@ -83,7 +83,10 @@ router.get('/', requireAuth, async (req, res) => {
       const supabase = require('../lib/supabase');
       let q = supabase.from('contacts').select('*', { count: 'exact' });
       if (status) q = q.eq('status', status);
-      q = q.or(`name.ilike.%${search}%,email.ilike.%${search}%,message.ilike.%${search}%`);
+      // Escape PostgREST/ilike metacharacters so search text can't break out
+      // of the filter (commas, parens, backslashes are structural in .or()).
+      const s = String(search).replace(/[,()\\%_]/g, '\\$&');
+      q = q.or(`name.ilike.%${s}%,email.ilike.%${s}%,message.ilike.%${s}%`);
       q = q.order('created_at', { ascending: false });
       const skip = (Number(page) - 1) * Number(limit);
       q = q.range(skip, skip + Number(limit) - 1);

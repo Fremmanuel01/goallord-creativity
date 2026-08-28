@@ -45,6 +45,12 @@ module.exports = {
   },
 
   // Cards
+  async findCardById(id) {
+    const { data, error } = await supabase.from(CARDS).select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+
   async findCards(setId) {
     const { data, error } = await supabase.from(CARDS).select('*').eq('set_id', setId).order('order');
     if (error) throw error;

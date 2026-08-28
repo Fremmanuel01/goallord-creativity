@@ -1,31 +1,10 @@
-const https        = require('https');
 const supabase     = require('../lib/supabase');
 const applicantsDb = require('../db/applicants');
 const studentsDb   = require('../db/students');
+const config       = require('../lib/config');
+const { searchTransactions } = require('../lib/paystack');
 const { createStudentFromApplicant } = require('./enrolStudent');
 const { notifyAdmin } = require('./mailer');
-
-// Verify a Paystack transaction by reference
-function verifyPaystack(reference) {
-  return new Promise((resolve, reject) => {
-    const req = https.request({
-      hostname: 'api.paystack.co',
-      path: `/transaction/verify/${encodeURIComponent(reference)}`,
-      method: 'GET',
-      headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` }
-    }, (res) => {
-      let body = '';
-      res.on('data', c => body += c);
-      res.on('end', () => {
-        try { resolve(JSON.parse(body)); }
-        catch { reject(new Error('Invalid Paystack response')); }
-      });
-    });
-    req.on('error', reject);
-    req.setTimeout(15000, () => { req.destroy(); reject(new Error('Paystack timeout')); });
-    req.end();
-  });
-}
 
 // Finds applicants who verified email but haven't paid, and checks Paystack
 // for successful transactions that were never finalized (browser closed, etc.)
@@ -56,7 +35,7 @@ async function runPaymentRecovery() {
     // Search Paystack transactions list for this applicant's reference prefix
     let transactions;
     try {
-      transactions = await searchPaystackTransactions(app.email);
+      transactions = await searchTransactions(app.email);
     } catch (e) {
       console.error(`Payment recovery: failed to search for ${app.email}:`, e.message);
       continue;
@@ -77,15 +56,13 @@ async function runPaymentRecovery() {
     // key, so a success flag alone proves nothing about the amount. Require
     // the full expected total in NGN before auto-enrolling.
     const plan = match.metadata.plan || app.pending_payment_plan || 'monthly';
-    const appFee     = Number(process.env.APPLICATION_FEE)     || 20000;
-    const fullFee    = Number(process.env.FULL_TUITION_FEE)    || 300000;
-    const monthlyFee = Number(process.env.MONTHLY_TUITION_FEE) || 100000;
-    const expected   = appFee + (plan === 'full' ? fullFee : monthlyFee);
+    const expected = config.expectedEnrolmentTotal(plan);
     if (match.currency && match.currency !== 'NGN') {
       console.warn(`Payment recovery: skipping ${app.email} - currency ${match.currency}`);
       continue;
     }
-    if ((match.amount / 100) < expected) {
+    // Compare in integer kobo to avoid float rounding on the money path.
+    if (match.amount < expected * 100) {
       console.warn(`Payment recovery: skipping ${app.email} - paid ${match.amount / 100}, expected ${expected}`);
       await notifyAdmin({
         subject: `Underpaid enrolment transaction: ${app.full_name}`,
@@ -204,31 +181,6 @@ async function runOrphanedEnrolments() {
       });
     }
   }
-}
-
-// Search Paystack transactions by customer email
-function searchPaystackTransactions(email) {
-  return new Promise((resolve, reject) => {
-    const params = new URLSearchParams({ customer: email, status: 'success', perPage: '10' });
-    const req = https.request({
-      hostname: 'api.paystack.co',
-      path: `/transaction?${params}`,
-      method: 'GET',
-      headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` }
-    }, (res) => {
-      let body = '';
-      res.on('data', c => body += c);
-      res.on('end', () => {
-        try {
-          const parsed = JSON.parse(body);
-          resolve(parsed.data || []);
-        } catch { reject(new Error('Invalid Paystack response')); }
-      });
-    });
-    req.on('error', reject);
-    req.setTimeout(15000, () => { req.destroy(); reject(new Error('Paystack timeout')); });
-    req.end();
-  });
 }
 
 module.exports = { runPaymentRecovery, runOrphanedEnrolments };

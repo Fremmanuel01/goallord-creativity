@@ -33,11 +33,12 @@ const JOBS = {
   'daily-checks':        runDailyChecks,
 };
 
-// Constant-time comparison of the shared secret (header or ?key=).
+// Constant-time comparison of the shared secret. Header only — a ?key=
+// query param would leak the secret into access logs and proxies.
 function authorized(req) {
   const secret = process.env.CRON_SECRET;
   if (!secret) return false; // fail closed when unconfigured
-  const provided = req.get('x-cron-key') || req.query.key || '';
+  const provided = req.get('x-cron-key') || '';
   const a = Buffer.from(String(provided));
   const b = Buffer.from(secret);
   return a.length === b.length && crypto.timingSafeEqual(a, b);

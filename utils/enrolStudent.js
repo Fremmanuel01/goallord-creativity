@@ -1,4 +1,5 @@
 const bcrypt       = require('bcryptjs');
+const config       = require('../lib/config');
 const studentsDb   = require('../db/students');
 const batchesDb    = require('../db/batches');
 const paymentsDb   = require('../db/payments');
@@ -77,9 +78,9 @@ async function createStudentFromApplicant(applicant, paymentPlan, opts = {}) {
   student._acceptanceEmailSent = acceptanceEmailSent;
   student._plainPassword = plainPassword;
 
-  const appFee     = Number(process.env.APPLICATION_FEE)     || 20000;
-  const fullFee    = Number(process.env.FULL_TUITION_FEE)    || 300000;
-  const monthlyFee = Number(process.env.MONTHLY_TUITION_FEE) || 100000;
+  const appFee     = config.APPLICATION_FEE;
+  const fullFee    = config.FULL_TUITION_FEE;
+  const monthlyFee = config.MONTHLY_TUITION_FEE;
   const now = new Date();
 
   const failedRows = [];

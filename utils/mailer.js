@@ -1,33 +1,35 @@
 const https = require('https');
 
+// Sends transactional email via Resend (https://resend.com). The from address
+// must be on a domain you have verified in the Resend dashboard.
 async function sendMail({ to, subject, html }) {
   // Fail loud on misconfig so "stuck at unverified" stops being a silent mystery.
-  if (!process.env.BREVO_API_KEY) {
-    throw new Error('BREVO_API_KEY is not set. Cannot send email.');
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY is not set. Cannot send email.');
   }
   if (!process.env.EMAIL_FROM) {
-    throw new Error('EMAIL_FROM is not set. Brevo requires a verified sender address.');
+    throw new Error('EMAIL_FROM is not set. Resend requires a verified sender address.');
   }
   if (!to) {
     throw new Error('sendMail called with no recipient.');
   }
 
+  const fromName = process.env.EMAIL_FROM_NAME || 'Goallord Creativity';
   const payload = JSON.stringify({
-    sender:   { name: 'Goallord Creativity', email: process.env.EMAIL_FROM },
-    to:       [{ email: to }],
+    from:    `${fromName} <${process.env.EMAIL_FROM}>`,
+    to:      [to],
     subject,
-    htmlContent: html
+    html
   });
 
   return new Promise((resolve, reject) => {
     const req = https.request({
-      hostname: 'api.brevo.com',
-      path:     '/v3/smtp/email',
+      hostname: 'api.resend.com',
+      path:     '/emails',
       method:   'POST',
       headers: {
-        'Content-Type':  'application/json',
-        'Accept':        'application/json',
-        'api-key':       process.env.BREVO_API_KEY,
+        'Content-Type':   'application/json',
+        'Authorization':  `Bearer ${process.env.RESEND_API_KEY}`,
         'Content-Length': Buffer.byteLength(payload)
       }
     }, (res) => {
@@ -35,9 +37,9 @@ async function sendMail({ to, subject, html }) {
       res.on('data', chunk => body += chunk);
       res.on('end', () => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(JSON.parse(body));
+          resolve(body ? JSON.parse(body) : {});
         } else {
-          reject(new Error(`Brevo API error ${res.statusCode}: ${body}`));
+          reject(new Error(`Resend API error ${res.statusCode}: ${body}`));
         }
       });
     });

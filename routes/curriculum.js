@@ -3,7 +3,7 @@ const curriculumDb = require('../db/curriculum');
 const studentsDb   = require('../db/students');
 const batchesDb    = require('../db/batches');
 const assignmentsDb = require('../db/assignments');
-const { requireLecturer } = require('../middleware/lecturerAuth');
+const { requireLecturer, canManageBatch } = require('../middleware/lecturerAuth');
 const { requireStudentAuth } = require('../middleware/studentAuth');
 
 const router = express.Router();
@@ -159,6 +159,7 @@ router.get('/:id', requireLecturer, async (req, res) => {
 router.post('/', requireLecturer, async (req, res) => {
   try {
     const { batch, week, day, topic, description, objectives, resources } = req.body;
+    if (!(await canManageBatch(req.user, batch))) return res.status(403).json({ error: 'Not your batch' });
     const doc = await curriculumDb.create({
       batch_id: batch,
       week, day, topic, description, objectives, resources,
@@ -174,7 +175,12 @@ router.post('/', requireLecturer, async (req, res) => {
 // PATCH /api/curriculum/:id
 router.patch('/:id', requireLecturer, async (req, res) => {
   try {
+    const supabase = require('../lib/supabase');
+    const { data: existing } = await supabase.from('curriculum_entries').select('id, batch_id').eq('id', req.params.id).maybeSingle();
+    if (!existing) return res.status(404).json({ error: 'Not found' });
+    if (!(await canManageBatch(req.user, existing.batch_id))) return res.status(403).json({ error: 'Not your batch' });
     const { batch, week, day, topic, description, objectives, resources } = req.body;
+    if (batch !== undefined && !(await canManageBatch(req.user, batch))) return res.status(403).json({ error: 'Not your batch' });
     const update = { updated_at: new Date().toISOString() };
     if (batch !== undefined) update.batch_id = batch;
     if (week !== undefined) update.week = week;
@@ -194,6 +200,10 @@ router.patch('/:id', requireLecturer, async (req, res) => {
 // DELETE /api/curriculum/:id
 router.delete('/:id', requireLecturer, async (req, res) => {
   try {
+    const supabase = require('../lib/supabase');
+    const { data: existing } = await supabase.from('curriculum_entries').select('id, batch_id').eq('id', req.params.id).maybeSingle();
+    if (!existing) return res.status(404).json({ error: 'Not found' });
+    if (!(await canManageBatch(req.user, existing.batch_id))) return res.status(403).json({ error: 'Not your batch' });
     await curriculumDb.remove(req.params.id);
     res.json({ success: true });
   } catch (err) {

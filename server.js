@@ -48,7 +48,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             imgSrc: ["'self'", "data:", "https:", "blob:"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-            connectSrc: ["'self'", "blob:", "data:", "https://api.anthropic.com", "https://api.brevo.com", "https://prod.spline.design", "https://unpkg.com", "https://viewer.spline.design", "https://api.paystack.co", "https://standard.paystack.co", "https://js.paystack.co", "https://cdn.jsdelivr.net", "wss:", "ws:"],
+            connectSrc: ["'self'", "blob:", "data:", "https://api.anthropic.com", "https://prod.spline.design", "https://unpkg.com", "https://viewer.spline.design", "https://api.paystack.co", "https://standard.paystack.co", "https://js.paystack.co", "https://cdn.jsdelivr.net", "wss:", "ws:"],
             frameSrc: ["'self'", "https://js.paystack.co", "https://checkout.paystack.com", "https://standard.paystack.co", "https://prod.spline.design", "https://viewer.spline.design"],
             mediaSrc: ["'self'", "blob:", "data:"],
             workerSrc: ["'self'", "blob:"],
@@ -90,6 +90,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // ─── TRANSFORM snake_case → camelCase for frontend compatibility ──
 const { camelKeys } = require('./lib/utils');
+const config = require('./lib/config');
 app.use('/api/', (req, res, next) => {
     const originalJson = res.json.bind(res);
     res.json = (data) => originalJson(camelKeys(data));
@@ -208,9 +209,9 @@ app.get('/api/config/public', (req, res) => {
       accountName: process.env.BANK2_ACCOUNT_NAME || ''
     },
     fees: {
-      application:    Number(process.env.APPLICATION_FEE)    || 20000,
-      fullTuition:    Number(process.env.FULL_TUITION_FEE)   || 300000,
-      monthlyTuition: Number(process.env.MONTHLY_TUITION_FEE) || 100000
+      application:    config.APPLICATION_FEE,
+      fullTuition:    config.FULL_TUITION_FEE,
+      monthlyTuition: config.MONTHLY_TUITION_FEE
     }
   });
 });
@@ -332,6 +333,20 @@ app.get('*', (req, res) => {
     return res.status(404).json({ error: 'Not found' });
   }
   res.status(404).sendFile(path.join(__dirname, '404.html'));
+});
+
+// ─── GLOBAL ERROR HANDLER ─────────────────────────────────────
+// Safety net for anything a route's own try/catch misses (a sync throw, a
+// rejected promise surfaced by Express 5, malformed JSON from body-parser).
+// Logs server-side, returns a generic message so stack traces never leak.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error('[unhandled]', req.method, req.path, '-', err && err.message ? err.message : err);
+  if (res.headersSent) return next(err);
+  const status = err && err.status === 400 ? 400 : 500;
+  const isApi = req.path.startsWith('/api/');
+  if (isApi) return res.status(status).json({ error: status === 400 ? 'Invalid request.' : 'Something went wrong.' });
+  res.status(status).send('Something went wrong.');
 });
 
 // ─── SEED + START ─────────────────────────────────────────────

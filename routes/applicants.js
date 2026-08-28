@@ -1,6 +1,7 @@
 const express  = require('express');
 const crypto   = require('crypto');
-const https    = require('https');
+const config   = require('../lib/config');
+const { verifyTransaction, isReferenceUsed } = require('../lib/paystack');
 const applicantsDb = require('../db/applicants');
 const studentsDb   = require('../db/students');
 const paymentsDb   = require('../db/payments');
@@ -16,6 +17,13 @@ const applyLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
     max: 3,
     message: { error: 'Too many applications. Please try again later.' }
+});
+
+// Slows email enumeration through the public status checker.
+const statusLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: { error: 'Too many status checks. Please try again later.' }
 });
 
 function isValidEmail(email) {
@@ -314,21 +322,8 @@ router.post('/:id/pay-application', async (req, res) => {
     if (!applicant.email_verified) return res.status(403).json({ error: 'Email not verified' });
     if (applicant.application_fee_paid) return res.status(400).json({ error: 'Application fee already paid' });
 
-    // Verify with Paystack
-    const psData = await new Promise((resolve, reject) => {
-      const psReq = https.request({
-        hostname: 'api.paystack.co',
-        path: `/transaction/verify/${encodeURIComponent(reference)}`,
-        method: 'GET',
-        headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` }
-      }, (psRes) => {
-        let body = '';
-        psRes.on('data', c => body += c);
-        psRes.on('end', () => { try { resolve(JSON.parse(body)); } catch { reject(new Error('Invalid Paystack response')); } });
-      });
-      psReq.on('error', reject);
-      psReq.end();
-    });
+    // Verify with Paystack (shared helper - applies a request timeout)
+    const psData = await verifyTransaction(reference);
 
     if (!psData.data || psData.data.status !== 'success')
       return res.status(400).json({ error: 'Payment verification failed. Please try again.' });
@@ -347,21 +342,18 @@ router.post('/:id/pay-application', async (req, res) => {
     if (String(psApplicantId) !== String(applicant.id))
       return res.status(400).json({ error: 'Payment reference does not belong to this applicant' });
 
-    // Reject a reference that was already consumed by another payment row
-    const supabase = require('../lib/supabase');
-    const { data: dupRefs } = await supabase
-      .from('payments').select('id').eq('reference', reference).limit(1);
-    if (dupRefs && dupRefs.length)
+    // Reject a reference already consumed by a payment row OR a shop order
+    // (cross-flow replay).
+    if (await isReferenceUsed(reference))
       return res.status(409).json({ error: 'This payment reference has already been processed' });
 
-    const appFee     = Number(process.env.APPLICATION_FEE)    || 20000;
-    const fullFee    = Number(process.env.FULL_TUITION_FEE)   || 300000;
-    const monthlyFee = Number(process.env.MONTHLY_TUITION_FEE)|| 100000;
-    const tuitionNow = paymentPlan === 'full' ? fullFee : monthlyFee;
+    const appFee     = config.APPLICATION_FEE;
+    const tuitionNow = paymentPlan === 'full' ? config.FULL_TUITION_FEE : config.MONTHLY_TUITION_FEE;
     const totalExpected = appFee + tuitionNow;
     const amountPaid    = psData.data.amount / 100;
 
-    if (amountPaid < totalExpected)
+    // Compare in integer kobo to avoid float rounding on the money path.
+    if (psData.data.amount < totalExpected * 100)
       return res.status(400).json({ error: `Amount paid (₦${amountPaid.toLocaleString()}) is less than required total (₦${totalExpected.toLocaleString()})` });
 
     // Mark fee paid. pending_payment_plan is persisted so that if student
@@ -592,7 +584,7 @@ router.post('/:id/confirm-fee', requireAuth, async (req, res) => {
 });
 
 // GET /api/applicants/check-status - public (applicant checks their own status by email)
-router.get('/check-status', async (req, res) => {
+router.get('/check-status', statusLimiter, async (req, res) => {
   try {
     const { email } = req.query;
     if (!email) return res.status(400).json({ error: 'Email is required.' });

@@ -2,7 +2,7 @@ const express     = require('express');
 const materialsDb = require('../db/materials');
 const studentsDb  = require('../db/students');
 const { requireAuth } = require('../middleware/auth');
-const { requireLecturer } = require('../middleware/lecturerAuth');
+const { requireLecturer, ownsDoc, canManageBatch } = require('../middleware/lecturerAuth');
 const { requireStudentAuth } = require('../middleware/studentAuth');
 
 const router = express.Router();
@@ -44,6 +44,7 @@ router.get('/:id', requireLecturer, async (req, res) => {
   try {
     const doc = await materialsDb.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
+    if (!ownsDoc(req.user, doc)) return res.status(403).json({ error: 'Not your material' });
     res.json(doc);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -54,6 +55,9 @@ router.get('/:id', requireLecturer, async (req, res) => {
 router.post('/', requireLecturer, async (req, res) => {
   try {
     const { title, description, batch, type, fileUrl, fileName, week, topic, linkUrl, published } = req.body;
+    if (batch && !(await canManageBatch(req.user, batch))) {
+      return res.status(403).json({ error: 'Not your batch' });
+    }
     const lecturerId = req.user.role === 'lecturer' ? req.user.id : req.body.lecturer;
     const doc = await materialsDb.create({
       title, description,
@@ -75,8 +79,14 @@ router.post('/', requireLecturer, async (req, res) => {
 // PATCH /api/materials/:id
 router.patch('/:id', requireLecturer, async (req, res) => {
   try {
+    const existing = await materialsDb.findById(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Not found' });
+    if (!ownsDoc(req.user, existing)) return res.status(403).json({ error: 'Not your material' });
     const { title, description, batch, type, fileUrl, fileName, week, topic, linkUrl, published } = req.body;
     const update = {};
+    if (batch !== undefined && !(await canManageBatch(req.user, batch))) {
+      return res.status(403).json({ error: 'Not your batch' });
+    }
     if (title !== undefined) update.title = title;
     if (description !== undefined) update.description = description;
     if (batch !== undefined) update.batch_id = batch;
@@ -98,6 +108,9 @@ router.patch('/:id', requireLecturer, async (req, res) => {
 // DELETE /api/materials/:id
 router.delete('/:id', requireLecturer, async (req, res) => {
   try {
+    const existing = await materialsDb.findById(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Not found' });
+    if (!ownsDoc(req.user, existing)) return res.status(403).json({ error: 'Not your material' });
     await materialsDb.remove(req.params.id);
     res.json({ success: true });
   } catch (err) {

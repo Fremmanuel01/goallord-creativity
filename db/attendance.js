@@ -15,11 +15,14 @@ module.exports = {
     return data;
   },
 
-  async find({ filter = {}, populate, sort, page, limit } = {}) {
+  async find({ filter = {}, inFilter, populate, sort, page, limit } = {}) {
     let select = '*, batch:batches(id, name, number), taken_by_lecturer:lecturers(id, full_name)';
     let q = supabase.from(TABLE).select(select, { count: 'exact' });
     for (const [key, val] of Object.entries(filter)) {
       q = q.eq(key, val);
+    }
+    for (const [key, vals] of Object.entries(inFilter || {})) {
+      q = q.in(key, vals);
     }
     if (sort) {
       const desc = sort.startsWith('-');

@@ -1,5 +1,5 @@
 const express = require('express');
-const https = require('https');
+const { verifyTransaction, isReferenceUsed } = require('../lib/paystack');
 const paymentsDb = require('../db/payments');
 const studentsDb = require('../db/students');
 const notificationsDb = require('../db/notifications');
@@ -169,38 +169,17 @@ router.post('/:id/paystack', requireStudent, async (req, res) => {
 
     // Idempotency #2: a Paystack reference may only ever settle ONE payment
     // row. Reject replay of a reference already attached to another payment
-    // - or to a shop order (cross-flow replay).
-    const { data: dupRows } = await supabase
-      .from('payments').select('id').eq('reference', reference).neq('id', req.params.id).limit(1);
-    if (dupRows && dupRows.length) {
-      return res.status(409).json({ error: 'This payment reference has already been used.' });
-    }
-    const { data: dupOrders } = await supabase
-      .from('orders').select('id').eq('paystack_reference', reference).limit(1);
-    if (dupOrders && dupOrders.length) {
+    // or a shop order (cross-flow replay).
+    if (await isReferenceUsed(reference, req.params.id)) {
       return res.status(409).json({ error: 'This payment reference has already been used.' });
     }
 
-    // Verify with Paystack
-    const psData = await new Promise((resolve, reject) => {
-      const paystackReq = https.request({
-        hostname: 'api.paystack.co',
-        path: `/transaction/verify/${encodeURIComponent(reference)}`,
-        method: 'GET',
-        headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` }
-      }, (psRes) => {
-        let body = '';
-        psRes.on('data', c => body += c);
-        psRes.on('end', () => {
-          try { resolve(JSON.parse(body)); } catch { reject(new Error('Invalid Paystack response')); }
-        });
-      });
-      paystackReq.on('error', reject);
-      paystackReq.end();
-    });
+    // Verify with Paystack (shared helper - applies a request timeout)
+    const psData = await verifyTransaction(reference);
 
     const verifyOk = psData.data && psData.data.status === 'success';
-    const amountOk = verifyOk && (psData.data.amount / 100 >= payment.amount_due);
+    // Compare in integer kobo to avoid float rounding on the money path.
+    const amountOk = verifyOk && (psData.data.amount >= Math.round(payment.amount_due * 100));
 
     // Currency must be NGN, and the charge's metadata must name THIS payment
     // - a random successful reference from another flow proves nothing.

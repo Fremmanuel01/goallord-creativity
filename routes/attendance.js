@@ -4,7 +4,7 @@ const studentsDb   = require('../db/students');
 const notificationsDb = require('../db/notifications');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { requireStudent } = require('../middleware/studentAuth');
-const { requireLecturer } = require('../middleware/lecturerAuth');
+const { requireLecturer, lecturerBatchIds, canManageBatch } = require('../middleware/lecturerAuth');
 
 const router = express.Router();
 
@@ -79,10 +79,18 @@ router.get('/', requireLecturer, async (req, res) => {
   try {
     const { batch, week, month, page = 1, limit = 50 } = req.query;
     const filter = {};
+    let inFilter;
     if (batch) filter.batch_id = batch;
     if (week)  filter.week     = Number(week);
 
-    const result = await attendanceDb.find({ filter, page: Number(page), limit: Number(limit) });
+    // Lecturers only see sessions for batches they're assigned to.
+    const myBatches = await lecturerBatchIds(req.user);
+    if (myBatches !== null) {
+      if (batch && !myBatches.includes(batch)) return res.status(403).json({ error: 'Not your batch' });
+      if (!batch) inFilter = { batch_id: myBatches };
+    }
+
+    const result = await attendanceDb.find({ filter, inFilter, page: Number(page), limit: Number(limit) });
     res.json({ data: result.data, total: result.count, page: Number(page) });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -95,6 +103,9 @@ router.post('/', requireLecturer, async (req, res) => {
     const { batchId, week, day, classDate, topic, presentStudentIds = [], notes } = req.body;
     if (!batchId || !week || !day || !classDate) {
       return res.status(400).json({ error: 'batchId, week, day, and classDate are required' });
+    }
+    if (!(await canManageBatch(req.user, batchId))) {
+      return res.status(403).json({ error: 'Not your batch' });
     }
 
     // Get all active students in this batch
@@ -138,8 +149,11 @@ router.post('/', requireLecturer, async (req, res) => {
 router.patch('/:id', requireLecturer, async (req, res) => {
   try {
     const { topic, presentStudentIds } = req.body || {};
-    const session = await attendanceDb.findById(req.params.id);
+    const session = await attendanceDb.findById(req.params.id).catch(() => null);
     if (!session) return res.status(404).json({ error: 'Not found' });
+    if (!(await canManageBatch(req.user, session.batch_id))) {
+      return res.status(403).json({ error: 'Not your batch' });
+    }
 
     const updates = {};
     if (topic !== undefined) updates.topic = topic;
@@ -161,6 +175,11 @@ router.patch('/:id', requireLecturer, async (req, res) => {
 router.patch('/:id/open', requireLecturer, async (req, res) => {
   try {
     const { code, minutes } = req.body || {};
+    const session = await attendanceDb.findById(req.params.id).catch(() => null);
+    if (!session) return res.status(404).json({ error: 'Not found' });
+    if (!(await canManageBatch(req.user, session.batch_id))) {
+      return res.status(403).json({ error: 'Not your batch' });
+    }
     const base = { is_open: true, session_opened_at: new Date().toISOString() };
     const codeVal = (code && String(code).trim()) ? String(code).trim() : null;
     const autoCloseAt = minutes && Number(minutes) > 0
@@ -197,6 +216,11 @@ router.patch('/:id/open', requireLecturer, async (req, res) => {
 // ── PATCH /api/attendance/:id/close - close self-mark window ──
 router.patch('/:id/close', requireLecturer, async (req, res) => {
   try {
+    const session = await attendanceDb.findById(req.params.id).catch(() => null);
+    if (!session) return res.status(404).json({ error: 'Not found' });
+    if (!(await canManageBatch(req.user, session.batch_id))) {
+      return res.status(403).json({ error: 'Not your batch' });
+    }
     const base = { is_open: false, session_closed_at: new Date().toISOString() };
     let doc;
     try {
@@ -217,6 +241,12 @@ router.post('/:id/self-mark', requireStudent, async (req, res) => {
     const studentId = req.student.id;
     const session = await attendanceDb.findById(req.params.id);
     if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    // Only students of the session's batch may mark themselves.
+    const student = await studentsDb.findById(studentId, { fields: 'id, batch_id' });
+    if (!student || student.batch_id !== session.batch_id) {
+      return res.status(403).json({ error: 'This session is not for your batch' });
+    }
 
     const expired = session.auto_close_at && new Date(session.auto_close_at).getTime() < Date.now();
     if (!session.is_open || expired) return res.status(403).json({ error: 'Attendance window is closed' });
@@ -271,8 +301,11 @@ router.get('/student/:studentId', requireAuth, async (req, res) => {
 // ── GET /api/attendance/:id - session detail ──────────────────
 router.get('/:id', requireLecturer, async (req, res) => {
   try {
-    const doc = await attendanceDb.findById(req.params.id);
+    const doc = await attendanceDb.findById(req.params.id).catch(() => null);
     if (!doc) return res.status(404).json({ error: 'Not found' });
+    if (!(await canManageBatch(req.user, doc.batch_id))) {
+      return res.status(403).json({ error: 'Not your batch' });
+    }
     res.json(doc);
   } catch (err) {
     res.status(500).json({ error: err.message });

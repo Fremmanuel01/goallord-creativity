@@ -3,7 +3,7 @@ const flashcardsDb = require('../db/flashcards');
 const studentsDb   = require('../db/students');
 const supabase     = require('../lib/supabase');
 const { generateCardsForEntry } = require('../utils/flashcardGenerator');
-const { requireLecturer } = require('../middleware/lecturerAuth');
+const { requireLecturer, canManageBatch } = require('../middleware/lecturerAuth');
 const { requireStudentAuth } = require('../middleware/studentAuth');
 const { requireAuth } = require('../middleware/auth');
 
@@ -20,6 +20,7 @@ router.post('/generate', requireLecturer, async (req, res) => {
     const { batch, week } = req.body;
     const day = req.body.day;
     if (!batch || !week) return res.status(400).json({ error: 'batch and week are required' });
+    if (!(await canManageBatch(req.user, batch))) return res.status(403).json({ error: 'Not your batch' });
     const lecturerId = req.user.role === 'lecturer' ? req.user.id : (req.body.lecturer || req.user.id);
     const count = Math.min(Math.max(Number(req.body.count) || 10, 3), 15);
 
@@ -94,6 +95,7 @@ router.post('/sets', requireLecturer, async (req, res) => {
   try {
     const lecturerId = req.user.role === 'lecturer' ? req.user.id : req.body.lecturer;
     const { title, description, batch, week, published } = req.body;
+    if (batch && !(await canManageBatch(req.user, batch))) return res.status(403).json({ error: 'Not your batch' });
     const set = await flashcardsDb.createSet({
       title, description,
       batch_id: batch,
@@ -110,7 +112,11 @@ router.post('/sets', requireLecturer, async (req, res) => {
 // PATCH /api/flashcards/sets/:setId
 router.patch('/sets/:setId', requireLecturer, async (req, res) => {
   try {
+    const existing = await flashcardsDb.findSetById(req.params.setId).catch(() => null);
+    if (!existing) return res.status(404).json({ error: 'Not found' });
+    if (!(await canManageBatch(req.user, existing.batch_id))) return res.status(403).json({ error: 'Not your batch' });
     const { title, description, batch, week, published } = req.body;
+    if (batch !== undefined && !(await canManageBatch(req.user, batch))) return res.status(403).json({ error: 'Not your batch' });
     const update = {};
     if (title !== undefined) update.title = title;
     if (description !== undefined) update.description = description;
@@ -128,6 +134,9 @@ router.patch('/sets/:setId', requireLecturer, async (req, res) => {
 // DELETE /api/flashcards/sets/:setId
 router.delete('/sets/:setId', requireLecturer, async (req, res) => {
   try {
+    const existing = await flashcardsDb.findSetById(req.params.setId).catch(() => null);
+    if (!existing) return res.status(404).json({ error: 'Not found' });
+    if (!(await canManageBatch(req.user, existing.batch_id))) return res.status(403).json({ error: 'Not your batch' });
     await flashcardsDb.removeSet(req.params.setId);
     // Cards are deleted by cascade or manually
     res.json({ success: true });
@@ -141,6 +150,9 @@ router.delete('/sets/:setId', requireLecturer, async (req, res) => {
 // GET /api/flashcards/sets/:setId/cards
 router.get('/sets/:setId/cards', requireLecturer, async (req, res) => {
   try {
+    const set = await flashcardsDb.findSetById(req.params.setId).catch(() => null);
+    if (!set) return res.status(404).json({ error: 'Set not found' });
+    if (!(await canManageBatch(req.user, set.batch_id))) return res.status(403).json({ error: 'Not your batch' });
     const cards = await flashcardsDb.findCards(req.params.setId);
     res.json(cards);
   } catch (err) {
@@ -151,8 +163,9 @@ router.get('/sets/:setId/cards', requireLecturer, async (req, res) => {
 // POST /api/flashcards/sets/:setId/cards
 router.post('/sets/:setId/cards', requireLecturer, async (req, res) => {
   try {
-    const set = await flashcardsDb.findSetById(req.params.setId);
+    const set = await flashcardsDb.findSetById(req.params.setId).catch(() => null);
     if (!set) return res.status(404).json({ error: 'Set not found' });
+    if (!(await canManageBatch(req.user, set.batch_id))) return res.status(403).json({ error: 'Not your batch' });
     const { question, options, correctAnswer, order, generatedBy } = req.body;
     const card = await flashcardsDb.createCard({
       question, options,
@@ -171,6 +184,9 @@ router.post('/sets/:setId/cards', requireLecturer, async (req, res) => {
 // PATCH /api/flashcards/cards/:cardId
 router.patch('/cards/:cardId', requireLecturer, async (req, res) => {
   try {
+    const card = await flashcardsDb.findCardById(req.params.cardId).catch(() => null);
+    if (!card) return res.status(404).json({ error: 'Not found' });
+    if (!(await canManageBatch(req.user, card.batch_id))) return res.status(403).json({ error: 'Not your batch' });
     const { question, options, correctAnswer, order, generatedBy } = req.body;
     const update = {};
     if (question !== undefined) update.question = question;
@@ -178,9 +194,9 @@ router.patch('/cards/:cardId', requireLecturer, async (req, res) => {
     if (correctAnswer !== undefined) update.correct_answer = correctAnswer;
     if (order !== undefined) update.order = order;
     if (generatedBy !== undefined) update.generated_by = generatedBy;
-    const card = await flashcardsDb.updateCard(req.params.cardId, update);
-    if (!card) return res.status(404).json({ error: 'Not found' });
-    res.json(card);
+    const updated = await flashcardsDb.updateCard(req.params.cardId, update);
+    if (!updated) return res.status(404).json({ error: 'Not found' });
+    res.json(updated);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -189,6 +205,9 @@ router.patch('/cards/:cardId', requireLecturer, async (req, res) => {
 // DELETE /api/flashcards/cards/:cardId
 router.delete('/cards/:cardId', requireLecturer, async (req, res) => {
   try {
+    const card = await flashcardsDb.findCardById(req.params.cardId).catch(() => null);
+    if (!card) return res.status(404).json({ error: 'Not found' });
+    if (!(await canManageBatch(req.user, card.batch_id))) return res.status(403).json({ error: 'Not your batch' });
     await flashcardsDb.removeCard(req.params.cardId);
     res.json({ success: true });
   } catch (err) {
@@ -353,8 +372,10 @@ router.get('/sets/student', requireStudentAuth, async (req, res) => {
 // GET /api/flashcards/sets/:setId/cards/student - student: cards in a set
 router.get('/sets/:setId/cards/student', requireStudentAuth, async (req, res) => {
   try {
-    const set = await flashcardsDb.findSetById(req.params.setId);
+    const set = await flashcardsDb.findSetById(req.params.setId).catch(() => null);
     if (!set || !set.published) return res.status(404).json({ error: 'Set not found' });
+    const student = await studentsDb.findById(req.user.id, { fields: 'id, batch_id' });
+    if (!student || student.batch_id !== set.batch_id) return res.status(404).json({ error: 'Set not found' });
     const cards = await flashcardsDb.findCards(req.params.setId);
     res.json(cards);
   } catch (err) {
@@ -367,20 +388,28 @@ router.get('/sets/:setId/cards/student', requireStudentAuth, async (req, res) =>
 // POST /api/flashcards/sets/:setId/respond (student submits answers)
 router.post('/sets/:setId/respond', requireStudentAuth, async (req, res) => {
   try {
-    const { responses } = req.body; // [{ flashcard, answer, isCorrect }]
+    const { responses } = req.body; // [{ flashcard, answer }]
     if (!Array.isArray(responses)) return res.status(400).json({ error: 'responses must be an array' });
 
-    const set = await flashcardsDb.findSetById(req.params.setId);
-    if (!set) return res.status(404).json({ error: 'Set not found' });
+    const set = await flashcardsDb.findSetById(req.params.setId).catch(() => null);
+    if (!set || !set.published) return res.status(404).json({ error: 'Set not found' });
+    const student = await studentsDb.findById(req.user.id, { fields: 'id, batch_id' });
+    if (!student || student.batch_id !== set.batch_id) return res.status(404).json({ error: 'Set not found' });
 
-    const docs = responses.map(r => ({
-      set_id:      req.params.setId,
-      flashcard_id: r.flashcard,
-      student_id:  req.user.id,
-      batch_id:    set.batch_id,
-      answer:      r.answer,
-      is_correct:  r.isCorrect
-    }));
+    // Grade server-side against the stored correct answers — never trust a
+    // client-supplied isCorrect flag. Unknown card ids are dropped.
+    const cards = await flashcardsDb.findCards(req.params.setId);
+    const byId = new Map(cards.map(c => [String(c.id), c]));
+    const docs = responses
+      .filter(r => r && byId.has(String(r.flashcard)))
+      .map(r => ({
+        set_id:      req.params.setId,
+        flashcard_id: r.flashcard,
+        student_id:  req.user.id,
+        batch_id:    set.batch_id,
+        answer:      r.answer,
+        is_correct:  String(r.answer) === String(byId.get(String(r.flashcard)).correct_answer)
+      }));
 
     // Delete previous attempts for this set+student then re-insert
     const supabase = require('../lib/supabase');
@@ -396,6 +425,9 @@ router.post('/sets/:setId/respond', requireStudentAuth, async (req, res) => {
 // GET /api/flashcards/sets/:setId/results (lecturer sees all student results)
 router.get('/sets/:setId/results', requireLecturer, async (req, res) => {
   try {
+    const set = await flashcardsDb.findSetById(req.params.setId).catch(() => null);
+    if (!set) return res.status(404).json({ error: 'Set not found' });
+    if (!(await canManageBatch(req.user, set.batch_id))) return res.status(403).json({ error: 'Not your batch' });
     const supabase = require('../lib/supabase');
     const { data: results, error } = await supabase
       .from('flashcard_responses')

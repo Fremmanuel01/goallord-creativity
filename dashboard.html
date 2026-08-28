@@ -4863,12 +4863,12 @@ function renderApplicants(list) {
     const st = getStatus(a.id);
     return `<tr>
       <td class="muted" title="${a.id}" style="font-family:monospace;font-size:0.75rem">${String(a.id).slice(0, 8)}</td>
-      <td><strong style="font-weight:600">${a.name}</strong></td>
-      <td class="muted" style="font-size:0.775rem">${a.email}</td>
-      <td class="muted" style="font-size:0.775rem">${a.phone}</td>
-      <td>${a.track}</td>
-      <td class="muted">${a.experience}</td>
-      <td class="muted">${a.schedule}</td>
+      <td><strong style="font-weight:600">${escHtml(a.name)}</strong></td>
+      <td class="muted" style="font-size:0.775rem">${escHtml(a.email)}</td>
+      <td class="muted" style="font-size:0.775rem">${escHtml(a.phone)}</td>
+      <td>${escHtml(a.track)}</td>
+      <td class="muted">${escHtml(a.experience)}</td>
+      <td class="muted">${escHtml(a.schedule)}</td>
       <td>${a.emailVerified
         ? '<span style="font-size:11px;padding:3px 8px;border-radius:10px;background:rgba(34,197,94,0.15);color:#22c55e;font-weight:600;white-space:nowrap">✓ Verified</span>'
         : '<span style="font-size:11px;padding:3px 8px;border-radius:10px;background:rgba(239,68,68,0.15);color:#f87171;font-weight:600;white-space:nowrap">✕ Unverified</span>'}</td>
@@ -4891,8 +4891,8 @@ function renderApplicants(list) {
           </button>
           ${a.applicationFeeRef && !a.applicationFeePaid
             ? (String(a.applicationFeeRef).startsWith('CASH-')
-                ? `<button title="Cash payment ref: ${a.applicationFeeRef}" style="padding:4px 9px;font-size:11px;font-weight:600;background:#D66A1F;color:#fff;border:none;border-radius:5px;cursor:pointer;" onclick="confirmApplicantFee('${a.id}','${a.pendingPaymentPlan||'monthly'}')">Confirm Cash 💵</button>`
-                : `<button title="Bank transfer ref: ${a.applicationFeeRef}" style="padding:4px 9px;font-size:11px;font-weight:600;background:#1E4BFF;color:#fff;border:none;border-radius:5px;cursor:pointer;" onclick="confirmApplicantFee('${a.id}','${a.pendingPaymentPlan||'monthly'}')">Confirm Fee ₦</button>`)
+                ? `<button title="Cash payment ref: ${escHtml(a.applicationFeeRef)}" style="padding:4px 9px;font-size:11px;font-weight:600;background:#D66A1F;color:#fff;border:none;border-radius:5px;cursor:pointer;" onclick="confirmApplicantFee('${a.id}','${a.pendingPaymentPlan||'monthly'}')">Confirm Cash 💵</button>`
+                : `<button title="Bank transfer ref: ${escHtml(a.applicationFeeRef)}" style="padding:4px 9px;font-size:11px;font-weight:600;background:#1E4BFF;color:#fff;border:none;border-radius:5px;cursor:pointer;" onclick="confirmApplicantFee('${a.id}','${a.pendingPaymentPlan||'monthly'}')">Confirm Fee ₦</button>`)
             : a.applicationFeePaid ? `<span style="font-size:11px;color:#22c55e;font-weight:600;">✓ Fee Paid</span>` : ''
           }
           ${(JSON.parse(localStorage.getItem('gl_user') || '{}').role === 'admin') ? `<button style="padding:4px 9px;font-size:11px;font-weight:600;background:#ef4444;color:#fff;border:none;border-radius:5px;cursor:pointer;" onclick="deleteApplicant('${a.id}')" title="Delete applicant">Delete</button>` : ''}
@@ -5058,8 +5058,8 @@ function viewApplicant(id) {
          a.emailVerified ? 'Clicked the verification link in their inbox'
                          : 'Waiting - link may be in spam or email bounced'),
     step(feePaid, awaitingBank, '3. Application Fee + Tuition Paid',
-         feePaid ? ('Paid · Ref: ' + (a.applicationFeeRef || '-') + (planLabel ? ' · ' + planLabel : ''))
-         : awaitingBank ? ('Bank transfer ref submitted - awaiting admin confirm · ' + a.applicationFeeRef + (planLabel ? ' · ' + planLabel : ''))
+         feePaid ? ('Paid · Ref: ' + escHtml(a.applicationFeeRef || '-') + (planLabel ? ' · ' + planLabel : ''))
+         : awaitingBank ? ('Bank transfer ref submitted - awaiting admin confirm · ' + escHtml(a.applicationFeeRef) + (planLabel ? ' · ' + planLabel : ''))
          : a.emailVerified ? 'Verified but abandoned payment page'
          : 'Blocked until email is verified'),
     step(accepted, false, '4. Accepted & Enrolled',
@@ -5074,9 +5074,9 @@ function viewApplicant(id) {
     { label: 'Phone', val: a.phone || '-', href: a.phone ? 'tel:' + a.phone : null },
     { label: 'Location', val: a.location || '-', href: null }
   ].map(c => `
-    <${c.href ? `a href="${c.href}"` : 'div'} class="vap-contact-card">
+    <${c.href ? `a href="${escHtml(c.href)}"` : 'div'} class="vap-contact-card">
       <div class="vc-label">${c.label}</div>
-      <div class="vc-val">${c.val}</div>
+      <div class="vc-val">${escHtml(c.val)}</div>
     </${c.href ? 'a' : 'div'}>`
   ).join('');
 
@@ -5094,7 +5094,7 @@ function viewApplicant(id) {
     ? fields.map(f => `
       <div style="margin-bottom:16px">
         <div class="vap-field-label">${f.label}</div>
-        <div class="vap-field-val">${f.val}</div>
+        <div class="vap-field-val">${escHtml(f.val)}</div>
       </div>`).join('')
     : '<div style="color:var(--muted);font-size:13px">No additional details.</div>';
 
@@ -5220,10 +5220,10 @@ function renderClients(list) {
     const st = getClientStatus(c.id);
     return `<tr>
       <td class="muted">${c.id}</td>
-      <td><strong style="font-weight:600">${c.name}</strong></td>
-      <td class="muted" style="font-size:0.775rem">${c.email}</td>
-      <td>${c.service}</td>
-      <td style="font-weight:600;color:var(--orange)">${c.budget}</td>
+      <td><strong style="font-weight:600">${escHtml(c.name)}</strong></td>
+      <td class="muted" style="font-size:0.775rem">${escHtml(c.email)}</td>
+      <td>${escHtml(c.service)}</td>
+      <td style="font-weight:600;color:var(--orange)">${escHtml(c.budget)}</td>
       <td id="cl-badge-${c.id}">${badge(st)}</td>
       <td class="muted">${c.started}</td>
       <td>
@@ -5264,10 +5264,10 @@ function viewClient(id) {
   const c = CLIENTS.find(x => x.id === id);
   const st = getClientStatus(id);
   document.getElementById('clientDetailGrid').innerHTML = `
-    <div class="detail-item"><div class="d-label">Client Name</div><div class="d-value">${c.name}</div></div>
-    <div class="detail-item"><div class="d-label">Email</div><div class="d-value">${c.email}</div></div>
-    <div class="detail-item"><div class="d-label">Service</div><div class="d-value">${c.service}</div></div>
-    <div class="detail-item"><div class="d-label">Budget</div><div class="d-value" style="color:var(--orange);font-weight:700">${c.budget}</div></div>
+    <div class="detail-item"><div class="d-label">Client Name</div><div class="d-value">${escHtml(c.name)}</div></div>
+    <div class="detail-item"><div class="d-label">Email</div><div class="d-value">${escHtml(c.email)}</div></div>
+    <div class="detail-item"><div class="d-label">Service</div><div class="d-value">${escHtml(c.service)}</div></div>
+    <div class="detail-item"><div class="d-label">Budget</div><div class="d-value" style="color:var(--orange);font-weight:700">${escHtml(c.budget)}</div></div>
     <div class="detail-item"><div class="d-label">Status</div><div class="d-value">${badge(st)}</div></div>
     <div class="detail-item"><div class="d-label">Started</div><div class="d-value">${c.started}</div></div>
   `;
@@ -5505,12 +5505,12 @@ function renderOrders() {
   }
 
   tbody.innerHTML = list.map(o => {
-    const rcptData = JSON.stringify(buildOrderReceipt(o)).replace(/"/g,'&quot;');
+    const rcptData = JSON.stringify(buildOrderReceipt(o)).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     return `<tr>
-    <td style="font-weight:600;color:var(--orange);font-size:0.8rem">${o.id}</td>
-    <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.product}</td>
-    <td>${o.buyer}</td>
-    <td style="font-weight:700">${o.amount}</td>
+    <td style="font-weight:600;color:var(--orange);font-size:0.8rem">${escHtml(o.id)}</td>
+    <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(o.product)}</td>
+    <td>${escHtml(o.buyer)}</td>
+    <td style="font-weight:700">${escHtml(o.amount)}</td>
     <td>${catBadge(o.category)}</td>
     <td class="muted">${o.date}</td>
     <td>
@@ -5558,8 +5558,8 @@ function renderOverviewApplicants() {
   const source = window.APPLICANTS && window.APPLICANTS.length ? window.APPLICANTS : APPLICANTS;
   const recent = [...source].slice(0, 5);
   tbody.innerHTML = recent.map(a => `<tr onclick="navigate('applicants')">
-    <td style="font-weight:600">${a.name}</td>
-    <td class="muted">${a.track || '-'}</td>
+    <td style="font-weight:600">${escHtml(a.name)}</td>
+    <td class="muted">${escHtml(a.track || '-')}</td>
     <td>${badge(a.status)}</td>
     <td class="muted">${a.date}</td>
   </tr>`).join('');
@@ -5569,9 +5569,9 @@ function renderOverviewOrders() {
   const tbody = document.querySelector('#recentOrdersTable tbody');
   const recent = ORDERS.slice(0, 5);
   tbody.innerHTML = recent.map(o => `<tr onclick="navigate('orders')">
-    <td style="font-size:0.775rem">${o.product}</td>
-    <td class="muted">${o.buyer}</td>
-    <td style="font-weight:700;color:var(--orange)">${o.amount}</td>
+    <td style="font-size:0.775rem">${escHtml(o.product)}</td>
+    <td class="muted">${escHtml(o.buyer)}</td>
+    <td style="font-weight:700;color:var(--orange)">${escHtml(o.amount)}</td>
     <td>${badge(o.status)}</td>
   </tr>`).join('');
 }
@@ -9281,7 +9281,7 @@ async function loadStudents() {
   const pSelect = document.getElementById('pay-student-select');
   if (pSelect) {
     pSelect.innerHTML = '<option value="">- Select student -</option>' +
-      allStudents.filter(s => s.status === 'Active').map(s => `<option value="${s._id}">${s.fullName}${s.batch?.name ? ' (' + s.batch.name + ')' : ''}</option>`).join('');
+      allStudents.filter(s => s.status === 'Active').map(s => `<option value="${s._id}">${escHtml(s.fullName)}${s.batch?.name ? ' (' + escHtml(s.batch.name) + ')' : ''}</option>`).join('');
   }
 
   filterStudents();
@@ -9360,9 +9360,9 @@ function filterStudents() {
       <td style="padding:12px 14px"><span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:${statusColors[s.status]+'22'};color:${statusColors[s.status]}">${s.status}</span></td>
       <td style="padding:12px 14px" onclick="event.stopPropagation()">
         <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="openEditStudent('${sid}')">Edit</button>
-        ${s.status === 'Suspended' ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--success)" onclick="reactivateStudent('${sid}','${(s.fullName||'').replace(/'/g,"\\'")}')">Reactivate</button>` : ''}
-        ${s.status !== 'Graduated' ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:#6a9fff" onclick="graduateStudent('${sid}','${(s.fullName||'').replace(/'/g,"\\'")}')">Graduate</button>` : ''}
-        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--danger)" onclick="deleteStudent('${sid}','${s.fullName||''}')">Delete</button>
+        ${s.status === 'Suspended' ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--success)" onclick="reactivateStudent('${sid}','${escHtml((s.fullName||'').replace(/'/g,"\\'"))}')">Reactivate</button>` : ''}
+        ${s.status !== 'Graduated' ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:#6a9fff" onclick="graduateStudent('${sid}','${escHtml((s.fullName||'').replace(/'/g,"\\'"))}')">Graduate</button>` : ''}
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;color:var(--danger)" onclick="deleteStudent('${sid}','${escHtml((s.fullName||'').replace(/'/g,"\\'"))}')">Delete</button>
       </td>
     </tr>`;
   }).join('');
@@ -9748,9 +9748,9 @@ function viewStudent(id) {
     { label: 'Phone', val: s.phone || '-',        href: s.phone ? 'tel:' + s.phone : null },
     { label: 'Batch', val: s.batch?.name || '-',  href: null }
   ].map(c => `
-    <${c.href ? `a href="${c.href}"` : 'div'} class="vap-contact-card">
+    <${c.href ? `a href="${escHtml(c.href)}"` : 'div'} class="vap-contact-card">
       <div class="vc-label">${c.label}</div>
-      <div class="vc-val">${c.val}</div>
+      <div class="vc-val">${escHtml(c.val)}</div>
     </${c.href ? 'a' : 'div'}>`
   ).join('');
 
@@ -9886,8 +9886,8 @@ function loadStudentsForAttendance() {
       <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:pointer">
         <input type="checkbox" class="att-check" data-id="${s._id}" checked style="width:16px;height:16px;accent-color:var(--blue)">
         <div>
-          <div style="font-size:14px;font-weight:600">${s.fullName}</div>
-          <div style="font-size:12px;color:var(--muted)">${s.track}</div>
+          <div style="font-size:14px;font-weight:600">${escHtml(s.fullName)}</div>
+          <div style="font-size:12px;color:var(--muted)">${escHtml(s.track)}</div>
         </div>
       </label>`).join('') + '</div>';
 }
@@ -9947,14 +9947,14 @@ async function viewAttendanceSession(id) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
       <div>
         <h4 style="font-size:13px;color:var(--success);margin-bottom:12px">Present (${present.length})</h4>
-        ${present.length ? present.map(s => `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:14px">${s.fullName}</div>`).join('') : '<p style="color:var(--muted);font-size:13px">None</p>'}
+        ${present.length ? present.map(s => `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:14px">${escHtml(s.fullName)}</div>`).join('') : '<p style="color:var(--muted);font-size:13px">None</p>'}
       </div>
       <div>
         <h4 style="font-size:13px;color:var(--danger);margin-bottom:12px">Absent (${absent.length})</h4>
-        ${absent.length ? absent.map(s => `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:14px">${s.fullName}</div>`).join('') : '<p style="color:var(--muted);font-size:13px">None</p>'}
+        ${absent.length ? absent.map(s => `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:14px">${escHtml(s.fullName)}</div>`).join('') : '<p style="color:var(--muted);font-size:13px">None</p>'}
       </div>
     </div>
-    ${doc.notes ? `<p style="margin-top:16px;font-size:13px;color:var(--muted)"><strong>Notes:</strong> ${doc.notes}</p>` : ''}
+    ${doc.notes ? `<p style="margin-top:16px;font-size:13px;color:var(--muted)"><strong>Notes:</strong> ${escHtml(doc.notes)}</p>` : ''}
   `;
 }
 

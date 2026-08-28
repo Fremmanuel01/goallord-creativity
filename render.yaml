@@ -28,6 +28,10 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
+      # Transactional email via Resend. EMAIL_FROM must be a Resend-verified
+      # domain sender. BREVO_API_KEY is still used by utils/sms.js (SMS only).
+      - key: RESEND_API_KEY
+        sync: false
       - key: BREVO_API_KEY
         sync: false
       - key: EMAIL_FROM

@@ -3,7 +3,7 @@ const assignmentsDb  = require('../db/assignments');
 const submissionsDb  = require('../db/submissions');
 const studentsDb     = require('../db/students');
 const notificationsDb = require('../db/notifications');
-const { requireLecturer } = require('../middleware/lecturerAuth');
+const { requireLecturer, ownsDoc, canManageBatch } = require('../middleware/lecturerAuth');
 const { requireStudentAuth } = require('../middleware/studentAuth');
 
 const router = express.Router();
@@ -63,6 +63,7 @@ router.get('/:id', requireLecturer, async (req, res) => {
   try {
     const doc = await assignmentsDb.findById(req.params.id, { populate: 'lecturer' });
     if (!doc) return res.status(404).json({ error: 'Not found' });
+    if (!ownsDoc(req.user, doc)) return res.status(403).json({ error: 'Not your assignment' });
     res.json(doc);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -73,6 +74,9 @@ router.get('/:id', requireLecturer, async (req, res) => {
 router.post('/', requireLecturer, async (req, res) => {
   try {
     const { title, description, batch, week, topic, deadline, maxScore, published } = req.body;
+    if (batch && !(await canManageBatch(req.user, batch))) {
+      return res.status(403).json({ error: 'Not your batch' });
+    }
     const lecturerId = req.user.role === 'lecturer' ? req.user.id : req.body.lecturer;
     const doc = await assignmentsDb.create({
       title,
@@ -94,7 +98,13 @@ router.post('/', requireLecturer, async (req, res) => {
 // PATCH /api/assignments/:id
 router.patch('/:id', requireLecturer, async (req, res) => {
   try {
+    const existing = await assignmentsDb.findById(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Not found' });
+    if (!ownsDoc(req.user, existing)) return res.status(403).json({ error: 'Not your assignment' });
     const { title, description, batch, week, topic, deadline, maxScore, published } = req.body;
+    if (batch !== undefined && !(await canManageBatch(req.user, batch))) {
+      return res.status(403).json({ error: 'Not your batch' });
+    }
     const update = {};
     if (title !== undefined) update.title = title;
     if (description !== undefined) update.description = description;
@@ -115,6 +125,9 @@ router.patch('/:id', requireLecturer, async (req, res) => {
 // DELETE /api/assignments/:id
 router.delete('/:id', requireLecturer, async (req, res) => {
   try {
+    const existing = await assignmentsDb.findById(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Not found' });
+    if (!ownsDoc(req.user, existing)) return res.status(403).json({ error: 'Not your assignment' });
     await assignmentsDb.remove(req.params.id);
     res.json({ success: true });
   } catch (err) {
@@ -127,6 +140,9 @@ router.delete('/:id', requireLecturer, async (req, res) => {
 // GET /api/assignments/:id/submissions (lecturer/admin sees all)
 router.get('/:id/submissions', requireLecturer, async (req, res) => {
   try {
+    const assignment = await assignmentsDb.findById(req.params.id);
+    if (!assignment) return res.status(404).json({ error: 'Not found' });
+    if (!ownsDoc(req.user, assignment)) return res.status(403).json({ error: 'Not your assignment' });
     const subs = await submissionsDb.find({
       filter: { assignment_id: req.params.id },
       populate: 'student',
@@ -143,6 +159,12 @@ router.post('/:id/submissions', requireStudentAuth, async (req, res) => {
   try {
     const assignment = await assignmentsDb.findById(req.params.id);
     if (!assignment) return res.status(404).json({ error: 'Assignment not found' });
+
+    // Students may only submit to published assignments in their own batch.
+    const student = await studentsDb.findById(req.user.id, { fields: 'id, batch_id' });
+    if (!student || student.batch_id !== assignment.batch_id || !assignment.published) {
+      return res.status(403).json({ error: 'This assignment is not available to you' });
+    }
 
     const isLate = new Date() > new Date(assignment.deadline);
 
@@ -169,6 +191,9 @@ router.post('/:id/submissions', requireStudentAuth, async (req, res) => {
 // PATCH /api/assignments/:id/submissions/:subId (score + feedback)
 router.patch('/:id/submissions/:subId', requireLecturer, async (req, res) => {
   try {
+    const owning = await assignmentsDb.findById(req.params.id);
+    if (!owning) return res.status(404).json({ error: 'Not found' });
+    if (!ownsDoc(req.user, owning)) return res.status(403).json({ error: 'Not your assignment' });
     const { score, feedback } = req.body;
     const sub = await submissionsDb.update(req.params.subId, {
       score,
@@ -180,7 +205,7 @@ router.patch('/:id/submissions/:subId', requireLecturer, async (req, res) => {
 
     // Notify student that their assignment has been graded
     if (score != null) {
-      const assignment = await assignmentsDb.findById(req.params.id);
+      const assignment = owning;
       const msg = `Your submission for "${assignment?.title || 'an assignment'}" has been graded: ${score}${assignment?.max_score ? '/' + assignment.max_score : ''} points.${feedback ? ' Feedback: ' + feedback : ''}`;
       notificationsDb.create({
         recipient_id:   sub.student_id,

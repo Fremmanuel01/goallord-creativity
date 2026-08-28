@@ -1,35 +1,14 @@
 const express = require('express');
-const https = require('https');
 const ordersDb   = require('../db/orders');
 const productsDb = require('../db/products');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { sendMail } = require('../utils/mailer');
 const { receiptEmail } = require('../utils/emailTemplates');
+const { verifyTransaction: verifyPaystack } = require('../lib/paystack');
 const rateLimit = require('express-rate-limit');
 const xss = require('xss');
 
 const router = express.Router();
-
-// ── Paystack server-side verification ──
-function verifyPaystack(reference) {
-    return new Promise((resolve, reject) => {
-        const options = {
-            hostname: 'api.paystack.co',
-            path: '/transaction/verify/' + encodeURIComponent(reference),
-            method: 'GET',
-            headers: { 'Authorization': 'Bearer ' + process.env.PAYSTACK_SECRET_KEY }
-        };
-        const req = https.request(options, res => {
-            let body = '';
-            res.on('data', c => body += c);
-            res.on('end', () => {
-                try { resolve(JSON.parse(body)); } catch(e) { reject(e); }
-            });
-        });
-        req.on('error', reject);
-        req.end();
-    });
-}
 
 // ── Order confirmation email template ──
 function buildOrderConfirmationEmail(name, downloadLinks, reference, orders) {
@@ -206,7 +185,7 @@ router.get('/download/:id', async (req, res) => {
         // Redirect to the actual download URL
         res.redirect(product.download_url);
     } catch (err) {
-        res.status(500).send('<h2>Error</h2><p>' + err.message + '</p>');
+        res.status(500).send('<h2>Error</h2><p>' + xss(err.message || 'Something went wrong.') + '</p>');
     }
 });
 

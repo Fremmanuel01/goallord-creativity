@@ -19,6 +19,26 @@ test('receipt numbers are unique under concurrency (random, not count-based)', a
   assert.strictEqual(seen.size, 200, 'receipt numbers must not collide');
 });
 
+test('lib/config: valid env parses, bad env falls back, no NaN reaches money path', () => {
+  const path = require.resolve('../lib/config');
+  const orig = process.env.APPLICATION_FEE;
+  try {
+    process.env.APPLICATION_FEE = '25000';
+    delete require.cache[path];
+    assert.strictEqual(require('../lib/config').APPLICATION_FEE, 25000);
+
+    process.env.APPLICATION_FEE = 'not-a-number';
+    delete require.cache[path];
+    const c = require('../lib/config');
+    assert.strictEqual(c.APPLICATION_FEE, 20000, 'bad env must fall back, never NaN');
+    assert.ok(Number.isFinite(c.expectedEnrolmentTotal('full')));
+    assert.strictEqual(c.expectedEnrolmentTotal('monthly'), c.APPLICATION_FEE + c.MONTHLY_TUITION_FEE);
+  } finally {
+    if (orig === undefined) delete process.env.APPLICATION_FEE; else process.env.APPLICATION_FEE = orig;
+    delete require.cache[path];
+  }
+});
+
 test('computePaymentStatus: unpaid admin-accept fee row stays pending, not paid', () => {
   const { computePaymentStatus } = require('../db/payments');
   const row = computePaymentStatus({

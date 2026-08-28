@@ -13,6 +13,10 @@ const { setAuthCookie, clearAuthCookie } = require('../lib/authCookie');
 
 const { sendMail } = require('../utils/mailer');
 
+// Escape user-supplied text before embedding in email HTML (defense in depth -
+// names are admin-set today, but an unescaped "<script>" name must never ship).
+const esc = s => (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
 const router = express.Router();
 
 // Two-factor handlers for admin/staff accounts
@@ -158,7 +162,7 @@ router.post('/register', requireAuth, requireAdmin, async (req, res) => {
 
   <!-- Body -->
   <div style="background:#0d1017;padding:32px 32px 40px">
-    <p style="font-size:16px;line-height:1.7;color:#d1d5db;margin:0 0 24px">Hi <strong style="color:#fff">${user.name.split(' ')[0]}</strong>, your account has been created. Use the credentials below to log in.</p>
+    <p style="font-size:16px;line-height:1.7;color:#d1d5db;margin:0 0 24px">Hi <strong style="color:#fff">${esc(user.name.split(' ')[0])}</strong>, your account has been created. Use the credentials below to log in.</p>
 
     <!-- Credentials card -->
     <div style="background:#141820;border:1px solid #1e2432;border-radius:12px;overflow:hidden;margin-bottom:24px">
@@ -302,7 +306,7 @@ router.post('/forgot-password', forgotLimiter, async (req, res) => {
 
     const host     = process.env.HOST || 'https://goallordcreativity.com';
     const resetUrl = `${host}/reset-password.html?token=${token}&role=admin`;
-    const firstName = user.name.split(' ')[0];
+    const firstName = esc(user.name.split(' ')[0]);
 
     await sendMail({
       to:      user.email,

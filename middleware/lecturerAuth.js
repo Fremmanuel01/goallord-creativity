@@ -34,4 +34,29 @@ function requireLecturerOnly(req, res, next) {
   }
 }
 
-module.exports = { requireLecturer, requireLecturerOnly };
+// ── Resource scoping helpers ─────────────────────────────────
+// requireLecturer proves the caller IS a lecturer/admin; these prove the
+// lecturer may touch a SPECIFIC resource. Admins are always unrestricted.
+
+// Batch ids a non-admin lecturer may manage (via lecturer_batches).
+// Returns null for admins = unrestricted.
+async function lecturerBatchIds(user) {
+  if (!user || user.role === 'admin') return null;
+  const supabase = require('../lib/supabase');
+  const { data } = await supabase.from('lecturer_batches').select('batch_id').eq('lecturer_id', user.id);
+  return (data || []).map(r => r.batch_id);
+}
+
+// May this user manage resources belonging to the given batch?
+async function canManageBatch(user, batchId) {
+  const ids = await lecturerBatchIds(user);
+  return ids === null || (batchId != null && ids.includes(batchId));
+}
+
+// Docs owned via lecturer_id (materials, assignments): admins pass,
+// lecturers only their own — mirrors the list-endpoint filtering.
+function ownsDoc(user, doc) {
+  return !!user && (user.role === 'admin' || (!!doc && doc.lecturer_id === user.id));
+}
+
+module.exports = { requireLecturer, requireLecturerOnly, lecturerBatchIds, canManageBatch, ownsDoc };

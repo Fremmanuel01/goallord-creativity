@@ -65,6 +65,7 @@ function createFakeSupabase(seed) {
     insert(payload) { this.op = 'insert'; this.payload = payload; return this; }
     update(payload) { this.op = 'update'; this.payload = payload; return this; }
     upsert(payload, opts) { this.op = 'upsert'; this.payload = payload; this.upsertOpts = opts || {}; return this; }
+    delete() { this.op = 'delete'; return this; }
     eq(col, val) { this.filters.push(['eq', col, val]); return this; }
     neq(col, val) { this.filters.push(['neq', col, val]); return this; }
     gt(col, val) { this.filters.push(['gt', col, val]); return this; }
@@ -72,7 +73,9 @@ function createFakeSupabase(seed) {
     in(col, vals) { this.filters.push(['in', col, vals]); return this; }
     order(col, o) { this._order = { col, ascending: !o || o.ascending !== false }; return this; }
     limit(n) { this._limit = n; return this; }
+    range(from, to) { this._range = [from, to]; return this; }
     single() { this._single = true; return this._run(); }
+    maybeSingle() { this._single = true; this._maybe = true; return this._run(); }
 
     _match(row) {
       return this.filters.every(([kind, col, val]) => {
@@ -90,6 +93,7 @@ function createFakeSupabase(seed) {
         if (this.op === 'insert') return Promise.resolve(this._insert());
         if (this.op === 'update') return Promise.resolve(this._update());
         if (this.op === 'upsert') return Promise.resolve(this._upsert());
+        if (this.op === 'delete') return Promise.resolve(this._delete());
         return Promise.resolve(this._select());
       } catch (e) {
         return Promise.resolve({ data: null, error: { message: e.message } });
@@ -106,6 +110,7 @@ function createFakeSupabase(seed) {
         });
       }
       if (this._limit != null) rows = rows.slice(0, this._limit);
+      if (this._range) rows = rows.slice(this._range[0], this._range[1] + 1);
       return rows;
     }
 
@@ -116,10 +121,20 @@ function createFakeSupabase(seed) {
       }
       rows = applyEmbeds(rows, this.cols).map(clone);
       if (this._single) {
-        if (rows.length === 0) return { data: null, error: { message: 'No rows found' } };
+        if (rows.length === 0) {
+          return this._maybe
+            ? { data: null, error: null }
+            : { data: null, error: { message: 'No rows found' } };
+        }
         return { data: rows[0], error: null };
       }
       return { data: rows, error: null };
+    }
+
+    _delete() {
+      const keep = table(this.name).filter((r) => !this._match(r));
+      store[this.name] = keep;
+      return { data: null, error: null };
     }
 
     _insert() {
