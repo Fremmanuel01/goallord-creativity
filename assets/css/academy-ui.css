@@ -1,0 +1,173 @@
+/*
+ * academy-ui.css — shared design system for the Goallord Academy dashboards.
+ * One source of truth for tokens, type scale, and component primitives so the
+ * Student and Lecturer dashboards feel like one deliberately designed product.
+ * Typeface: Instrument Sans. Icons: Lucide (via academy-ui.js). Restrained,
+ * editorial, quiet. Orange is used sparingly (active nav, primary CTA, focus).
+ */
+
+:root {
+  /* Surfaces — near-black, warming slightly as they elevate */
+  --bg: #0F1115;
+  --surface-1: #16191F;
+  --surface-2: #1C2027;
+  --border: #262b34;
+  --border-soft: #21252d;
+
+  /* Text — soft white, never pure #fff */
+  --text-primary: #ECEEF2;
+  --text-secondary: #AAB0BC;
+  --text-muted: #767C88;
+
+  /* Brand — warm burnt orange + muted brown, used sparingly */
+  --brand: #D66A1F;
+  --brand-hover: #E4772A;
+  --brand-soft: rgba(214,106,31,0.12);
+  --brand-line: rgba(214,106,31,0.42);
+  --brown: #8a5a37;
+
+  /* Status — quiet, used only to communicate state */
+  --danger: #d76a5f;
+  --danger-soft: rgba(215,106,95,0.12);
+  --success: #5fae7e;
+  --success-soft: rgba(95,174,126,0.12);
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 11px;
+  --radius-lg: 14px;
+
+  /* Spacing scale */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px;
+
+  --font: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* ── Type scale (calm; no 800/900, no uppercase-everywhere) ── */
+.ac-h1 { font-size: 32px; line-height: 1.15; font-weight: 600; letter-spacing: -0.015em; color: var(--text-primary); }
+.ac-h2 { font-size: 20px; line-height: 1.25; font-weight: 600; letter-spacing: -0.01em; color: var(--text-primary); }
+.ac-card-title { font-size: 16px; font-weight: 600; letter-spacing: -0.005em; color: var(--text-primary); }
+.ac-body { font-size: 14.5px; font-weight: 400; color: var(--text-secondary); }
+.ac-meta { font-size: 12.5px; font-weight: 450; color: var(--text-muted); }
+
+/* Small eyebrow labels only (NEXT CLASS, YOUR PROGRESS…). Subtle. */
+.ac-eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+
+/* ── Cards — used only for real grouping boundaries ── */
+.ac-card {
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: var(--sp-5);
+}
+.ac-card-quiet { background: transparent; border: 1px solid var(--border-soft); }
+
+/* ── Buttons ── */
+.ac-btn {
+  display: inline-flex; align-items: center; gap: 8px; font-family: var(--font);
+  font-size: 14px; font-weight: 500; padding: 9px 15px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: transparent; color: var(--text-primary);
+  cursor: pointer; transition: background .15s, border-color .15s, color .15s;
+}
+.ac-btn:hover { border-color: var(--text-muted); }
+.ac-btn svg { width: 16px; height: 16px; }
+.ac-btn-primary {
+  background: var(--brand); border-color: var(--brand); color: #1a1206; font-weight: 600;
+}
+.ac-btn-primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); }
+.ac-btn-ghost { border-color: transparent; color: var(--text-secondary); }
+.ac-btn-ghost:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+
+/* Text link (used instead of scattered "View all →") */
+.ac-link {
+  display: inline-flex; align-items: center; gap: 5px; color: var(--brand);
+  font-size: 13px; font-weight: 500; text-decoration: none; cursor: pointer; background: none; border: none; font-family: var(--font);
+}
+.ac-link:hover { color: var(--brand-hover); }
+.ac-link svg { width: 15px; height: 15px; }
+
+/* ── Progress bar (thin, understated) ── */
+.ac-bar { height: 5px; border-radius: 999px; background: rgba(255,255,255,0.06); overflow: hidden; }
+.ac-bar > span { display: block; height: 100%; border-radius: 999px; background: var(--brand); }
+.ac-bar.is-success > span { background: var(--success); }
+
+/* ── App shell (shared sidebar + topbar layout) ── */
+.ac-shell { display: flex; min-height: 100vh; background: var(--bg); color: var(--text-primary); font-family: var(--font); }
+.ac-sidebar {
+  width: 244px; flex-shrink: 0; background: var(--surface-1); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; padding: 18px 14px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.ac-brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 18px; }
+.ac-brand img { height: 30px; width: auto; }
+.ac-brand .n { font-size: 14.5px; font-weight: 600; color: var(--text-primary); line-height: 1.1; }
+.ac-brand .s { font-size: 11px; color: var(--text-muted); }
+
+.ac-nav { display: flex; flex-direction: column; gap: 2px; }
+.ac-nav-item {
+  display: flex; align-items: center; gap: 11px; padding: 9px 11px; border-radius: var(--radius-sm);
+  color: var(--text-secondary); font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid transparent;
+  background: none; font-family: var(--font); text-align: left; width: 100%; transition: background .15s, color .15s;
+}
+.ac-nav-item svg { width: 18px; height: 18px; color: var(--text-muted); flex-shrink: 0; }
+.ac-nav-item:hover { background: rgba(255,255,255,0.035); color: var(--text-primary); }
+.ac-nav-item:hover svg { color: var(--text-secondary); }
+.ac-nav-item.active {
+  background: linear-gradient(90deg, rgba(138,90,55,0.20), rgba(138,90,55,0.06));
+  border-color: var(--border-soft); color: var(--text-primary);
+  box-shadow: inset 2px 0 0 var(--brand);
+}
+.ac-nav-item.active svg { color: var(--brand); }
+.ac-nav-item .chev { margin-left: auto; transition: transform .18s; }
+.ac-nav-item .chev svg { width: 16px; height: 16px; }
+.ac-nav-group.open > .ac-nav-item .chev { transform: rotate(90deg); }
+.ac-nav-sub { display: none; flex-direction: column; gap: 1px; margin: 2px 0 4px 30px; }
+.ac-nav-group.open .ac-nav-sub { display: flex; }
+.ac-nav-sub button {
+  text-align: left; background: none; border: none; color: var(--text-secondary); font-family: var(--font);
+  font-size: 13.5px; padding: 7px 10px; border-radius: 7px; cursor: pointer;
+}
+.ac-nav-sub button:hover { background: rgba(255,255,255,0.035); color: var(--text-primary); }
+.ac-nav-sub button.active { color: var(--brand); }
+.ac-nav-divider { height: 1px; background: var(--border-soft); margin: 12px 8px; }
+.ac-nav-badge { margin-left: auto; background: var(--brand); color: #1a1206; font-size: 10.5px; font-weight: 600; min-width: 18px; height: 18px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; padding: 0 5px; }
+.ac-nav-item.active .ac-nav-badge + .chev, .ac-nav-item .ac-nav-badge ~ .chev { margin-left: 8px; }
+
+.ac-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ac-topbar {
+  position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: 16px;
+  padding: 12px 28px; background: rgba(15,17,21,0.85); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border-soft);
+}
+.ac-search {
+  flex: 1; max-width: 460px; display: flex; align-items: center; gap: 9px; padding: 8px 12px;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+}
+.ac-search svg { width: 16px; height: 16px; color: var(--text-muted); }
+.ac-search input { flex: 1; background: none; border: none; outline: none; color: var(--text-primary); font-family: var(--font); font-size: 13.5px; }
+.ac-search .kbd { font-size: 11px; color: var(--text-muted); border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; }
+.ac-topbar-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.ac-icon-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; color: var(--text-secondary); cursor: pointer; }
+.ac-icon-btn:hover { color: var(--text-primary); border-color: var(--text-muted); }
+.ac-icon-btn svg { width: 18px; height: 18px; }
+.ac-icon-btn .dot { position: absolute; top: -4px; right: -4px; background: var(--brand); color: #1a1206; font-size: 10px; font-weight: 600; min-width: 16px; height: 16px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; }
+.ac-content { padding: 26px 28px 60px; max-width: 1320px; width: 100%; }
+
+/* ── Responsive shell ── */
+@media (max-width: 1024px) {
+  .ac-sidebar { position: fixed; left: 0; top: 0; z-index: 60; transform: translateX(-100%); transition: transform .22s ease; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
+  .ac-sidebar.open { transform: translateX(0); }
+  .ac-scrim { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 55; }
+  .ac-scrim.open { display: block; }
+}
+@media (min-width: 1025px) { .ac-menu-btn { display: none; } }
+@media (max-width: 640px) {
+  .ac-content { padding: 18px 16px 84px; }
+  .ac-search { display: none; }
+  .ac-topbar { padding: 10px 16px; }
+}
+
+/* Focus visibility (a11y) */
+.ac-nav-item:focus-visible, .ac-btn:focus-visible, .ac-icon-btn:focus-visible, .ac-link:focus-visible, .ac-nav-sub button:focus-visible {
+  outline: 2px solid var(--brand); outline-offset: 2px;
+}

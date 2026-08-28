@@ -5,15 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>My Dashboard - Goallord Academy</title>
 <script src="https://js.paystack.co/v1/inline.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/academy-ui.css">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --orange: #D66A1F; --blue: #1E4BFF;
-    --bg: #0F1115; --card: #171A21; --border: #2A2F3A;
-    --text: #F4F6FA; --muted: #A0A6B3;
+    --bg: #0F1115; --card: #16191F; --card-2: #1C2027; --border: #262b34;
+    --text: #ECEEF2; --muted: #AAB0BC; --faint: #767C88;
     --green: #22c55e; --red: #ef4444; --yellow: #f59e0b;
   }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 16px; line-height: 1.55; }
+  body { font-family: 'Instrument Sans', ui-sans-serif, system-ui, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 16px; line-height: 1.55; }
 
   @keyframes spinPh { to { transform: rotate(360deg); } }
 
@@ -78,7 +82,7 @@
     }
     .sb-brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 14px; }
     .sb-brand img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-    .sb-brand .nm { font-size: 15px; font-weight: 800; line-height: 1.1; }
+    .sb-brand .nm { font-size: 15px; font-weight: 600; line-height: 1.1; }
     .sb-brand .sub { font-size: 11px; color: var(--muted); }
 
     .sb-item {
@@ -117,19 +121,6 @@
     .sb-sub button.active { color: var(--orange); }
     .sb-divider { height: 1px; background: var(--border); margin: 8px 6px; }
 
-    .sb-card {
-      margin-top: auto; background: rgba(255,255,255,.03); border: 1px solid var(--border);
-      border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 6px;
-    }
-    .sb-card .cap { font-size: 22px; }
-    .sb-card .t { font-size: 14px; font-weight: 800; }
-    .sb-card .d { font-size: 12px; color: var(--muted); line-height: 1.4; }
-    .sb-card button {
-      margin-top: 6px; background: transparent; border: 1px solid var(--orange); color: var(--orange);
-      border-radius: 9px; padding: 8px 12px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
-    }
-    .sb-card button:hover { background: rgba(214,106,31,.12); }
-
     /* Sticky topbar in the content column */
     .topbar {
       display: flex; align-items: center; gap: 16px;
@@ -153,7 +144,7 @@
     .tb-iconbtn .tb-badge.show { display: flex; }
     .tb-avatar { display: flex; align-items: center; gap: 9px; background: transparent; border: 1px solid var(--border); border-radius: 24px; padding: 4px 12px 4px 4px; cursor: pointer; color: var(--text); font-family: inherit; }
     .tb-avatar:hover { border-color: var(--muted); }
-    .tb-avatar .av { position: relative; width: 32px; height: 32px; border-radius: 50%; background: rgba(214,106,31,.15); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--orange); flex-shrink: 0; }
+    .tb-avatar .av { position: relative; width: 32px; height: 32px; border-radius: 50%; background: rgba(214,106,31,.15); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--orange); flex-shrink: 0; }
     .tb-avatar .av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .tb-avatar .dot { position: absolute; bottom: 0; right: 0; width: 9px; height: 9px; border-radius: 50%; background: var(--green); border: 2px solid #13161c; }
     .tb-avatar .who { text-align: left; line-height: 1.15; }
@@ -177,9 +168,9 @@
   .ov-grid { display: grid; gap: 18px; }
   .ov-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.15); min-width: 0; }
   .ov-card .ov-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
-  .ov-card .ov-head .ov-h { font-size: 11px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; color: var(--muted); }
-  .ov-card .ov-viewall { font-size: 12px; font-weight: 700; color: var(--orange); background: none; border: none; cursor: pointer; font-family: inherit; }
-  .ov-greet h1 { font-size: 26px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 4px; }
+  .ov-card .ov-head .ov-h { font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--muted); }
+  .ov-card .ov-viewall { font-size: 12px; font-weight: 600; color: var(--orange); background: none; border: none; cursor: pointer; font-family: inherit; }
+  .ov-greet h1 { font-size: 32px; font-weight: 600; letter-spacing: -.015em; margin-bottom: 4px; }
   .ov-greet p { color: var(--muted); font-size: 14.5px; }
   .ov-row3 { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 18px; }
   .ov-row2 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; }
@@ -187,11 +178,11 @@
   @media (min-width: 641px) and (max-width: 1024px) { .ov-row3 { grid-template-columns: 1fr 1fr; } .ov-row3 > :first-child { grid-column: 1 / -1; } }
 
   .ov-next { background: linear-gradient(135deg, rgba(214,106,31,.20), rgba(214,106,31,.05)); border-color: rgba(214,106,31,.4); }
-  .ov-next .cap { font-size: 11px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; color: var(--orange); }
-  .ov-next .when { font-size: 24px; font-weight: 800; letter-spacing: -.02em; margin: 4px 0 2px; }
+  .ov-next .cap { font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--orange); }
+  .ov-next .when { font-size: 24px; font-weight: 600; letter-spacing: -.02em; margin: 4px 0 2px; }
   .ov-next .topic { font-size: 15px; color: var(--text); margin-bottom: 14px; overflow: hidden; text-overflow: ellipsis; }
   .ov-next .lect { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-  .ov-next .lect .la { width: 34px; height: 34px; border-radius: 50%; background: rgba(214,106,31,.18); display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 12px; font-weight: 800; color: var(--orange); flex-shrink: 0; }
+  .ov-next .lect .la { width: 34px; height: 34px; border-radius: 50%; background: rgba(214,106,31,.18); display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 12px; font-weight: 600; color: var(--orange); flex-shrink: 0; }
   .ov-next .lect .la img { width: 100%; height: 100%; object-fit: cover; }
   .ov-next .lect b { font-size: 14px; } .ov-next .lect small { display: block; color: var(--muted); font-size: 12px; }
   .ov-next .cal { position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; border-radius: 12px; background: rgba(214,106,31,.14); display: flex; align-items: center; justify-content: center; }
@@ -202,7 +193,9 @@
 
   .qa-item { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 10px; cursor: pointer; width: 100%; background: none; border: none; text-align: left; font-family: inherit; transition: background .15s; }
   .qa-item:hover { background: rgba(255,255,255,.04); }
-  .qa-item .qi { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; }
+  .qa-item .qi { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--muted); }
+  .qa-item .qi svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 1.75; }
+  .qa-item .qi.urgent { color: var(--orange); }
   .qa-item .qt { flex: 1; min-width: 0; }
   .qa-item .qt b { display: block; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .qa-item .qt small { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
@@ -212,7 +205,7 @@
   .sch-item:last-of-type { border-bottom: none; }
   .sch-item .sd { text-align: center; flex-shrink: 0; width: 40px; }
   .sch-item .sd .m { font-size: 10px; font-weight: 800; letter-spacing: .5px; color: var(--orange); text-transform: uppercase; }
-  .sch-item .sd .d { font-size: 19px; font-weight: 800; line-height: 1; }
+  .sch-item .sd .d { font-size: 19px; font-weight: 600; line-height: 1; }
   .sch-item .si { flex: 1; min-width: 0; }
   .sch-item .si b { font-size: 13.5px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sch-item .si small { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
@@ -221,17 +214,18 @@
   .prog3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; }
   @media (max-width: 720px) { .prog3 { grid-template-columns: 1fr; } }
   .prog-col .ph { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .prog-col .ph .pic { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 15px; }
-  .prog-col .ph .lbl { font-size: 13px; font-weight: 700; }
+  .prog-col .ph .pic { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--muted); }
+  .prog-col .ph .pic svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.75; }
+  .prog-col .ph .lbl { font-size: 13px; font-weight: 600; }
   .prog-col .pv { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
   .prog-col .pbar { display: flex; align-items: center; gap: 10px; }
   .prog-col .pbar .track { flex: 1; height: 7px; border-radius: 99px; background: rgba(255,255,255,.06); overflow: hidden; }
   .prog-col .pbar .track > span { display: block; height: 100%; border-radius: 99px; }
-  .prog-col .pbar .pct { font-size: 13px; font-weight: 800; flex-shrink: 0; }
+  .prog-col .pbar .pct { font-size: 13px; font-weight: 700; flex-shrink: 0; }
 
   .cl-avatars { display: flex; gap: 8px; flex-wrap: wrap; }
   .cl-av { text-align: center; width: 64px; }
-  .cl-av .r { width: 48px; height: 48px; border-radius: 50%; margin: 0 auto 6px; background: rgba(214,106,31,.15); display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 15px; font-weight: 800; color: var(--orange); }
+  .cl-av .r { width: 48px; height: 48px; border-radius: 50%; margin: 0 auto 6px; background: rgba(214,106,31,.15); display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 15px; font-weight: 600; color: var(--orange); }
   .cl-av .r img { width: 100%; height: 100%; object-fit: cover; }
   .cl-av .n { font-size: 11.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cl-av .t { font-size: 10.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -262,13 +256,13 @@
   .navgroup-menu button.active { color: var(--orange); font-weight: 600; }
   .tab { padding: 10px 20px; font-size: 15px; font-weight: 600; color: var(--muted); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: color 0.2s; margin-bottom: -1px; }
   .tab:hover { color: var(--text); }
-  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+  .tab.active { color: var(--orange); border-bottom-color: var(--orange); }
 
   /* ── STAT CARDS ── */
   .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px; }
   .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
   .stat-card .stat-label { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; }
-  .stat-card .stat-value { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+  .stat-card .stat-value { font-size: 28px; font-weight: 600; margin-bottom: 4px; }
   .stat-card .stat-sub { font-size: 12px; color: var(--muted); }
   .stat-card.blue .stat-value { color: #6a9fff; }
   .stat-card.green .stat-value { color: var(--green); }
@@ -283,7 +277,7 @@
     padding: 18px 20px; margin-bottom: 16px;
   }
   .nextclass-hero .nc-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--orange); font-weight: 700; margin-bottom: 4px; }
-  .nextclass-hero .nc-when { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+  .nextclass-hero .nc-when { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
   .nextclass-hero .nc-sub { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
   .nextclass-hero .nc-actions { display: flex; gap: 8px; flex-shrink: 0; }
   .nextclass-hero .nc-btn { padding: 9px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); color: var(--text); }
@@ -307,7 +301,7 @@
   .progress-hero .pg-ring-pct {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column;
   }
-  .progress-hero .pg-ring-pct .num { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+  .progress-hero .pg-ring-pct .num { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
   .progress-hero .pg-ring-pct .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 2px; }
   .progress-hero .pg-meta { flex: 1; min-width: 0; }
   .progress-hero .pg-title { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
@@ -343,7 +337,7 @@
   }
 
   /* ── SECTION ── */
-  .section-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+  .section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
 
   /* ── TABLE ── */
   .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
@@ -363,7 +357,8 @@
 
   /* ── EMPTY STATE ── */
   .empty { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 15px; }
-  .empty .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.5; }
+  .empty .empty-icon { display: flex; justify-content: center; margin-bottom: 12px; color: var(--faint); }
+  .empty .empty-icon svg { width: 28px; height: 28px; stroke: currentColor; fill: none; stroke-width: 1.6; }
 
   /* ── LOADING ── */
   .loading { text-align: center; padding: 60px 24px; color: var(--muted); font-size: 15px; }
@@ -620,14 +615,14 @@
   </div>
 
   <button class="sb-item active" data-nav="overview" onclick="navPick('overview')">
-    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/><path d="M9.5 21v-6h5v6"/></svg>
+    <span class="ico" data-icon="house" data-size="20"></span>
     <span class="lbl">Home<small>Dashboard</small></span>
   </button>
 
   <div class="sb-group" data-group="sb-learn">
     <button class="sb-item" onclick="toggleSidebarGroup(event,'sb-learn')" aria-expanded="false">
-      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M19 17H6a2 2 0 0 0-2 2"/></svg>
-      <span class="lbl">Learn</span><span class="chev" aria-hidden="true">›</span>
+      <span class="ico" data-icon="book-open" data-size="20"></span>
+      <span class="lbl">Learn</span><span class="chev" data-icon="chevron-right" data-size="16" aria-hidden="true"></span>
     </button>
     <div class="sb-sub">
       <button data-nav="lectures" onclick="navPick('lectures')">Lectures</button>
@@ -639,53 +634,46 @@
   </div>
 
   <button class="sb-item" data-nav="classmates" onclick="navPick('classmates')">
-    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16 5.2a3.2 3.2 0 0 1 0 5.6"/><path d="M18 14.4A5.5 5.5 0 0 1 20.5 20"/></svg>
+    <span class="ico" data-icon="users" data-size="20"></span>
     <span class="lbl">Classmates</span>
   </button>
 
   <button class="sb-item" data-nav="messages" onclick="navPick('messages')">
-    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.2 7.6L3 21l1.9-5.8A8.5 8.5 0 1 1 21 11.5Z"/></svg>
+    <span class="ico" data-icon="message-circle" data-size="20"></span>
     <span class="lbl">Messages</span><span class="sb-badge" id="sbMsgBadge"></span>
   </button>
 
   <button class="sb-item" data-nav="curriculum" onclick="navPick('curriculum')">
-    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+    <span class="ico" data-icon="calendar-days" data-size="20"></span>
     <span class="lbl">Schedule</span>
   </button>
 
   <button class="sb-item" onclick="navPick('overview');setTimeout(function(){var c=document.getElementById('progressCard');if(c)c.scrollIntoView({behavior:'smooth',block:'center'});},60)">
-    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 14 3-3 3 3 5-6"/></svg>
+    <span class="ico" data-icon="chart-line" data-size="20"></span>
     <span class="lbl">Progress</span>
   </button>
 
   <div class="sb-divider"></div>
 
   <button class="sb-item" data-nav="payments" onclick="navPick('payments')">
-    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>
+    <span class="ico" data-icon="credit-card" data-size="20"></span>
     <span class="lbl">Payments</span>
   </button>
 
   <button class="sb-item" data-nav="notifications" onclick="navPick('notifications')">
-    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+    <span class="ico" data-icon="bell" data-size="20"></span>
     <span class="lbl">Notifications</span><span class="sb-badge" id="sbNotifBadge"></span>
   </button>
 
   <button class="sb-item" data-nav="profile" onclick="navPick('profile')">
-    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+    <span class="ico" data-icon="user-round" data-size="20"></span>
     <span class="lbl">Profile</span>
   </button>
 
   <button class="sb-item" data-nav="profile" onclick="navPick('profile')">
-    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span class="ico" data-icon="settings" data-size="20"></span>
     <span class="lbl">Settings</span>
   </button>
-
-  <div class="sb-card">
-    <span class="cap" aria-hidden="true">🎓</span>
-    <span class="t">Build your future.</span>
-    <span class="d">Explore opportunities, connect and keep growing.</span>
-    <button onclick="navPick('classmates')">Explore Opportunities →</button>
-  </div>
 </aside>
 
 <nav class="topnav">
@@ -707,8 +695,8 @@
       </div>
     </div>
     <div class="bell-wrap">
-      <button class="bell-btn" onclick="toggleNotifPanel()" title="Notifications">
-        🔔
+      <button class="bell-btn" onclick="toggleNotifPanel()" title="Notifications" aria-label="Notifications">
+        <span data-icon="bell" data-size="18" style="display:inline-flex"></span>
         <span class="bell-badge" id="bellBadge"></span>
       </button>
       <!-- Notification panel moved to the desktop topbar so a single #notifPanel serves both shells.
@@ -745,7 +733,7 @@
           <span class="dot" aria-hidden="true"></span>
         </span>
         <span class="who"><b id="tbStudentName">-</b><small>Student</small></span>
-        <span aria-hidden="true" style="color:var(--muted);font-size:12px">▾</span>
+        <span data-icon="chevron-down" data-size="15" aria-hidden="true" style="color:var(--muted);display:inline-flex"></span>
       </button>
       <button class="btn-logout" onclick="logout()">Sign Out</button>
     </div>
@@ -800,7 +788,7 @@
 
       <!-- Greeting -->
       <div class="ov-greet" style="margin-bottom:20px">
-        <h1 id="ovGreeting">Welcome 👋</h1>
+        <h1 id="ovGreeting">Welcome</h1>
         <p id="ovGreetSub">-</p>
       </div>
 
@@ -836,7 +824,7 @@
           <div class="ov-card">
             <div class="ov-head"><span class="ov-h">Upcoming schedule</span><button class="ov-viewall" onclick="navPick('curriculum')">View all</button></div>
             <div id="ovUpcoming"><div style="color:var(--muted);font-size:13px">Loading…</div></div>
-            <button class="ov-viewall" style="margin-top:12px" onclick="navPick('curriculum')">Go to full schedule →</button>
+            <button class="ov-viewall" style="margin-top:12px" onclick="navPick('curriculum')">Go to full schedule</button>
           </div>
         </div>
 
@@ -845,26 +833,26 @@
           <div class="ov-head"><span class="ov-h">Your progress</span></div>
           <div class="prog3">
             <div class="prog-col">
-              <div class="ph"><span class="pic" style="background:rgba(214,106,31,.15);color:var(--orange)">📈</span><span class="lbl">Curriculum Progress</span></div>
+              <div class="ph"><span class="pic" data-icon="list-tree" data-size="18"></span><span class="lbl">Curriculum Progress</span></div>
               <div class="pv">Week <span id="pg-week">-</span> <span id="pg-week-of">of -</span></div>
               <div class="pbar"><span class="track"><span class="pg-bar-fill time" id="pg-time-fill" style="width:0%;background:linear-gradient(90deg,#f59e0b,var(--orange))"></span></span><span class="pct" id="pg-time-val">-</span></div>
               <div id="pg-dates" style="font-size:11px;color:var(--muted);margin-top:6px"></div>
             </div>
             <div class="prog-col">
-              <div class="ph"><span class="pic" style="background:rgba(34,197,94,.15);color:var(--green)">✅</span><span class="lbl">Attendance Rate</span></div>
+              <div class="ph"><span class="pic" data-icon="calendar-check" data-size="18"></span><span class="lbl">Attendance Rate</span></div>
               <div class="pv" id="pg-att-val">-</div>
               <div class="pbar"><span class="track"><span class="pg-bar-fill att" id="pg-att-fill" style="width:0%;background:linear-gradient(90deg,#34d399,var(--green))"></span></span><span class="pct" id="pg-att-pct">-</span></div>
             </div>
             <div class="prog-col">
-              <div class="ph"><span class="pic" style="background:rgba(124,92,255,.18);color:#a894ff">📝</span><span class="lbl">Assignments Completed</span></div>
+              <div class="ph"><span class="pic" data-icon="clipboard-check" data-size="18"></span><span class="lbl">Assignments Completed</span></div>
               <div class="pv" id="pg-asg-val">-</div>
-              <div class="pbar"><span class="track"><span class="pg-bar-fill asg" id="pg-asg-fill" style="width:0%;background:linear-gradient(90deg,#a894ff,#7c5cff)"></span></span><span class="pct" id="pg-asg-pct">-</span></div>
+              <div class="pbar"><span class="track"><span class="pg-bar-fill asg" id="pg-asg-fill" style="width:0%;background:var(--muted)"></span></span><span class="pct" id="pg-asg-pct">-</span></div>
             </div>
           </div>
           <!-- next-deadline pill (renderProgress writes here) -->
           <div class="pg-next is-empty" id="pg-next" role="button" tabindex="0" style="display:flex;align-items:center;gap:10px;background:rgba(214,106,31,0.08);border:1px solid rgba(214,106,31,0.18);color:var(--text);padding:9px 13px;border-radius:10px;font-size:12.5px;margin-top:16px;cursor:pointer">
             <span class="pg-next-dot" aria-hidden="true" style="width:7px;height:7px;border-radius:50%;background:var(--orange);flex-shrink:0"></span>
-            <span id="pg-next-text">No upcoming deadlines.</span>
+            <span id="pg-next-text">No upcoming assignments.</span>
           </div>
         </div>
 
@@ -885,7 +873,7 @@
 
         <!-- ROW 4 — ANNOUNCEMENTS -->
         <div class="ov-card">
-          <div class="ov-head"><span class="ov-h">Announcements</span><button class="ov-viewall" onclick="navPick('notifications')">View all announcements →</button></div>
+          <div class="ov-head"><span class="ov-h">Announcements</span><button class="ov-viewall" onclick="navPick('notifications')">View all announcements</button></div>
           <div id="ovAnnouncements"><div style="color:var(--muted);font-size:13px">Loading…</div></div>
         </div>
 
@@ -906,7 +894,7 @@
         <!-- Recent attendance (kept; renderAll writes here) -->
         <div class="ov-card">
           <div class="ov-head"><span class="ov-h">Recent attendance</span><button class="ov-viewall" onclick="navPick('attendance')">View all</button></div>
-          <div id="ov-recent-attend"><div class="empty" style="padding:16px"><div class="empty-icon">📅</div>No records yet.</div></div>
+          <div id="ov-recent-attend"><div class="empty" style="padding:16px"><div class="empty-icon" data-icon="inbox" data-size="28"></div>No records yet.</div></div>
         </div>
       </div>
 
@@ -1157,8 +1145,8 @@
       <div style="display:flex;gap:8px;flex-shrink:0;align-items:center">
         <button id="lvTabSlides" onclick="lvShow('slides')" style="background:var(--orange);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">Slides</button>
         <button id="lvTabNotes" onclick="lvShow('notes')" style="background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">Lesson Notes</button>
-        <button id="lvFlashBtn" onclick="lectureFlashcards(lvState.week)" title="Study as flashcards" style="display:none;background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">🃏 Flashcards</button>
-        <button id="lvFsBtn" onclick="lvFullscreen()" title="Fullscreen" aria-label="Toggle fullscreen" style="background:transparent;color:var(--muted);border:1px solid var(--border);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center">⛶</button>
+        <button id="lvFlashBtn" onclick="lectureFlashcards(lvState.week)" title="Study as flashcards" style="display:none;align-items:center;gap:7px;background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600"><span data-icon="layers" data-size="16" style="display:inline-flex"></span>Flashcards</button>
+        <button id="lvFsBtn" onclick="lvFullscreen()" title="Fullscreen" aria-label="Toggle fullscreen" style="background:transparent;color:var(--muted);border:1px solid var(--border);width:38px;height:38px;border-radius:8px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center"><span data-icon="maximize" data-size="17" style="display:inline-flex"></span></button>
       </div>
     </div>
     <!-- Slides deck -->
@@ -1193,9 +1181,9 @@
   <!-- ── PAYMENTS TAB ── -->
   <div id="tab-payments" style="display:none;">
     <div id="overdueAlert" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.35);border-radius:10px;padding:14px 18px;margin-bottom:20px;align-items:center;gap:12px;">
-      <span style="font-size:20px;">⚠️</span>
+      <span style="display:inline-flex;color:#ef4444;flex-shrink:0" data-icon="triangle-alert" data-size="20"></span>
       <div>
-        <div style="font-weight:700;color:#ef4444;font-size:15px;">You have overdue payments</div>
+        <div style="font-weight:600;color:#ef4444;font-size:15px;">You have overdue payments</div>
         <div style="font-size:14px;color:rgba(255,255,255,0.7);margin-top:2px;">Please make your payment below to avoid suspension of your account.</div>
       </div>
     </div>
@@ -1235,6 +1223,11 @@
     </div>
   </div>
 </main>
+
+<!-- Shared design system: GSAP + AcademyUI (icons + motion). Loaded before the
+     inline dashboard scripts so AcademyUI.icon()/renderIcons() are available. -->
+<script src="/assets/js/gsap.min.js"></script>
+<script src="/assets/js/academy-ui.js"></script>
 
 <script>
   const TOKEN_KEY = 'gl_student_token';
@@ -1330,7 +1323,11 @@
   function toggleSidebarGroup(ev, g) {
     ev.stopPropagation();
     var el = document.querySelector('.sb-group[data-group="' + g + '"]');
-    if (el) { var open = el.classList.toggle('open'); var b = el.querySelector('.sb-item'); if (b) b.setAttribute('aria-expanded', open); }
+    if (el) {
+      var open = el.classList.toggle('open');
+      var b = el.querySelector('.sb-item'); if (b) b.setAttribute('aria-expanded', open);
+      if (open && window.AcademyUI) AcademyUI.dropIn(el.querySelector('.sb-sub'));
+    }
   }
   function closeNavGroups() {
     document.querySelectorAll('.navgroup.open').forEach(function (el) { el.classList.remove('open'); });
@@ -1340,7 +1337,10 @@
     const el = document.querySelector('.navgroup[data-group="' + g + '"]');
     const willOpen = !el.classList.contains('open');
     closeNavGroups();
-    if (willOpen) el.classList.add('open');
+    if (willOpen) {
+      el.classList.add('open');
+      if (window.AcademyUI) AcademyUI.dropIn(el.querySelector('.navgroup-menu'));
+    }
   }
   function navPick(tab) {
     closeNavGroups();
@@ -1682,7 +1682,7 @@
     const recent5 = (attendData.data || []).slice(0, 5);
     const ovAttend = document.getElementById('ov-recent-attend');
     if (recent5.length === 0) {
-      ovAttend.innerHTML = '<div class="empty"><div class="empty-icon">📅</div>No attendance records yet.</div>';
+      ovAttend.innerHTML = '<div class="empty"><div class="empty-icon">' + AcademyUI.icon('calendar-days',28) + '</div>No attendance records yet.</div>';
     } else {
       ovAttend.innerHTML = '<table><thead><tr><th>Date</th><th>Status</th></tr></thead><tbody>' +
         recent5.map(r =>
@@ -1704,7 +1704,7 @@
     const attBody = document.getElementById('attendTableBody');
     const history = attendData.data || [];
     if (history.length === 0) {
-      attBody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">📅</div>No attendance records yet.</div></td></tr>';
+      attBody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">' + AcademyUI.icon('calendar-days',28) + '</div>No attendance records yet.</div></td></tr>';
     } else {
       attBody.innerHTML = history.map(r =>
         '<tr>' +
@@ -1784,7 +1784,7 @@
     var greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
     var first = s.fullName ? s.fullName.split(' ')[0] : 'there';
     var gEl = document.getElementById('ovGreeting');
-    if (gEl) gEl.textContent = greet + ', ' + first + ' 👋';
+    if (gEl) gEl.textContent = greet + ', ' + first;
     var gSub = document.getElementById('ovGreetSub');
     if (gSub) {
       var sched = fmtBatchSchedule(s.batch);
@@ -1799,6 +1799,14 @@
     // Show overview
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('overviewContent').style.display = '';
+
+    // Render any static Lucide placeholders now visible, then a subtle entrance
+    // on the Home card rows (reduced-motion aware, no-op without gsap).
+    if (window.AcademyUI) {
+      AcademyUI.renderIcons(document);
+      var rows = document.querySelectorAll('#overviewContent > .ov-grid > *');
+      if (rows.length) AcademyUI.enter(rows, { stagger: 0.05, y: 10 });
+    }
 
     // Data-driven overview cards (best-effort, degrade gracefully)
     renderOverviewExtras();
@@ -1912,20 +1920,20 @@
     if (due.length) {
       const soon = due[0];
       const n = daysUntil(soon.deadline);
-      items.push({ icon:'📝', bg:'rgba(214,106,31,.15)', title: due.length + ' assignment' + (due.length>1?'s':'') + ' due', sub: soon.title || 'Assignment', right: relDays(n), tab:'assignments' });
+      items.push({ icon:'clipboard-check', urgent: n != null && n <= 1, title: due.length + ' assignment' + (due.length>1?'s':'') + ' due', sub: soon.title || 'Assignment', right: relDays(n), tab:'assignments' });
     }
     // New lecture
     const fresh = (lectures.today || []).concat(lectures.upcoming || []);
     if (fresh.length) {
       todaysLessonId = fresh[0].id;
-      items.push({ icon:'🎓', bg:'rgba(30,75,255,.15)', title:'New lecture published', sub: fresh[0].lectureTitle || 'Lecture', right:'New', tab:'lectures' });
+      items.push({ icon:'presentation', title:'New lecture published', sub: fresh[0].lectureTitle || 'Lecture', right:'New', tab:'lectures' });
     } else if ((lectures.past || []).length) {
       todaysLessonId = lectures.past[0].id;
     }
     // Unread messages (from the chat unread badge, if present)
     const msgBadge = document.getElementById('msgTabBadge');
     const unread = msgBadge && msgBadge.style.display !== 'none' ? parseInt(msgBadge.textContent || '0', 10) : 0;
-    if (unread > 0) items.push({ icon:'💬', bg:'rgba(34,197,94,.15)', title:'Lecturer sent a message', sub: unread + ' unread', right:'', tab:'messages' });
+    if (unread > 0) items.push({ icon:'message-circle', title:'Lecturer sent a message', sub: unread + ' unread', right:'', tab:'messages' });
     // Payment due
     const payItems = (pay && pay.data) || [];
     const pending = payItems.filter(p => p.status === 'pending' || p.status === 'overdue' || p.status === 'partially_paid');
@@ -1933,12 +1941,12 @@
       const p = pending[0];
       const overdue = p.status === 'overdue';
       const n = p.dueDate ? daysUntil(p.dueDate) : null;
-      items.push({ icon:'💳', bg:'rgba(239,68,68,.14)', title:'Next payment due', sub: p.dueDate ? ('Due ' + fmtDate(p.dueDate)) : 'Outstanding balance', right: overdue ? 'Overdue' : relDays(n), tab:'payments' });
+      items.push({ icon:'triangle-alert', urgent: overdue, title:'Next payment due', sub: p.dueDate ? ('Due ' + fmtDate(p.dueDate)) : 'Outstanding balance', right: overdue ? 'Overdue' : relDays(n), tab:'payments' });
     }
-    if (!items.length) { el.innerHTML = '<div style="color:var(--muted);font-size:14px;padding:8px 2px">You\'re all caught up 🎉</div>'; return; }
+    if (!items.length) { el.innerHTML = '<div style="color:var(--muted);font-size:14px;padding:8px 2px">Nothing needs your attention right now.</div>'; return; }
     el.innerHTML = items.slice(0,4).map(it =>
       '<button class="qa-item" onclick="navPick(\'' + it.tab + '\')">' +
-        '<span class="qi" style="background:' + it.bg + '">' + it.icon + '</span>' +
+        '<span class="qi' + (it.urgent ? ' urgent' : '') + '">' + AcademyUI.icon(it.icon, 19) + '</span>' +
         '<span class="qt"><b>' + escHtml(it.title) + '</b><small>' + escHtml(it.sub) + '</small></span>' +
         (it.right ? '<span class="qr">' + escHtml(it.right) + '</span>' : '') +
       '</button>').join('');
@@ -2005,7 +2013,7 @@
       '<div style="display:flex;gap:14px;flex-wrap:wrap">' +
         '<div style="flex:1;min-width:180px">' +
           '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">' +
-            '<span style="width:44px;height:44px;border-radius:11px;background:rgba(214,106,31,.15);color:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0">' + initials + '</span>' +
+            '<span style="width:44px;height:44px;border-radius:11px;background:rgba(214,106,31,.15);color:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0">' + initials + '</span>' +
             '<div style="min-width:0"><b style="font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escHtml(cur.topic) + '</b>' +
             '<small style="color:var(--muted);font-size:12px">Week ' + escHtml(cur.week) + (cur.day ? ' · ' + escHtml(cur.day) : '') + '</small></div>' +
           '</div>' +
@@ -2018,8 +2026,8 @@
         '<div style="flex:1;min-width:180px;border:1px solid var(--border);border-radius:12px;padding:14px">' +
           '<div class="ov-h" style="margin-bottom:8px">Next up</div>' +
           (nxt ? '<b style="font-size:14px;display:block;margin-bottom:6px">' + escHtml(nxt.topic) + '</b><small style="color:var(--muted);font-size:12px">Week ' + escHtml(nxt.week) + (nxt.day ? ' · ' + escHtml(nxt.day) : '') + '</small>'
-               : '<div style="color:var(--muted);font-size:13px">More topics coming soon.</div>') +
-          '<div style="margin-top:12px"><button class="ov-viewall" onclick="navPick(\'curriculum\')">View curriculum →</button></div>' +
+               : '<div style="color:var(--muted);font-size:13px">No next topic has been scheduled yet.</div>') +
+          '<div style="margin-top:12px"><button class="ov-viewall" onclick="navPick(\'curriculum\')">View curriculum</button></div>' +
         '</div>' +
       '</div>';
   }
@@ -2034,15 +2042,15 @@
     const el = document.getElementById('ovClassmates'); if (!el) return;
     const list = (data && data.classmates) || [];
     const total = (data && data.total) || list.length;
-    if (!list.length) { el.innerHTML = '<div style="color:var(--muted);font-size:13px">You\'ll see your classmates here once your batch fills up.</div>'; return; }
+    if (!list.length) { el.innerHTML = '<div style="color:var(--muted);font-size:13px">No classmates in your batch yet.</div>'; return; }
     const shown = list.slice(0,4);
     let avatars = '<div class="cl-avatars">' + shown.map(classmateCardMini).join('');
     if (total > shown.length) avatars += '<div class="cl-av"><div class="r" style="background:rgba(255,255,255,.06);color:var(--muted)"><span>+' + (total - shown.length) + '</span></div><div class="t">More</div></div>';
     avatars += '</div>';
     el.innerHTML = avatars +
-      '<div style="margin-top:14px;background:rgba(214,106,31,.08);border:1px solid rgba(214,106,31,.2);border-radius:10px;padding:12px 14px;font-size:12.5px;color:var(--text)">' +
-        'Connect, collaborate and grow together. Your network is your net worth.' +
-        '<div style="margin-top:8px"><button class="ov-viewall" onclick="navPick(\'classmates\')">Explore classmates →</button></div>' +
+      '<div style="margin-top:14px;font-size:12.5px;color:var(--muted)">' +
+        'People learning with you in this batch.' +
+        '<div style="margin-top:8px"><button class="ov-viewall" onclick="navPick(\'classmates\')">View classmates</button></div>' +
       '</div>';
   }
 
@@ -2054,7 +2062,7 @@
     if (!use.length) { el.innerHTML = '<div style="color:var(--muted);font-size:13px">No announcements yet.</div>'; return; }
     el.innerHTML = use.map(n =>
       '<div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)">' +
-        '<span style="width:34px;height:34px;border-radius:9px;background:rgba(214,106,31,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">📢</span>' +
+        '<span style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--muted)">' + AcademyUI.icon('megaphone',18) + '</span>' +
         '<div style="flex:1;min-width:0"><b style="font-size:14px;display:block">' + escHtml(n.title || 'Announcement') + '</b>' +
         '<small style="color:var(--muted);font-size:12.5px;line-height:1.4;display:block">' + escHtml(n.message || '') + '</small>' +
         '<small style="color:var(--muted);font-size:11px;opacity:.8">' + escHtml(rel(n.createdAt)) + '</small></div>' +
@@ -2073,7 +2081,7 @@
       const res = await fetch('/api/students/me/classmates', { headers: authHeaders });
       const data = await res.json();
       const list = (data && data.classmates) || [];
-      if (!list.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">🧑‍🤝‍🧑</div>You\'ll see your classmates here once your batch fills up.</div>'; return; }
+      if (!list.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">' + AcademyUI.icon('users',28) + '</div>No classmates in your batch yet.</div>'; return; }
       cont.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px">' +
         list.map(c => '<div class="ov-card" style="display:flex;align-items:center;gap:14px;padding:16px">' +
           '<div style="width:52px;height:52px;border-radius:50%;background:rgba(214,106,31,.15);color:var(--orange);display:flex;align-items:center;justify-content:center;overflow:hidden;font-weight:800;flex-shrink:0">' + avatarHtml(c.profilePicture, c.fullName) + '</div>' +
@@ -2120,7 +2128,7 @@
       });
       const data = await res.json();
       if (res.ok) {
-        btn.textContent = 'Marked Present ✓';
+        btn.textContent = 'Marked Present';
         btn.style.background = '#22c55e';
         document.getElementById('selfMarkLabel').textContent = 'You have been marked present for this session.';
       } else {
@@ -2161,7 +2169,7 @@
       lecData = { today: data.today || [], upcoming: data.upcoming || [], past: data.past || [] };
       try { localStorage.setItem('gl_lec_list', JSON.stringify(lecData)); } catch (e) {} // save for offline
       if (!lecData.today.length && !lecData.upcoming.length && !lecData.past.length) {
-        cont.innerHTML = '<div class="empty"><div class="empty-icon">🎓</div>No lectures published yet.</div>';
+        cont.innerHTML = '<div class="empty"><div class="empty-icon">' + AcademyUI.icon('presentation',28) + '</div>No lectures published yet.</div>';
         return;
       }
       renderLectureShell(false);
@@ -2175,7 +2183,7 @@
   }
   function renderLectureShell(offline) {
     document.getElementById('lecturesContent').innerHTML =
-      (offline ? '<div style="background:rgba(214,106,31,0.1);border:1px solid rgba(214,106,31,0.3);color:var(--orange);border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:14px">📥 Offline — showing saved lectures. Ones you opened online will play.</div>' : '') +
+      (offline ? '<div style="background:rgba(214,106,31,0.1);border:1px solid rgba(214,106,31,0.3);color:var(--orange);border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:14px;display:flex;align-items:center;gap:8px">' + AcademyUI.icon('inbox',16) + '<span>Offline — showing saved lectures. Ones you opened online will play.</span></div>' : '') +
       `<input id="lecSearch" type="search" placeholder="Search lectures…" oninput="renderLectures(this.value)"
         style="width:100%;max-width:420px;margin-bottom:20px;padding:10px 14px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px">
        <div id="lecList"></div>`;
@@ -2212,7 +2220,7 @@
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button onclick="openLecture('${l.id}','slides')" style="background:var(--orange);color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">View Slides</button>
           ${l.hasNotes ? `<button onclick="openLecture('${l.id}','notes')" style="background:transparent;color:var(--text);border:1px solid var(--border);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Lesson Notes</button>` : ''}
-          ${l.week ? `<button onclick="lectureFlashcards(${l.week})" style="background:transparent;color:var(--text);border:1px solid var(--border);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">🃏 Flashcards</button>` : ''}
+          ${l.week ? `<button onclick="lectureFlashcards(${l.week})" style="display:inline-flex;align-items:center;gap:7px;background:transparent;color:var(--text);border:1px solid var(--border);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">${AcademyUI.icon('layers',16)}Flashcards</button>` : ''}
         </div>
       </div>`;
   }
@@ -2240,11 +2248,11 @@
 
   function renderLectureViewer(id, lec, view, offline) {
     lvState = { id: id, week: lec.week, slides: lec.slides || [], idx: 0, view: view || 'slides', notes: lec.lessonNotes || {}, course: lec.courseType || '' };
-    document.getElementById('lvFlashBtn').style.display = lec.week ? 'inline-block' : 'none';
+    document.getElementById('lvFlashBtn').style.display = lec.week ? 'inline-flex' : 'none';
     const saved = parseInt(localStorage.getItem('gl_lec_pos_' + id) || '0', 10);
     if (saved > 0 && saved < lvState.slides.length) lvState.idx = saved;
     document.getElementById('lvTitle').textContent = lec.lectureTitle || 'Lecture';
-    document.getElementById('lvMeta').textContent = [offline ? '📥 Offline copy' : null, lec.courseTitle, lec.lectureDate ? fmtDate(lec.lectureDate) : null].filter(Boolean).join(' · ');
+    document.getElementById('lvMeta').textContent = [offline ? 'Offline copy' : null, lec.courseTitle, lec.lectureDate ? fmtDate(lec.lectureDate) : null].filter(Boolean).join(' · ');
     document.getElementById('lvNotes').innerHTML = renderNotes(lvState.notes);
     lvShow(lvState.view);
     renderSlide();
@@ -2284,6 +2292,8 @@
     if (req) { const p = req.call(v); if (p && p.catch) p.catch(() => {}); }
   }
   document.addEventListener('DOMContentLoaded', () => {
+    // Paint all static Lucide placeholders (sidebar, topbar, bell, buttons).
+    if (window.AcademyUI) AcademyUI.renderIcons(document);
     const v = document.getElementById('lectureViewer');
     if (!(v.requestFullscreen || v.webkitRequestFullscreen)) {
       const b = document.getElementById('lvFsBtn'); if (b) b.style.display = 'none';
@@ -2291,7 +2301,7 @@
   });
   document.addEventListener('fullscreenchange', () => {
     const b = document.getElementById('lvFsBtn');
-    if (b) b.textContent = document.fullscreenElement ? '✕' : '⛶';
+    if (b) b.innerHTML = AcademyUI.icon(document.fullscreenElement ? 'x' : 'maximize', 17);
   });
 
   // Deck navigation: arrow keys while the viewer is open, swipe on touch.
@@ -2408,7 +2418,7 @@
       // A week is worth showing only if it has topics or deadlines.
       const filled = weeks.filter(w => (w.days && w.days.length) || (w.deadlines && w.deadlines.length));
       if (!filled.length) {
-        cont.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>No syllabus published yet.</div>';
+        cont.innerHTML = '<div class="empty"><div class="empty-icon">' + AcademyUI.icon('list-tree',28) + '</div>No syllabus published yet.</div>';
         return;
       }
 
@@ -2431,7 +2441,7 @@
             : (f.soon ? 'background:rgba(214,106,31,0.12);color:var(--orange);border-color:rgba(214,106,31,0.3)'
                       : 'background:rgba(255,255,255,0.04);color:var(--muted);border-color:var(--border)');
           return `<div style="display:flex;align-items:center;gap:8px;border:1px solid;border-radius:8px;padding:8px 12px;font-size:12px;${tone}">
-              <span style="font-size:15px">📌</span>
+              <span style="display:inline-flex;flex-shrink:0">${AcademyUI.icon('clipboard-check',15)}</span>
               <span style="font-weight:600;color:var(--text)">${escHtml(d.title)}</span>
               <span style="opacity:.85">· ${escHtml(f.when)}</span>
               <span style="font-weight:700;margin-left:auto;white-space:nowrap">${escHtml(f.rel)}</span>
@@ -2496,7 +2506,7 @@
       const res = await fetch('/api/materials/student', { headers: { 'Authorization': 'Bearer ' + token } });
       const data = await res.json();
       const items = Array.isArray(data) ? data : (data.data || []);
-      if (!items.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">📚</div>No materials published yet.</div>'; return; }
+      if (!items.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">' + AcademyUI.icon('book-open',28) + '</div>No materials published yet.</div>'; return; }
       // Group by week
       const byWeek = {};
       items.forEach(m => { if (!byWeek[m.week]) byWeek[m.week] = []; byWeek[m.week].push(m); });
@@ -2509,7 +2519,7 @@
               <td data-label="Title" style="font-weight:600">${escHtml(m.title)}</td>
               <td data-label="Type"><span style="background:rgba(30,75,255,0.12);color:#6a9fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${escHtml(m.type.toUpperCase())}</span></td>
               <td data-label="Topic" style="color:var(--muted)">${escHtml(m.topic || '-')}</td>
-              <td data-label="Link">${(m.fileUrl || m.linkUrl) ? `<a href="${m.fileUrl || m.linkUrl}" target="_blank" style="color:var(--orange);font-size:14px">Open ↗</a>` : '-'}</td>
+              <td data-label="Link">${(m.fileUrl || m.linkUrl) ? `<a href="${m.fileUrl || m.linkUrl}" target="_blank" style="color:var(--orange);font-size:14px;display:inline-flex;align-items:center;gap:5px">Open ${AcademyUI.icon('arrow-up-right',14)}</a>` : '-'}</td>
             </tr>`).join('')}</tbody></table>
           </div>
         </div>`).join('');
@@ -2526,7 +2536,7 @@
     try {
       const res = await fetch('/api/assignments/student', { headers: { 'Authorization': 'Bearer ' + token } });
       const items = await res.json();
-      if (!Array.isArray(items) || !items.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">📝</div>No assignments yet.</div>'; return; }
+      if (!Array.isArray(items) || !items.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">' + AcademyUI.icon('clipboard-check',28) + '</div>No assignments yet.</div>'; return; }
       assignmentItems = items;
       cont.innerHTML = '<div class="table-wrap"><table><thead><tr><th>Title</th><th>Topic</th><th>Week</th><th>Deadline</th><th>Max Score</th><th>Status</th><th></th></tr></thead><tbody>' +
         items.map(a => {
@@ -2679,24 +2689,24 @@
       const progMap = {};
       if (Array.isArray(progress)) progress.forEach(p => { progMap[String(p._id)] = p; });
 
-      if (!sets.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">🃏</div>No flashcard sets yet.</div>'; return; }
+      if (!sets.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">' + AcademyUI.icon('layers',28) + '</div>No flashcard sets yet.</div>'; return; }
       cont.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">' +
         sets.map(s => {
           const prog = progMap[String(s._id)];
           const done = !!prog;
           const score = done ? Math.round(prog.correct / prog.total * 100) : null;
           const indicator = done
-            ? `<div style="width:26px;height:26px;border-radius:50%;background:#22c55e;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;flex-shrink:0">✓</div>`
-            : `<div style="width:26px;height:26px;border-radius:50%;border:2px solid #ef4444;flex-shrink:0"></div>`;
+            ? `<div style="width:26px;height:26px;border-radius:50%;background:#22c55e;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0">${AcademyUI.icon('check',15)}</div>`
+            : `<div style="width:26px;height:26px;border-radius:50%;border:2px solid var(--border);flex-shrink:0"></div>`;
           return `
           <div class="table-wrap" style="padding:20px;cursor:pointer" onclick="startQuiz('${s._id}','${s.title.replace(/'/g,'')}')">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
-              <div style="font-weight:700">${escHtml(s.title)}</div>
+              <div style="font-weight:600">${escHtml(s.title)}</div>
               ${indicator}
             </div>
             <div style="font-size:14px;color:var(--muted);margin-bottom:${done ? '6px' : '12px'}">Week ${s.week} · ${escHtml(s.topic || 'General')}</div>
             ${done ? `<div style="font-size:12px;color:${score >= 70 ? '#22c55e' : '#f59e0b'};margin-bottom:10px;font-weight:600">Last score: ${score}%</div>` : ''}
-            <button style="background:${done ? 'transparent' : 'var(--blue)'};color:${done ? 'var(--muted)' : '#fff'};border:${done ? '1px solid var(--border)' : 'none'};padding:7px 16px;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer">${done ? 'Retake Quiz →' : 'Start Quiz →'}</button>
+            <button style="background:${done ? 'transparent' : 'var(--orange)'};color:${done ? 'var(--muted)' : '#fff'};border:${done ? '1px solid var(--border)' : 'none'};padding:7px 16px;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer">${done ? 'Retake Quiz' : 'Start Quiz'}</button>
           </div>`;
         }).join('') + '</div>';
     } catch { cont.innerHTML = '<div class="empty">Failed to load flashcards.</div>'; }
@@ -2782,10 +2792,10 @@
     const res = document.getElementById('quizResult');
     res.style.display = '';
     res.innerHTML = `
-      <div style="font-size:48px;margin-bottom:16px">${correct === total ? '🎉' : correct >= total/2 ? '👍' : '📚'}</div>
-      <div style="font-size:28px;font-weight:800;margin-bottom:8px">${correct} / ${total}</div>
+      <div style="display:flex;justify-content:center;margin-bottom:16px;color:${correct >= total/2 ? 'var(--green)' : 'var(--muted)'}">${AcademyUI.icon(correct >= total/2 ? 'check-circle' : 'book-open', 44)}</div>
+      <div style="font-size:28px;font-weight:600;margin-bottom:8px">${correct} / ${total}</div>
       <div style="color:var(--muted);margin-bottom:24px">You got ${Math.round(correct/total*100)}% correct</div>
-      <button onclick="closeQuiz()" style="background:var(--blue);color:#fff;border:none;padding:11px 24px;border-radius:8px;font-weight:600;cursor:pointer">Back to Sets</button>`;
+      <button onclick="closeQuiz()" style="background:var(--orange);color:#fff;border:none;padding:11px 24px;border-radius:8px;font-weight:600;cursor:pointer">Back to Sets</button>`;
     try {
       await fetch('/api/flashcards/sets/' + quizSetId + '/respond', {
         method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
@@ -3281,7 +3291,7 @@ async function submitBankTransfer() {
     const data = await res.json();
     if (!res.ok) { errEl.textContent = data.error || 'Submission failed.'; errEl.style.display = 'block'; btn.disabled = false; btn.textContent = 'Submit Reference'; return; }
     document.getElementById('bt-success').style.display = 'block';
-    btn.textContent = 'Submitted ✓';
+    btn.textContent = 'Submitted';
     if (typeof loadAll === 'function') setTimeout(loadAll, 1500);
   } catch { errEl.textContent = 'Network error. Please try again.'; errEl.style.display = 'block'; btn.disabled = false; btn.textContent = 'Submit Reference'; }
 }
@@ -3325,7 +3335,7 @@ async function submitCashPay() {
       return;
     }
     document.getElementById('cp-success').style.display = 'block';
-    btn.textContent = 'Submitted ✓';
+    btn.textContent = 'Submitted';
     if (typeof loadAll === 'function') setTimeout(loadAll, 1500);
   } catch {
     errEl.textContent = 'Network error. Please try again.';
@@ -3447,6 +3457,5 @@ function closeStudentReceipt() {
   })();
   </script>
 
-  <script defer src="/assets/js/portal-pwa.js"></script>
 </body>
 </html>

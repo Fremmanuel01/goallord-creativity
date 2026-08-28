@@ -311,10 +311,59 @@
     .tv-rail { width: auto; border-left: none; border-top: 1px solid var(--border); max-height: 42%; }
     .tv-next-block { display: none; }
   }
+
+  /* ── Academy shell integration (Lecturer) ── */
+  .ac-shell, .ac-shell .ac-nav-item, .ac-shell .ac-btn { font-family: var(--font); }
+  .ac-menu-btn { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; color: var(--text-secondary); cursor: pointer; }
+  .ac-menu-btn:hover { color: var(--text-primary); border-color: var(--text-muted); }
+  .ac-menu-btn svg { width: 18px; height: 18px; }
+  .ac-avatar { display: inline-flex; align-items: center; gap: 9px; padding: 4px 10px 4px 6px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); cursor: pointer; }
+  .ac-avatar .av { width: 28px; height: 28px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+  .ac-avatar .nm { font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.1; }
+  .ac-avatar .rl { font-size: 11px; color: var(--text-muted); }
+  @media (max-width: 640px) { .ac-avatar .meta { display: none; } }
+
+  /* Home dashboard */
+  .ac-greet { margin-bottom: 22px; }
+  .ac-greet h1 { font-size: 26px; font-weight: 600; letter-spacing: -0.015em; color: var(--text-primary); margin-bottom: 4px; }
+  .ac-greet p { font-size: 14.5px; color: var(--text-secondary); }
+  .ac-home-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; align-items: start; }
+  @media (max-width: 900px) { .ac-home-grid { grid-template-columns: 1fr; } }
+  .ac-next { background: linear-gradient(135deg, rgba(138,90,55,0.16), rgba(138,90,55,0.05)); border: 1px solid var(--brand-line); }
+  .ac-next .topic { font-size: 15px; color: var(--text-secondary); margin: 6px 0 14px; }
+  .ac-next .when { font-size: 13.5px; color: var(--text-primary); font-weight: 500; }
+  .ac-list-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border-soft); }
+  .ac-list-row:last-child { border-bottom: none; }
+  .ac-list-row .ico { color: var(--text-muted); flex-shrink: 0; display: inline-flex; }
+  .ac-list-row .main { flex: 1; min-width: 0; }
+  .ac-list-row .t { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .ac-list-row .sub { font-size: 12.5px; color: var(--text-muted); }
+  .ac-class-row { cursor: pointer; }
+  .ac-class-row:hover .t { color: var(--brand); }
+  .ac-empty-line { font-size: 14px; color: var(--text-muted); padding: 6px 0; }
+
+  /* Batch-context banner shown atop batch-scoped panes */
+  .ac-batchctx { display: flex; align-items: center; gap: 10px; padding: 10px 14px; margin-bottom: 16px; background: var(--brand-soft); border: 1px solid var(--brand-line); border-radius: var(--radius-md); }
+  .ac-batchctx svg { width: 17px; height: 17px; color: var(--brand); flex-shrink: 0; }
+  .ac-batchctx .bn { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .ac-batchctx .bs { font-size: 12.5px; color: var(--text-muted); }
+
+  /* Restyle the batch picker to match the system */
+  #batchPickerWrap select { background: var(--surface-2); border: 1px solid var(--border); color: var(--text-primary); border-radius: var(--radius-sm); font-family: var(--font); }
+  /* Legacy top tabs are replaced by the sidebar; hide them on all viewports */
+  .ac-content > .tabs { display: none !important; }
+
+  /* Inline Lucide icons inside legacy .btn / .tv-btn / modal-close keep baseline aligned */
+  .btn [data-icon], .tv-btn [data-icon], .modal-close [data-icon], .ac-btn [data-icon] { display: inline-flex; vertical-align: -2px; }
+  .btn [data-icon] svg, .tv-btn [data-icon] svg { width: 15px; height: 15px; }
+  .modal-close { display: inline-flex; align-items: center; }
 </style>
-  <!-- Lecture deck display face + styles + renderer (shared with the student dashboard) -->
+  <!-- Shared Academy design system (same shell + tokens as the student dashboard) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/academy-ui.css">
+  <!-- Lecture deck display face + styles + renderer (shared with the student dashboard) -->
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/lecture-deck.css?v=10">
   <script src="assets/js/lecture-deck.js?v=10"></script>
@@ -336,71 +385,155 @@
 </head>
 <body>
 
-<nav class="topnav">
-  <div class="topnav-brand">
-    <img src="assets/images/logo/goallord-logo.png" alt="Goallord" style="height:48px;width:auto;display:block;flex-shrink:0;">
-    <div>
-      <div class="logo-name">Goallord Academy</div>
-      <div class="logo-sub">Lecturer Portal</div>
+<!-- Shared motion + icons (define window.AcademyUI before any inline script runs) -->
+<script src="/assets/js/gsap.min.js"></script>
+<script src="/assets/js/academy-ui.js"></script>
+
+<div class="ac-shell">
+  <div class="ac-scrim" id="acScrim" onclick="toggleSidebar(false)"></div>
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="ac-sidebar" id="acSidebar" aria-label="Primary navigation">
+    <div class="ac-brand">
+      <img src="assets/images/logo/goallord-logo.png" alt="Goallord">
+      <div><div class="n">Goallord Academy</div><div class="s">Lecturer Portal</div></div>
     </div>
-  </div>
-  <div class="topnav-right">
-    <div class="lec-name">Welcome, <strong id="lecNameNav">-</strong></div>
-    <div class="bell-wrap">
-      <button class="bell-btn" onclick="toggleNotifPanel()" title="Notifications">
-        🔔
-        <span class="bell-badge" id="bellBadge"></span>
+
+    <nav class="ac-nav">
+      <button class="ac-nav-item" data-nav="overview" onclick="switchTab('overview')">
+        <span data-icon="house"></span> Home
       </button>
-      <div class="notif-panel" id="notifPanel">
-        <div class="notif-head">
-          <span>Notifications</span>
-          <button onclick="markAllRead()">Mark all read</button>
+
+      <div class="ac-nav-group open" id="grpTeaching">
+        <button class="ac-nav-item" onclick="toggleNavGroup('grpTeaching')" aria-expanded="true">
+          <span data-icon="book-open"></span> Teaching
+          <span class="chev" data-icon="chevron-right" data-size="16"></span>
+        </button>
+        <div class="ac-nav-sub">
+          <button data-nav="overview" onclick="switchTab('overview')">My Classes</button>
+          <button data-nav="lectures" onclick="switchTab('lectures')">Lectures</button>
+          <button data-nav="curriculum" onclick="switchTab('curriculum')">Curriculum</button>
+          <button data-nav="attendance" onclick="switchTab('attendance')">Attendance</button>
+          <button data-nav="materials" onclick="switchTab('materials')">Materials</button>
+          <button data-nav="assignments" onclick="switchTab('assignments')">Assignments</button>
+          <button data-nav="flashcards" onclick="switchTab('flashcards')">Flashcards</button>
         </div>
-        <div class="notif-list" id="notifList">
-          <div class="notif-empty">Loading…</div>
+      </div>
+
+      <button class="ac-nav-item" data-nav="students" onclick="switchTab('students')">
+        <span data-icon="users"></span> Students
+      </button>
+      <button class="ac-nav-item" data-nav="messages" onclick="switchTab('messages')">
+        <span data-icon="message-circle"></span> Messages
+        <span class="ac-nav-badge" id="sbMsgBadge" style="display:none"></span>
+      </button>
+      <button class="ac-nav-item" data-nav="curriculum" onclick="switchTab('curriculum')">
+        <span data-icon="calendar-days"></span> Schedule
+      </button>
+      <button class="ac-nav-item" data-nav="notifications" onclick="switchTab('notifications')">
+        <span data-icon="bell"></span> Notifications
+      </button>
+
+      <div class="ac-nav-divider"></div>
+
+      <button class="ac-nav-item" data-nav="profile" onclick="switchTab('security')">
+        <span data-icon="user-round"></span> Profile
+      </button>
+      <button class="ac-nav-item" data-nav="security" onclick="switchTab('security')">
+        <span data-icon="settings"></span> Settings
+      </button>
+      <button class="ac-nav-item" onclick="logout()">
+        <span data-icon="log-out"></span> Sign Out
+      </button>
+    </nav>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <div class="ac-main">
+    <div class="ac-topbar">
+      <button class="ac-menu-btn" onclick="toggleSidebar(true)" aria-label="Open menu"><span data-icon="panel-left"></span></button>
+      <div class="ac-search">
+        <span data-icon="search"></span>
+        <input type="search" placeholder="Search anything…" aria-label="Search">
+      </div>
+      <div class="ac-topbar-actions">
+        <div class="bell-wrap">
+          <button class="ac-icon-btn" onclick="toggleNotifPanel()" title="Notifications" aria-label="Notifications">
+            <span data-icon="bell"></span>
+            <span class="dot" id="bellBadge" style="display:none"></span>
+          </button>
+          <div class="notif-panel" id="notifPanel">
+            <div class="notif-head">
+              <span>Notifications</span>
+              <button onclick="markAllRead()">Mark all read</button>
+            </div>
+            <div class="notif-list" id="notifList">
+              <div class="notif-empty">Loading…</div>
+            </div>
+          </div>
+        </div>
+        <button class="ac-icon-btn" onclick="switchTab('messages')" title="Messages" aria-label="Messages">
+          <span data-icon="message-circle"></span>
+          <span class="dot" id="msgTabBadge" style="display:none"></span>
+        </button>
+        <button class="ac-avatar" onclick="switchTab('security')" aria-label="Your profile">
+          <span class="av" id="lecAvatar">-</span>
+          <span class="meta"><span class="nm" id="lecNameNav">-</span><span class="rl">Lecturer</span></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="ac-content">
+      <div id="batchPickerWrap" style="display:none;align-items:center;gap:10px;margin-bottom:18px">
+        <label for="batchPicker" class="ac-eyebrow" style="margin:0">Viewing batch</label>
+        <select id="batchPicker" onchange="onBatchChange()" style="max-width:280px;width:auto;padding:8px 12px;font-size:13.5px"></select>
+      </div>
+
+  <!-- ── OVERVIEW / HOME ── -->
+  <div id="tab-overview">
+    <div class="ac-greet" style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div>
+        <h1 id="ov-greeting">Welcome</h1>
+        <p id="pageSubtitle">Loading…</p>
+      </div>
+      <button class="ac-btn ac-btn-primary" onclick="openAnnounceModal()"><span data-icon="megaphone" data-size="16"></span> Announce to batch</button>
+    </div>
+
+    <div class="ac-home-grid">
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <!-- NEXT CLASS -->
+        <div class="ac-card ac-next" id="ov-next" data-home-card>
+          <div class="ac-eyebrow">Next class</div>
+          <div class="ac-h2" id="ov-next-batch" style="margin-top:6px">—</div>
+          <div class="when" id="ov-next-when"></div>
+          <div class="topic" id="ov-next-topic"></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="ac-btn ac-btn-primary" onclick="switchTab('lectures')"><span data-icon="presentation" data-size="16"></span> Open lecture</button>
+            <button class="ac-btn" onclick="switchTab('curriculum')">View class</button>
+          </div>
+        </div>
+
+        <!-- TODAY / UPCOMING -->
+        <div class="ac-card" data-home-card>
+          <div class="ac-eyebrow" style="margin-bottom:10px">Today &amp; upcoming</div>
+          <div id="ov-upcoming"><div class="ac-empty-line">Loading…</div></div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <!-- TEACHING ACTIONS -->
+        <div class="ac-card" data-home-card>
+          <div class="ac-eyebrow" style="margin-bottom:10px">Teaching actions</div>
+          <div id="ov-actions"><div class="ac-empty-line">Loading…</div></div>
+        </div>
+
+        <!-- MY CLASSES -->
+        <div class="ac-card" data-home-card>
+          <div class="ac-eyebrow" style="margin-bottom:10px">My classes</div>
+          <div id="ov-classes"><div class="ac-empty-line">Loading…</div></div>
         </div>
       </div>
     </div>
-    <button class="btn-logout" onclick="logout()">Sign Out</button>
-  </div>
-</nav>
-
-<main class="main">
-  <div class="page-header">
-    <h1 id="pageTitle">My Dashboard</h1>
-    <p id="pageSubtitle" style="color:var(--muted);font-size:15px;">Loading…</p>
-    <div id="batchPickerWrap" style="display:none;align-items:center;gap:10px;margin-top:12px">
-      <label for="batchPicker" style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:0">Viewing batch</label>
-      <select id="batchPicker" onchange="onBatchChange()" style="max-width:280px;width:auto"></select>
-    </div>
-  </div>
-
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('overview')">Overview</button>
-    <button class="tab" onclick="switchTab('materials')">Materials</button>
-    <button class="tab" onclick="switchTab('assignments')">Assignments</button>
-    <button class="tab" onclick="switchTab('flashcards')">Flashcards</button>
-    <button class="tab" onclick="switchTab('attendance')">Attendance</button>
-    <button class="tab" onclick="switchTab('curriculum')">Curriculum</button>
-    <button class="tab" onclick="switchTab('lectures')">Lectures</button>
-    <button class="tab" onclick="switchTab('notifications')">Notifications</button>
-    <button class="tab" onclick="switchTab('students')">Students</button>
-    <button class="tab" onclick="switchTab('messages')">Messages<span id="msgTabBadge" style="display:none;margin-left:6px;background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;"></span></button>
-    <button class="tab" onclick="switchTab('security')">Security</button>
-  </div>
-
-  <!-- ── OVERVIEW ── -->
-  <div id="tab-overview">
-    <div class="stats-row">
-      <div class="stat-card"><div class="sl">Materials</div><div class="sv blue" id="ov-mats">-</div></div>
-      <div class="stat-card"><div class="sl">Assignments</div><div class="sv orange" id="ov-asgn">-</div></div>
-      <div class="stat-card"><div class="sl">Flashcard Sets</div><div class="sv green" id="ov-flash">-</div></div>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <div class="section-title" style="margin:0">Active Batch</div>
-      <button class="btn btn-primary" onclick="openAnnounceModal()" style="font-size:12px;padding:7px 14px">📢 Announce to Batch</button>
-    </div>
-    <div id="ov-batch" class="table-wrap" style="padding:16px;font-size:15px;color:var(--muted)">Loading…</div>
   </div>
 
   <!-- ── MATERIALS ── -->
@@ -437,7 +570,7 @@
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
       <div class="section-title" style="margin:0">Flashcard Sets</div>
       <div style="display:flex;gap:8px">
-        <button class="btn btn-primary" onclick="openGenerateFlashcards()">✨ Generate from curriculum</button>
+        <button class="btn btn-primary" onclick="openGenerateFlashcards()"><span data-icon="sparkles" data-size="15"></span> Generate from curriculum</button>
         <button class="btn btn-ghost" onclick="openAddFlashcardSet()">+ New Set</button>
       </div>
     </div>
@@ -451,7 +584,7 @@
         <div class="section-title" id="cardEditorTitle" style="margin:0">Cards</div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-primary" onclick="openAddCard()">+ Add Card</button>
-          <button class="btn btn-ghost" onclick="closeCardEditor()">← Back to Sets</button>
+          <button class="btn btn-ghost" onclick="closeCardEditor()"><span data-icon="arrow-right" data-size="15" style="transform:rotate(180deg)"></span> Back to Sets</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -495,8 +628,8 @@
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div class="section-title" style="margin:0">Lectures</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-ghost" onclick="toggleLecCoverage()" id="lecCoverageBtn">📋 Coverage</button>
-        <button class="btn btn-primary" onclick="openGenerateLecture()">✨ Generate Lecture</button>
+        <button class="btn btn-ghost" onclick="toggleLecCoverage()" id="lecCoverageBtn"><span data-icon="clipboard-check" data-size="15"></span> Coverage</button>
+        <button class="btn btn-primary" onclick="openGenerateLecture()"><span data-icon="sparkles" data-size="15"></span> Generate Lecture</button>
       </div>
     </div>
     <div id="lecCoverage" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:16px"></div>
@@ -508,7 +641,7 @@
   <div id="tab-notifications" style="display:none">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:10px">
       <div class="section-title" style="margin:0">Notifications Sent</div>
-      <button class="btn btn-ghost" onclick="loaded.notifications=false;switchTab('notifications')" style="font-size:12px;padding:7px 14px">↻ Refresh</button>
+      <button class="btn btn-ghost" onclick="loaded.notifications=false;switchTab('notifications')" style="font-size:12px;padding:7px 14px"><span data-icon="refresh-cw" data-size="14"></span> Refresh</button>
     </div>
     <p style="color:var(--muted);font-size:14px;margin:0 0 16px">Who has been notified about classes, lectures and flashcards — and exactly what was sent to them.</p>
     <div class="stats-row">
@@ -563,12 +696,14 @@
     <div class="section-title" style="margin-bottom:16px">Security</div>
     <div id="twoFactorPanel"></div>
   </div>
-</main>
+    </div><!-- /.ac-content -->
+  </div><!-- /.ac-main -->
+</div><!-- /.ac-shell -->
 
 <!-- ── MATERIAL MODAL ── -->
 <div class="modal-overlay" id="matModal">
   <div class="modal">
-    <div class="modal-header"><h3 id="matModalTitle">Add Material</h3><button class="modal-close" onclick="closeModal('matModal')">✕</button></div>
+    <div class="modal-header"><h3 id="matModalTitle">Add Material</h3><button class="modal-close" onclick="closeModal('matModal')"><span data-icon="x" data-size="18"></span></button></div>
     <input type="hidden" id="mat-edit-id">
     <div class="error-msg" id="matErr"></div>
     <div class="form-group"><label>Title *</label><input id="mat-title" placeholder="e.g. Introduction to HTML"></div>
@@ -601,7 +736,7 @@
 <!-- ── ASSIGNMENT MODAL ── -->
 <div class="modal-overlay" id="asgnModal">
   <div class="modal">
-    <div class="modal-header"><h3 id="asgnModalTitle">Add Assignment</h3><button class="modal-close" onclick="closeModal('asgnModal')">✕</button></div>
+    <div class="modal-header"><h3 id="asgnModalTitle">Add Assignment</h3><button class="modal-close" onclick="closeModal('asgnModal')"><span data-icon="x" data-size="18"></span></button></div>
     <input type="hidden" id="asgn-edit-id">
     <div class="error-msg" id="asgnErr"></div>
     <div class="form-group"><label>Title *</label><input id="asgn-title" placeholder="Assignment title"></div>
@@ -627,7 +762,7 @@
 <!-- ── FLASHCARD SET MODAL ── -->
 <div class="modal-overlay" id="flashSetModal">
   <div class="modal">
-    <div class="modal-header"><h3 id="flashSetModalTitle">New Flashcard Set</h3><button class="modal-close" onclick="closeModal('flashSetModal')">✕</button></div>
+    <div class="modal-header"><h3 id="flashSetModalTitle">New Flashcard Set</h3><button class="modal-close" onclick="closeModal('flashSetModal')"><span data-icon="x" data-size="18"></span></button></div>
     <input type="hidden" id="fset-edit-id">
     <div class="form-group"><label>Title *</label><input id="fset-title" placeholder="e.g. HTML Basics Quiz"></div>
     <div class="form-row">
@@ -649,7 +784,7 @@
 <!-- ── GENERATE FLASHCARDS FROM CURRICULUM MODAL ── -->
 <div class="modal-overlay" id="flashGenModal">
   <div class="modal" style="max-width:440px">
-    <div class="modal-header"><h3>Generate flashcards</h3><button class="modal-close" onclick="closeModal('flashGenModal')">✕</button></div>
+    <div class="modal-header"><h3>Generate flashcards</h3><button class="modal-close" onclick="closeModal('flashGenModal')"><span data-icon="x" data-size="18"></span></button></div>
     <div class="error-msg" id="fgenErr"></div>
     <p style="font-size:14px;color:var(--muted);margin-bottom:14px">The AI writes multiple-choice questions from your curriculum. Pick a single day, or generate the whole week (a separate set for each class day) at once.</p>
     <div class="form-row">
@@ -659,7 +794,7 @@
     <div class="form-group"><label>Questions</label><input id="fgen-count" type="number" min="3" max="15" value="10"></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('flashGenModal')">Cancel</button>
-      <button class="btn btn-primary" id="fgenBtn" onclick="generateFlashcards()">✨ Generate</button>
+      <button class="btn btn-primary" id="fgenBtn" onclick="generateFlashcards()"><span data-icon="sparkles" data-size="15"></span> Generate</button>
     </div>
   </div>
 </div>
@@ -667,7 +802,7 @@
 <!-- ── FLASHCARD CARD MODAL ── -->
 <div class="modal-overlay" id="cardModal">
   <div class="modal">
-    <div class="modal-header"><h3 id="cardModalTitle">Add Card</h3><button class="modal-close" onclick="closeModal('cardModal')">✕</button></div>
+    <div class="modal-header"><h3 id="cardModalTitle">Add Card</h3><button class="modal-close" onclick="closeModal('cardModal')"><span data-icon="x" data-size="18"></span></button></div>
     <input type="hidden" id="card-edit-id">
     <div class="form-group"><label>Question *</label><textarea id="card-question" rows="2"></textarea></div>
     <div class="form-group"><label>Correct Answer *</label><input id="card-answer" placeholder="The correct answer"></div>
@@ -687,7 +822,7 @@
 <!-- ── CURRICULUM MODAL ── -->
 <div class="modal-overlay" id="curModal">
   <div class="modal">
-    <div class="modal-header"><h3 id="curModalTitle">Add Curriculum Entry</h3><button class="modal-close" onclick="closeModal('curModal')">✕</button></div>
+    <div class="modal-header"><h3 id="curModalTitle">Add Curriculum Entry</h3><button class="modal-close" onclick="closeModal('curModal')"><span data-icon="x" data-size="18"></span></button></div>
     <div class="error-msg" id="curErr"></div>
     <input type="hidden" id="cur-edit-id">
     <div class="form-row">
@@ -709,7 +844,7 @@
 <!-- ── GENERATE LECTURE MODAL ── -->
 <div class="modal-overlay" id="lecGenModal">
   <div class="modal">
-    <div class="modal-header"><h3>Generate Lecture</h3><button class="modal-close" onclick="closeModal('lecGenModal')">✕</button></div>
+    <div class="modal-header"><h3>Generate Lecture</h3><button class="modal-close" onclick="closeModal('lecGenModal')"><span data-icon="x" data-size="18"></span></button></div>
     <p style="font-size:14px;color:var(--muted);margin-bottom:14px">Builds slides &amp; lesson notes from the curriculum for one class day. Generation takes a few minutes and appears as <b>Pending Review</b> when ready.</p>
     <div class="error-msg" id="lecGenErr"></div>
     <div class="form-row">
@@ -729,7 +864,7 @@
   <div class="modal" style="max-width:920px;width:96%">
     <div class="modal-header">
       <h3 id="lecEditTitle">Lecture</h3>
-      <button class="modal-close" onclick="closeModal('lecEditModal')">✕</button>
+      <button class="modal-close" onclick="closeModal('lecEditModal')"><span data-icon="x" data-size="18"></span></button>
     </div>
     <div class="error-msg" id="lecEditErr"></div>
     <div id="lecEditMeta" style="font-size:13px;color:var(--muted);margin-bottom:6px"></div>
@@ -737,9 +872,9 @@
     <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
       <button class="btn btn-ghost" id="lecViewSlidesBtn" onclick="lecEditView('slides')">Slides</button>
       <button class="btn btn-ghost" id="lecViewNotesBtn" onclick="lecEditView('notes')">Lesson Notes</button>
-      <button class="btn btn-ghost" onclick="lecHistory()">↩ History</button>
-      <button class="btn btn-ghost" onclick="lecTeach(false)">👁 Preview deck</button>
-      <button class="btn btn-primary" onclick="lecTeach(true)" style="margin-left:auto">🎓 Teach</button>
+      <button class="btn btn-ghost" onclick="lecHistory()"><span data-icon="refresh-cw" data-size="15"></span> History</button>
+      <button class="btn btn-ghost" onclick="lecTeach(false)"><span data-icon="eye" data-size="15"></span> Preview deck</button>
+      <button class="btn btn-primary" onclick="lecTeach(true)" style="margin-left:auto"><span data-icon="graduation-cap" data-size="15"></span> Teach</button>
     </div>
     <div id="lecEditBody" style="max-height:60vh;overflow-y:auto;padding-right:4px"></div>
     <div class="modal-footer" style="flex-wrap:wrap;gap:8px">
@@ -753,7 +888,7 @@
 <!-- ── TEACH MODE: full-screen deck, same renderer as the student portal ── -->
 <div id="teachViewer">
   <div class="tv-bar">
-    <button onclick="closeTeach()" class="tv-btn">← Exit</button>
+    <button onclick="closeTeach()" class="tv-btn"><span data-icon="arrow-right" data-size="15" style="transform:rotate(180deg)"></span> Exit</button>
     <div style="min-width:0;flex:1">
       <div id="tvTitle" style="font-weight:700;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
       <div id="tvMeta" style="font-size:12.5px;color:var(--muted)"></div>
@@ -762,10 +897,10 @@
     <button onclick="teachBlank()" class="tv-btn" title="Blank the screen (B)">Blank</button>
     <button onclick="teachGrid(true)" class="tv-btn" title="All slides (G)">Grid</button>
     <button id="tvNotesBtn" onclick="teachToggleNotes()" class="tv-btn" title="Toggle presenter notes">Notes</button>
-    <button id="tvFsBtn" onclick="teachFullscreen()" title="Fullscreen" aria-label="Toggle fullscreen" class="tv-icon-btn">⛶</button>
+    <button id="tvFsBtn" onclick="teachFullscreen()" title="Fullscreen" aria-label="Toggle fullscreen" class="tv-icon-btn"><span data-icon="maximize" data-size="16"></span></button>
   </div>
   <div id="tvBlank" class="tv-blank" onclick="teachBlank()"></div>
-  <div id="tvGrid" class="tv-grid-overlay"><div class="tv-grid-head"><span>All slides — click to jump</span><button class="tv-btn" onclick="teachGrid(false)">✕ Close</button></div><div id="tvGridInner" class="tv-grid-inner"></div></div>
+  <div id="tvGrid" class="tv-grid-overlay"><div class="tv-grid-head"><span>All slides — click to jump</span><button class="tv-btn" onclick="teachGrid(false)"><span data-icon="x" data-size="15"></span> Close</button></div><div id="tvGridInner" class="tv-grid-inner"></div></div>
   <div class="tv-body" id="tvBody">
     <div id="tvStage" class="lv-fit"></div>
     <aside class="tv-rail" id="tvRail">
@@ -790,7 +925,7 @@
 <!-- ── ANNOUNCE MODAL ── -->
 <div class="modal-overlay" id="announceModal">
   <div class="modal">
-    <div class="modal-header"><h3>Announce to Batch</h3><button class="modal-close" onclick="closeModal('announceModal')">✕</button></div>
+    <div class="modal-header"><h3>Announce to Batch</h3><button class="modal-close" onclick="closeModal('announceModal')"><span data-icon="x" data-size="18"></span></button></div>
     <div class="error-msg" id="announceErr"></div>
     <div class="success-msg" id="announceOk" style="display:none;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#22c55e;padding:10px 14px;border-radius:8px;font-size:14px;margin-bottom:12px"></div>
     <div class="form-group"><label>Title *</label><input id="announce-title" placeholder="e.g. Class rescheduled to Thursday"></div>
@@ -805,7 +940,7 @@
 <!-- ── TAKE ATTENDANCE MODAL ── -->
 <div class="modal-overlay" id="attModal">
   <div class="modal">
-    <div class="modal-header"><h3 id="attModalTitle">Take Attendance</h3><button class="modal-close" onclick="closeModal('attModal')">✕</button></div>
+    <div class="modal-header"><h3 id="attModalTitle">Take Attendance</h3><button class="modal-close" onclick="closeModal('attModal')"><span data-icon="x" data-size="18"></span></button></div>
     <div class="error-msg" id="attErr"></div>
     <input type="hidden" id="att-edit-id">
     <div class="form-row">
@@ -839,7 +974,7 @@
 <!-- ── OPEN CHECK-IN MODAL (self-mark window) ── -->
 <div class="modal-overlay" id="checkinModal">
   <div class="modal" style="max-width:420px">
-    <div class="modal-header"><h3>Open check-in</h3><button class="modal-close" onclick="closeModal('checkinModal')">✕</button></div>
+    <div class="modal-header"><h3>Open check-in</h3><button class="modal-close" onclick="closeModal('checkinModal')"><span data-icon="x" data-size="18"></span></button></div>
     <input type="hidden" id="checkin-session-id">
     <p style="font-size:14px;color:var(--muted);margin-bottom:14px">Students get a notification and can mark themselves present until you close the window.</p>
     <div class="form-row">
@@ -858,7 +993,7 @@
   <div class="modal" style="max-width:680px">
     <div class="modal-header">
       <h3 id="subsModalTitle">Submissions</h3>
-      <button class="modal-close" onclick="closeModal('subsModal')">✕</button>
+      <button class="modal-close" onclick="closeModal('subsModal')"><span data-icon="x" data-size="18"></span></button>
     </div>
     <div id="subsContent"><div class="loading">Loading…</div></div>
   </div>
@@ -867,7 +1002,7 @@
 <!-- ── SCORE SUBMISSION MODAL ── -->
 <div class="modal-overlay" id="scoreModal">
   <div class="modal" style="max-width:440px">
-    <div class="modal-header"><h3>Score Submission</h3><button class="modal-close" onclick="closeModal('scoreModal')">✕</button></div>
+    <div class="modal-header"><h3>Score Submission</h3><button class="modal-close" onclick="closeModal('scoreModal')"><span data-icon="x" data-size="18"></span></button></div>
     <input type="hidden" id="score-sub-id">
     <input type="hidden" id="score-asgn-id">
     <div class="form-group" style="margin-bottom:14px">
@@ -891,6 +1026,8 @@
 
 <script>
 function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+// Inline Lucide icon for use inside JS template strings (falls back to '' pre-load).
+function AI(name, size){ return (window.AcademyUI ? AcademyUI.icon(name, size || 15) : ''); }
 const TOKEN_KEY = 'gl_lecturer_token';
 const LEC_KEY   = 'gl_lecturer';
 const token = localStorage.getItem(TOKEN_KEY);
@@ -898,17 +1035,55 @@ if (!token) window.location.href = 'lecturer-login.html';
 const lec = JSON.parse(localStorage.getItem(LEC_KEY) || '{}');
 
 document.getElementById('lecNameNav').textContent = lec.fullName || 'Lecturer';
-document.getElementById('pageTitle').textContent = 'Welcome, ' + (lec.fullName ? lec.fullName.split(' ')[0] : 'Lecturer');
+(function () {
+  const parts = (lec.fullName || 'L').trim().split(/\s+/);
+  const initials = ((parts[0] || 'L')[0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+  const av = document.getElementById('lecAvatar'); if (av) av.textContent = initials;
+})();
 
 function logout() { try { fetch('/api/lecturers/logout', { method: 'POST', keepalive: true }).catch(function(){}); } catch(e){} localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(LEC_KEY); window.location.href = 'lecturer-login.html'; }
 
 const ALL_TABS = ['overview','materials','assignments','flashcards','attendance','curriculum','lectures','notifications','students','messages','security'];
 let loaded = {};
 
+// Which sidebar data-nav row lights up for each tab (Schedule → curriculum, Settings → security).
+const NAV_FOR_TAB = { overview:'overview', materials:'materials', assignments:'assignments', flashcards:'flashcards', attendance:'attendance', curriculum:'curriculum', lectures:'lectures', notifications:'notifications', students:'students', messages:'messages', security:'security' };
+// Batch-scoped panes get a "which batch am I editing" banner at the top.
+const BATCH_SCOPED = ['overview','materials','assignments','flashcards','attendance','curriculum','lectures','notifications'];
+
 function switchTab(tab) {
   ALL_TABS.forEach(t => { document.getElementById('tab-' + t).style.display = t === tab ? '' : 'none'; });
-  document.querySelectorAll('.tab').forEach((btn, i) => btn.classList.toggle('active', ALL_TABS[i] === tab));
+  // Sidebar highlight by data-nav (mirrors the student dashboard). Several rows may
+  // share a data-nav (e.g. Curriculum + Schedule); light every matching row.
+  const navKey = NAV_FOR_TAB[tab] || tab;
+  document.querySelectorAll('.ac-nav-item[data-nav]').forEach(b => b.classList.toggle('active', b.getAttribute('data-nav') === navKey));
+  document.querySelectorAll('.ac-nav-sub button[data-nav]').forEach(b => b.classList.toggle('active', b.getAttribute('data-nav') === navKey));
+  renderBatchCtx(tab);
+  toggleSidebar(false); // close the mobile drawer after picking
   if (!loaded[tab]) { loaded[tab] = true; LOADERS[tab]?.(); }
+}
+
+// Off-canvas sidebar (≤1024px) + accordion group + batch-context banner.
+function toggleSidebar(open) {
+  const sb = document.getElementById('acSidebar'), sc = document.getElementById('acScrim');
+  if (!sb) return;
+  const show = open == null ? !sb.classList.contains('open') : open;
+  sb.classList.toggle('open', show); if (sc) sc.classList.toggle('open', show);
+}
+function toggleNavGroup(id) {
+  const g = document.getElementById(id); if (g) g.classList.toggle('open');
+}
+// A single reusable banner reparented into the visible batch-scoped pane.
+function renderBatchCtx(tab) {
+  document.querySelectorAll('.ac-batchctx').forEach(el => el.remove());
+  if (!activeBatch || tab === 'overview' || !BATCH_SCOPED.includes(tab)) return;
+  const pane = document.getElementById('tab-' + tab);
+  if (!pane) return;
+  const sched = fmtBatchSchedule(activeBatch);
+  const div = document.createElement('div');
+  div.className = 'ac-batchctx';
+  div.innerHTML = `${AI('users',17)}<div><div class="bn">${escHtml(activeBatch.name)}</div>${sched ? `<div class="bs">${escHtml(sched)}</div>` : ''}</div>`;
+  pane.insertBefore(div, pane.firstChild);
 }
 
 const LOADERS = {
@@ -931,9 +1106,11 @@ const LOADERS = {
       token: function () { return localStorage.getItem('gl_lecturer_token'); },
       self: { type: 'lecturer', id: me.id, name: me.fullName },
       onUnread: function (n) {
-        const b = document.getElementById('msgTabBadge');
-        if (b) { if (n > 0) { b.textContent = n; b.style.display = ''; } else { b.style.display = 'none'; } }
-        const bn = document.getElementById('bnMsgBadge');
+        const b = document.getElementById('msgTabBadge'); // topbar messages dot
+        if (b) { if (n > 0) { b.textContent = n > 99 ? '99+' : n; b.style.display = ''; } else { b.textContent = ''; b.style.display = 'none'; } }
+        const sb = document.getElementById('sbMsgBadge'); // sidebar messages badge
+        if (sb) { if (n > 0) { sb.textContent = n > 99 ? '99+' : n; sb.style.display = ''; } else { sb.style.display = 'none'; } }
+        const bn = document.getElementById('bnMsgBadge'); // mobile bottom-nav badge
         if (bn) { if (n > 0) { bn.textContent = n > 99 ? '99+' : n; bn.classList.add('show'); } else { bn.classList.remove('show'); } }
       }
     });
@@ -1011,31 +1188,130 @@ function onBatchChange() {
   activeBatch = b;
   localStorage.setItem('gl_lecturer_active_batch', b._id || b.id);  // F-05: remember across refresh
   loaded = {};                                  // force every tab to reload for the new batch
-  const idx = Array.from(document.querySelectorAll('.tab')).findIndex(t => t.classList.contains('active'));
-  const curTab = ALL_TABS[idx] || 'overview';
+  // Current tab = the visible #tab-* pane.
+  let curTab = 'overview';
+  for (const t of ALL_TABS) { const el = document.getElementById('tab-' + t); if (el && el.style.display !== 'none') { curTab = t; break; } }
   loaded[curTab] = true;
+  renderBatchCtx(curTab);
   (LOADERS[curTab] || loadOverview)();
   if (curTab !== 'overview') loadOverview();     // keep the header/subtitle fresh
 }
 
+const DAY_IDX = { sunday:0, monday:1, tuesday:2, wednesday:3, thursday:4, friday:5, saturday:6 };
+const DAY_NAME = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+// The next calendar occurrence of a batch's class day(s), soonest first.
+function nextClassesForBatch(b, limit) {
+  const days = Array.isArray(b.classDays) ? b.classDays : [];
+  const now = new Date();
+  const out = [];
+  days.forEach(d => {
+    const idx = DAY_IDX[String(d).toLowerCase()];
+    if (idx == null) return;
+    let delta = (idx - now.getDay() + 7) % 7;
+    // If today is a class day but the time has passed, roll to next week.
+    if (delta === 0) {
+      const t = /^(\d{1,2}):(\d{2})/.exec(String(b.classTime || '').trim());
+      if (t) { const cd = new Date(now); cd.setHours(+t[1], +t[2], 0, 0); if (cd < now) delta = 7; }
+    }
+    const when = new Date(now); when.setDate(now.getDate() + delta);
+    out.push({ batch: b, dayName: DAY_NAME[idx], when, time: fmt12hTime(b.classTime) });
+  });
+  out.sort((a, c) => a.when - c.when);
+  return limit ? out.slice(0, limit) : out;
+}
+
 async function loadOverview() {
-  // activeBatch is chosen via the batch picker (loadMyBatches); the counts below
-  // are the lecturer's overall library totals, not batch-scoped.
-  const [matsRes, asgnRes, flashRes] = await Promise.all([
-    api('/api/materials'),
-    api('/api/assignments'),
-    api('/api/flashcards/sets'),
-  ]);
-  document.getElementById('pageSubtitle').textContent = activeBatch ? `Active Batch: ${activeBatch.name}` : 'No batch assigned yet';
-  document.getElementById('ov-mats').textContent  = Array.isArray(matsRes)  ? matsRes.length  : (matsRes?.length  || 0);
-  document.getElementById('ov-asgn').textContent  = Array.isArray(asgnRes)  ? asgnRes.length  : (asgnRes?.length  || 0);
-  document.getElementById('ov-flash').textContent = Array.isArray(flashRes) ? flashRes.length : (flashRes?.length || 0);
-  const batchEl = document.getElementById('ov-batch');
-  batchEl.innerHTML = activeBatch
-    ? `<strong>${escHtml(activeBatch.name)}</strong> - ${escHtml(activeBatch.track || 'All Tracks')} - ${activeBatch.totalWeeks} weeks
-       <span style="margin-left:16px;font-size:12px;color:var(--muted)">${fmtBatchSchedule(activeBatch) || ''}</span>
-       <span style="margin-left:12px;font-size:12px;color:var(--muted)">${activeBatch.startDate ? fmtDate(activeBatch.startDate) : ''} → ${activeBatch.endDate ? fmtDate(activeBatch.endDate) : 'TBD'}</span>`
-    : '<span style="color:var(--muted)">No active batch. Contact admin to set one.</span>';
+  // Greeting
+  const h = new Date().getHours();
+  const part = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
+  const first = lec.fullName ? lec.fullName.split(' ')[0] : 'Lecturer';
+  document.getElementById('ov-greeting').textContent = `Good ${part}, ${first}`;
+  const n = myBatches.length;
+  document.getElementById('pageSubtitle').textContent = n ? `${n} active batch${n === 1 ? '' : 'es'}` : 'No batch assigned yet';
+
+  // Next class across all batches
+  const upcoming = myBatches.flatMap(b => nextClassesForBatch(b, 2)).sort((a, c) => a.when - c.when);
+  const next = upcoming[0];
+  const nextTopicEl = document.getElementById('ov-next-topic');
+  if (next) {
+    document.getElementById('ov-next-batch').textContent = next.batch.name;
+    document.getElementById('ov-next-when').textContent = `${next.dayName}${next.time ? ' · ' + next.time : ''}`;
+    nextTopicEl.textContent = '';
+    // Topic from curriculum for the active batch's next class, best-effort.
+    api('/api/curriculum?batch=' + (next.batch._id || next.batch.id)).then(cur => {
+      if (!Array.isArray(cur) || !cur.length) return;
+      const match = cur.find(c => String(c.day || '').toLowerCase() === next.dayName.toLowerCase());
+      if (match && match.topic) nextTopicEl.textContent = match.topic;
+    }).catch(() => {});
+  } else {
+    document.getElementById('ov-next-batch').textContent = 'No upcoming class';
+    document.getElementById('ov-next-when').textContent = '';
+    nextTopicEl.textContent = '';
+  }
+
+  // Today & upcoming (next 3)
+  const upEl = document.getElementById('ov-upcoming');
+  const list3 = upcoming.slice(0, 3);
+  upEl.innerHTML = list3.length ? list3.map(c => `
+    <div class="ac-list-row">
+      <span class="ico">${AI('calendar-days', 18)}</span>
+      <div class="main"><div class="t">${escHtml(c.batch.name)}</div><div class="sub">${c.dayName}${c.time ? ' · ' + c.time : ''}</div></div>
+    </div>`).join('') : '<div class="ac-empty-line">No classes scheduled.</div>';
+
+  // My classes (one row per batch) — click sets active batch and opens curriculum
+  const clsEl = document.getElementById('ov-classes');
+  clsEl.innerHTML = myBatches.length ? myBatches.map(b => {
+    const id = b._id || b.id;
+    return `<div class="ac-list-row ac-class-row" onclick="openClass('${id}')">
+      <span class="ico">${AI('graduation-cap', 18)}</span>
+      <div class="main"><div class="t">${escHtml(b.name)}</div><div class="sub">${escHtml(fmtBatchSchedule(b) || 'Schedule TBD')}</div></div>
+      <span class="ico">${AI('chevron-right', 16)}</span>
+    </div>`;
+  }).join('') : '<div class="ac-empty-line">No batches assigned yet.</div>';
+
+  // Teaching actions — only real items
+  loadTeachingActions();
+
+  // Subtle entrance on the home cards
+  if (window.AcademyUI) AcademyUI.enter(document.querySelectorAll('#tab-overview [data-home-card]'), { y: 12 });
+}
+
+// Set the active batch from a home "My classes" row and jump to its curriculum.
+function openClass(id) {
+  const sel = document.getElementById('batchPicker');
+  if (sel) { sel.value = id; onBatchChange(); }
+  else { const b = myBatches.find(x => (x._id || x.id) === id); if (b) activeBatch = b; }
+  switchTab('curriculum');
+}
+
+// Real teaching to-dos: lecture awaiting review, attendance not taken, new message.
+async function loadTeachingActions() {
+  const el = document.getElementById('ov-actions');
+  const items = [];
+  if (activeBatch) {
+    const [lecs, atts] = await Promise.all([
+      api('/api/lectures?batch=' + (activeBatch._id || activeBatch.id)),
+      api('/api/attendance').catch(() => null),
+    ]);
+    const pending = (Array.isArray(lecs) ? lecs : []).filter(l => l.status === 'pending_review').length;
+    if (pending) items.push({ icon: 'clipboard-check', text: `${pending} lecture${pending === 1 ? '' : 's'} awaiting review`, tab: 'lectures' });
+
+    // Attendance not taken: a class day this week with no session logged.
+    const sessions = Array.isArray(atts) ? atts : [];
+    const thisWeek = nextClassesForBatch(activeBatch).filter(c => (c.when - new Date()) < 6 * 864e5);
+    const anyMissing = thisWeek.some(c => !sessions.some(s => String(s.day || '').toLowerCase() === c.dayName.toLowerCase()));
+    if (anyMissing && thisWeek.length) items.push({ icon: 'calendar-check', text: 'Attendance not yet taken for an upcoming class', tab: 'attendance' });
+  }
+  const unread = parseInt(document.getElementById('msgTabBadge')?.textContent || '0', 10);
+  if (unread > 0) items.push({ icon: 'message-circle', text: `${unread} new student message${unread === 1 ? '' : 's'}`, tab: 'messages' });
+
+  el.innerHTML = items.length ? items.map(a => `
+    <div class="ac-list-row ac-class-row" onclick="switchTab('${a.tab}')">
+      <span class="ico">${AI(a.icon, 18)}</span>
+      <div class="main"><div class="t">${escHtml(a.text)}</div></div>
+      <span class="ico">${AI('chevron-right', 16)}</span>
+    </div>`).join('') : '<div class="ac-empty-line">Nothing needs your attention right now.</div>';
 }
 
 // ── NOTIFICATIONS SENT (delivery log) ───────────────────────
@@ -1406,7 +1682,7 @@ async function generateFlashcards() {
     method: 'POST',
     body: JSON.stringify({ batch: activeBatch._id, week: Number(week), day: day || undefined, count: Number(count) })
   });
-  btn.disabled = false; btn.textContent = '✨ Generate';
+  btn.disabled = false; btn.innerHTML = AI('sparkles') + ' Generate';
   if (res && Array.isArray(res.sets) && res.sets.length) {
     closeModal('flashGenModal');
     loaded['flashcards'] = true; loadFlashcards();
@@ -1898,14 +2174,14 @@ async function renderLecCoverage() {
   }).join('');
   box.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
       <div style="font-weight:700">Coverage — ${missing} of ${entries.length} not generated</div>
-      ${missing ? `<button class="btn btn-primary" style="padding:6px 12px;font-size:13px" onclick="lecGenAllMissing()">✨ Generate all ${missing} missing</button>` : '<span style="color:var(--green);font-size:13px;font-weight:600">All generated ✓</span>'}
+      ${missing ? `<button class="btn btn-primary" style="padding:6px 12px;font-size:13px" onclick="lecGenAllMissing()">${AI('sparkles')} Generate all ${missing} missing</button>` : `<span style="color:var(--green);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:5px">${AI('check-circle',15)} All generated</span>`}
     </div>
     <div style="max-height:340px;overflow:auto"><table style="width:100%;font-size:13px"><tbody>${rows}</tbody></table></div>`;
 }
 async function lecCoverageGen(week, day, btn) {
   if (btn) { btn.disabled = true; btn.textContent = 'Starting…'; }
   const res = await api('/api/lectures/generate', { method: 'POST', body: JSON.stringify({ batchId: activeBatch._id, week, day }) });
-  if (res && res.accepted) { if (btn) btn.textContent = 'Started ✓'; toast('Generating Wk ' + week + ' ' + day + ' — refresh in a few minutes'); }
+  if (res && res.accepted) { if (btn) btn.innerHTML = AI('check', 15) + ' Started'; toast('Generating Wk ' + week + ' ' + day + ' — refresh in a few minutes'); }
   else { if (btn) { btn.disabled = false; btn.textContent = 'Generate'; } alert((res && res.error) || 'Failed to start.'); }
 }
 async function lecGenAllMissing() {
@@ -1952,7 +2228,7 @@ function renderLecList() {
       </div>
       <div style="display:flex;gap:8px">
         ${l.status==='generating' ? '<span style="font-size:13px;color:var(--muted)">Working…</span>'
-          : `${l.slideCount ? `<button class="btn btn-primary" style="padding:7px 14px" onclick="lecTeachById('${l.id}')">🎓 Teach</button>` : ''}
+          : `${l.slideCount ? `<button class="btn btn-primary" style="padding:7px 14px" onclick="lecTeachById('${l.id}')">${AI('graduation-cap')} Teach</button>` : ''}
              <button class="btn btn-ghost" style="padding:7px 14px" onclick="openLectureEditor('${l.id}')">${l.status==='pending_review'?'Review':'Open'}</button>`}
       </div>
     </div>`;
@@ -2020,7 +2296,7 @@ async function lecLoadViews(id) {
   if (!el || !v || v.error) return;
   el.textContent = v.available === false
     ? ''
-    : `👁 ${v.viewed} of ${v.total} students opened · ✓ ${v.completed} finished`;
+    : `<span style="display:inline-flex;align-items:center;gap:5px">${AI('eye',14)} ${v.viewed} of ${v.total} students opened · ${AI('check',14)} ${v.completed} finished</span>`;
 }
 
 // Version history: restore a previous published snapshot into the working copy.
@@ -2058,9 +2334,9 @@ function renderSlideEditors() {
       : (isImg ? '<div style="width:130px;height:74px;border-radius:6px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);text-align:center">no image yet</div>' : '');
     const layoutOpts = LEC_LAYOUTS.map(o => `<option value="${o}"${o===s.layout_type?' selected':''}>${o}</option>`).join('');
     const aiRow = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-      <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="lecRegenText(${n})">✨ Rewrite text (AI)</button>
-      ${isIllus ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="lecRedraw(${n})">✨ Redraw diagram (AI)</button>` : ''}
-      ${isImg ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="lecRegenImage(${n})">↻ Regenerate photo</button>` : ''}
+      <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="lecRegenText(${n})">${AI('sparkles',14)} Rewrite text (AI)</button>
+      ${isIllus ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="lecRedraw(${n})">${AI('sparkles',14)} Redraw diagram (AI)</button>` : ''}
+      ${isImg ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="lecRegenImage(${n})">${AI('refresh-cw',14)} Regenerate photo</button>` : ''}
     </div>`;
     const illusBox = isIllus ? `
       <details style="margin-top:8px"><summary style="font-size:12px;color:var(--muted);cursor:pointer">Diagram SVG (advanced)</summary>
@@ -2077,10 +2353,10 @@ function renderSlideEditors() {
           <select data-sl="${n}" data-f="layout_type" onchange="lecSetLayout(${n}, this.value)" style="font-size:12px;padding:4px 6px">${layoutOpts}</select>
         </div>
         <div style="display:flex;gap:4px">
-          <button class="btn btn-ghost" style="padding:4px 9px;font-size:13px" title="Move up" ${i===0?'disabled':''} onclick="lecMoveSlide(${n},-1)">↑</button>
-          <button class="btn btn-ghost" style="padding:4px 9px;font-size:13px" title="Move down" ${i===slides.length-1?'disabled':''} onclick="lecMoveSlide(${n},1)">↓</button>
+          <button class="btn btn-ghost" style="padding:4px 9px;font-size:13px" title="Move up" ${i===0?'disabled':''} onclick="lecMoveSlide(${n},-1)"><span style="display:inline-flex;transform:rotate(-90deg)">${AI('chevron-right',15)}</span></button>
+          <button class="btn btn-ghost" style="padding:4px 9px;font-size:13px" title="Move down" ${i===slides.length-1?'disabled':''} onclick="lecMoveSlide(${n},1)"><span style="display:inline-flex;transform:rotate(90deg)">${AI('chevron-right',15)}</span></button>
           <button class="btn btn-ghost" style="padding:4px 9px;font-size:13px" title="Add slide after" onclick="lecAddSlide(${n})">＋</button>
-          <button class="btn btn-ghost" style="padding:4px 9px;font-size:13px;color:var(--red)" title="Delete slide" onclick="lecDeleteSlide(${n})">🗑</button>
+          <button class="btn btn-ghost" style="padding:4px 9px;font-size:13px;color:var(--red)" title="Delete slide" onclick="lecDeleteSlide(${n})">${AI('trash',15)}</button>
         </div>
       </div>
       <div style="display:flex;gap:12px;align-items:flex-start">
@@ -2149,7 +2425,7 @@ function renderNotesEditor() {
     <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center">
       <input data-term="${i}" data-f="term" value="${escHtml(t.term||'')}" placeholder="Term" style="flex:0 0 32%">
       <input data-term="${i}" data-f="meaning" value="${escHtml(t.meaning||'')}" placeholder="Meaning" style="flex:1">
-      <button class="btn btn-ghost" style="padding:4px 8px;font-size:12px;color:var(--red)" onclick="lecDelTerm(${i})">✕</button>
+      <button class="btn btn-ghost" style="padding:4px 8px;font-size:12px;color:var(--red)" onclick="lecDelTerm(${i})"><span data-icon="x" data-size="18"></span></button>
     </div>`).join('');
   return `<div style="display:flex;flex-direction:column;gap:8px">
     ${lbl('Title')}<input id="ln_title" value="${escHtml(n.title||'')}">
@@ -2366,7 +2642,7 @@ function teachFullscreen(force) {
 }
 document.addEventListener('fullscreenchange', () => {
   const b = document.getElementById('tvFsBtn');
-  if (b) b.textContent = document.fullscreenElement ? '✕' : '⛶';
+  if (b) b.innerHTML = document.fullscreenElement ? AI('x', 16) : AI('maximize', 16);
 });
 
 function tvNav(d) {
@@ -2534,8 +2810,9 @@ async function loadNotifications() {
 
 function toggleNotifPanel() {
   notifOpen = !notifOpen;
-  document.getElementById('notifPanel').classList.toggle('open', notifOpen);
-  if (notifOpen) loadNotifications();
+  const p = document.getElementById('notifPanel');
+  p.classList.toggle('open', notifOpen);
+  if (notifOpen) { if (window.AcademyUI) AcademyUI.dropIn(p); loadNotifications(); }
 }
 
 document.addEventListener('click', e => {
@@ -2557,6 +2834,9 @@ async function markAllRead() {
 }
 
 // ── INIT ─────────────────────────────────────────────────────
+if (window.AcademyUI) AcademyUI.renderIcons(document); // fill all [data-icon] placeholders
+// Light up Home in the sidebar on first paint.
+document.querySelectorAll('.ac-nav-item[data-nav="overview"], .ac-nav-sub button[data-nav="overview"]').forEach(b => b.classList.add('active'));
 loaded['overview'] = true;
 (async () => { await loadMyBatches(); loadOverview(); })();
 loadNotifications();
@@ -2627,7 +2907,7 @@ loadNotifications();
       if (typeof window.switchTab === 'function') window.switchTab(tab); else setActive(tab);
       window.closeMore();
       try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { window.scrollTo(0, 0); }
-      var main = document.querySelector('.main');
+      var main = document.querySelector('.ac-content') || document.querySelector('.main');
       if (main) { main.classList.remove('tab-enter'); void main.offsetWidth; main.classList.add('tab-enter'); }
     };
     window.openMore = function () {
