@@ -62,7 +62,7 @@
   .page-header p { color: var(--muted); font-size: 15px; }
 
   /* ── TABS ── */
-  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
   .tab { padding: 10px 20px; font-size: 15px; font-weight: 600; color: var(--muted); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: color 0.2s; margin-bottom: -1px; }
   .tab:hover { color: var(--text); }
   .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
@@ -455,7 +455,7 @@
     <p id="pageSubtitle" style="color:var(--muted);font-size:15px;">Loading your data…</p>
   </div>
 
-  <div class="tabs" style="overflow-x:auto;flex-wrap:nowrap;">
+  <div class="tabs">
     <button class="tab active" onclick="switchTab('overview')">Overview</button>
     <button class="tab" onclick="switchTab('attendance')">Attendance</button>
     <button class="tab" onclick="switchTab('payments')">Payments</button>
@@ -1140,6 +1140,12 @@
     document.getElementById('pg-overall').textContent = overall + '%';
     // pathLength=100 trick: dashoffset goes from 100 → (100 - pct)
     document.getElementById('pg-ring-fill').setAttribute('stroke-dashoffset', String(100 - overall));
+    // F-13: with no attendance/assignment data yet, "overall" is pure time-elapsed.
+    // Label it honestly so a student who has attended/submitted nothing isn't told
+    // they are "37% overall".
+    var hasWork = (p.assignments && p.assignments.total > 0) || (p.attendance && p.attendance.total > 0);
+    var ringLbl = document.querySelector('.pg-ring-pct .lbl');
+    if (ringLbl) ringLbl.textContent = hasWork ? 'overall' : 'elapsed';
 
     var weeks = p.weeks || null;
     if (weeks && weeks.total) {

@@ -983,9 +983,15 @@ async function loadMyBatches() {
     if (wrap) wrap.style.display = 'none';
     return;
   }
-  // Keep the current selection if still valid, else default to the first batch.
-  const cur = activeBatch && myBatches.find(b => (b._id || b.id) === (activeBatch._id || activeBatch.id));
+  // Keep the current selection if still valid; else restore the last-viewed batch
+  // from localStorage (F-05: persist across refresh so a lecturer isn't silently
+  // dropped back to their first batch and left editing/publishing the wrong one);
+  // else default to the first batch.
+  const savedId = localStorage.getItem('gl_lecturer_active_batch');
+  const cur = (activeBatch && myBatches.find(b => (b._id || b.id) === (activeBatch._id || activeBatch.id)))
+    || (savedId && myBatches.find(b => (b._id || b.id) === savedId));
   activeBatch = cur || myBatches[0];
+  localStorage.setItem('gl_lecturer_active_batch', activeBatch._id || activeBatch.id);
   if (sel) {
     sel.innerHTML = myBatches.map(b => {
       const id = b._id || b.id;
@@ -1003,6 +1009,7 @@ function onBatchChange() {
   const b = myBatches.find(x => (x._id || x.id) === sel.value);
   if (!b) return;
   activeBatch = b;
+  localStorage.setItem('gl_lecturer_active_batch', b._id || b.id);  // F-05: remember across refresh
   loaded = {};                                  // force every tab to reload for the new batch
   const idx = Array.from(document.querySelectorAll('.tab')).findIndex(t => t.classList.contains('active'));
   const curTab = ALL_TABS[idx] || 'overview';
@@ -2250,6 +2257,10 @@ function renderPublishArea() {
 }
 
 async function lecPublish() {
+  // F-06: publishing makes the lecture live AND emails + pushes every student in
+  // the batch. Confirm the consequence before it fires.
+  const bn = (activeBatch && activeBatch.name) ? activeBatch.name : 'this batch';
+  if (!confirm('Publish this lecture to students in ' + bn + '?\n\nThey will see it immediately and be notified by email and push notification.')) return;
   collectEdits();
   await lecSaveDraftSilent();
   const res = await api('/api/lectures/' + lecEditing.id + '/publish', { method: 'POST' });
@@ -2257,9 +2268,16 @@ async function lecPublish() {
   else alert((res && res.error) || 'Publish failed.');
 }
 async function lecRepublish() {
+  const notify = !!(document.getElementById('lecNotify') && document.getElementById('lecNotify').checked);
+  // F-06: republishing always updates what students see; with "Notify students"
+  // ticked it also emails + pushes them. Make the consequence explicit.
+  const bn = (activeBatch && activeBatch.name) ? activeBatch.name : 'this batch';
+  const msg = notify
+    ? 'Republish and NOTIFY all students in ' + bn + '?\n\nThey will get an email and push notification about the update.'
+    : 'Republish this update to students in ' + bn + '?\n\nThey will see the new version. (No notification will be sent.)';
+  if (!confirm(msg)) return;
   collectEdits();
   await lecSaveDraftSilent();
-  const notify = !!(document.getElementById('lecNotify') && document.getElementById('lecNotify').checked);
   const res = await api('/api/lectures/' + lecEditing.id + '/republish', { method: 'POST', body: JSON.stringify({ notify }) });
   if (res && res.success) { lecEditing.status = res.status; renderPublishArea(); toast(notify ? `Republished — ${res.notified} students notified` : 'Republished'); loadLecturesAdmin(); }
   else alert((res && res.error) || 'Republish failed.');
