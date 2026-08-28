@@ -27,7 +27,8 @@ async function runDailyChecks() {
 }
 
 const JOBS = {
-  'class-reminders':     () => require('../utils/classReminders').runClassReminders(),
+  'class-reminders':          () => require('../utils/classReminders').runClassReminders(),
+  'class-reminders-tomorrow': () => require('../utils/classReminders').runClassRemindersDayBefore(),
   'flashcard-day-after': () => require('../utils/flashcardAutoGen').runFlashcardDayAfterReminders(),
   'lecture-generation':  () => require('../utils/lectureGenerator').runLectureGeneration(),
   'daily-checks':        runDailyChecks,

@@ -91,3 +91,21 @@ test('createStudentFromApplicant honours feePaid:false (no fake revenue)', async
     delete require.cache[require.resolve('../utils/enrolStudent')];
   }
 });
+
+test('suspension invariant: computePaymentStatus never marks a paid row overdue', () => {
+  const { computePaymentStatus } = require('../db/payments');
+  const longAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+
+  // Fully-paid row, due date long past → 'paid'/'fully_paid', NEVER 'overdue'.
+  const paid = computePaymentStatus({ category: 'tuition_month_2', amount_due: 100000, amount_paid: 100000, due_date: longAgo });
+  assert.ok(paid.status === 'paid' || paid.status === 'fully_paid', 'paid row must not be overdue');
+  const paidFull = computePaymentStatus({ category: 'full_tuition_payment', amount_due: 300000, amount_paid: 300000, due_date: longAgo });
+  assert.strictEqual(paidFull.status, 'fully_paid');
+
+  // Unpaid past-due row → 'overdue' (the only state runOverdueCheck suspends on).
+  const unpaid = computePaymentStatus({ category: 'tuition_month_2', amount_due: 100000, amount_paid: 0, due_date: longAgo });
+  assert.strictEqual(unpaid.status, 'overdue');
+
+  // Since suspension targets only 'overdue' rows, a student with all rows paid
+  // has no overdue row and cannot be auto-suspended.
+});

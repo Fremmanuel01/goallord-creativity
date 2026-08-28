@@ -11,8 +11,9 @@ module.exports = {
   },
 
   async findById(id) {
-    const { data, error } = await supabase.from(TABLE).select('*').eq('id', id).single();
+    const { data, error } = await supabase.from(TABLE).select('*').eq('id', id).maybeSingle();
     if (error) throw error;
+    if (!data) return null;
     // Attach batches
     const { data: lb } = await supabase.from('lecturer_batches').select('batch:batches(*)').eq('lecturer_id', id);
     data.batches = (lb || []).map(r => r.batch);

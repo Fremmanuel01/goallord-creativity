@@ -16,7 +16,7 @@ module.exports = {
       select = '*, batch:batches(id, name, number, track, is_active)';
     }
     if (opts.fields) select = opts.fields;
-    const { data, error } = await supabase.from(TABLE).select(select).eq('id', id).single();
+    const { data, error } = await supabase.from(TABLE).select(select).eq('id', id).maybeSingle();
     if (error) throw error;
     return data;
   },

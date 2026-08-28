@@ -396,9 +396,15 @@ const PORT = process.env.PORT || 3000;
     // 6 AM every Wednesday & Thursday: remind every active batch's students and
     // lecturers that class holds today, naming the curriculum topic when there
     // is one for the day (omitted otherwise).
-    const { runClassReminders } = require('./utils/classReminders');
+    const { runClassReminders, runClassRemindersDayBefore } = require('./utils/classReminders');
     cron.schedule('0 6 * * 3,4', () => {
       runClassReminders().catch(e => console.error('Class reminders failed:', e.message));
+    }, { timezone: 'Africa/Lagos' });
+
+    // 6 PM the evening before each class day (Tue & Wed): remind students and
+    // lecturers that class holds tomorrow, naming the curriculum topic when set.
+    cron.schedule('0 18 * * 2,3', () => {
+      runClassRemindersDayBefore().catch(e => console.error('Day-before class reminders failed:', e.message));
     }, { timezone: 'Africa/Lagos' });
 
     // ── Lecture generation (West Africa Time) ────────────────────

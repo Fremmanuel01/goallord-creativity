@@ -71,6 +71,9 @@ function createFakeSupabase(seed) {
     gt(col, val) { this.filters.push(['gt', col, val]); return this; }
     lt(col, val) { this.filters.push(['lt', col, val]); return this; }
     in(col, vals) { this.filters.push(['in', col, vals]); return this; }
+    gte(col, val) { this.filters.push(['gte', col, val]); return this; }
+    lte(col, val) { this.filters.push(['lte', col, val]); return this; }
+    not(col, op, val) { this.filters.push(['not', col, op, val]); return this; }
     order(col, o) { this._order = { col, ascending: !o || o.ascending !== false }; return this; }
     limit(n) { this._limit = n; return this; }
     range(from, to) { this._range = [from, to]; return this; }
@@ -78,12 +81,20 @@ function createFakeSupabase(seed) {
     maybeSingle() { this._single = true; this._maybe = true; return this._run(); }
 
     _match(row) {
-      return this.filters.every(([kind, col, val]) => {
-        if (kind === 'eq') return row[col] === val;
-        if (kind === 'neq') return row[col] !== val;
-        if (kind === 'gt') return row[col] > val;
-        if (kind === 'lt') return row[col] < val;
-        if (kind === 'in') return Array.isArray(val) && val.includes(row[col]);
+      return this.filters.every((f) => {
+        const [kind, col, a, b] = f;
+        if (kind === 'eq') return row[col] === a;
+        if (kind === 'neq') return row[col] !== a;
+        if (kind === 'gt') return row[col] > a;
+        if (kind === 'lt') return row[col] < a;
+        if (kind === 'gte') return row[col] >= a;
+        if (kind === 'lte') return row[col] <= a;
+        if (kind === 'in') return Array.isArray(a) && a.includes(row[col]);
+        // .not(col, 'is', null) → column IS NOT NULL (only shape the app uses)
+        if (kind === 'not') {
+          if (a === 'is' && b === null) return row[col] !== null && row[col] !== undefined;
+          return true;
+        }
         return true;
       });
     }

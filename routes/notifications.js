@@ -5,8 +5,21 @@ const lecturersDb     = require('../db/lecturers');
 const batchesDb       = require('../db/batches');
 const { requireLecturer } = require('../middleware/lecturerAuth');
 const { requireStudentAuth } = require('../middleware/studentAuth');
+const { extractAnyToken } = require('../lib/authCookie');
+const jwt = require('jsonwebtoken');
 
 const router = express.Router();
+
+// Identify the caller from the httpOnly auth cookie (student/lecturer/admin),
+// falling back to a real Bearer token for API clients. The browser only carries
+// a 'cookie-session' placeholder in the Authorization header, so these personal
+// endpoints must read the cookie — reading the header alone 500'd every load.
+function whoami(req) {
+  const token = extractAnyToken(req);
+  if (!token) return null;
+  try { return jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] }); }
+  catch { return null; }
+}
 
 // The reminder/notification types we surface in the dashboard delivery log,
 // grouped into the three categories teachers care about.
@@ -23,12 +36,8 @@ const CATEGORY_FOR_TYPE = Object.fromEntries(
 // GET /api/notifications - returns notifications for the authenticated user
 router.get('/', async (req, res) => {
   try {
-    // Accept both student and lecturer tokens
-    const auth = req.headers.authorization;
-    if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'No token' });
-
-    const jwt = require('jsonwebtoken');
-    const decoded = jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET, { algorithms: ['HS256'] });
+    const decoded = whoami(req);
+    if (!decoded) return res.status(401).json({ error: 'No token' });
 
     const filter = { recipient_id: decoded.id };
     if (req.query.read !== undefined) filter.read = req.query.read === 'true';
@@ -130,10 +139,7 @@ router.get('/sent-log', requireLecturer, async (req, res) => {
 // PATCH /api/notifications/:id/read
 router.patch('/:id/read', async (req, res) => {
   try {
-    const auth = req.headers.authorization;
-    if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'No token' });
-    const jwt = require('jsonwebtoken');
-    jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET, { algorithms: ['HS256'] });
+    if (!whoami(req)) return res.status(401).json({ error: 'No token' });
     const doc = await notificationsDb.markRead(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
@@ -145,10 +151,8 @@ router.patch('/:id/read', async (req, res) => {
 // PATCH /api/notifications/read-all
 router.patch('/read-all', async (req, res) => {
   try {
-    const auth = req.headers.authorization;
-    if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'No token' });
-    const jwt = require('jsonwebtoken');
-    const decoded = jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET, { algorithms: ['HS256'] });
+    const decoded = whoami(req);
+    if (!decoded) return res.status(401).json({ error: 'No token' });
     await notificationsDb.markAllRead(decoded.id);
     res.json({ success: true });
   } catch (err) {

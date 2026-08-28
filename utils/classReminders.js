@@ -1,9 +1,12 @@
-// Early-morning class reminder.
-// Runs at 6 AM (West Africa Time) on class days and emails every active student
-// in every active batch that they have class today. When the batch has a
-// curriculum entry for the day, the email also names the topic and what will be
-// taught; batches without a matching curriculum entry simply get the reminder
-// without a topic. Best-effort: failures are logged, never thrown.
+// Class reminders — two windows off the same batch-timezone schedule:
+//   • same-day   (runClassReminders):        class is today
+//   • day-before (runClassRemindersDayBefore): class is tomorrow
+// For each active batch whose class falls on the target date, we email + notify
+// every active student and every assigned active lecturer, naming the batch's
+// curriculum topic for that date when there is one. Idempotent: a per-day dedup
+// on the notifications table (keyed by reminder type) means a restart or a
+// double-trigger never double-sends, and the two windows never collide.
+// Best-effort: failures are logged, never thrown.
 const supabase        = require('../lib/supabase');
 const studentsDb      = require('../db/students');
 const notificationsDb = require('../db/notifications');
@@ -29,6 +32,11 @@ function todayWAT() {
   return new Date(Date.now() + 3600000).toISOString().slice(0, 10);
 }
 
+// Add n whole days to a YYYY-MM-DD date, returning YYYY-MM-DD.
+function addDays(isoDate, n) {
+  return new Date(new Date(isoDate + 'T00:00:00Z').getTime() + n * DAY).toISOString().slice(0, 10);
+}
+
 // Active lecturers mapped to a batch (via the lecturer_batches junction).
 async function lecturersForBatch(batchId) {
   const { data: links } = await supabase.from('lecturer_batches')
@@ -40,14 +48,21 @@ async function lecturersForBatch(batchId) {
   return lecturers || [];
 }
 
-async function runClassReminders() {
-  const targetDate = todayWAT();
+// mode: 'today' (same-day) | 'tomorrow' (day-before). opts.todayOverride pins
+// "today" for deterministic tests; production leaves it undefined.
+async function runReminders(mode = 'today', opts = {}) {
+  const when = mode === 'tomorrow' ? 'tomorrow' : 'today';
+  const notifType = when === 'tomorrow' ? 'class_reminder_tomorrow' : 'class_reminder';
+  const runDay = opts.todayOverride || todayWAT();          // the calendar day we run on
+  const targetDate = when === 'tomorrow' ? addDays(runDay, 1) : runDay; // the class day
   const dayName = DAY_NAMES[new Date(targetDate + 'T00:00:00Z').getUTCDay()];
   const host = process.env.HOST || '';
   const logoUrl  = host + '/assets/images/logo/goallord-logo.png';
   const studentLoginUrl  = host + '/student-login.html';
   const lecturerLoginUrl = host + '/lecturer-login.html';
-  const dedupSince = targetDate + 'T00:00:00Z'; // anything sent earlier today (WAT-ish)
+  // Dedup within the day we run on, per reminder type — so re-runs never
+  // double-send and the today/tomorrow windows stay independent.
+  const dedupSince = runDay + 'T00:00:00Z';
 
   const { data: batches } = await supabase.from('batches')
     .select('id, name, start_date').eq('is_active', true);
@@ -60,17 +75,17 @@ async function runClassReminders() {
     if (!people.length) return false;
     const ids = people.map(p => p.id);
     const { data: already } = await supabase.from('notifications')
-      .select('recipient_id').eq('type', 'class_reminder').in('recipient_id', ids).gte('created_at', dedupSince);
+      .select('recipient_id').eq('type', notifType).in('recipient_id', ids).gte('created_at', dedupSince);
     const done = new Set((already || []).map(n => n.recipient_id));
     const todo = people.filter(p => !done.has(p.id));
     if (!todo.length) return false;
 
     await notificationsDb.insertMany(todo.map(p => ({
-      recipient_id: p.id, recipient_type: recipientType, type: 'class_reminder',
-      title: audience === 'lecturer' ? 'You’re teaching today' : 'You have class today',
+      recipient_id: p.id, recipient_type: recipientType, type: notifType,
+      title: audience === 'lecturer' ? `You’re teaching ${when}` : `You have class ${when}`,
       message: topic
-        ? `Today's class: ${topic}. See you there.`
-        : (audience === 'lecturer' ? 'You’re scheduled to teach today.' : 'Class holds today. See you there.'),
+        ? `${when === 'tomorrow' ? "Tomorrow's" : "Today's"} class: ${topic}. See you there.`
+        : (audience === 'lecturer' ? `You’re scheduled to teach ${when}.` : `Class holds ${when}. See you there.`),
       link,
     })));
     totals.notified += todo.length;
@@ -81,10 +96,10 @@ async function runClassReminders() {
         await sendMail({
           to: p.email,
           subject: topic
-            ? `Class today: ${topic}`
-            : (audience === 'lecturer' ? 'You’re teaching today' : 'You have class today'),
+            ? `Class ${when}: ${topic}`
+            : (audience === 'lecturer' ? `You’re teaching ${when}` : `You have class ${when}`),
           html: classReminderEmail({
-            fullName: p.full_name, batchName, dayName, topic, details, loginUrl, logoUrl, audience,
+            fullName: p.full_name, batchName, dayName, topic, details, loginUrl, logoUrl, audience, when,
           }),
         });
         totals.emailed++;
@@ -128,8 +143,13 @@ async function runClassReminders() {
     if (hitStudents || hitLecturers) totals.batchesHit++;
   }
 
-  if (totals.notified) console.log(`[ClassReminders] ${dayName}: notified ${totals.notified} across ${totals.batchesHit} batch(es); ${totals.emailed} email${totals.emailFailed ? `, ${totals.emailFailed} failed` : ''}.`);
+  if (totals.notified) console.log(`[ClassReminders:${when}] ${dayName}: notified ${totals.notified} across ${totals.batchesHit} batch(es); ${totals.emailed} email${totals.emailFailed ? `, ${totals.emailFailed} failed` : ''}.`);
   return totals;
 }
 
-module.exports = { runClassReminders };
+// Same-day: class is today.
+function runClassReminders(opts) { return runReminders('today', opts); }
+// Day-before: class is tomorrow.
+function runClassRemindersDayBefore(opts) { return runReminders('tomorrow', opts); }
+
+module.exports = { runClassReminders, runClassRemindersDayBefore };

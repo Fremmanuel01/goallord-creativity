@@ -16,7 +16,9 @@ module.exports = {
   },
 
   async findById(id) {
-    const { data, error } = await supabase.from(TABLE).select('*').eq('id', id).single();
+    // maybeSingle: a missing/malformed id returns null (not a PGRST error),
+    // so callers' `if (!doc) 404` works instead of surfacing a 500.
+    const { data, error } = await supabase.from(TABLE).select('*').eq('id', id).maybeSingle();
     if (error) throw error;
     return data;
   },

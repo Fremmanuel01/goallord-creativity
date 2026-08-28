@@ -146,7 +146,7 @@ router.get('/', requireLecturer, async (req, res) => {
 router.get('/:id', requireLecturer, async (req, res) => {
   try {
     const supabase = require('../lib/supabase');
-    const { data: doc, error } = await supabase.from('curriculum_entries').select('*').eq('id', req.params.id).single();
+    const { data: doc, error } = await supabase.from('curriculum_entries').select('*').eq('id', req.params.id).maybeSingle();
     if (error) throw error;
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);

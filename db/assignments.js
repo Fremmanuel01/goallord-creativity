@@ -9,7 +9,7 @@ module.exports = {
     if (opts.populate === 'lecturer') {
       select = '*, lecturer:lecturers(id, full_name, email)';
     }
-    const { data, error } = await supabase.from(TABLE).select(select).eq('id', id).single();
+    const { data, error } = await supabase.from(TABLE).select(select).eq('id', id).maybeSingle();
     if (error) throw error;
     return data;
   },
