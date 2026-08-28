@@ -28,9 +28,9 @@ function seed() {
     // Three batches active at once — b1 and b3 are the SAME program (AI
     // Development), proving many active batches per program coexist.
     batches: [
-      { id: 'b1-t', name: 'Batch Alpha', number: 1, track: 'AI Development', is_active: true, start_date: '2026-01-05' },
-      { id: 'b2-t', name: 'Batch Beta', number: 2, track: 'UI/UX', is_active: true, start_date: '2026-01-05' },
-      { id: 'b3-t', name: 'Batch Gamma', number: 3, track: 'AI Development', is_active: true, start_date: '2026-01-05' },
+      { id: 'b1-t', name: 'Batch Alpha', number: 1, track: 'AI Development', is_active: true, start_date: '2026-01-05', class_days: ['Wednesday', 'Thursday'], class_time: '09:00' },
+      { id: 'b2-t', name: 'Batch Beta', number: 2, track: 'UI/UX', is_active: true, start_date: '2026-01-05', class_days: ['Wednesday', 'Thursday'], class_time: '14:00' },
+      { id: 'b3-t', name: 'Batch Gamma', number: 3, track: 'AI Development', is_active: true, start_date: '2026-01-05', class_days: ['Wednesday', 'Thursday'], class_time: '16:00' },
     ],
     students: [
       { id: 's1-t', full_name: 'Ada Alpha', email: 'ada@test.local', password: HASH, batch_id: 'b1-t', track: 'AI Development', status: 'Active', application_fee_paid: true },

@@ -38,6 +38,10 @@ function seed() {
   // hostile applicant name to prove the stored-XSS escaping renders inert.
   s.batches[0].start_date = CLASS_DAY;
   const dow = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(CLASS_DAY + 'T00:00:00Z').getUTCDay()];
+  // Per-batch class times (distinct) + class days aligned to the reminder day.
+  s.batches[0].class_days = [dow]; s.batches[0].class_time = '09:00'; // Alpha  9:00 AM
+  s.batches[1].class_days = [dow]; s.batches[1].class_time = '14:00'; // Beta   2:00 PM
+  s.batches[2].class_time = '16:00';                                  // Gamma  4:00 PM
   // Two concurrent batches at DIFFERENT curriculum positions — proves no
   // global "current topic" bleeds across batches.
   s.curriculum_entries = [
@@ -206,7 +210,7 @@ test('day-before reminder appears in the student notification bell', async () =>
 test('same-day reminder: student A sees own topic; student B does not see it', async () => {
   delete require.cache[require.resolve(path.join(ROOT, 'utils/classReminders.js'))];
   const { runClassReminders } = require(path.join(ROOT, 'utils/classReminders.js'));
-  await runClassReminders({ todayOverride: CLASS_DAY });
+  await runClassReminders({ todayOverride: CLASS_DAY, ignoreWindow: true }); // bell-render test, not window timing (covered in classReminders.test.js)
 
   // Student A (batch b1) — sees "class today" + own topic.
   let ctx = await newPage(DESKTOP);
@@ -433,6 +437,10 @@ test('admin batch management: concurrent batches listed distinctly', async () =>
     // Development program), proving no single-active-per-program limit.
     const activeBadges = (table.match(/Active/g) || []).length;
     assert.ok(activeBadges >= 3, `>=3 active batches shown (got ${activeBadges})`);
+    // Three DIFFERENT class times shown (9:00 AM / 2:00 PM / 4:00 PM).
+    assert.match(table, /9:00 AM/, 'Alpha class time');
+    assert.match(table, /2:00 PM/, 'Beta class time');
+    assert.match(table, /4:00 PM/, 'Gamma class time');
     assert.deepStrictEqual(serverErrors, [], 'no 5xx on admin batch management');
   } finally { await context.close(); }
 });
@@ -474,6 +482,69 @@ test('lecturer login + dashboard renders', async () => {
     await lecturerLogin(page, 'lex@test.local');
     assert.ok(page.url().includes('lecturer-dashboard.html'));
     assert.deepStrictEqual(serverErrors, [], 'no 5xx during lecturer dashboard load');
+  } finally { await context.close(); }
+});
+
+// ─────────────────────────────────────────────────────────────
+// PER-BATCH CLASS TIME — admin sets it via the real form; editing one
+// batch's time does not touch another; students/lecturers see their own.
+// ─────────────────────────────────────────────────────────────
+test('admin sets a batch class time via the real form; other batches unchanged', async () => {
+  const { context, page, serverErrors } = await newPage(DESKTOP);
+  try {
+    await adminLogin(page);
+    const r = page.waitForResponse((x) => x.url().includes('/api/batches') && x.request().method() === 'GET', { timeout: 8000 });
+    await page.evaluate(() => window.navigate && window.navigate('batches'));
+    await r.catch(() => {});
+    await page.evaluate(() => window.loadBatches && window.loadBatches()).catch(() => {});
+    await page.waitForFunction(() => /Batch Alpha/.test(document.getElementById('batchTableBody')?.textContent || ''), null, { timeout: 8000 });
+
+    // Create a new active batch at 11:00 via the real modal.
+    await page.evaluate(() => window.openAddBatch());
+    await page.waitForSelector('#batch-time', { state: 'visible', timeout: 8000 });
+    await page.fill('#batch-name', 'WebDev Late Morning');
+    await page.fill('#batch-number', '207');
+    await page.selectOption('#batch-track', 'AI Software Development').catch(() => {});
+    await page.fill('#batch-time', '11:00');
+    // ensure at least one class day checked
+    await page.evaluate(() => { const cb = document.querySelector('#batch-days .batch-day-cb[value="Wednesday"]'); if (cb && !cb.checked) cb.click(); });
+    const post = page.waitForResponse((x) => x.url().includes('/api/batches') && x.request().method() === 'POST', { timeout: 8000 });
+    await page.click('#saveBatchBtn');
+    assert.strictEqual((await post).status(), 201, 'batch created with class time');
+    await page.waitForFunction(() => /11:00 AM/.test(document.getElementById('batchTableBody')?.textContent || ''), null, { timeout: 8000 });
+
+    // The pre-existing batches' times are untouched by the new one.
+    const table = await page.textContent('#batchTableBody');
+    assert.match(table, /9:00 AM/, 'Alpha still 9:00 AM');
+    assert.match(table, /4:00 PM/, 'Gamma still 4:00 PM');
+    assert.deepStrictEqual(serverErrors, [], 'no 5xx');
+  } finally { await context.close(); }
+});
+
+test('students see only their own batch schedule/time', async () => {
+  for (const [email, time] of [['ada@test.local', '9:00 AM'], ['ben@test.local', '2:00 PM'], ['cody@test.local', '4:00 PM']]) {
+    const { context, page } = await newPage(DESKTOP);
+    try {
+      await studentLogin(page, email);
+      await page.waitForFunction((t) => /9:00 AM|2:00 PM|4:00 PM/.test(document.getElementById('ovScheduleBadge')?.textContent || '') || document.getElementById('ovScheduleBadge')?.textContent === t, time, { timeout: 8000 });
+      const sched = await page.textContent('#ovScheduleBadge');
+      assert.match(sched, new RegExp(time.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `${email} sees own time ${time}`);
+      // Must not show either of the other batches' times.
+      const others = ['9:00 AM', '2:00 PM', '4:00 PM'].filter((t) => t !== time);
+      for (const o of others) assert.doesNotMatch(sched, new RegExp(o.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `${email} must not see ${o}`);
+    } finally { await context.close(); }
+  }
+});
+
+test('lecturer teaching two batches sees each batch\'s own time', async () => {
+  const { context, page } = await newPage(DESKTOP);
+  try {
+    await lecturerLogin(page, 'lex@test.local'); // teaches b1 (9 AM) and b3 (4 PM)
+    await page.waitForTimeout(1000);
+    const picker = await page.textContent('#batchPicker').catch(() => '');
+    // Both distinct times appear in the batch picker options.
+    assert.match(picker, /9:00 AM/, 'lecturer sees 9 AM batch');
+    assert.match(picker, /4:00 PM/, 'lecturer sees 4 PM batch (not one global time)');
   } finally { await context.close(); }
 });
 
@@ -607,6 +678,14 @@ test('lecturer attendance: mark → save → persist → student sees → batch 
   let ctx = await newPage(DESKTOP);
   try {
     await lecturerLogin(ctx.page, 'lex@test.local');
+    // L1 now teaches two batches — pick batch b1 (Alpha) explicitly so the
+    // session is created for it deterministically.
+    await ctx.page.waitForFunction(() => {
+      const s = document.getElementById('batchPicker');
+      return s && [...s.options].some((o) => o.value === 'b1-t');
+    }, null, { timeout: 8000 });
+    await ctx.page.evaluate(() => { const s = document.getElementById('batchPicker'); if (s) { s.value = 'b1-t'; s.dispatchEvent(new Event('change')); } });
+    await ctx.page.waitForTimeout(400);
     const al = ctx.page.waitForResponse((x) => x.url().includes('/api/attendance') && x.request().method() === 'GET', { timeout: 10000 });
     await ctx.page.evaluate(() => window.switchTab('attendance'));
     await al;
@@ -616,7 +695,9 @@ test('lecturer attendance: mark → save → persist → student sees → batch 
     await ctx.page.waitForSelector('#att-roster .att-cb', { timeout: 8000 });
     // Distinct slot so it doesn't collide with the seeded week-1 session.
     await ctx.page.fill('#att-week', '3');
-    await ctx.page.selectOption('#att-day', 'Thursday');
+    // Pick whatever class day this batch actually offers (its own class_days).
+    const day = await ctx.page.evaluate(() => { const s = document.getElementById('att-day'); const o = [...s.options].find((x) => x.value); return o ? o.value : ''; });
+    await ctx.page.selectOption('#att-day', day);
     await ctx.page.fill('#att-date', '2026-03-05');
     await ctx.page.fill('#att-topic', 'Marked in browser');
     // Ada is present (default all-present); save.

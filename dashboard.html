@@ -3975,13 +3975,14 @@
           <thead><tr>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Batch</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Track</th>
+            <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Schedule</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Start</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">End</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Weeks</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Status</th>
             <th style="padding:10px 14px;font-size:11px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Actions</th>
           </tr></thead>
-          <tbody id="batchTableBody"><tr><td colspan="7" style="padding:32px;text-align:center;color:var(--muted)">Loading…</td></tr></tbody>
+          <tbody id="batchTableBody"><tr><td colspan="8" style="padding:32px;text-align:center;color:var(--muted)">Loading…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -10162,15 +10163,33 @@ async function loadBatches() {
   renderBatchTable(allBatches);
 }
 
+// "16:00" → "4:00 PM". Empty/invalid → ''.
+function fmt12hTime(t) {
+  const m = /^(\d{1,2}):(\d{2})/.exec(String(t || '').trim());
+  if (!m) return '';
+  let h = +m[1]; const mi = m[2]; const ap = h < 12 ? 'AM' : 'PM';
+  h = h % 12 || 12;
+  return `${h}:${mi} ${ap}`;
+}
+function fmtBatchSchedule(b) {
+  const days = Array.isArray(b.classDays) && b.classDays.length
+    ? b.classDays.map(d => escHtml(String(d).slice(0, 3))).join(' & ')
+    : '';
+  const time = fmt12hTime(b.classTime);
+  if (!days && !time) return '<span style="color:var(--muted)">-</span>';
+  return [days, time ? `<strong>${escHtml(time)}</strong>` : ''].filter(Boolean).join(' · ');
+}
+
 function renderBatchTable(batches) {
   const tbody = document.getElementById('batchTableBody');
   if (!batches.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="padding:32px;text-align:center;color:var(--muted)">No batches yet.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:32px;text-align:center;color:var(--muted)">No batches yet.</td></tr>';
     return;
   }
   tbody.innerHTML = batches.map(b => `<tr>
-    <td style="padding:12px 14px;font-weight:600">${b.name}</td>
-    <td style="padding:12px 14px;color:var(--muted)">${b.track || '-'}</td>
+    <td style="padding:12px 14px;font-weight:600">${escHtml(b.name)}</td>
+    <td style="padding:12px 14px;color:var(--muted)">${escHtml(b.track || '-')}</td>
+    <td style="padding:12px 14px;font-size:13px">${fmtBatchSchedule(b)}</td>
     <td style="padding:12px 14px">${b.startDate ? fmtDateAdmin(b.startDate) : '-'}</td>
     <td style="padding:12px 14px">${b.endDate   ? fmtDateAdmin(b.endDate)   : '-'}</td>
     <td style="padding:12px 14px">${b.totalWeeks}</td>
@@ -10194,6 +10213,8 @@ function openAddBatch() {
     const el = document.getElementById(id);
     if (el) el.value = el.tagName === 'SELECT' ? '' : (id === 'batch-weeks' ? '12' : '');
   });
+  document.getElementById('batch-time').value = '16:00';
+  document.querySelectorAll('#batch-days .batch-day-cb').forEach(cb => { cb.checked = ['Wednesday','Thursday'].includes(cb.value); });
   openModal('batchModal');
 }
 
@@ -10209,15 +10230,21 @@ async function openEditBatch(id) {
   document.getElementById('batch-end').value     = batch.endDate   ? batch.endDate.slice(0,10)   : '';
   document.getElementById('batch-weeks').value   = batch.totalWeeks || 12;
   document.getElementById('batch-notes').value   = batch.notes || '';
+  document.getElementById('batch-time').value    = batch.classTime || '16:00';
+  const days = Array.isArray(batch.classDays) ? batch.classDays : [];
+  document.querySelectorAll('#batch-days .batch-day-cb').forEach(cb => { cb.checked = days.includes(cb.value); });
   openModal('batchModal');
 }
 
 async function saveBatch() {
   const editId = document.getElementById('batch-edit-id').value;
+  const classDays = Array.from(document.querySelectorAll('#batch-days .batch-day-cb:checked')).map(cb => cb.value);
   const body = {
     name:       document.getElementById('batch-name').value.trim(),
     number:     Number(document.getElementById('batch-number').value),
     track:      document.getElementById('batch-track').value,
+    classDays,
+    classTime:  document.getElementById('batch-time').value || null,
     startDate:  document.getElementById('batch-start').value || undefined,
     endDate:    document.getElementById('batch-end').value   || undefined,
     totalWeeks: Number(document.getElementById('batch-weeks').value) || 12,
@@ -10446,6 +10473,18 @@ function showErr(el, msg) {
           <option>Videography</option>
           <option>Other</option>
         </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Class Days</label>
+          <div id="batch-days" style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px">
+            ${['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(d => `<label style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--text)"><input type="checkbox" class="batch-day-cb" value="${d}" style="width:auto"> ${d.slice(0,3)}</label>`).join('')}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Class Time</label>
+          <input class="form-input" id="batch-time" type="time" value="16:00">
+        </div>
       </div>
       <div class="form-row">
         <div class="form-group">

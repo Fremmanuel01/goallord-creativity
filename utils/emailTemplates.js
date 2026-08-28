@@ -857,20 +857,22 @@ function flashcardDayAfterEmail({ fullName, topic, week, day, count, summary, fl
 // Early-morning class reminder, sent before class on a class day. When the
 // batch has a curriculum entry for the day, the topic panel renders; otherwise
 // it is omitted and the recipient still gets a clean reminder.
-function classReminderEmail({ fullName, batchName, dayName, topic, details, loginUrl, logoUrl, audience, when }) {
+function classReminderEmail({ fullName, batchName, dayName, topic, details, loginUrl, logoUrl, audience, when, timeLabel }) {
   const safeTopic = (topic || '').trim();
   const safeDetails = (details || '').trim();
   const day = dayName || 'today';
   const isLecturer = audience === 'lecturer';
   const isTomorrow = when === 'tomorrow';
   const timeWord = isTomorrow ? 'tomorrow' : 'today';  // day-before vs same-day copy
+  const at = (timeLabel || '').trim() ? ` at ${esc(timeLabel.trim())}` : '';  // batch-specific class time
   const name = esc(fullName || (isLecturer ? 'Lecturer' : 'Student'));
+  const cls = esc(batchName || 'your class');
   const intro = isLecturer
-    ? `Dear ${name}, this is a reminder that you are scheduled to teach a class ${timeWord}.${safeTopic ? ' The topic and outline are below.' : ''}`
-    : `Dear ${name}, this is a reminder that your class holds ${timeWord}.${safeTopic ? ' Here is what is planned.' : ' Please arrive on time and prepared.'}`;
+    ? `Dear ${name}, this is a reminder that you are teaching ${cls} ${timeWord}${at}.${safeTopic ? ' The topic and outline are below.' : ''}`
+    : `Dear ${name}, this is a reminder that your ${cls} class holds ${timeWord}${at}.${safeTopic ? ' Here is what is planned.' : ' Please arrive on time and prepared.'}`;
   return corporateEmail({
     eyebrow: `${isLecturer ? 'Teaching reminder' : 'Class reminder'} · ${esc(day)}`,
-    heading: isLecturer ? `You are teaching ${timeWord}` : `You have class ${timeWord}`,
+    heading: isLecturer ? `You are teaching ${timeWord}${at}` : `You have class ${timeWord}${at}`,
     intro,
     recap: safeTopic ? {
       topicLabel: isTomorrow ? 'Tomorrow’s topic' : 'Today’s topic', topic: safeTopic,
@@ -879,12 +881,13 @@ function classReminderEmail({ fullName, batchName, dayName, topic, details, logi
     } : null,
     infoRows: [
       batchName ? { label: 'Class', value: batchName } : null,
+      (timeLabel || '').trim() ? { label: 'Time', value: timeLabel.trim() } : null,
       { label: 'Day', value: day },
     ].filter(Boolean),
     ctaLabel: isLecturer ? 'Open lecturer portal' : 'Open your portal', ctaUrl: loginUrl,
     footnote: isLecturer ? 'Please arrive ahead of time to set up.' : 'Please arrive on time and ready to learn.',
     logoUrl,
-    preheader: `${isLecturer ? 'You are teaching' : 'You have class'} ${timeWord}${safeTopic ? ` — ${safeTopic}` : ''}.`,
+    preheader: `${isLecturer ? 'You are teaching' : 'You have class'} ${timeWord}${at}${safeTopic ? ` — ${safeTopic}` : ''}.`,
   });
 }
 

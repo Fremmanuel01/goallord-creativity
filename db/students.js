@@ -13,7 +13,7 @@ module.exports = {
   async findById(id, opts = {}) {
     let select = '*';
     if (opts.populate === 'batch') {
-      select = '*, batch:batches(id, name, number, track, is_active)';
+      select = '*, batch:batches(id, name, number, track, is_active, class_days, class_time)';
     }
     if (opts.fields) select = opts.fields;
     const { data, error } = await supabase.from(TABLE).select(select).eq('id', id).maybeSingle();
@@ -24,7 +24,7 @@ module.exports = {
   async find({ filter = {}, search, populate, sort, page, limit } = {}) {
     let select = '*';
     if (populate === 'batch') {
-      select = '*, batch:batches(id, name, number, track, is_active)';
+      select = '*, batch:batches(id, name, number, track, is_active, class_days, class_time)';
     }
     let q = supabase.from(TABLE).select(select, { count: 'exact' });
 

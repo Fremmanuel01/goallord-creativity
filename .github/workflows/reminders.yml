@@ -7,9 +7,9 @@ name: Scheduled reminders
 # West Africa Time (WAT = UTC+1), so subtract 1 hour from the WAT target.
 on:
   schedule:
-    - cron: '0 5 * * 3,4'   # 06:00 WAT Wed & Thu  -> class reminders (same-day)
-    - cron: '0 17 * * 2,3'  # 18:00 WAT Tue & Wed  -> class reminders (day-before)
-    - cron: '0 8 * * *'     # 09:00 WAT daily      -> flashcard day-after nudges
+    - cron: '0 4-16 * * *'  # hourly 05:00-17:00 WAT -> class reminders (same-day; per-batch window)
+    - cron: '0 17 * * *'    # 18:00 WAT daily        -> class reminders (day-before)
+    - cron: '0 8 * * *'     # 09:00 WAT daily        -> flashcard day-after nudges
     - cron: '0 4 * * *'     # 05:00 WAT daily      -> lecture generation
     - cron: '30 4 * * *'    # 05:30 WAT daily      -> daily checks (payments/deadlines/applicants)
   workflow_dispatch:
@@ -38,8 +38,8 @@ jobs:
         id: pick
         run: |
           case "${{ github.event.schedule }}" in
-            "0 5 * * 3,4") job=class-reminders ;;
-            "0 17 * * 2,3") job=class-reminders-tomorrow ;;
+            "0 4-16 * * *") job=class-reminders ;;
+            "0 17 * * *")  job=class-reminders-tomorrow ;;
             "0 8 * * *")   job=flashcard-day-after ;;
             "0 4 * * *")   job=lecture-generation ;;
             "30 4 * * *")  job=daily-checks ;;

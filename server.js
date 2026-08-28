@@ -392,18 +392,19 @@ const PORT = process.env.PORT || 3000;
       runFlashcardDayAfterReminders().catch(e => console.error('Flashcard day-after reminders failed:', e.message));
     }, { timezone: 'Africa/Lagos' });
 
-    // ── Class reminders (West Africa Time) ───────────────────────
-    // 6 AM every Wednesday & Thursday: remind every active batch's students and
-    // lecturers that class holds today, naming the curriculum topic when there
-    // is one for the day (omitted otherwise).
+    // ── Class reminders (West Africa Time) — resolved PER BATCH ──────
+    // Each active batch has its own class days + class time. Same-day reminders
+    // poll HOURLY through the class window (05:00–17:00 WAT); each batch fires
+    // only inside its own lead window (default 2h before its time), so a 9 AM
+    // batch and a 4 PM batch are reminded at different times. Idempotent per day.
     const { runClassReminders, runClassRemindersDayBefore } = require('./utils/classReminders');
-    cron.schedule('0 6 * * 3,4', () => {
+    cron.schedule('0 5-17 * * *', () => {
       runClassReminders().catch(e => console.error('Class reminders failed:', e.message));
     }, { timezone: 'Africa/Lagos' });
 
-    // 6 PM the evening before each class day (Tue & Wed): remind students and
-    // lecturers that class holds tomorrow, naming the curriculum topic when set.
-    cron.schedule('0 18 * * 2,3', () => {
+    // 6 PM every evening: remind students + lecturers of any batch that meets
+    // TOMORROW, naming that batch's own class time and curriculum topic.
+    cron.schedule('0 18 * * *', () => {
       runClassRemindersDayBefore().catch(e => console.error('Day-before class reminders failed:', e.message));
     }, { timezone: 'Africa/Lagos' });
 

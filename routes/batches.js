@@ -44,7 +44,7 @@ router.post('/', requireAuth, async (req, res) => {
   try {
     // The admin form sends `description` (legacy field name); the DB column is `notes`.
     // Accept either, write to `notes`.
-    const { name, number, track, classDays, isActive, startDate, endDate, totalWeeks, description, notes } = req.body;
+    const { name, number, track, classDays, classTime, isActive, startDate, endDate, totalWeeks, description, notes } = req.body;
 
     // A program (track) may run MANY batches at once — Morning / Midday / Evening
     // are all active simultaneously. Creating an active batch must NOT deactivate
@@ -56,6 +56,7 @@ router.post('/', requireAuth, async (req, res) => {
       number,
       track,
       class_days:   classDays,
+      class_time:   classTime || null,
       is_active:    isActive || false,
       start_date:   startDate,
       end_date:     endDate,
@@ -74,7 +75,7 @@ router.post('/', requireAuth, async (req, res) => {
 router.patch('/:id', requireAuth, async (req, res) => {
   try {
     // Accept either `description` (legacy) or `notes`; DB column is `notes`.
-    const { name, number, track, classDays, isActive, startDate, endDate, totalWeeks, description, notes } = req.body;
+    const { name, number, track, classDays, classTime, isActive, startDate, endDate, totalWeeks, description, notes } = req.body;
 
     // Activating a batch must NOT deactivate its same-program siblings: many
     // batches of the same program run concurrently. Each batch's active state
@@ -85,6 +86,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
     if (number !== undefined)      update.number = number;
     if (track !== undefined)       update.track = track;
     if (classDays !== undefined)   update.class_days = classDays;
+    if (classTime !== undefined)   update.class_time = classTime || null;
     if (isActive !== undefined)    update.is_active = isActive;
     if (startDate !== undefined)   update.start_date = startDate;
     if (endDate !== undefined)     update.end_date = endDate;
