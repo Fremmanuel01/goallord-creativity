@@ -1581,7 +1581,7 @@
       nextEl.onclick = function () { switchTab('assignments'); };
       nextEl.onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') switchTab('assignments'); };
     } else {
-      nextTxt.textContent = 'All caught up - no upcoming deadlines.';
+      nextTxt.textContent = 'No upcoming assignments.';
       nextEl.classList.add('is-empty');
       nextEl.onclick = null;
       nextEl.onkeydown = null;
