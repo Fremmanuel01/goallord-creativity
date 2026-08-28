@@ -314,9 +314,9 @@
   .progress-hero .pg-bar-head .val { color: var(--text); font-weight: 700; font-size: 12px; }
   .progress-hero .pg-bar-track { background: rgba(255,255,255,0.05); border-radius: 999px; height: 5px; overflow: hidden; }
   .progress-hero .pg-bar-fill  { height: 100%; border-radius: 999px; transition: width 0.7s cubic-bezier(.22,.61,.36,1); background: var(--text); }
-  .progress-hero .pg-bar-fill.time { background: linear-gradient(90deg, #6a9fff, #1E4BFF); }
-  .progress-hero .pg-bar-fill.asg  { background: linear-gradient(90deg, #f59e0b, var(--orange)); }
-  .progress-hero .pg-bar-fill.att  { background: linear-gradient(90deg, #34d399, var(--green)); }
+  .progress-hero .pg-bar-fill.time { background: var(--orange); }
+  .progress-hero .pg-bar-fill.asg  { background: var(--muted); }
+  .progress-hero .pg-bar-fill.att  { background: var(--green); }
   .progress-hero .pg-next {
     display: flex; align-items: center; gap: 10px;
     background: rgba(214,106,31,0.08); border: 1px solid rgba(214,106,31,0.18);
@@ -835,13 +835,13 @@
             <div class="prog-col">
               <div class="ph"><span class="pic" data-icon="list-tree" data-size="18"></span><span class="lbl">Curriculum Progress</span></div>
               <div class="pv">Week <span id="pg-week">-</span> <span id="pg-week-of">of -</span></div>
-              <div class="pbar"><span class="track"><span class="pg-bar-fill time" id="pg-time-fill" style="width:0%;background:linear-gradient(90deg,#f59e0b,var(--orange))"></span></span><span class="pct" id="pg-time-val">-</span></div>
+              <div class="pbar"><span class="track"><span class="pg-bar-fill time" id="pg-time-fill" style="width:0%;background:var(--orange)"></span></span><span class="pct" id="pg-time-val">-</span></div>
               <div id="pg-dates" style="font-size:11px;color:var(--muted);margin-top:6px"></div>
             </div>
             <div class="prog-col">
               <div class="ph"><span class="pic" data-icon="calendar-check" data-size="18"></span><span class="lbl">Attendance Rate</span></div>
               <div class="pv" id="pg-att-val">-</div>
-              <div class="pbar"><span class="track"><span class="pg-bar-fill att" id="pg-att-fill" style="width:0%;background:linear-gradient(90deg,#34d399,var(--green))"></span></span><span class="pct" id="pg-att-pct">-</span></div>
+              <div class="pbar"><span class="track"><span class="pg-bar-fill att" id="pg-att-fill" style="width:0%;background:var(--green)"></span></span><span class="pct" id="pg-att-pct">-</span></div>
             </div>
             <div class="prog-col">
               <div class="ph"><span class="pic" data-icon="clipboard-check" data-size="18"></span><span class="lbl">Assignments Completed</span></div>
