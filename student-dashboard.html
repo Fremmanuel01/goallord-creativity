@@ -200,6 +200,10 @@
   .qa-item .qt b { display: block; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .qa-item .qt small { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
   .qa-item .qr { font-size: 11px; font-weight: 700; color: var(--muted); flex-shrink: 0; }
+  .qa-item.qa-static { cursor: default; }
+  .qa-item.qa-static:hover { background: none; }
+  .qa-ctas { display: flex; gap: 8px; flex-wrap: wrap; padding: 2px 10px 8px 44px; }
+  .qa-ctas .ov-btn { font-size: 12.5px; padding: 6px 12px; }
 
   .sch-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
   .sch-item:last-of-type { border-bottom: none; }
@@ -1941,15 +1945,22 @@
       const p = pending[0];
       const overdue = p.status === 'overdue';
       const n = p.dueDate ? daysUntil(p.dueDate) : null;
-      items.push({ icon:'triangle-alert', urgent: overdue, title:'Next payment due', sub: p.dueDate ? ('Due ' + fmtDate(p.dueDate)) : 'Outstanding balance', right: overdue ? 'Overdue' : relDays(n), tab:'payments' });
+      items.push({ icon:'triangle-alert', urgent: overdue, title:'Next payment due', sub: p.dueDate ? ('Due ' + fmtDate(p.dueDate)) : 'Outstanding balance', right: overdue ? 'Overdue' : relDays(n), tab:'payments',
+        ctas: [{ label:'Make payment', tab:'payments', primary:true }, { label:'View history', tab:'payments' }] });
     }
     if (!items.length) { el.innerHTML = '<div style="color:var(--muted);font-size:14px;padding:8px 2px">Nothing needs your attention right now.</div>'; return; }
-    el.innerHTML = items.slice(0,4).map(it =>
-      '<button class="qa-item" onclick="navPick(\'' + it.tab + '\')">' +
-        '<span class="qi' + (it.urgent ? ' urgent' : '') + '">' + AcademyUI.icon(it.icon, 19) + '</span>' +
+    el.innerHTML = items.slice(0,4).map(it => {
+      const info = '<span class="qi' + (it.urgent ? ' urgent' : '') + '">' + AcademyUI.icon(it.icon, 19) + '</span>' +
         '<span class="qt"><b>' + escHtml(it.title) + '</b><small>' + escHtml(it.sub) + '</small></span>' +
-        (it.right ? '<span class="qr">' + escHtml(it.right) + '</span>' : '') +
-      '</button>').join('');
+        (it.right ? '<span class="qr">' + escHtml(it.right) + '</span>' : '');
+      // Items with contextual CTAs render as a static row + a button group (buttons can't nest in buttons).
+      if (it.ctas && it.ctas.length) {
+        return '<div class="qa-item qa-static">' + info + '</div>' +
+          '<div class="qa-ctas">' + it.ctas.map(c =>
+            '<button class="ov-btn' + (c.primary ? ' primary' : '') + '" onclick="navPick(\'' + c.tab + '\')">' + escHtml(c.label) + '</button>').join('') + '</div>';
+      }
+      return '<button class="qa-item" onclick="navPick(\'' + it.tab + '\')">' + info + '</button>';
+    }).join('');
   }
 
   function openTodaysLesson() {
@@ -1981,9 +1992,10 @@
       const iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
       const match = days.find(x => x.date === iso);
       const mon = d.toLocaleDateString(undefined,{month:'short'});
+      // Prioritise date · topic · time; the programme is redundant (student is already in it).
       return '<div class="sch-item">' +
         '<div class="sd"><div class="m">' + mon + '</div><div class="d">' + d.getDate() + '</div></div>' +
-        '<div class="si"><b>' + escHtml((s.track || 'Class')) + '</b><small>' + escHtml(match ? match.topic : 'Topic to be announced') + '</small></div>' +
+        '<div class="si"><b>' + escHtml(match ? match.topic : 'Topic to be announced') + '</b><small>' + escHtml(d.toLocaleDateString(undefined,{weekday:'long'})) + '</small></div>' +
         '<div class="st">' + escHtml(time) + '</div>' +
       '</div>';
     }).join('');
@@ -1993,15 +2005,23 @@
   function renderProgressPercents() {
     // Time/curriculum pct is already in pg-time-val as "NN%"; nothing to add.
     // Attendance & assignments: derive pct from the "N/M" text renderProgress set.
-    function pctFrom(valId, pctId) {
+    function pctFrom(valId, pctId, fillId) {
       const v = document.getElementById(valId), p = document.getElementById(pctId);
       if (!v || !p) return;
       const m = /(\d+)\s*\/\s*(\d+)/.exec(v.textContent || '');
-      if (m && +m[2] > 0) p.textContent = Math.round(+m[1] / +m[2] * 100) + '%';
-      else p.textContent = 'No data';
+      if (m && +m[2] > 0) { p.textContent = Math.round(+m[1] / +m[2] * 100) + '%'; }
+      else {
+        // Compact empty state: no bar, small muted note — don't let "No data" occupy a large area.
+        v.textContent = 'Not available yet';
+        v.style.fontSize = '12px'; v.style.color = 'var(--muted)';
+        p.textContent = '';
+        const fill = document.getElementById(fillId);
+        const bar = fill && fill.closest('.pbar');
+        if (bar) bar.style.display = 'none';
+      }
     }
-    pctFrom('pg-att-val', 'pg-att-pct');
-    pctFrom('pg-asg-val', 'pg-asg-pct');
+    pctFrom('pg-att-val', 'pg-att-pct', 'pg-att-fill');
+    pctFrom('pg-asg-val', 'pg-asg-pct', 'pg-asg-fill');
   }
 
   function renderContinueLearning() {
@@ -2022,13 +2042,16 @@
             '<button class="ov-btn primary" onclick="navPick(\'lectures\')">View slides</button>' +
             '<button class="ov-btn" onclick="navPick(\'lectures\')">Read lesson notes</button>' +
           '</div>' +
+          // When there's no next topic, collapse the "Next up" box; keep curriculum reachable via a link.
+          (nxt ? '' : '<div style="margin-top:14px"><button class="ov-viewall" onclick="navPick(\'curriculum\')">View curriculum</button></div>') +
         '</div>' +
-        '<div style="flex:1;min-width:180px;border:1px solid var(--border);border-radius:12px;padding:14px">' +
-          '<div class="ov-h" style="margin-bottom:8px">Next up</div>' +
-          (nxt ? '<b style="font-size:14px;display:block;margin-bottom:6px">' + escHtml(nxt.topic) + '</b><small style="color:var(--muted);font-size:12px">Week ' + escHtml(nxt.week) + (nxt.day ? ' · ' + escHtml(nxt.day) : '') + '</small>'
-               : '<div style="color:var(--muted);font-size:13px">No next topic has been scheduled yet.</div>') +
-          '<div style="margin-top:12px"><button class="ov-viewall" onclick="navPick(\'curriculum\')">View curriculum</button></div>' +
-        '</div>' +
+        (nxt ?
+          '<div style="flex:1;min-width:180px;border:1px solid var(--border);border-radius:12px;padding:14px">' +
+            '<div class="ov-h" style="margin-bottom:8px">Next up</div>' +
+            '<b style="font-size:14px;display:block;margin-bottom:6px">' + escHtml(nxt.topic) + '</b><small style="color:var(--muted);font-size:12px">Week ' + escHtml(nxt.week) + (nxt.day ? ' · ' + escHtml(nxt.day) : '') + '</small>' +
+            '<div style="margin-top:12px"><button class="ov-viewall" onclick="navPick(\'curriculum\')">View curriculum</button></div>' +
+          '</div>'
+        : '') +
       '</div>';
   }
 
