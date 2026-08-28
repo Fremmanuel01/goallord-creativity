@@ -63,6 +63,22 @@
 
   /* ── TABS ── */
   .tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+  /* Grouped nav dropdowns (Learn ▾ / More ▾) */
+  .navgroup { position: relative; display: inline-flex; }
+  .navgroup .caret { font-size: 10px; opacity: 0.7; margin-left: 3px; }
+  .navgroup-menu {
+    position: absolute; top: 100%; left: 0; margin-top: 4px; min-width: 190px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 6px; display: none; flex-direction: column; gap: 2px; z-index: 60;
+    box-shadow: 0 12px 34px rgba(0,0,0,0.45);
+  }
+  .navgroup.open .navgroup-menu { display: flex; }
+  .navgroup-menu button {
+    text-align: left; background: none; border: none; color: var(--text);
+    padding: 9px 12px; border-radius: 7px; font-size: 14px; cursor: pointer; font-family: inherit;
+  }
+  .navgroup-menu button:hover { background: rgba(255,255,255,0.05); }
+  .navgroup-menu button.active { color: var(--orange); font-weight: 600; }
   .tab { padding: 10px 20px; font-size: 15px; font-weight: 600; color: var(--muted); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: color 0.2s; margin-bottom: -1px; }
   .tab:hover { color: var(--text); }
   .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
@@ -455,18 +471,29 @@
     <p id="pageSubtitle" style="color:var(--muted);font-size:15px;">Loading your data…</p>
   </div>
 
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('overview')">Overview</button>
-    <button class="tab" onclick="switchTab('attendance')">Attendance</button>
-    <button class="tab" onclick="switchTab('payments')">Payments</button>
-    <button class="tab" onclick="switchTab('curriculum')">Curriculum</button>
-    <button class="tab" onclick="switchTab('materials')">Materials</button>
-    <button class="tab" onclick="switchTab('assignments')">Assignments</button>
-    <button class="tab" onclick="switchTab('flashcards')">Flashcards</button>
-    <button class="tab" onclick="switchTab('lectures')">Lectures</button>
-    <button class="tab" onclick="switchTab('notifications')">Notifications</button>
-    <button class="tab" onclick="switchTab('messages')">Messages<span id="msgTabBadge" style="display:none;margin-left:6px;background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;"></span></button>
-    <button class="tab" onclick="switchTab('profile')">Profile</button>
+  <!-- Grouped nav: Home · Learn ▾ · Messages · More ▾ (Classmates lands with Stage B) -->
+  <div class="tabs" id="topNav">
+    <button class="tab nav-top active" data-nav="overview" onclick="navPick('overview')">Home</button>
+    <div class="navgroup" data-group="learn">
+      <button class="tab nav-top navgroup-btn" onclick="toggleNavGroup(event,'learn')">Learn <span class="caret">▾</span></button>
+      <div class="navgroup-menu" id="navmenu-learn">
+        <button data-nav="lectures" onclick="navPick('lectures')">Lectures</button>
+        <button data-nav="curriculum" onclick="navPick('curriculum')">Curriculum</button>
+        <button data-nav="materials" onclick="navPick('materials')">Materials</button>
+        <button data-nav="assignments" onclick="navPick('assignments')">Assignments</button>
+        <button data-nav="flashcards" onclick="navPick('flashcards')">Flashcards</button>
+      </div>
+    </div>
+    <button class="tab nav-top" data-nav="messages" onclick="navPick('messages')">Messages<span id="msgTabBadge" style="display:none;margin-left:6px;background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;"></span></button>
+    <div class="navgroup" data-group="more">
+      <button class="tab nav-top navgroup-btn" onclick="toggleNavGroup(event,'more')">More <span class="caret">▾</span></button>
+      <div class="navgroup-menu" id="navmenu-more">
+        <button data-nav="attendance" onclick="navPick('attendance')">Attendance</button>
+        <button data-nav="payments" onclick="navPick('payments')">Payments</button>
+        <button data-nav="notifications" onclick="navPick('notifications')">Notifications</button>
+        <button data-nav="profile" onclick="navPick('profile')">Profile</button>
+      </div>
+    </div>
   </div>
 
   <!-- ── OVERVIEW TAB ── -->
@@ -966,9 +993,7 @@
     ALL_TABS.forEach(t => {
       document.getElementById('tab-' + t).style.display = t === tab ? '' : 'none';
     });
-    document.querySelectorAll('.tab').forEach((btn, i) => {
-      btn.classList.toggle('active', ALL_TABS[i] === tab);
-    });
+    setTopNavActive(tab);
     if (tab === 'curriculum'  && !curriculumLoaded)  loadCurriculumTab();
     if (tab === 'materials'   && !materialsLoaded)   loadMaterials();
     if (tab === 'assignments' && !assignmentsLoaded) loadAssignments();
@@ -979,6 +1004,41 @@
     if (tab === 'profile') loadProfile();
     if (tab === 'messages'  && !messagesLoaded)  initStudentChat();
   }
+
+  // ── Grouped top-nav (Home · Learn ▾ · Messages · More ▾) ──────
+  const LEARN_TABS = ['lectures', 'curriculum', 'materials', 'assignments', 'flashcards'];
+  const MORE_TABS  = ['attendance', 'payments', 'notifications', 'profile'];
+  function setTopNavActive(tab) {
+    document.querySelectorAll('#topNav .nav-top').forEach(function (btn) {
+      const nav = btn.getAttribute('data-nav');
+      btn.classList.toggle('active', !!nav && nav === tab);
+    });
+    const learnBtn = document.querySelector('.navgroup[data-group="learn"] .navgroup-btn');
+    const moreBtn  = document.querySelector('.navgroup[data-group="more"] .navgroup-btn');
+    if (learnBtn) learnBtn.classList.toggle('active', LEARN_TABS.indexOf(tab) !== -1);
+    if (moreBtn)  moreBtn.classList.toggle('active', MORE_TABS.indexOf(tab) !== -1);
+    document.querySelectorAll('.navgroup-menu button').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-nav') === tab);
+    });
+  }
+  function closeNavGroups() {
+    document.querySelectorAll('.navgroup.open').forEach(function (el) { el.classList.remove('open'); });
+  }
+  function toggleNavGroup(ev, g) {
+    ev.stopPropagation();
+    const el = document.querySelector('.navgroup[data-group="' + g + '"]');
+    const willOpen = !el.classList.contains('open');
+    closeNavGroups();
+    if (willOpen) el.classList.add('open');
+  }
+  function navPick(tab) {
+    closeNavGroups();
+    switchTab(tab);
+    try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { window.scrollTo(0, 0); }
+  }
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.navgroup')) closeNavGroups();
+  });
 
   let messagesLoaded = false;
   function initStudentChat() {
