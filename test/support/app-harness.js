@@ -74,6 +74,14 @@ function buildApp(seed, opts = {}) {
   const sp = require.resolve(path.join(ROOT, 'lib/supabase.js'));
   require.cache[sp] = { id: sp, filename: sp, loaded: true, exports: fake };
 
+  // Mock ONLY the external Paystack boundary (the HTTP verify call). All of our
+  // payment business logic — amount checks, reference-reuse detection (which
+  // still queries the fake DB), enrolment — runs for real.
+  if (opts.paystack) {
+    const pp = require.resolve(path.join(ROOT, 'lib/paystack.js'));
+    require.cache[pp] = { id: pp, filename: pp, loaded: true, exports: opts.paystack };
+  }
+
   const { camelKeys } = require(path.join(ROOT, 'lib/utils'));
 
   const app = express();
@@ -142,7 +150,7 @@ function buildApp(seed, opts = {}) {
 
   // Public config (used by frontend pages)
   app.get('/api/config/public', (req, res) => {
-    res.json({ paystackPublicKey: '', bank: {}, bank2: {}, fees: { application: 20000, fullTuition: 300000, monthlyTuition: 100000 } });
+    res.json({ paystackPublicKey: 'pk_test_harness', bank: { name: 'Test Bank', number: '0000000000', accountName: 'Goallord' }, bank2: {}, fees: { application: 20000, fullTuition: 300000, monthlyTuition: 100000 } });
   });
 
   for (const [mount, mod] of ACADEMY_ROUTERS) {

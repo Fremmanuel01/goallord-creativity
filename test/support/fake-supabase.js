@@ -178,21 +178,30 @@ function createFakeSupabase(seed) {
       const arr = Array.isArray(this.payload) ? this.payload : [this.payload];
       const onConflict = (this.upsertOpts.onConflict || '').split(',').map((s) => s.trim()).filter(Boolean);
       const ignoreDuplicates = !!this.upsertOpts.ignoreDuplicates;
-      arr.forEach((doc) => {
+      const affected = arr.map((doc) => {
         let existing = null;
         if (onConflict.length) {
           existing = table(this.name).find((r) => onConflict.every((k) => r[k] === doc[k]));
         }
         if (existing) {
           if (!ignoreDuplicates) Object.assign(existing, doc);
-        } else {
-          const row = clone(doc);
-          if (row.id == null && this.name !== 'chat_participants') row.id = nextId(this.name);
-          if (row.created_at == null) row.created_at = nextTs();
-          table(this.name).push(row);
+          return existing;
         }
+        const row = clone(doc);
+        if (row.id == null && this.name !== 'chat_participants') row.id = nextId(this.name);
+        if (row.created_at == null) row.created_at = nextTs();
+        table(this.name).push(row);
+        return row;
       });
-      return { data: null, error: null };
+      // Real Supabase returns the affected row(s) when .select() is chained,
+      // honouring .single()/.maybeSingle().
+      if (!this._wantsSelect) return { data: null, error: null };
+      const out = applyEmbeds(affected, this.cols).map(clone);
+      if (this._single) {
+        if (out.length === 0) return this._maybe ? { data: null, error: null } : { data: null, error: { message: 'No rows found' } };
+        return { data: out[0], error: null };
+      }
+      return { data: out, error: null };
     }
 
     then(onF, onR) { return this._run().then(onF, onR); }

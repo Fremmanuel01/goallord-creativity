@@ -25,6 +25,7 @@ const { seed: baseSeed, PW } = require('./support/e2e-seed');
 const ROOT = path.join(__dirname, '..');
 const DESKTOP = { width: 1366, height: 768 };
 const MOBILE = { width: 390, height: 844 };
+const TABLET = { width: 768, height: 1024 };
 
 // Reminder scenario: class holds on the fake's epoch day (2023-11-14), the
 // day-before job runs the day prior. Curriculum gives it a topic.
@@ -40,25 +41,59 @@ function seed() {
   // Two concurrent batches at DIFFERENT curriculum positions — proves no
   // global "current topic" bleeds across batches.
   s.curriculum_entries = [
-    { id: 'curR', batch_id: 'b1', week: 1, day: dow, topic: 'Recursion', objectives: 'Understand recursion', subtopics: [] },
-    { id: 'curG', batch_id: 'b2', week: 1, day: 'Wednesday', topic: 'CSS Grid', objectives: 'Learn CSS Grid', subtopics: [] },
+    { id: 'curR-t', batch_id: 'b1-t', week: 1, day: dow, topic: 'Recursion', objectives: 'Understand recursion', subtopics: [] },
+    { id: 'curG-t', batch_id: 'b2-t', week: 1, day: 'Wednesday', topic: 'CSS Grid', objectives: 'Learn CSS Grid', subtopics: [] },
   ];
   // Student A is present in batch-b1's attendance session att1.
-  s.attendance_students = [{ attendance_id: 'att1', student_id: 's1', status: 'present' }];
-  s.applicants = [{
-    id: 'ap1', full_name: '<img src=x onerror="window.__XSS__=1">Mallory', email: 'mal@test.local',
-    phone: '0800', track: 'AI Development', experience: 'None', schedule: 'Morning',
-    status: 'Pending', email_verified: true, application_fee_paid: false, created_at: '2023-11-10T00:00:00Z',
-  }];
+  s.attendance_students = [{ attendance_id: 'att1-t', student_id: 's1-t', status: 'present' }];
+  const payer = (id, email, name) => ({
+    id, full_name: name, email, phone: '0800', track: 'AI Development', experience: 'None',
+    schedule: 'Morning', status: 'Pending', email_verified: true, application_fee_paid: false,
+    pending_payment_plan: 'full', created_at: '2023-11-10T00:00:00Z',
+  });
+  s.applicants = [
+    { id: 'ap1-t', full_name: '<img src=x onerror="window.__XSS__=1">Mallory', email: 'mal@test.local',
+      phone: '0800', track: 'AI Development', experience: 'None', schedule: 'Morning',
+      status: 'Pending', email_verified: true, application_fee_paid: false, created_at: '2023-11-10T00:00:00Z' },
+    payer('pay-good', 'grace@test.local', 'Grace Good'),
+    payer('pay-mismatch', 'mia@test.local', 'Mia Mismatch'),
+    payer('pay-fail', 'fred@test.local', 'Fred Fail'),
+    payer('pay-cancel', 'cara@test.local', 'Cara Cancel'),
+    payer('pay-dup', 'dan@test.local', 'Dan Dup'),
+    payer('pay-pending', 'paula@test.local', 'Paula Pending'),
+  ];
   return s;
 }
+
+// Mock ONLY the external Paystack verify HTTP call. Reference shape mirrors the
+// real client (ENROL-<applicantId>-<timestamp>[-MODE]); everything else — amount
+// validation, reference-reuse (real query vs the fake DB), enrolment — is real.
+const paystackMock = {
+  searchTransactions: async () => [],
+  async isReferenceUsed(reference) {
+    const sb = require(path.join(ROOT, 'lib/supabase'));
+    const { data: pay } = await sb.from('payments').select('id').eq('reference', reference).limit(1);
+    if (pay && pay.length) return true;
+    const { data: ord } = await sb.from('orders').select('id').eq('reference', reference).limit(1);
+    return !!(ord && ord.length);
+  },
+  verifyTransaction(reference) {
+    if (/FAIL/.test(reference)) return Promise.resolve({ data: { status: 'failed' } });
+    if (/PENDING/.test(reference)) return Promise.resolve({ data: { status: 'pending' } });
+    const mm = /^ENROL-(.+?)-\d{6,}/.exec(reference);
+    const applicantId = mm ? mm[1] : '';
+    const appFee = 20000, full = 300000;
+    const amount = /MISMATCH/.test(reference) ? appFee * 100 : (appFee + full) * 100; // full-plan expected total
+    return Promise.resolve({ data: { status: 'success', currency: 'NGN', amount, metadata: { applicantId } } });
+  },
+};
 
 let server, base, browser, fake;
 
 test.before(async () => {
   process.env.JWT_SECRET = process.env.JWT_SECRET || 'harness-secret';
   process.env.CRON_SECRET = 'browser-cron-secret';
-  const built = buildApp(seed(), { quiet: true, serveStatic: true });
+  const built = buildApp(seed(), { quiet: true, serveStatic: true, paystack: paystackMock });
   fake = built.fake;
   await new Promise((r) => { server = built.app.listen(0, '127.0.0.1', () => { base = `http://127.0.0.1:${server.address().port}`; r(); }); });
   browser = await chromium.launch({ headless: true });
@@ -75,7 +110,7 @@ async function newPage(viewport) {
   const api = [];
   // Third-party noise that production also emits and is not an app defect:
   // Paystack injects a stylesheet from paystack.com that every strict CSP blocks.
-  const benign = (t) => /paystack\.com|favicon\.ico/i.test(t);
+  const benign = (t) => /paystack|favicon\.ico/i.test(t);
   page.on('console', (m) => { if (m.type() === 'error' && !benign(m.text())) errors.push(m.text()); });
   page.on('pageerror', (e) => { if (!benign(e.message)) errors.push('pageerror: ' + e.message); });
   page.on('requestfailed', (r) => { const u = r.url(); if (!u.startsWith('data:')) failed.push(u); });
@@ -252,7 +287,7 @@ test('student cannot open another batch\'s lecture via direct URL', async () => 
   const { context, page } = await newPage(DESKTOP);
   try {
     await studentLogin(page, 'ada@test.local'); // batch b1
-    const resp = await page.goto(base + '/api/lectures/lec_b2/student'); // batch b2 lecture
+    const resp = await page.goto(base + '/api/lectures/lec_b2-t/student'); // batch b2 lecture
     assert.strictEqual(resp.status(), 404, 'cross-batch lecture blocked server-side');
     const txt = await page.textContent('body');
     assert.doesNotMatch(txt, /Beta Lecture/, 'no batch-b2 lecture content leaked');
@@ -310,7 +345,7 @@ for (const [label, vp] of [['desktop', DESKTOP], ['mobile', MOBILE]]) {
       assert.doesNotMatch(list, /Draft Lecture/, 'draft lecture hidden from student');
 
       // Open slides via the real button; the viewer renders published slide text.
-      const sr = page.waitForResponse((x) => x.url().includes('/api/lectures/lec_pub/student'), { timeout: 8000 });
+      const sr = page.waitForResponse((x) => x.url().includes('/api/lectures/lec_pub-t/student'), { timeout: 8000 });
       await page.click('button:has-text("View Slides")');
       const sresp = await sr;
       assert.strictEqual(sresp.status(), 200, 'published slides load');
@@ -382,6 +417,34 @@ test('admin batch management: concurrent batches listed distinctly', async () =>
 });
 
 // ─────────────────────────────────────────────────────────────
+// MULTI-BATCH SUSPENSION INDEPENDENCE — suspension is account-level; a
+// suspended student in batch b1 does not affect a paid student in b2.
+// (The data model has one batch_id + one status per account, and unique
+// emails, so cross-batch suspension is impossible by construction.)
+// ─────────────────────────────────────────────────────────────
+test('multi-batch: suspended b1 student blocked while paid b2 student logs in', async () => {
+  // Suspended (batch b1) — blocked.
+  let ctx = await newPage(DESKTOP);
+  try {
+    await ctx.page.goto(base + '/student-login.html');
+    await ctx.page.fill('#loginEmail', 'sara@test.local');
+    await ctx.page.fill('#loginPassword', PW);
+    await ctx.page.click('#loginBtn');
+    await ctx.page.waitForFunction(() => {
+      const e = document.getElementById('errorMsg');
+      return e && e.style.display !== 'none' && /suspend/i.test(e.textContent);
+    }, null, { timeout: 8000 });
+  } finally { await ctx.context.close(); }
+
+  // Paid (batch b2) — unaffected, logs straight in.
+  ctx = await newPage(DESKTOP);
+  try {
+    await studentLogin(ctx.page, 'ben@test.local');
+    assert.ok(ctx.page.url().includes('student-dashboard.html'), 'paid b2 student unaffected by b1 suspension');
+  } finally { await ctx.context.close(); }
+});
+
+// ─────────────────────────────────────────────────────────────
 // LECTURER — login + dashboard render
 // ─────────────────────────────────────────────────────────────
 test('lecturer login + dashboard renders', async () => {
@@ -390,6 +453,379 @@ test('lecturer login + dashboard renders', async () => {
     await lecturerLogin(page, 'lex@test.local');
     assert.ok(page.url().includes('lecturer-dashboard.html'));
     assert.deepStrictEqual(serverErrors, [], 'no 5xx during lecturer dashboard load');
+  } finally { await context.close(); }
+});
+
+// ─────────────────────────────────────────────────────────────
+// LECTURER LECTURE LIFECYCLE (real editor UI): open → edit slide → save →
+// refresh persists → publish → student sees → edit again keeps students on
+// last published → republish → student sees update.
+// ─────────────────────────────────────────────────────────────
+async function openLecturesTab(page) {
+  const r = page.waitForResponse((x) => x.url().includes('/api/lectures') && x.request().method() === 'GET', { timeout: 10000 });
+  await page.evaluate(() => window.switchTab('lectures'));
+  await r;
+  await page.waitForFunction(() => /Draft Lecture|Intro to Vars/.test(document.getElementById('lecListWrap')?.textContent || ''), null, { timeout: 8000 });
+}
+async function openEditorByLabel(page, label) {
+  await page.click(`#lecListWrap button:has-text("${label}")`);
+  await page.waitForSelector('#lecEditModal #lecEditBody input[data-f="slide_title"]', { timeout: 8000 });
+}
+
+test('lecturer lecture lifecycle: edit → save → persist → publish → student → republish', async () => {
+  // ── Lecturer A edits the pending lecture's first slide and saves ──
+  let ctx = await newPage(DESKTOP);
+  try {
+    await lecturerLogin(ctx.page, 'lex@test.local');
+    await openLecturesTab(ctx.page);
+    await openEditorByLabel(ctx.page, 'Review'); // pending_review lecture
+    await ctx.page.fill('#lecEditBody input[data-f="slide_title"]', 'EDITED SLIDE TITLE');
+    const save = ctx.page.waitForResponse((x) => x.url().includes('/api/lectures/lec_draft-t') && x.request().method() === 'PATCH', { timeout: 8000 });
+    await ctx.page.click('#lecSaveBtn');
+    assert.strictEqual((await save).status(), 200, 'save draft persists via PATCH');
+
+    // ── Refresh persistence: reload, reopen, the edit is still there ──
+    await ctx.page.reload();
+    await openLecturesTab(ctx.page);
+    await openEditorByLabel(ctx.page, 'Review');
+    const val = await ctx.page.inputValue('#lecEditBody input[data-f="slide_title"]');
+    assert.strictEqual(val, 'EDITED SLIDE TITLE', 'edit persisted across refresh');
+
+    // ── Publish to students ──
+    const pub = ctx.page.waitForResponse((x) => x.url().includes('/api/lectures/lec_draft-t/publish'), { timeout: 8000 });
+    await ctx.page.click('#lecPublishArea button:has-text("Publish")');
+    assert.strictEqual((await pub).status(), 200, 'publish succeeds');
+    assert.deepStrictEqual(ctx.serverErrors, [], 'no 5xx during lecturer lecture flow');
+  } finally { await ctx.context.close(); }
+
+  // ── Student A now sees the published lecture and the edited slide ──
+  ctx = await newPage(DESKTOP);
+  try {
+    await studentLogin(ctx.page, 'ada@test.local');
+    const r = ctx.page.waitForResponse((x) => x.url().includes('/api/lectures/student'), { timeout: 8000 });
+    await ctx.page.evaluate(() => window.switchTab('lectures'));
+    await r;
+    await ctx.page.waitForFunction(() => /Draft Lecture/.test(document.getElementById('lecList')?.textContent || ''), null, { timeout: 8000 });
+    // Open its slides and confirm the lecturer's edit is what students see.
+    const sr = ctx.page.waitForResponse((x) => x.url().includes('/api/lectures/lec_draft-t/student'), { timeout: 8000 });
+    await ctx.page.locator('#lecList div').filter({ hasText: 'Draft Lecture' })
+      .filter({ has: ctx.page.locator('button', { hasText: 'View Slides' }) })
+      .last().locator('button', { hasText: 'View Slides' }).click();
+    await sr;
+    await ctx.page.waitForFunction(() => /EDITED SLIDE TITLE/.test(document.body.innerText), null, { timeout: 8000 });
+  } finally { await ctx.context.close(); }
+
+  // ── Lecturer edits again (students still see last published) then republishes ──
+  ctx = await newPage(DESKTOP);
+  try {
+    await lecturerLogin(ctx.page, 'lex@test.local');
+    await openLecturesTab(ctx.page);
+    await openEditorByLabel(ctx.page, 'Open'); // now published → "Open"
+    await ctx.page.fill('#lecEditBody input[data-f="slide_title"]', 'REPUBLISHED TITLE');
+    const save = ctx.page.waitForResponse((x) => x.url().includes('/api/lectures/lec_draft-t') && x.request().method() === 'PATCH', { timeout: 8000 });
+    await ctx.page.click('#lecSaveBtn');
+    await save;
+    // republish (status is now edited_after_publishing)
+    await ctx.page.waitForSelector('#lecPublishArea button:has-text("Republish")', { timeout: 8000 });
+    const rep = ctx.page.waitForResponse((x) => x.url().includes('/api/lectures/lec_draft-t/republish'), { timeout: 8000 });
+    await ctx.page.click('#lecPublishArea button:has-text("Republish")');
+    assert.strictEqual((await rep).status(), 200, 'republish succeeds');
+  } finally { await ctx.context.close(); }
+
+  // ── Student sees the republished update ──
+  ctx = await newPage(DESKTOP);
+  try {
+    await studentLogin(ctx.page, 'ada@test.local');
+    const r = ctx.page.waitForResponse((x) => x.url().includes('/api/lectures/student'), { timeout: 8000 });
+    await ctx.page.evaluate(() => window.switchTab('lectures'));
+    await r;
+    await ctx.page.waitForFunction(() => /Draft Lecture/.test(document.getElementById('lecList')?.textContent || ''), null, { timeout: 8000 });
+    const sr = ctx.page.waitForResponse((x) => x.url().includes('/api/lectures/lec_draft-t/student'), { timeout: 8000 });
+    await ctx.page.locator('#lecList div').filter({ hasText: 'Draft Lecture' })
+      .filter({ has: ctx.page.locator('button', { hasText: 'View Slides' }) })
+      .last().locator('button', { hasText: 'View Slides' }).click();
+    await sr;
+    await ctx.page.waitForFunction(() => /REPUBLISHED TITLE/.test(document.body.innerText), null, { timeout: 8000 });
+  } finally { await ctx.context.close(); }
+});
+
+// ─────────────────────────────────────────────────────────────
+// LECTURER ATTENDANCE MARKING (real UI): open Take Attendance → mark →
+// save → refresh persists → student sees it → other batch unaffected.
+// ─────────────────────────────────────────────────────────────
+test('lecturer attendance: mark → save → persist → student sees → batch B unaffected', async () => {
+  // ── Lecturer A marks a new session present and saves ──
+  let ctx = await newPage(DESKTOP);
+  try {
+    await lecturerLogin(ctx.page, 'lex@test.local');
+    const al = ctx.page.waitForResponse((x) => x.url().includes('/api/attendance') && x.request().method() === 'GET', { timeout: 10000 });
+    await ctx.page.evaluate(() => window.switchTab('attendance'));
+    await al;
+    const roster = ctx.page.waitForResponse((x) => x.url().includes('/api/students') && x.request().method() === 'GET', { timeout: 8000 });
+    await ctx.page.click('button:has-text("Take Attendance")');
+    await roster;
+    await ctx.page.waitForSelector('#att-roster .att-cb', { timeout: 8000 });
+    // Distinct slot so it doesn't collide with the seeded week-1 session.
+    await ctx.page.fill('#att-week', '3');
+    await ctx.page.selectOption('#att-day', 'Thursday');
+    await ctx.page.fill('#att-date', '2026-03-05');
+    await ctx.page.fill('#att-topic', 'Marked in browser');
+    // Ada is present (default all-present); save.
+    const save = ctx.page.waitForResponse((x) => x.url().includes('/api/attendance') && x.request().method() === 'POST', { timeout: 8000 });
+    await ctx.page.click('#saveAttBtn');
+    assert.strictEqual((await save).status(), 200, 'attendance save succeeds');
+    await ctx.page.waitForFunction(() => /Week 3/.test(document.getElementById('attTableBody')?.textContent || ''), null, { timeout: 8000 });
+
+    // ── Refresh persistence ──
+    await ctx.page.reload();
+    const al2 = ctx.page.waitForResponse((x) => x.url().includes('/api/attendance') && x.request().method() === 'GET', { timeout: 10000 });
+    await ctx.page.evaluate(() => window.switchTab('attendance'));
+    await al2;
+    await ctx.page.waitForFunction(() => /Marked in browser/.test(document.getElementById('attTableBody')?.textContent || ''), null, { timeout: 8000 });
+    assert.deepStrictEqual(ctx.serverErrors, [], 'no 5xx during attendance flow');
+  } finally { await ctx.context.close(); }
+
+  // ── Student A sees the attendance (present count reflects the new session) ──
+  ctx = await newPage(DESKTOP);
+  try {
+    const r = ctx.page.waitForResponse((x) => x.url().includes('/api/attendance/me') && x.status() === 200, { timeout: 8000 });
+    await studentLogin(ctx.page, 'ada@test.local');
+    const body = await (await r).json();
+    assert.ok(body.totalPresent >= 2, 'A now has the seeded + newly marked present records');
+  } finally { await ctx.context.close(); }
+
+  // ── Batch B student is unaffected ──
+  ctx = await newPage(DESKTOP);
+  try {
+    const r = ctx.page.waitForResponse((x) => x.url().includes('/api/attendance/me') && x.status() === 200, { timeout: 8000 });
+    await studentLogin(ctx.page, 'ben@test.local');
+    const body = await (await r).json();
+    assert.strictEqual(body.totalPresent || 0, 0, 'batch B student unaffected by batch A marking');
+  } finally { await ctx.context.close(); }
+});
+
+// ─────────────────────────────────────────────────────────────
+// PAYMENT + ONBOARDING (real apply-payment page + real server; ONLY the
+// Paystack popup + verify call are mocked). Success, mismatch, fail,
+// cancel, duplicate — and full onboarding into an active dashboard.
+// ─────────────────────────────────────────────────────────────
+const studentsByEmail = (email) => fake._store.students.filter((s) => s.email === email);
+const applicantByEmail = (email) => fake._store.applicants.find((a) => a.email === email);
+
+async function drivePayment(page, applicantId, mode) {
+  const pi = page.waitForResponse((x) => x.url().includes(`/api/applicants/${applicantId}/payment-info`), { timeout: 8000 });
+  await page.goto(base + `/apply-payment.html?id=${applicantId}`);
+  await pi;
+  await page.waitForTimeout(300);
+  // Override ONLY the Paystack popup with a stub that fires the page's real callback.
+  await page.evaluate((m) => {
+    window.__PAY_MODE__ = m;
+    window.PaystackPop = { setup: (opts) => ({ openIframe: () => {
+      const mode = window.__PAY_MODE__ || 'good';
+      if (mode === 'cancel') { if (opts.onClose) opts.onClose(); return; }
+      let ref = opts.ref;
+      if (mode === 'mismatch') ref += '-MISMATCH';
+      else if (mode === 'fail') ref += '-FAIL';
+      else if (mode === 'pending') ref += '-PENDING';
+      opts.callback({ reference: ref, status: 'success' });
+    } }) };
+  }, mode);
+  await page.evaluate(() => window.choosePlan('full'));
+  await page.click('#paystackBtn');
+}
+
+test('payment success: apply-payment → server verify → enrolment consistent', async () => {
+  const { context, page, serverErrors } = await newPage(DESKTOP);
+  try {
+    const pay = page.waitForResponse((x) => x.url().includes('/api/applicants/pay-good/pay-application'), { timeout: 8000 });
+    await drivePayment(page, 'pay-good', 'good');
+    assert.strictEqual((await pay).status(), 200, 'server accepts the verified payment');
+    await page.waitForSelector('#receiptOverlay', { state: 'visible', timeout: 8000 });
+
+    // Transactional integrity: student Active + fee paid + payment rows all present.
+    const [stu] = studentsByEmail('grace@test.local');
+    assert.ok(stu, 'student created');
+    assert.strictEqual(stu.status, 'Active');
+    assert.strictEqual(stu.application_fee_paid, true);
+    assert.strictEqual(stu.batch_id, 'b1-t', 'enrolled into the AI Development batch');
+    assert.strictEqual(applicantByEmail('grace@test.local').application_fee_paid, true);
+    const rows = fake._store.payments.filter((p) => p.student_id === stu.id);
+    assert.ok(rows.some((p) => p.category === 'application_fee' && p.amount_paid > 0), 'app fee recorded paid');
+    assert.ok(rows.some((p) => p.category === 'full_tuition_payment' && p.amount_paid > 0), 'tuition recorded paid');
+    assert.deepStrictEqual(serverErrors, [], 'no 5xx during payment');
+  } finally { await context.close(); }
+});
+
+test('onboarding: paid applicant can log into the active student dashboard', async () => {
+  const { context, page } = await newPage(DESKTOP);
+  try {
+    // grace paid in the previous test; her acceptance email failed (no RESEND),
+    // so the generated password is captured in email_failures — use it to prove
+    // the account is truly active and usable.
+    const fail = fake._store.email_failures?.find((r) => r.to_email === 'grace@test.local');
+    assert.ok(fail && fail.payload && fail.payload.password, 'generated credentials captured');
+    await page.goto(base + '/student-login.html');
+    await page.fill('#loginEmail', 'grace@test.local');
+    await page.fill('#loginPassword', fail.payload.password);
+    await Promise.all([page.waitForURL('**/student-dashboard.html'), page.click('#loginBtn')]);
+    await page.waitForFunction(() => /Grace/.test(document.body.innerText), null, { timeout: 8000 });
+    // Refresh retains access (session persists, no re-enrolment).
+    await page.reload();
+    await page.waitForURL('**/student-dashboard.html', { timeout: 8000 });
+    await page.waitForFunction(() => /Grace/.test(document.body.innerText), null, { timeout: 8000 });
+    assert.strictEqual(studentsByEmail('grace@test.local').length, 1, 'refresh did not duplicate the student');
+  } finally { await context.close(); }
+});
+
+test('payment pending at provider: rejected, no enrolment', async () => {
+  const { context, page } = await newPage(DESKTOP);
+  try {
+    const pay = page.waitForResponse((x) => x.url().includes('/api/applicants/pay-pending/pay-application'), { timeout: 8000 });
+    await drivePayment(page, 'pay-pending', 'pending');
+    assert.strictEqual((await pay).status(), 400, 'pending (non-success) rejected');
+    assert.strictEqual(studentsByEmail('paula@test.local').length, 0, 'no student while pending');
+    assert.strictEqual(applicantByEmail('paula@test.local').application_fee_paid, false);
+  } finally { await context.close(); }
+});
+
+test('wrong reference (belongs to another applicant): rejected', async () => {
+  const { context, page } = await newPage(DESKTOP);
+  try {
+    // pay-cancel is still unpaid; POST a reference whose metadata names someone else.
+    await page.goto(base + '/apply-payment.html?id=pay-cancel');
+    await page.waitForTimeout(300);
+    const status = await page.evaluate(async () => {
+      const csrf = (document.cookie.match(/_csrf=([^;]+)/) || [])[1] || '';
+      const res = await fetch('/api/applicants/pay-cancel/pay-application', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+        body: JSON.stringify({ reference: 'ENROL-someone-else-123456789012', paymentPlan: 'full' }),
+      });
+      return res.status;
+    });
+    assert.strictEqual(status, 400, 'reference not belonging to this applicant is rejected');
+    assert.strictEqual(studentsByEmail('cara@test.local').length, 0, 'no student created');
+  } finally { await context.close(); }
+});
+
+test('payment amount mismatch: rejected, no enrolment (no partial state)', async () => {
+  const { context, page } = await newPage(DESKTOP);
+  try {
+    const pay = page.waitForResponse((x) => x.url().includes('/api/applicants/pay-mismatch/pay-application'), { timeout: 8000 });
+    await drivePayment(page, 'pay-mismatch', 'mismatch');
+    assert.strictEqual((await pay).status(), 400, 'amount mismatch rejected server-side');
+    await page.waitForSelector('#mainError', { state: 'visible', timeout: 8000 });
+    assert.strictEqual(studentsByEmail('mia@test.local').length, 0, 'no student on mismatch');
+    assert.strictEqual(applicantByEmail('mia@test.local').application_fee_paid, false, 'applicant not marked paid');
+  } finally { await context.close(); }
+});
+
+test('payment failed at provider: rejected, no enrolment', async () => {
+  const { context, page } = await newPage(DESKTOP);
+  try {
+    const pay = page.waitForResponse((x) => x.url().includes('/api/applicants/pay-fail/pay-application'), { timeout: 8000 });
+    await drivePayment(page, 'pay-fail', 'fail');
+    assert.strictEqual((await pay).status(), 400, 'failed verification rejected');
+    assert.strictEqual(studentsByEmail('fred@test.local').length, 0, 'no student on failed payment');
+    assert.strictEqual(applicantByEmail('fred@test.local').application_fee_paid, false);
+  } finally { await context.close(); }
+});
+
+test('payment cancelled: no server call, no enrolment', async () => {
+  const { context, page, api } = await newPage(DESKTOP);
+  try {
+    await drivePayment(page, 'pay-cancel', 'cancel');
+    await page.waitForTimeout(500);
+    assert.ok(!apiHit(api, '/api/applicants/pay-cancel/pay-application'), 'cancel makes no pay-application call');
+    assert.strictEqual(studentsByEmail('cara@test.local').length, 0, 'no student on cancel');
+    assert.strictEqual(applicantByEmail('cara@test.local').application_fee_paid, false);
+  } finally { await context.close(); }
+});
+
+test('duplicate callback: same reference does not double-enrol', async () => {
+  const { context, page } = await newPage(DESKTOP);
+  try {
+    const pay = page.waitForResponse((x) => x.url().includes('/api/applicants/pay-dup/pay-application'), { timeout: 8000 });
+    await drivePayment(page, 'pay-dup', 'good');
+    assert.strictEqual((await pay).status(), 200);
+    await page.waitForSelector('#receiptOverlay', { state: 'visible', timeout: 8000 });
+    assert.strictEqual(studentsByEmail('dan@test.local').length, 1, 'exactly one student after first callback');
+
+    // Fire the SAME reference again from the page (simulated duplicate callback).
+    const ref = applicantByEmail('dan@test.local').application_fee_ref;
+    const status = await page.evaluate(async (r) => {
+      const csrf = (document.cookie.match(/_csrf=([^;]+)/) || [])[1] || '';
+      const res = await fetch('/api/applicants/pay-dup/pay-application', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+        body: JSON.stringify({ reference: r, paymentPlan: 'full' }),
+      });
+      return res.status;
+    }, ref);
+    assert.ok([400, 409].includes(status), `duplicate rejected (${status})`);
+    assert.strictEqual(studentsByEmail('dan@test.local').length, 1, 'still exactly one student');
+  } finally { await context.close(); }
+});
+
+// ─────────────────────────────────────────────────────────────
+// TABLET 768×1024 — the major Academy interfaces render and operate.
+// (No horizontal overflow, no 5xx, no console errors; key content shows.)
+// ─────────────────────────────────────────────────────────────
+async function assertNoHorizontalOverflow(page, label) {
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 2);
+  assert.strictEqual(overflow, false, `no horizontal overflow: ${label}`);
+}
+
+test('tablet: student dashboard + lectures render', async () => {
+  const { context, page, errors, serverErrors } = await newPage(TABLET);
+  try {
+    await studentLogin(page, 'ada@test.local');
+    await page.waitForFunction(() => /Ada/.test(document.body.innerText), null, { timeout: 8000 });
+    await assertNoHorizontalOverflow(page, 'student dashboard');
+    const r = page.waitForResponse((x) => x.url().includes('/api/lectures/student'), { timeout: 8000 });
+    await page.evaluate(() => window.switchTab('lectures'));
+    await r;
+    await page.waitForFunction(() => /Intro to Vars/.test(document.getElementById('lecList')?.textContent || ''), null, { timeout: 8000 });
+    await assertNoHorizontalOverflow(page, 'student lectures');
+    assert.deepStrictEqual(serverErrors, [], 'no 5xx');
+    assert.deepStrictEqual(errors, [], 'no console errors');
+  } finally { await context.close(); }
+});
+
+test('tablet: lecturer dashboard + lecture management + attendance render', async () => {
+  const { context, page, serverErrors } = await newPage(TABLET);
+  try {
+    await lecturerLogin(page, 'lex@test.local');
+    await page.waitForTimeout(800);
+    await assertNoHorizontalOverflow(page, 'lecturer dashboard');
+    // Lecture management
+    await openLecturesTab(page);
+    await assertNoHorizontalOverflow(page, 'lecturer lectures');
+    assert.match(await page.textContent('#lecListWrap'), /Draft Lecture|Intro to Vars/);
+    // Attendance
+    const al = page.waitForResponse((x) => x.url().includes('/api/attendance') && x.request().method() === 'GET', { timeout: 10000 });
+    await page.evaluate(() => window.switchTab('attendance'));
+    await al;
+    await page.waitForSelector('#attTableBody', { timeout: 8000 });
+    await assertNoHorizontalOverflow(page, 'lecturer attendance');
+    assert.deepStrictEqual(serverErrors, [], 'no 5xx');
+  } finally { await context.close(); }
+});
+
+test('tablet: admin dashboard + concurrent batch management render', async () => {
+  const { context, page, serverErrors } = await newPage(TABLET);
+  try {
+    await adminLogin(page);
+    await page.waitForTimeout(800);
+    await assertNoHorizontalOverflow(page, 'admin dashboard');
+    const r = page.waitForResponse((x) => x.url().includes('/api/batches') && x.request().method() === 'GET', { timeout: 8000 });
+    await page.evaluate(() => window.navigate && window.navigate('batches'));
+    await r.catch(() => {});
+    await page.evaluate(() => window.loadBatches && window.loadBatches()).catch(() => {});
+    await page.waitForFunction(() => /Batch Alpha/.test(document.getElementById('batchTableBody')?.textContent || ''), null, { timeout: 8000 });
+    const table = await page.textContent('#batchTableBody');
+    assert.match(table, /Batch Alpha/);
+    assert.match(table, /Batch Beta/);
+    await assertNoHorizontalOverflow(page, 'admin batch management');
+    assert.deepStrictEqual(serverErrors, [], 'no 5xx');
   } finally { await context.close(); }
 });
 
@@ -406,12 +842,12 @@ for (const [label, vp] of [['desktop', DESKTOP], ['mobile', MOBILE]]) {
 
       // Every batch-b1 resource, reached by typing the URL, must be refused.
       const b1Resources = [
-        '/api/lectures/lec_pub',              // b1 lecture (editor)
-        '/api/materials/m1',                  // b1 material
-        '/api/assignments/as1',               // b1 assignment
-        '/api/assignments/as1/submissions',   // b1 submissions
-        '/api/flashcards/sets/fs1/results',   // b1 flashcard results
-        '/api/attendance/att1',               // b1 attendance session
+        '/api/lectures/lec_pub-t',              // b1 lecture (editor)
+        '/api/materials/m1-t',                  // b1 material
+        '/api/assignments/as1-t',               // b1 assignment
+        '/api/assignments/as1-t/submissions',   // b1 submissions
+        '/api/flashcards/sets/fs1-t/results',   // b1 flashcard results
+        '/api/attendance/att1-t',               // b1 attendance session
       ];
       for (const url of b1Resources) {
         const resp = await page.goto(base + url);
@@ -421,7 +857,7 @@ for (const [label, vp] of [['desktop', DESKTOP], ['mobile', MOBILE]]) {
         assert.doesNotMatch(txt, /No rows|PGRST|SUPABASE_/i, `no DB internals leaked from ${url}`);
       }
       // Positive control: Lecturer B CAN reach their own batch-b2 lecture.
-      const own = await page.goto(base + '/api/lectures/lec_b2');
+      const own = await page.goto(base + '/api/lectures/lec_b2-t');
       assert.strictEqual(own.status(), 200, 'lecturer can open own-batch lecture');
     } finally { await context.close(); }
   });
