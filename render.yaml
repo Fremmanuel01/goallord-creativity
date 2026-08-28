@@ -4,7 +4,10 @@ services:
     runtime: node
     plan: free
     region: frankfurt
-    buildCommand: npm install --include=dev && npm run build:css
+    # Skip Playwright's ~150MB browser download in the production build — the
+    # E2E browser tests are dev-only (devs run `npx playwright install`); the
+    # server never launches Playwright. purgecss (also a devDep) still installs.
+    buildCommand: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --include=dev && npm run build:css
     startCommand: node server.js
     healthCheckPath: /
     autoDeploy: true
