@@ -287,6 +287,37 @@ test('admin flow: login + list applicants/students/batches; unrestricted lecture
 });
 
 // ─────────────────────────────────────────────────────────────
+// MANY ACTIVE BATCHES PER PROGRAM — creating/activating a batch must NOT
+// deactivate its same-program siblings. One student still = one batch.
+// ─────────────────────────────────────────────────────────────
+test('platform supports many active batches per program (no auto-deactivation)', async () => {
+  const { c } = await loginAdmin();
+  const mk = (name, number) => c.post('/api/batches', { name, number, track: 'Web Development', isActive: true, classDays: ['Wednesday'], totalWeeks: 12 });
+  const r1 = await mk('WebDev Morning', 101);
+  const r2 = await mk('WebDev Midday', 102);
+  const r3 = await mk('WebDev Evening', 103);
+  assert.strictEqual(r1.status, 201);
+  assert.strictEqual(r2.status, 201);
+  assert.strictEqual(r3.status, 201);
+
+  // All three same-program batches stay active simultaneously.
+  const all = await c.get('/api/batches');
+  const mine = all.json.filter((b) => [101, 102, 103].includes(b.number));
+  assert.strictEqual(mine.length, 3);
+  assert.ok(mine.every((b) => b.isActive === true), 'all three WebDev batches remain active at once');
+  // The seeded AI Development + UI/UX batches are also still active → 5 active total.
+  assert.ok(all.json.filter((b) => b.isActive).length >= 5, 'pre-existing active batches untouched');
+
+  // Deactivating one leaves its siblings active.
+  await c.patch('/api/batches/' + r2.json.id, { isActive: false });
+  const after = await c.get('/api/batches');
+  const byNum = Object.fromEntries(after.json.map((b) => [b.number, b]));
+  assert.strictEqual(byNum[101].isActive, true);
+  assert.strictEqual(byNum[102].isActive, false);
+  assert.strictEqual(byNum[103].isActive, true, 'deactivating one batch does not touch its siblings');
+});
+
+// ─────────────────────────────────────────────────────────────
 // SECURITY 6 & 7 — cron + applicant enumeration
 // ─────────────────────────────────────────────────────────────
 test('SECURITY 6 — cron endpoints reject query-param secret; require header', async () => {

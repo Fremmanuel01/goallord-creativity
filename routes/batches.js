@@ -46,16 +46,10 @@ router.post('/', requireAuth, async (req, res) => {
     // Accept either, write to `notes`.
     const { name, number, track, classDays, isActive, startDate, endDate, totalWeeks, description, notes } = req.body;
 
-    // Active rule: one active batch per track. If creating an active batch,
-    // deactivate any other batch already active on this track first.
-    if (isActive === true && track) {
-      const peers = await batchesDb.findAllActive();
-      for (const b of peers) {
-        if (b.track === track) {
-          await batchesDb.update(b.id, { is_active: false });
-        }
-      }
-    }
+    // A program (track) may run MANY batches at once — Morning / Midday / Evening
+    // are all active simultaneously. Creating an active batch must NOT deactivate
+    // its siblings. (One student still belongs to exactly one batch via
+    // students.batch_id — that rule is not enforced by limiting active batches.)
 
     const doc = {
       name,
@@ -82,21 +76,9 @@ router.patch('/:id', requireAuth, async (req, res) => {
     // Accept either `description` (legacy) or `notes`; DB column is `notes`.
     const { name, number, track, classDays, isActive, startDate, endDate, totalWeeks, description, notes } = req.body;
 
-    // Active rule: one active batch per track. If activating, deactivate
-    // any sibling that is also active on the same track. Other tracks
-    // are untouched so cohorts can run concurrently.
-    if (isActive === true) {
-      const current = await batchesDb.findById(req.params.id);
-      const effectiveTrack = (track !== undefined ? track : current && current.track) || null;
-      if (effectiveTrack) {
-        const peers = await batchesDb.findAllActive();
-        for (const b of peers) {
-          if (b.id !== req.params.id && b.track === effectiveTrack) {
-            await batchesDb.update(b.id, { is_active: false });
-          }
-        }
-      }
-    }
+    // Activating a batch must NOT deactivate its same-program siblings: many
+    // batches of the same program run concurrently. Each batch's active state
+    // is independent.
 
     const update = {};
     if (name !== undefined)        update.name = name;

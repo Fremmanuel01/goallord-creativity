@@ -22,7 +22,10 @@ module.exports = {
     return data;
   },
 
-  // Returns the active batch for a specific track (one active per track is enforced)
+  // Returns ONE active batch for a track — used to auto-place a new student into
+  // a cohort of their program. A track may have several active batches; this
+  // returns the first. Admins can transfer the student afterwards. (This does
+  // NOT limit how many batches of a track may be active.)
   async findActiveByTrack(track) {
     if (!track) return null;
     const { data, error } = await supabase

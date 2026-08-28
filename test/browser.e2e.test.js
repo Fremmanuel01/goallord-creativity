@@ -43,6 +43,8 @@ function seed() {
   s.curriculum_entries = [
     { id: 'curR-t', batch_id: 'b1-t', week: 1, day: dow, topic: 'Recursion', objectives: 'Understand recursion', subtopics: [] },
     { id: 'curG-t', batch_id: 'b2-t', week: 1, day: 'Wednesday', topic: 'CSS Grid', objectives: 'Learn CSS Grid', subtopics: [] },
+    // Same program as b1, but its OWN curriculum position (independent progress).
+    { id: 'curP-t', batch_id: 'b3-t', week: 1, day: 'Wednesday', topic: 'Pointers', objectives: 'Learn pointers', subtopics: [] },
   ];
   // Student A is present in batch-b1's attendance session att1.
   s.attendance_students = [{ attendance_id: 'att1-t', student_id: 's1-t', status: 'present' }];
@@ -278,6 +280,20 @@ test('curriculum progress: each batch student sees only their own topic', async 
     assert.match(txt, /CSS Grid/, 'B sees own curriculum topic');
     assert.doesNotMatch(txt, /Recursion/, 'B must not see batch A topic');
   } finally { await ctx.context.close(); }
+
+  // Student C (b3, SAME program as A) → Pointers only. Same-program batches
+  // track independent curriculum positions.
+  ctx = await newPage(DESKTOP);
+  try {
+    await studentLogin(ctx.page, 'cody@test.local');
+    const r = ctx.page.waitForResponse((x) => x.url().includes('/api/curriculum/calendar'), { timeout: 8000 });
+    await ctx.page.evaluate(() => window.switchTab('curriculum'));
+    await r;
+    await ctx.page.waitForTimeout(300);
+    const txt = await ctx.page.textContent('#curriculumContent');
+    assert.match(txt, /Pointers/, 'C sees own batch topic');
+    assert.doesNotMatch(txt, /Recursion/, 'C (same program as A) must not see A\'s position');
+  } finally { await ctx.context.close(); }
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -412,6 +428,11 @@ test('admin batch management: concurrent batches listed distinctly', async () =>
     const table = await page.textContent('#batchTableBody');
     assert.match(table, /Batch Alpha/, 'first batch listed');
     assert.match(table, /Batch Beta/, 'second concurrent batch listed distinctly');
+    assert.match(table, /Batch Gamma/, 'third concurrent batch (same program as Alpha) listed');
+    // All three render the "Active" badge at once (Alpha + Gamma share the AI
+    // Development program), proving no single-active-per-program limit.
+    const activeBadges = (table.match(/Active/g) || []).length;
+    assert.ok(activeBadges >= 3, `>=3 active batches shown (got ${activeBadges})`);
     assert.deepStrictEqual(serverErrors, [], 'no 5xx on admin batch management');
   } finally { await context.close(); }
 });
@@ -453,6 +474,34 @@ test('lecturer login + dashboard renders', async () => {
     await lecturerLogin(page, 'lex@test.local');
     assert.ok(page.url().includes('lecturer-dashboard.html'));
     assert.deepStrictEqual(serverErrors, [], 'no 5xx during lecturer dashboard load');
+  } finally { await context.close(); }
+});
+
+// ─────────────────────────────────────────────────────────────
+// STUDENT TRANSFER (one student → one batch): reassigning a student who
+// already belongs to a batch requires an intentional-transfer confirm,
+// and results in exactly one batch_id (never a second membership).
+// ─────────────────────────────────────────────────────────────
+test('admin batch transfer: reassigning an enrolled student requires confirmation', async () => {
+  const { context, page } = await newPage(DESKTOP);
+  try {
+    await adminLogin(page);
+    const sl = page.waitForResponse((x) => x.url().includes('/api/students') && x.request().method() === 'GET', { timeout: 10000 });
+    await page.evaluate(() => window.navigate && window.navigate('students'));
+    await sl.catch(() => {});
+    await page.waitForSelector('select[data-student-id="s6-t"]', { timeout: 8000 });
+
+    // Changing an enrolled student's batch pops an intentional-transfer confirm.
+    let confirmText = '';
+    page.on('dialog', (d) => { confirmText = d.message(); d.accept(); });
+    const patch = page.waitForResponse((x) => x.url().includes('/api/students/s6-t') && x.request().method() === 'PATCH', { timeout: 8000 });
+    await page.selectOption('select[data-student-id="s6-t"]', 'b2-t');
+    const res = await patch;
+    assert.match(confirmText, /already in|one batch|transfer/i, 'admin was warned this is a transfer');
+    assert.strictEqual(res.status(), 200, 'transfer applied');
+    // Still exactly one batch on the student record (no second membership).
+    const stu = fake._store.students.find((s) => s.id === 's6-t');
+    assert.strictEqual(stu.batch_id, 'b2-t', 'student now has exactly one (new) batch');
   } finally { await context.close(); }
 });
 

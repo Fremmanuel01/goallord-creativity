@@ -25,23 +25,30 @@ function seed() {
     users: [
       { id: 'admin1-t', name: 'Test Admin', email: 'admin@test.local', password: HASH, role: 'admin', permissions: {} },
     ],
+    // Three batches active at once — b1 and b3 are the SAME program (AI
+    // Development), proving many active batches per program coexist.
     batches: [
       { id: 'b1-t', name: 'Batch Alpha', number: 1, track: 'AI Development', is_active: true, start_date: '2026-01-05' },
       { id: 'b2-t', name: 'Batch Beta', number: 2, track: 'UI/UX', is_active: true, start_date: '2026-01-05' },
+      { id: 'b3-t', name: 'Batch Gamma', number: 3, track: 'AI Development', is_active: true, start_date: '2026-01-05' },
     ],
     students: [
       { id: 's1-t', full_name: 'Ada Alpha', email: 'ada@test.local', password: HASH, batch_id: 'b1-t', track: 'AI Development', status: 'Active', application_fee_paid: true },
       { id: 's2-t', full_name: 'Ben Beta', email: 'ben@test.local', password: HASH, batch_id: 'b2-t', track: 'UI/UX', status: 'Active', application_fee_paid: true },
       { id: 's3-t', full_name: 'Unpaid Uma', email: 'uma@test.local', password: HASH, batch_id: 'b1-t', track: 'AI Development', status: 'Active', application_fee_paid: false },
       { id: 's4-t', full_name: 'Sara Suspended', email: 'sara@test.local', password: HASH, batch_id: 'b1-t', track: 'AI Development', status: 'Suspended', application_fee_paid: true },
+      { id: 's5-t', full_name: 'Cody Gamma', email: 'cody@test.local', password: HASH, batch_id: 'b3-t', track: 'AI Development', status: 'Active', application_fee_paid: true },
+      { id: 's6-t', full_name: 'Tim Transfer', email: 'tim@test.local', password: HASH, batch_id: 'b1-t', track: 'AI Development', status: 'Active', application_fee_paid: true },
     ],
     lecturers: [
       { id: 'L1-t', full_name: 'Lex Alpha', email: 'lex@test.local', password: HASH, specialization: 'AI', status: 'Active' },
       { id: 'L2-t', full_name: 'Lena Beta', email: 'lena@test.local', password: HASH, specialization: 'Design', status: 'Active' },
     ],
+    // L1 teaches both b1 and b3 (a lecturer may be assigned to more than one batch).
     lecturer_batches: [
       { lecturer_id: 'L1-t', batch_id: 'b1-t' },
       { lecturer_id: 'L2-t', batch_id: 'b2-t' },
+      { lecturer_id: 'L1-t', batch_id: 'b3-t' },
     ],
     curriculum_entries: [
       { id: 'cur1-t', batch_id: 'b1-t', week: 1, day: 'Wednesday', topic: 'Variables', description: 'Basics', objectives: 'Learn vars', resources: '', subtopics: '' },
