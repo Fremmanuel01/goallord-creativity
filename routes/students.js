@@ -99,6 +99,40 @@ router.get('/me', requireStudent, async (req, res) => {
   }
 });
 
+// ── GET /api/students/me/classmates - batch-scoped classmate list ─────
+// §19 isolation: ONLY students in the caller's own batch. §12 privacy: safe
+// public-facing fields only (never email/phone/payment/attendance/notes).
+router.get('/me/classmates', requireStudent, async (req, res) => {
+  try {
+    const me = await studentsDb.findById(req.student.id);
+    if (!me) return res.status(404).json({ error: 'Student not found' });
+    if (!me.batch_id) return res.json({ classmates: [], total: 0 });
+    const peers = await studentsDb.findByBatch(me.batch_id);
+    const classmates = peers
+      .filter(s => s.id !== me.id)
+      .map(s => ({ id: s.id, fullName: s.full_name, profilePicture: s.profile_picture || '', track: s.track || '' }));
+    res.json({ classmates, total: classmates.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── GET /api/students/me/lecturer - primary lecturer for the caller's batch ──
+// Safe fields only (name, specialization, photo). Powers the Next Class card.
+router.get('/me/lecturer', requireStudent, async (req, res) => {
+  try {
+    const me = await studentsDb.findById(req.student.id);
+    if (!me || !me.batch_id) return res.json({ lecturer: null });
+    const { data: links } = await supabase.from('lecturer_batches').select('lecturer_id').eq('batch_id', me.batch_id).limit(1);
+    if (!links || !links.length) return res.json({ lecturer: null });
+    const { data: lec } = await supabase.from('lecturers').select('*').eq('id', links[0].lecturer_id).maybeSingle();
+    if (!lec) return res.json({ lecturer: null });
+    res.json({ lecturer: { id: lec.id, fullName: lec.full_name, specialization: lec.specialization || 'Lecturer', profilePicture: lec.profile_picture || lec.photo || '' } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── GET /api/students/me/progress - student dashboard hero ─────
 // Behaviour-based progress, computed live from existing data:
 //   - weeks: today's position inside the batch's start_date..end_date window
