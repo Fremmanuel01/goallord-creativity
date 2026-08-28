@@ -10478,7 +10478,13 @@ function showErr(el, msg) {
         <div class="form-group">
           <label class="form-label">Class Days</label>
           <div id="batch-days" style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px">
-            ${['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(d => `<label style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--text)"><input type="checkbox" class="batch-day-cb" value="${d}" style="width:auto"> ${d.slice(0,3)}</label>`).join('')}
+            <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--text)"><input type="checkbox" class="batch-day-cb" value="Monday" style="width:auto"> Mon</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--text)"><input type="checkbox" class="batch-day-cb" value="Tuesday" style="width:auto"> Tue</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--text)"><input type="checkbox" class="batch-day-cb" value="Wednesday" style="width:auto"> Wed</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--text)"><input type="checkbox" class="batch-day-cb" value="Thursday" style="width:auto"> Thu</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--text)"><input type="checkbox" class="batch-day-cb" value="Friday" style="width:auto"> Fri</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--text)"><input type="checkbox" class="batch-day-cb" value="Saturday" style="width:auto"> Sat</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--text)"><input type="checkbox" class="batch-day-cb" value="Sunday" style="width:auto"> Sun</label>
           </div>
         </div>
         <div class="form-group">

@@ -506,11 +506,20 @@ test('admin sets a batch class time via the real form; other batches unchanged',
     await page.fill('#batch-number', '207');
     await page.selectOption('#batch-track', 'AI Software Development').catch(() => {});
     await page.fill('#batch-time', '11:00');
-    // ensure at least one class day checked
-    await page.evaluate(() => { const cb = document.querySelector('#batch-days .batch-day-cb[value="Wednesday"]'); if (cb && !cb.checked) cb.click(); });
+    // The Class Days control must be real, per-day checkboxes (regression: they
+    // were once an un-interpolated `${d}` template). Check Wednesday + Thursday.
+    const wed = await page.$('#batch-days .batch-day-cb[value="Wednesday"]');
+    assert.ok(wed, 'day checkbox with value="Wednesday" exists (not a literal ${d})');
+    await page.check('#batch-days .batch-day-cb[value="Wednesday"]');
+    await page.check('#batch-days .batch-day-cb[value="Thursday"]');
     const post = page.waitForResponse((x) => x.url().includes('/api/batches') && x.request().method() === 'POST', { timeout: 8000 });
     await page.click('#saveBatchBtn');
+    const created = await (await post).json();
     assert.strictEqual((await post).status(), 201, 'batch created with class time');
+    // The form must actually persist the checked days (this is what would have
+    // caught the broken-checkbox bug).
+    assert.deepStrictEqual((created.classDays || []).sort(), ['Thursday', 'Wednesday'], 'class days saved from the form');
+    assert.strictEqual(created.classTime, '11:00', 'class time saved from the form');
     await page.waitForFunction(() => /11:00 AM/.test(document.getElementById('batchTableBody')?.textContent || ''), null, { timeout: 8000 });
 
     // The pre-existing batches' times are untouched by the new one.
